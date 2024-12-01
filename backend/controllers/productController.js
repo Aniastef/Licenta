@@ -1,6 +1,6 @@
 import Product from "../models/productModel.js"
 
-const createProduct = async (req, res) => {
+export const createProduct = async (req, res) => {
 	try {
 		const { name, description, price } = req.body;
 
@@ -24,7 +24,7 @@ const createProduct = async (req, res) => {
 	}
 };
 
-const deleteProduct = async (req, res) => {
+export const deleteProduct = async (req, res) => {
 	try {
 		const { productId } = req.params;
 
@@ -41,7 +41,7 @@ const deleteProduct = async (req, res) => {
 	}
 };
 
-const updateProduct = async (req, res) => {
+export const updateProduct = async (req, res) => {
 	try {
 		const { productId } = req.params;
 		const { name, description, price, image } = req.body;
@@ -67,7 +67,7 @@ const updateProduct = async (req, res) => {
 	}
 };
 
-const addProductComment = async (req, res) => {
+export const addProductComment = async (req, res) => {
 	try {
 		const { productId} = req.params; 
 		const { user, comment } = req.body;
@@ -89,7 +89,7 @@ const addProductComment = async (req, res) => {
 };
 
 
-const addToFavorites = async (req, res) => {
+export const addToFavorites = async (req, res) => {
 	try {
 		const { productId } = req.params; 
 		const { userId } = req.body; 
@@ -130,7 +130,7 @@ const addToFavorites = async (req, res) => {
 
 
 
-const removeFromFavorites = async (req, res) => {
+export const removeFromFavorites = async (req, res) => {
 	try {
 		const { productId } = req.params; // ID produs
 		const { userId } = req.body; // ID utilizator
@@ -161,7 +161,7 @@ const removeFromFavorites = async (req, res) => {
 	}
 };
 
-const addImageToProduct = async (req, res) => {
+export const addImageToProduct = async (req, res) => {
 	try {
 		const { productId } = req.params;
 		const { imageUrl } = req.body; 
@@ -184,7 +184,7 @@ const addImageToProduct = async (req, res) => {
 };
 
 
-const removeImageFromProduct = async (req, res) => {
+export const removeImageFromProduct = async (req, res) => {
 	try {
 		const { productId } = req.params;
 		const { imageUrl } = req.body; // URL-ul imaginii de șters
@@ -206,7 +206,7 @@ const removeImageFromProduct = async (req, res) => {
 	}
 };
 
-const getProductImages = async (req, res) => {
+export const getProductImages = async (req, res) => {
 	try {
 		const { productId } = req.params;
 
@@ -224,7 +224,6 @@ const getProductImages = async (req, res) => {
 };
 
 
-export {createProduct, deleteProduct,updateProduct, addProductComment, addToFavorites, removeFromFavorites,addImageToProduct,removeImageFromProduct,getProductImages};
 
 
 

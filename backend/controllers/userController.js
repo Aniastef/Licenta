@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs"
 import mongoose, { mongo } from "mongoose";
 
 
-//get user's profile
-const getUserProfile = async (req, res) => {
+
+export const getUserProfile = async (req, res) => {
 
 	const { username } = req.params;
 
@@ -25,8 +25,7 @@ const getUserProfile = async (req, res) => {
 
 }
 
-// Signup user
-const signupUser = async (req, res) => {
+export const signupUser = async (req, res) => {
 
 	try {
 		const { name, email, username, password } = req.body;
@@ -69,8 +68,7 @@ const signupUser = async (req, res) => {
 };
 
 
-// Login 
-const loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
 
 	try {
 		const { username, password } = req.body;
@@ -101,8 +99,7 @@ const loginUser = async (req, res) => {
 	}
 };
 
-//Logout user
-const logoutUser = (req, res) => {
+export const logoutUser = (req, res) => {
 
 	try {
 		res.cookie("jwt", "", { maxAge: 1 });
@@ -114,8 +111,8 @@ const logoutUser = (req, res) => {
 };
 
 
-//Update user
-const updateUser = async (req, res) => {
+
+export const updateUser = async (req, res) => {
 
 	const { name, email, username, password,bio } = req.body;
 	let {profilePic}=req.body
@@ -191,6 +188,6 @@ const updateUser = async (req, res) => {
 // 	}
 //   };
 
-export {signupUser,loginUser,logoutUser,updateUser,getUserProfile};
+
 
 
