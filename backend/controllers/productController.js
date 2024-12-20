@@ -1,61 +1,71 @@
 import Product from "../models/productModel.js"
 import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
+import multer from "multer";
+import {uploadToCloudinary} from "../config/imgUpload.js";
 
 export const createProduct = async (req, res) => {
-	try {
-		const { name, description, price, images } = req.body;
+  try {
 
-		if (!name || !price) {
-		return res.status(400).json({ error: "Name and price are required" });
-		}
+	console.log(req.headers);
+	console.log(req.body);
+	console.log(req.files);
 
-		let uploadedImages = [];
-		if (images && Array.isArray(images) && images.length > 0) {
-		for (const image of images) {
-			try {
-			const uploadedResponse = await cloudinary.uploader.upload(image);
-			uploadedImages.push(uploadedResponse.secure_url);
-			} catch (uploadError) {
-			console.error(`Failed to upload image ${image}:`, uploadError.message);
-			}
-		}
-		}
+    const { name, description, price } = req.body;
 
-		const newProduct = new Product({
-		name,
-		description,
-		price,
-		images: uploadedImages, 
-		});
+    if (!name || !price) {
+      return res.status(400).json({ error: "Name and price are required" });
+    }
 
-		await newProduct.save();
+    const uploadedImages = [];
+    for (const file of req.files) {
+      const imageUrl = await uploadToCloudinary(file);
+      uploadedImages.push(imageUrl);
+    }
 
-		if (newProduct) {
-		console.log("New product created");
+    const newProduct = new Product({
+      name,
+      description,
+      price,
+      images: uploadedImages,
+    });
 
-		return res.status(201).json({
-			_id: newProduct._id,
-			name: newProduct.name,
-			description: newProduct.description,
-			price: newProduct.price,
-			images: newProduct.images,
-		});
-		} else {
-		return res.status(400).json({ message: "Invalid product data" });
-		}
-	} catch (err) {
-		res.status(500).json({ message: err.message });
-		console.log("Error while creating product ", err.message);
-	}
+    await newProduct.save();
+
+    res.status(201).json(newProduct);
+  } catch (err) {
+    console.error("Error while creating product:", err.message);
+    res.status(500).json({ message: err.message });
+  }
 };
-  
+
+
+export const getProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Product ID is required" });
+    }
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json(product);
+  } catch (err) {
+    console.error("Error while fetching product:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
 
 export const deleteProduct = async (req, res) => {
 	try {
 		const { productId } = req.params;
 
-		const product = await Product.findByIdAndDelete(productId);
+		const product = await Product.findByIdAndDelete(productId );
 
 		if (!product) {
 			return res.status(404).json({ error: "Product not found" });
@@ -187,70 +197,6 @@ export const removeFromFavorites = async (req, res) => {
 		console.log("Error removing product from favorites: ", err.message);
 	}
 };
-
-export const addImageToProduct = async (req, res) => {
-	try {
-		const { productId } = req.params;
-		const { imageUrl } = req.body; 
-
-		const product = await Product.findById(productId);
-
-		if (!product) {
-			return res.status(404).json({ error: "Product not found" });
-		}
-
-		
-		product.images.push(imageUrl);
-		await product.save();
-
-		res.status(200).json({ message: "Image added successfully", images: product.images });
-	} catch (err) {
-		res.status(500).json({ error: err.message });
-		console.log("Error adding image: ", err.message);
-	}
-};
-
-
-export const removeImageFromProduct = async (req, res) => {
-	try {
-		const { productId } = req.params;
-		const { imageUrl } = req.body; // URL-ul imaginii de șters
-
-		const product = await Product.findById(productId);
-
-		if (!product) {
-			return res.status(404).json({ error: "Product not found" });
-		}
-
-		
-		product.images = product.images.filter((img) => img !== imageUrl);
-		await product.save();
-
-		res.status(200).json({ message: "Image removed successfully", images: product.images });
-	} catch (err) {
-		res.status(500).json({ error: err.message });
-		console.log("Error removing image: ", err.message);
-	}
-};
-
-export const getProductImages = async (req, res) => {
-	try {
-		const { productId } = req.params;
-
-		const product = await Product.findById(productId);
-
-		if (!product) {
-			return res.status(404).json({ error: "Product not found" });
-		}
-
-		res.status(200).json({ images: product.images });
-	} catch (err) {
-		res.status(500).json({ error: err.message });
-		console.log("Error fetching product images: ", err.message);
-	}
-};
-
-
 
 
 

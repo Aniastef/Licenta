@@ -1,9 +1,8 @@
 import User from "../models/userModel.js"
 import generateTokenAndSetCookie from "../utils/generateTokenAndSetCookie.js.js";
 import bcrypt from "bcryptjs"
-import mongoose, { mongo } from "mongoose";
-
-
+import { v2 as cloudinary } from "cloudinary";
+import mongoose from "mongoose";
 
 export const getUserProfile = async (req, res) => {
 
