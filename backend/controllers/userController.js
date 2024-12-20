@@ -25,47 +25,53 @@ export const getUserProfile = async (req, res) => {
 
 }
 
+
 export const signupUser = async (req, res) => {
+  try {
+    const { firstName,lastName, email, username, password, confirmPassword } = req.body;
 
-	try {
-		const { name, email, username, password } = req.body;
-		const user = await User.findOne({ $or: [{ email }, { username }] });
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
 
-		if (user) {
-			return res.status(400).json({ error: "User already exists" });
-		}
+    const user = await User.findOne({ $or: [{ email }, { username }] });
+    if (user) {
+      return res.status(400).json({ error: "User already exists" });
+    }
 
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-		const newUser = new User({
-			name,
-			email,
-			username,
-			password: hashedPassword,
-		});
+    const newUser = new User({
+      firstName,
+	  lastName,
+      email,
+      username,
+      password: hashedPassword, 
+    });
 
-		await newUser.save();
+    await newUser.save();
 
-		if (newUser) {
-			console.log("New user created"); 
-			generateTokenAndSetCookie(newUser._id, res);
+    if (newUser) {
+      console.log("New user created");
+      generateTokenAndSetCookie(newUser._id, res); 
 
-			res.status(201).json({
-				_id: newUser._id,
-				name: newUser.name,
-				email: newUser.email,
-				username:newUser.username,
-			});
-		} else {
-			res.status(400).json({ message: "Invalid user data" });
-		}
-
-	} catch (err) {
-		res.status(500).json({ message: err.message });
-		console.log("Error while signing user up: ", err.message);
-	}
+      res.status(201).json({
+        _id: newUser._id,
+        firstName: newUser.firstName,
+		lastName: newUser.lastName,
+        email: newUser.email,
+        username: newUser.username,
+      });
+    } else {
+      res.status(400).json({ message: "Invalid user data" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+    console.log("Error while signing user up: ", err.message);
+  }
 };
+
 
 
 export const loginUser = async (req, res) => {
@@ -86,7 +92,8 @@ export const loginUser = async (req, res) => {
 
 		res.status(200).json({
 			_id: user._id,
-			name: user.name,
+			firstName: user.firstName,
+			lastName: user.lastName,
 			email: user.email,
 			username: user.username,
 			bio: user.bio,
@@ -114,7 +121,7 @@ export const logoutUser = (req, res) => {
 
 export const updateUser = async (req, res) => {
 
-	const { name, email, username, password,bio } = req.body;
+	const { firstName, lastName, email, username, password,bio } = req.body;
 	let {profilePic}=req.body
 
 	const userId = req.user._id;
@@ -143,7 +150,8 @@ export const updateUser = async (req, res) => {
 		 	profilePic = uploadedResponse.secure_url;
 		}
 
-		user.name = name || user.name;
+		user.firstName = firstName || user.firstName;
+		user.lastName = lastName || user.lastName;
 		user.email = email || user.email;
 		user.username = username || user.username;
 		user.profilePic = profilePic || user.profilePic;

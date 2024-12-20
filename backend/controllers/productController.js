@@ -2,27 +2,41 @@ import Product from "../models/productModel.js"
 
 export const createProduct = async (req, res) => {
 	try {
-		const { name, description, price } = req.body;
-
-		if (!name || !price) {
-			return res.status(400).json({ error: "Name and price are required" });
+	  const { name, description, price, images } = req.body;
+  
+	
+	  if (!name || !price) {
+		return res.status(400).json({ error: "Name and price are required" });
+	  }
+  
+	
+	  let uploadedImages = [];
+	  if (images && Array.isArray(images)) {
+		for (const image of images) {
+		  const uploadedResponse = await cloudinary.uploader.upload(image);
+		  uploadedImages.push(uploadedResponse.secure_url);
 		}
-
-		const newProduct = new Product({
-			name,
-			description,
-			price,
-		});
-
-		
-		await newProduct.save();
-
-		res.status(201).json(newProduct);
+	  }
+  
+	  const newProduct = new Product({
+		name,
+		description,
+		price,
+		images: uploadedImages,
+	  });
+  
+	  await newProduct.save();
+  
+	  res.status(201).json({
+		success: true,
+		message: "Product created successfully",
+		product: newProduct,
+	  });
 	} catch (err) {
-		res.status(500).json({ error: err.message });
-		console.log("Error creating product: ", err.message);
+	  console.error("Error creating product: ", err.message);
+	  res.status(500).json({ error: err.message });
 	}
-};
+  };
 
 export const deleteProduct = async (req, res) => {
 	try {
