@@ -9,6 +9,7 @@ import UpdateProfilePage from './pages/UpdateProfilePage';
 import LogoutButton from './components/LogoutButton';
 import AuthPage from './pages/AuthPage'
 import Navbar from './components/Navbar';
+import CreateProductPage from './pages/CreateProductPage';
 
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
         <Route path='/auth' element={!user ? <AuthPage /> : <Navigate to='/' />} />
         <Route path="/profile/:username" element={<UserPage />} />
         <Route path='/update' element={user ? <UpdateProfilePage /> : <Navigate to='/auth' />} />
+        <Route path="/create" element={<CreateProductPage />} />
       </Routes>
       {user && <LogoutButton />}
     </Box>

@@ -20,6 +20,9 @@ const Navbar = () => {
         <Link href="/contact" fontSize="sm" fontWeight="bold" textTransform="uppercase">
           Contact
         </Link>
+        <Link href="/create" fontSize="sm" fontWeight="bold" textTransform="uppercase">
+          Adauga produs
+        </Link>
       </HStack>
     </Box>
   );

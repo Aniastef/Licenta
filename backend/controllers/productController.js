@@ -1,48 +1,61 @@
 import Product from "../models/productModel.js"
+import { v2 as cloudinary } from "cloudinary";
+import mongoose from "mongoose";
 
 export const createProduct = async (req, res) => {
 	try {
-	  const { name, description, price, images } = req.body;
-  
-	
-	  if (!name || !price) {
+		const { name, description, price, images } = req.body;
+
+		if (!name || !price) {
 		return res.status(400).json({ error: "Name and price are required" });
-	  }
-  
-	
-	  let uploadedImages = [];
-	  if (images && Array.isArray(images)) {
-		for (const image of images) {
-		  const uploadedResponse = await cloudinary.uploader.upload(image);
-		  uploadedImages.push(uploadedResponse.secure_url);
 		}
-	  }
-  
-	  const newProduct = new Product({
+
+		let uploadedImages = [];
+		if (images && Array.isArray(images) && images.length > 0) {
+		for (const image of images) {
+			try {
+			const uploadedResponse = await cloudinary.uploader.upload(image);
+			uploadedImages.push(uploadedResponse.secure_url);
+			} catch (uploadError) {
+			console.error(`Failed to upload image ${image}:`, uploadError.message);
+			}
+		}
+		}
+
+		const newProduct = new Product({
 		name,
 		description,
 		price,
-		images: uploadedImages,
-	  });
-  
-	  await newProduct.save();
-  
-	  res.status(201).json({
-		success: true,
-		message: "Product created successfully",
-		product: newProduct,
-	  });
+		images: uploadedImages, 
+		});
+
+		await newProduct.save();
+
+		if (newProduct) {
+		console.log("New product created");
+
+		return res.status(201).json({
+			_id: newProduct._id,
+			name: newProduct.name,
+			description: newProduct.description,
+			price: newProduct.price,
+			images: newProduct.images,
+		});
+		} else {
+		return res.status(400).json({ message: "Invalid product data" });
+		}
 	} catch (err) {
-	  console.error("Error creating product: ", err.message);
-	  res.status(500).json({ error: err.message });
+		res.status(500).json({ message: err.message });
+		console.log("Error while creating product ", err.message);
 	}
-  };
+};
+  
 
 export const deleteProduct = async (req, res) => {
 	try {
 		const { productId } = req.params;
 
-		const product = await Product.findByIdAndDelete(productId );
+		const product = await Product.findByIdAndDelete(productId);
 
 		if (!product) {
 			return res.status(404).json({ error: "Product not found" });
