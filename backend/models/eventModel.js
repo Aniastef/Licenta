@@ -18,15 +18,21 @@ const eventSchema = new mongoose.Schema(
 			type: String, 
 			default: "", 
 		},
-		participants: [
+		interestedParticipants: [
 			{
-				type: mongoose.Schema.Types.ObjectId, 
-				ref: "User", 
+				type: mongoose.Schema.Types.ObjectId, // Referință către utilizator
+				ref: "User",
+			},
+		],
+		goingParticipants: [
+			{
+				type: mongoose.Schema.Types.ObjectId, // Referință către utilizator
+				ref: "User",
 			},
 		],
 	},
 	{
-		timestamps: true, 
+		timestamps: true, // Include createdAt și updatedAt
 	}
 );
 
