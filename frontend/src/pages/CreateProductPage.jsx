@@ -12,6 +12,7 @@ import { useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 import productAtom from "../atoms/productAtom";
 import { useSetRecoilState } from "recoil";
+import { useNavigate } from "react-router-dom";
 
 const CreateProductPage = () => {
 	const setProduct = useSetRecoilState(productAtom);
@@ -24,6 +25,7 @@ const CreateProductPage = () => {
 	const [imageFiles, setImageFiles] = useState([]);
 	const showToast = useShowToast();
 	const [isLoading, setIsLoading] = useState(false);
+
 
 	const handleAddProduct = async () => {
 		if (!newProduct.name || !newProduct.price) {

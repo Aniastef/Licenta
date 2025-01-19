@@ -1,15 +1,25 @@
-// import express from "express";
-// import {
-// 	addInterestedParticipant,
-// 	addGoingParticipant,
-// 	removeParticipant,createEvent,
-// } from "../controllers/eventController.js";
-// import upload from "../config/imgUpload.js";
-// const router = express.Router();
+import express from "express";
+import protectRoute from "../middlewares/protectRoute.js";
+import upload from "../config/imgUpload.js";
+import { createEvent,getEvent,updateEvent,deleteEvent, markInterested, markGoing } from "../controllers/eventController.js";
 
-// router.post("/", upload.single("coverImage"), createEvent);
-// router.post("/:eventId/interested", addInterestedParticipant); // Adaugă la interesați
-// router.post("/:eventId/going", addGoingParticipant); // Adaugă la cei care merg
-// router.post("/:eventId/remove", removeParticipant); // Elimină din liste
+const router=express.Router();
 
-// export default router;
+// Creare eveniment
+router.post("/create", upload.single("coverImage"), protectRoute, createEvent);
+
+
+// Obținere detalii despre un eveniment specific
+router.get("/:eventId", getEvent);
+
+// Actualizare eveniment
+router.put("/:eventId", protectRoute, updateEvent);
+
+// Ștergere eveniment
+router.delete("/:eventId", protectRoute, deleteEvent);
+
+router.post("/:eventId/interested", protectRoute, markInterested);
+router.post("/:eventId/going", protectRoute, markGoing);
+
+
+export default router;

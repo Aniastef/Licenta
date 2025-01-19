@@ -1,112 +1,177 @@
-// import Event from "../models/eventModel";
-// import User from "../models/userModel";
-// import { v2 as cloudinary } from "cloudinary";
-// import mongoose from "mongoose";
+import Product from "../models/productModel.js"
+import { v2 as cloudinary } from "cloudinary";
+import mongoose from "mongoose";
+import multer from "multer";
+import {uploadToCloudinary} from "../config/imgUpload.js";
+import Comment from "../models/commentModel.js";
+import Event from "../models/eventModel.js";
 
-// import { uploadToCloudinary } from "../config/imgUpload.js";
+export const createEvent = async (req, res) => {
+  try {
+    const { name, description, date, tags } = req.body;
+    console.log("Body received:", req.body);
+    console.log("File received:", req.file);
 
-// export const createEvent = async (req, res) => {
-//   try {
-//     const { name, description, date, participants } = req.body;
+    if (!name || !date) {
+      return res.status(400).json({ error: "Name and date are required" });
+    }
 
-//     if (!name || !date) {
-//       return res.status(400).json({ error: "Name and date are required" });
-//     }
+    let coverImageUrl = "";
+    if (req.file) {
+      coverImageUrl = await uploadToCloudinary(req.file); // Încarcă imaginea în cloud
+    }
 
-//     let coverImage = "";
-//     if (req.file) {
-//       // Încarcă imaginea în Cloudinary
-//       coverImage = await uploadToCloudinary(req.file);
-//     }
+    const newEvent = new Event({
+      name,
+      description,
+      date,
+      coverImage: coverImageUrl,
+      tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+    });
 
-//     const newEvent = new Event({
-//       name,
-//       description,
-//       date,
-//       coverImage,
-//       participants: participants || [],
-//     });
+    await newEvent.save();
+    res.status(201).json(newEvent);
+  } catch (err) {
+    console.error("Error while creating event:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
 
-//     await newEvent.save();
+export const getEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
 
-//     res.status(201).json({
-//       message: "Event created successfully",
-//       event: newEvent,
-//     });
-//   } catch (err) {
-//     console.error("Error while creating event:", err.message);
-//     res.status(500).json({ error: "Failed to create event" });
-//   }
-// };
+    if (!eventId) {
+      return res.status(400).json({ error: "Event ID is required" });
+    }
 
-// export const addInterestedParticipant = async (req, res) => {
-// 	try {
-// 		const { eventId } = req.params; // ID-ul evenimentului
-// 		const { userId } = req.body; // ID-ul utilizatorului
+    const event = await Event.findById(eventId)
+      .populate("interestedParticipants", "firstName lastName profileImage")
+      .populate("goingParticipants", "firstName lastName profileImage");
 
-// 		const event = await Event.findById(eventId);
 
-// 		if (!event) {
-// 			return res.status(404).json({ error: "Event not found" });
-// 		}
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
 
-// 		// Adaugă utilizatorul doar dacă nu este deja interesat
-// 		if (!event.interestedParticipants.includes(userId)) {
-// 			event.interestedParticipants.push(userId);
-// 			await event.save();
-// 		}
+    res.status(200).json({
+      event,
+      interestedParticipants: event.interestedParticipants,
+      goingParticipants: event.goingParticipants,
+    });
+  } catch (err) {
+    console.error("Error while fetching event:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
 
-// 		res.status(200).json({ message: "User added to interested participants", event });
-// 	} catch (err) {
-// 		console.error("Error adding interested participant:", err.message);
-// 		res.status(500).json({ error: "Failed to add interested participant" });
-// 	}
-// };
 
-// export const addGoingParticipant = async (req, res) => {
-// 	try {
-// 		const { eventId } = req.params; // ID-ul evenimentului
-// 		const { userId } = req.body; // ID-ul utilizatorului
 
-// 		const event = await Event.findById(eventId);
+export const deleteEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
 
-// 		if (!event) {
-// 			return res.status(404).json({ error: "Event not found" });
-// 		}
+    // Găsește evenimentul în baza de date
+    const event = await Event.findById(eventId);
 
-// 		// Adaugă utilizatorul doar dacă nu este deja în lista de "going"
-// 		if (!event.goingParticipants.includes(userId)) {
-// 			event.goingParticipants.push(userId);
-// 			await event.save();
-// 		}
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
 
-// 		res.status(200).json({ message: "User added to going participants", event });
-// 	} catch (err) {
-// 		console.error("Error adding going participant:", err.message);
-// 		res.status(500).json({ error: "Failed to add going participant" });
-// 	}
-// };
+    // Verifică dacă utilizatorul are permisiunea să șteargă evenimentul
+    if (event.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Unauthorized action" });
+    }
 
-// export const removeParticipant = async (req, res) => {
-// 	try {
-// 		const { eventId } = req.params; // ID-ul evenimentului
-// 		const { userId } = req.body; // ID-ul utilizatorului
+    // Șterge evenimentul
+    await event.deleteOne();
 
-// 		const event = await Event.findById(eventId);
+    res.status(200).json({ message: "Event deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+    console.error("Error deleting event: ", err.message);
+  }
+};
 
-// 		if (!event) {
-// 			return res.status(404).json({ error: "Event not found" });
-// 		}
 
-// 		// Elimină utilizatorul din liste
-// 		event.interestedParticipants = event.interestedParticipants.filter((id) => id.toString() !== userId);
-// 		event.goingParticipants = event.goingParticipants.filter((id) => id.toString() !== userId);
+export const updateEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { name, description, date, coverImage, tags } = req.body;
 
-// 		await event.save();
+    // Găsește evenimentul în baza de date
+    const event = await Event.findById(eventId);
 
-// 		res.status(200).json({ message: "User removed from participants", event });
-// 	} catch (err) {
-// 		console.error("Error removing participant:", err.message);
-// 		res.status(500).json({ error: "Failed to remove participant" });
-// 	}
-// };
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    // Verifică dacă utilizatorul are permisiunea să actualizeze evenimentul
+    if (event.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Unauthorized action" });
+    }
+
+    // Actualizează câmpurile evenimentului
+    event.name = name || event.name;
+    event.description = description || event.description;
+    event.date = date || event.date;
+    event.coverImage = coverImage || event.coverImage;
+    event.tags = tags || event.tags;
+
+    // Salvează modificările
+    await event.save();
+
+    res.status(200).json(event);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+    console.error("Error updating event: ", err.message);
+  }
+};
+
+export const markInterested = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Verifică dacă evenimentul există
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    // Adaugă utilizatorul la lista de participanți interesați
+    if (!event.interestedParticipants.includes(req.user._id)) {
+      event.interestedParticipants.push(req.user._id);
+    }
+
+    // Salvează modificările
+    await event.save();
+    res.status(200).json({ message: "Marked as interested", event });
+  } catch (err) {
+    console.error("Error marking interested:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const markGoing = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Verifică dacă evenimentul există
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    // Adaugă utilizatorul la lista de participanți
+    if (!event.goingParticipants.includes(req.user._id)) {
+      event.goingParticipants.push(req.user._id);
+    }
+
+    // Salvează modificările
+    await event.save();
+    res.status(200).json({ message: "Marked as going", event });
+  } catch (err) {
+    console.error("Error marking going:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+};

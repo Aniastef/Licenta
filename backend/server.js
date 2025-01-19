@@ -5,7 +5,11 @@ import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js"
+import eventRoutes from "./routes/eventRoutes.js"
 import upload from "./config/imgUpload.js";
+import { EventEmitter } from "events";
+
+EventEmitter.defaultMaxListeners = 20;
 
 dotenv.config();
 connectDB();
@@ -13,13 +17,15 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' })); // Crește limita pentru JSON
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Crește limita pentru URL-encoded
+
 app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/events", eventRoutes);
 
 
 
