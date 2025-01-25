@@ -16,6 +16,7 @@ import EventsPage from './pages/UserEventsPage';
 import Incerc from './components/Incerc';
 import UserEventsPage from './pages/UserEventsPage';
 import UserArtGallery from './pages/UserArtGallery';
+import ProductsPage from './pages/ProductsPage';
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
         <Route path="/profile/:username" element={<UserPage />} />
         <Route path='/update' element={user ? <UpdateProfilePage /> : <Navigate to='/auth' />} />
         <Route path="/create/product" element={<CreateProductPage />} />
+        <Route path='/products' element={<ProductsPage/>} />
         <Route path="/products/:id" element={<ProductPage/>} />
         <Route path="/create/event" element={user ? <CreateEventPage /> : <Navigate to="/auth" />} />
         <Route path="/events/:id" element={<UserEventsPage/>} />

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CommentsSection from '../components/CommentsSection';
+import { Select } from "@chakra-ui/react";
 
 export default function ProductPage() {
   const { id } = useParams();
@@ -29,21 +30,10 @@ export default function ProductPage() {
   }, [id]);
 
   return (
-    <Flex align={'center'} justify={'center'} py={6}>
-      <VStack spacing={8} w={'full'} maxW={'container.md'}>
-        {isLoading ? (
-          <Spinner size="xl" />
-        ) : error ? (
-          <Text color="red.500">{error}</Text>
-        ) : product ? (
-          <>
+    <Flex direction="column">
             <ProductCard product={product} />
-            <CommentsSection resourceId={id} />
-          </>
-        ) : (
-          <Text color="gray.500">No product found.</Text>
-        )}
-      </VStack>
+            <CommentsSection resourceId={id} resourceType="Product" />
+
     </Flex>
   );
 }

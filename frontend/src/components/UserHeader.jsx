@@ -19,78 +19,20 @@ import useShowToast from "../hooks/useShowToast";
 const UserHeader = ({ user }) => {
   const currentUser = useRecoilValue(userAtom);
   const setUser = useSetRecoilState(userAtom); // Pentru actualizarea utilizatorului global
-  const [coverPhoto, setCoverPhoto] = useState(currentUser?.coverPhoto || "");
-  const fileInputRef = useRef(null);
   const showToast = useShowToast();
-
-
-  const handleCoverPhotoChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Image = reader.result;
-
-        try {
-          const res = await fetch(`/api/users/update/${user._id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ coverPhoto: base64Image }),
-          });
-
-          const data = await res.json();
-
-          if (data.error) {
-            showToast('Error', data.error.message, 'error');
-            return;
-          } else {
-            showToast('Success', "Cover photo updated successfully!", 'success');
-            setCoverPhoto(data.coverPhoto); // Actualizează imaginea locală
-            setUser((prev) => ({ ...prev, coverPhoto: data.coverPhoto })); // Actualizează utilizatorul global
-          }
-        } catch (error) {
-          showToast('Error', error.message, 'error');
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
+  
   return (
     <Flex direction="column" >
-    <CoverPhoto src={coverPhoto} />
-    <Flex alignItems="flex-start" gap={20} direction="row" >
-    
-        {currentUser?._id === user._id && (
-          <Button
-            ml="5" 
-            borderRadius="5" 
-            bg="gray.300" 
-            _hover={{ bg: "gray.500" }} 
-            mt={-10}
-            onClick={() => fileInputRef.current.click()}
-          >
-            Edit Cover
-          </Button>
-        )}
-        <Input
-          type="file"
-          accept="image/*"
-          hidden
-          ref={fileInputRef}
-          onChange={handleCoverPhotoChange}
-        />
+    <Flex alignItems="flex-start"  gap={20} direction="row" >
 
-      <Flex gap={2} alignItems="flex-start" direction="column" >
+
+      <Flex mt={16} ml={16} gap={2} alignItems="flex-start" direction="column" >
         <Avatar
             src={user?.profilePic || ""}
             size="2xl"
             borderWidth={4}
             borderColor="white"
             borderRadius={"10"}
-            mt={-16}
         />
         <Text fontSize={"sm"}>{user?.username || "Unknown Username"}</Text>
         {currentUser?._id === user._id && (

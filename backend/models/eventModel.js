@@ -6,7 +6,16 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    owner: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User", // Proprietarul galeriei
+          required: true,
+        },
     description: {
+      type: String,
+      default: "",
+    },
+    location: {
       type: String,
       default: "",
     },

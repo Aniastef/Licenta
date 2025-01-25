@@ -131,12 +131,12 @@ const Incerc = () => {
               }
               w="150px"
             >
-              Add to Favorites
+              Add to Favoritess
             </Button>
           </Flex>
 
           {/* Grid pentru afișarea imaginilor */}
-          <Grid templateColumns="repeat(2, 1fr)" gap={4} maxW="800px">
+          <Grid templateColumns="repeat(4, 1fr)" gap={4} maxW="300px">
             {product.images
               .slice(currentIndex, currentIndex + imagesPerPage)
               .map((image, index) => (
@@ -208,4 +208,6 @@ const Incerc = () => {
   );
 };
 
-export default Incerc;
+export default Incerc; 
+
+ 

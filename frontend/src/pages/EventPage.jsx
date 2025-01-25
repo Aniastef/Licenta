@@ -37,7 +37,7 @@ export default function EventPage() {
         ) : event ? (
           <>
             <EventCard event={event} />
-            <CommentsSection resourceId={id} /> {/* Comentarii pentru eveniment */}
+            <CommentsSection resourceId={id} resourceType="Event"/> {/* Comentarii pentru eveniment */}
           </>
         ) : (
           <Text color="gray.500">No event found.</Text>

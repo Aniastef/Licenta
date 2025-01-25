@@ -1,15 +1,24 @@
 import mongoose from "mongoose";
 
-const commentSchema = new mongoose.Schema({
-  content: { type: String, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  resourceId: { type: mongoose.Schema.Types.ObjectId, required: true },
-  resourceType: { type: String, required: true, enum: ["Product", "Event"] },
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }], // Asigură-te că este array
-  dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }], // Asigură-te că este array
-  replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
-  createdAt: { type: Date, default: Date.now },
-});
+const commentSchema = new mongoose.Schema(
+  {
+    content: { type: String, required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    resourceId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    resourceType: {
+      type: String,
+      required: true,
+      enum: ["User", "Product", "Event"],
+    },
+    parentId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment", default: null },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],
+    dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],
+    replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+  },
+  {
+    timestamps: true, // Asigură generarea câmpurilor createdAt și updatedAt
+  }
+);
 
 const Comment = mongoose.model("Comment", commentSchema);
 

@@ -29,10 +29,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    coverPhoto: {
-      type: String,
-      default: "", // Imaginea de copertă pentru profilul utilizatorului
-    },
     bio: {
       type: String,
       default: "",
@@ -61,27 +57,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    artGalleries: [
+    products: [
       {
-        type: {
-          type: String,
-          enum: ["Photography", "Sculpture", "Painting", "Other"],
-          required: true,
-        },
-        description: {
-          type: String,
-          default: "",
-        },
-        coverPhoto: {
-          type: String,
-          default: "", // Imaginea de copertă pentru galerie
-        },
-        products: [
-          {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Product", // Asociează produsele cu galeria
-          },
-        ],
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product", // Referință către produsele utilizatorului
+      },
+    ],
+    events: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
+    galleries: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Gallery", // Referință la galerii
       },
     ],
     favorites: [

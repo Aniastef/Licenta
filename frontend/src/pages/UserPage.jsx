@@ -23,7 +23,7 @@ const UserPage = () => {
 
       {/* Secțiunea de comentarii */}
       <Box mt={8}>
-        <CommentsSection resourceId={user._id} />
+        <CommentsSection resourceId={user._id} resourceType="User" />
       </Box>
     </>
   );

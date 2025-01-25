@@ -13,15 +13,24 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import RectangleShape from "../assets/rectangleShape";
+import pisica from "../assets/pisica.jpg";
 
 const ProductCard = ({ product }) => {
+  if (!product) {
+    return (
+      <Box>
+        <Text>Loading product details...</Text>
+      </Box>
+    );
+  }
+
   const [currentIndex, setCurrentIndex] = useState(0); // Index pentru navigare
   const { isOpen, onOpen, onClose } = useDisclosure(); // Control pentru Modal
   const [selectedImage, setSelectedImage] = useState(""); // Imagine selectată
   const [showFullDescription, setShowFullDescription] = useState(false); // Control pentru descriere
 
   const imagesPerPage = 4;
-  const totalImages = product.images.length;
+  const totalImages = product.images?.length || 0; // Fallback dacă `images` este undefined
   const canGoBack = currentIndex > 0;
   const canGoNext = currentIndex + imagesPerPage < totalImages;
 
@@ -38,9 +47,10 @@ const ProductCard = ({ product }) => {
     <Box mt={8} position="relative">
       <Flex direction={"row"} justify="space-between">
         <Flex direction="column" position="relative" height="auto" width="600px">
+          {/* Container relativ pentru suprapunere */}
           <RectangleShape
-            bgColor="blue.300"
-            title={product.name}
+            bgColor="blue.300" // Culoare albastru deschis
+            title={product.name} // Nume produs
             position="relative"
             minW="600px"
             maxW="600px"
@@ -58,9 +68,12 @@ const ProductCard = ({ product }) => {
           </Button>
           <Box ml={5} mt={5} maxW="450px">
             <Text mt={5} fontWeight={"bold"}>
-              Created by {product.user.firstName} {product.user.lastName}
+            <Text mt={5} fontWeight={"bold"}>
+              Created by {product.user?.firstName || "Unknown"} {product.user?.lastName || "User"}
+            </Text>
             </Text>
 
+            {/* Descriere scrollabilă sau expandabilă */}
             <Box
               mt={4}
               maxHeight={!showFullDescription ? "400px" : "auto"}
@@ -93,6 +106,7 @@ const ProductCard = ({ product }) => {
         </Flex>
 
         <Flex mt={50} mr={200} direction="column" gap={4}>
+          {/* Butoane Add to Cart și Add to Favorites */}
           <Flex justify="space-between">
             <Button
               bg="yellow.300"
@@ -100,6 +114,7 @@ const ProductCard = ({ product }) => {
               width={190}
               height="50px"
               onClick={() => alert(`${product.name} has been added to your cart!`)}
+              w="150px"
             >
               Add to Cart
             </Button>
@@ -111,49 +126,59 @@ const ProductCard = ({ product }) => {
               onClick={() =>
                 alert(`${product.name} has been added to your favorites!`)
               }
+              w="150px"
             >
               Add to Favorites
             </Button>
           </Flex>
 
           <Grid templateColumns="repeat(2, 1fr)" gap={4} maxW="800px">
-            {product.images
-              .slice(currentIndex, currentIndex + imagesPerPage)
-              .map((image, index) => (
-                <Image
-                  key={index}
-                  src={image}
-                  alt={`Product Image ${index + 1}`}
-                  borderRadius="md"
-                  objectFit="contain"
-                  maxW="250px"
-                  maxH="250px"
-                  w="100%"
-                  h="auto"
-                  cursor="pointer"
-                  onClick={() => handleImageClick(image)}
-                />
-              ))}
-          </Grid>
+  {product.images && product.images.length > 0 ? (
+    product.images.slice(currentIndex, currentIndex + imagesPerPage).map((image, index) => (
+      <Image
+        key={index}
+        src={image}
+        alt={`Product Image ${index + 1}`}
+        borderRadius="md"
+        objectFit="contain"
+        maxW="250px"
+        maxH="250px"
+        w="100%"
+        h="auto"
+        cursor="pointer"
+        onClick={() => handleImageClick(image)}
+      />
+    ))
+  ) : (
+    <Text>No images available</Text>
+  )}
+</Grid>
+
+
 
           <Flex justify="space-between" mt={4}>
-            <Button
-              onClick={() => setCurrentIndex((prev) => Math.max(prev - imagesPerPage, 0))}
-              disabled={!canGoBack}
-              bg="orange.300"
-            >
-              Previous
-            </Button>
-            <Button
-              onClick={() => setCurrentIndex((prev) => Math.min(prev + imagesPerPage, totalImages))}
-              disabled={!canGoNext}
-              bg="orange.300"
-            >
-              Next
-            </Button>
+          {/* Butoane navigare */}
+          <Button
+            onClick={() => setCurrentIndex((prev) => Math.max(prev - imagesPerPage, 0))}
+            disabled={!canGoBack}
+            bg="orange.300"
+          >
+            Previous
+          </Button>
+          <Button
+            onClick={() => setCurrentIndex((prev) => Math.min(prev + imagesPerPage, totalImages))}
+            disabled={!canGoNext}
+            bg="orange.300"
+          >
+            Next
+          </Button>
+          
           </Flex>
+
+        
         </Flex>
 
+        {/* Modal pentru afișarea imaginii mari */}
         <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
           <ModalOverlay />
           <ModalContent>
@@ -162,7 +187,23 @@ const ProductCard = ({ product }) => {
             </ModalBody>
           </ModalContent>
         </Modal>
+
+        
       </Flex>
+
+      <Flex  justifyContent="right" mt={10}>
+
+      <RectangleShape
+        bgColor="yellow.300" // Culoare albastră
+        title="Want to know more? Contact the creator!"
+        minW="800px"
+        maxW="800px"
+        position="right" // Poziție relativă pentru a fi deasupra portocaliului
+        textAlign="left"
+        alignSelf="flex-end" // Aliniere la capătul dreptunghiului galben
+      />
+      </Flex>
+      
     </Box>
   );
 };
