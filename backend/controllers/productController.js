@@ -13,8 +13,11 @@ export const createProduct = async (req, res) => {
 		return res.status(403).json({ error: "User not authenticated" });
 	  }
   
-	  const uploadedImages = req.files?.map((file) => file.path) || [];
-	  console.log("Uploaded images:", uploadedImages);
+	  const uploadedImages = [];
+	  for (const file of req.files) {
+		const imageUrl = await uploadToCloudinary(file);
+		uploadedImages.push(imageUrl);
+	  }
   
 	  const newProduct = new Product({
 		name,

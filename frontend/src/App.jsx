@@ -16,7 +16,7 @@ import EventsPage from './pages/UserEventsPage';
 import Incerc from './components/Incerc';
 import UserEventsPage from './pages/UserEventsPage';
 import UserArtGallery from './pages/UserArtGallery';
-import ProductsPage from './pages/ProductsPage';
+import ProductsPage from './pages/AllProductsPage';
 
 
 function App() {

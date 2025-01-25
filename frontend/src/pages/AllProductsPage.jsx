@@ -10,6 +10,7 @@ import {
   Button,
   Grid,
 } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 import RectangleShape from "../assets/rectangleShape";
 
 const ProductsPage = () => {
@@ -52,13 +53,17 @@ const ProductsPage = () => {
         searchBy === "name"
           ? product.name.toLowerCase().includes(filterText.toLowerCase())
           : true;
+
       const matchesCreator =
         searchBy === "creator"
-          ? product.user?.firstName
-              ?.toLowerCase()
+          ? `${product.user?.firstName || ""} ${product.user?.lastName || ""}`
+              .toLowerCase()
               .includes(filterText.toLowerCase()) ||
-            product.user?.lastName?.toLowerCase().includes(filterText.toLowerCase())
+            `${product.user?.lastName || ""} ${product.user?.firstName || ""}`
+              .toLowerCase()
+              .includes(filterText.toLowerCase())
           : true;
+
       const matchesGallery = filterGallery
         ? product.gallery === filterGallery
         : true;
@@ -70,6 +75,10 @@ const ProductsPage = () => {
       updatedProducts.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOption === "price") {
       updatedProducts.sort((a, b) => a.price - b.price);
+    } else if (sortOption === "date") {
+      updatedProducts.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      ); // Descrescător
     }
 
     setFilteredProducts(updatedProducts);
@@ -128,12 +137,13 @@ const ProductsPage = () => {
         <Select
           placeholder="Sort by"
           value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
+          onChange={handleSortChange}
           w="200px"
           bg="gray.100"
         >
           <option value="name">Name</option>
           <option value="price">Price</option>
+          <option value="date">Date Created</option>
         </Select>
       </Flex>
 
@@ -148,74 +158,65 @@ const ProductsPage = () => {
         ) : (
           <Grid
             templateColumns={{
-              base: "repeat(1, 1fr)", // 1 coloană pe ecrane mici
-              md: "repeat(2, 1fr)", // 2 coloane pe ecrane medii
-              lg: "repeat(3, 1fr)", // 3 coloane pe ecrane mari
-              xl: "repeat(4, 1fr)", // 4 coloane pe ecrane foarte mari
+              base: "repeat(1, 1fr)",
+              md: "repeat(2, 1fr)",
+              lg: "repeat(3, 1fr)",
+              xl: "repeat(4, 1fr)",
             }}
             gap={6}
           >
             {filteredProducts.map((product) => (
-              <Box
-                key={product._id}
-                bg="gray.200"
-                p={4}
-                borderRadius="md"
-                overflow="hidden"
-              >
+              <Link to={`/products/${product._id}`} key={product._id}>
                 <Box
-                  width="100%"
-                  height="300px"
-                  bg="gray.300"
-                  mb={4}
+                  bg="gray.200"
+                  p={4}
                   borderRadius="md"
                   overflow="hidden"
+                  _hover={{ transform: "scale(1.02)", transition: "0.2s" }}
                 >
-                  {product.images?.[0] ? (
-                    <Image
-                      src={product.images[0]}
-                      alt={`${product.name} cover photo`}
-                      width="100%"
-                      height="100%"
-                      objectFit="cover"
-                    />
-                  ) : (
-                    <Box
-                      width="100%"
-                      height="100%"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      bg="gray.400"
-                    >
-                      <Text>No cover photo available</Text>
-                    </Box>
-                  )}
+                  <Box
+                    width="100%"
+                    height="300px"
+                    bg="gray.300"
+                    mb={4}
+                    borderRadius="md"
+                    overflow="hidden"
+                  >
+                    {product.images?.[0] ? (
+                      <Image
+                        src={product.images[0]}
+                        alt={`${product.name} cover photo`}
+                        width="100%"
+                        height="100%"
+                        objectFit="cover"
+                      />
+                    ) : (
+                      <Box
+                        width="100%"
+                        height="100%"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        bg="gray.400"
+                      >
+                        <Text>No cover photo available</Text>
+                      </Box>
+                    )}
+                  </Box>
+                  <Heading size="md" mb={2}>
+                    {product.name}
+                  </Heading>
+                  <Text mb={1}>${product.price}</Text>
+                  <Text mb={1}>Gallery: {product.gallery}</Text>
+                  <Text mb={1}>
+                    Creator: {product.user?.firstName || "Unknown"}{" "}
+                    {product.user?.lastName || ""}
+                  </Text>
+                  <Text mb={1}>
+                    Created At: {new Date(product.createdAt).toLocaleDateString()}
+                  </Text>
                 </Box>
-                <Heading size="md" mb={2}>
-                  {product.name}
-                </Heading>
-                <Text mb={1}>${product.price}</Text>
-                <Text mb={1}>Gallery: {product.gallery}</Text>
-                <Text mb={1}>
-                  Creator: {product.user?.firstName || "Unknown"}{" "}
-                  {product.user?.lastName || ""}
-                </Text>
-                <Flex mt={2} justify="space-between">
-                  <Button
-                    colorScheme="teal"
-                    onClick={() => alert(`Added ${product.name} to favorites!`)}
-                  >
-                    Favorite
-                  </Button>
-                  <Button
-                    colorScheme="blue"
-                    onClick={() => alert(`Added ${product.name} to cart!`)}
-                  >
-                    Add to Cart
-                  </Button>
-                </Flex>
-              </Box>
+              </Link>
             ))}
           </Grid>
         )}

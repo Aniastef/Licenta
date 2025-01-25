@@ -136,7 +136,7 @@ const Incerc = () => {
           </Flex>
 
           {/* Grid pentru afișarea imaginilor */}
-          <Grid templateColumns="repeat(4, 1fr)" gap={4} maxW="300px">
+          <Grid templateColumns="repeat(2, 1fr)" gap={4} maxW="800px">
             {product.images
               .slice(currentIndex, currentIndex + imagesPerPage)
               .map((image, index) => (
