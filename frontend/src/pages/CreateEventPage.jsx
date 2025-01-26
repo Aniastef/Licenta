@@ -10,12 +10,15 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import useShowToast from "../hooks/useShowToast";
-import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import eventAtom from "../atoms/eventAtom";
+import { useNavigate } from "react-router-dom";
+
 
 const CreateEventPage = () => {
 	const setEvent = useSetRecoilState(eventAtom);
+	const navigate = useNavigate();
+
 
 	const [newEvent, setNewEvent] = useState({
 		name: "",
@@ -60,6 +63,7 @@ const CreateEventPage = () => {
 
 			setEvent(data);
 			showToast("Event created successfully", "", "success");
+			navigate(`/events/${data._id}`); // Redirecționează către pagina produsului
 		} catch (error) {
 			showToast("Error", error.message, "error");
 		} finally {

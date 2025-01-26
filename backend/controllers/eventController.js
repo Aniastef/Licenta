@@ -16,9 +16,11 @@ export const createEvent = async (req, res) => {
       return res.status(400).json({ error: "Name and date are required" });
     }
 
-    let coverImageUrl = "";
+    let coverImageUrl = null;
+
+    // Dacă există o imagine încărcată, încarc-o pe Cloudinary
     if (req.file) {
-      coverImageUrl = await uploadToCloudinary(req.file); // Încarcă imaginea în cloud
+      coverImageUrl = await uploadToCloudinary(req.file); // Funcție pentru încărcarea imaginii pe Cloudinary
     }
 
     const newEvent = new Event({
@@ -27,6 +29,7 @@ export const createEvent = async (req, res) => {
       date,
       coverImage: coverImageUrl,
       tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+      user: req.user._id,
     });
 
     await newEvent.save();
@@ -175,3 +178,19 @@ export const markGoing = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getAllEvents = async (req, res) => {
+  try {
+    const events = await Event.find()
+      .populate("user", "firstName lastName profileImage") // Populează informații despre utilizatorul care a creat evenimentul
+      .populate("interestedParticipants", "firstName lastName profileImage") // Populează utilizatorii interesați
+      .populate("goingParticipants", "firstName lastName profileImage") // Populează utilizatorii care merg
+      .sort({ date: 1 }); // Sortează evenimentele după dată, cel mai apropiat eveniment apare primul
+
+    res.status(200).json({ events });
+  } catch (err) {
+    console.error("Error fetching all events:", err.message);
+    res.status(500).json({ error: "Failed to fetch events" });
+  }
+};
+

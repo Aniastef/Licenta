@@ -28,21 +28,10 @@ export default function EventPage() {
   }, [id]);
 
   return (
-    <Flex align={'center'} justify={'center'} py={6}>
-      <VStack spacing={8} w={'full'} maxW={'container.md'}>
-        {isLoading ? (
-          <Spinner size="xl" />
-        ) : error ? (
-          <Text color="red.500">{error}</Text>
-        ) : event ? (
-          <>
-            <EventCard event={event} />
-            <CommentsSection resourceId={id} resourceType="Event"/> {/* Comentarii pentru eveniment */}
-          </>
-        ) : (
-          <Text color="gray.500">No event found.</Text>
-        )}
-      </VStack>
+    <Flex direction="column">
+      <EventCard event={event} />
+      <CommentsSection resourceId={id} resourceType="Event"/>
     </Flex>
+      
   );
 }

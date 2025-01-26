@@ -1,156 +1,164 @@
+import React, { useState } from "react";
 import {
   Box,
-  Button,
   Heading,
-  Image,
-  Stack,
+  Flex,
+  Button,
   Text,
-  Tag,
-  Wrap,
-  Avatar,
-  VStack,
-  HStack,
-} from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+  Image,
+  Grid,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalBody,
+  useDisclosure,
+} from "@chakra-ui/react";
+import RectangleShape from "../assets/rectangleShape";
 
-export default function EventCard({ event }) {
-  const navigate = useNavigate();
-  const [showAllInterested, setShowAllInterested] = useState(false);
-  const [showAllGoing, setShowAllGoing] = useState(false);
+const EventCard = ({ event }) => {
+  if (!event) {
+    return (
+      <Box>
+        <Text>Loading event details...</Text>
+      </Box>
+    );
+  }
 
-  const maxToShow = 5;
+  const [selectedImage, setSelectedImage] = useState(""); // Imagine selectată pentru pop-up
+  const { isOpen, onOpen, onClose } = useDisclosure(); // Control pentru modal
 
-  const interestedToDisplay = showAllInterested
-    ? event.interestedParticipants
-    : event.interestedParticipants?.slice(0, maxToShow);
-
-  const goingToDisplay = showAllGoing
-    ? event.goingParticipants
-    : event.goingParticipants?.slice(0, maxToShow);
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    onOpen();
+  };
 
   return (
-    <Stack
-      spacing={6}
-      borderWidth="1px"
-      borderRadius="md"
-      p={4}
-      boxShadow="md"
-      maxW="800px"
-      margin="0 auto"
-    >
-      {/* Imaginea evenimentului */}
-      <Image
-        src={event.coverImage || 'https://via.placeholder.com/800x600'}
-        alt={`${event.name} - Cover`}
-        borderRadius="md"
-        objectFit="cover"
-        w="100%"
-        h="200px"
-      />
+    <Box mt={8}>
+      {/* Titlu și status */}
+      <Flex justifyContent="space-between" alignItems="center">
+        <Text mx={5} fontSize="lg" color="gray.500">
+          {event.status || "Upcoming Event"}
+        </Text>
+        <RectangleShape
+          bgColor="yellow.300"
+          title={event.name}
+          minW="500px"
+          maxW="500px"
+          textAlign="center"
+        />
+      </Flex>
+
+      {/* Imaginea de copertă */}
+      <Box overflow="hidden">
+        <Image
+          src={event.coverImage || "https://via.placeholder.com/800"}
+          alt={event.name}
+          w="100%"
+          h="400px"
+          objectFit="cover"
+        />
+      </Box>
 
       {/* Detalii despre eveniment */}
-      <Box>
-        <Heading as="h2" size="lg">
-          {event.name || 'Untitled Event'}
+      <Flex justify="space-between" align="center">
+        <RectangleShape
+          bgColor="blue.300"
+          title={`Created by: ${event.user?.firstName || "Unknown"} ${
+            event.user?.lastName || ""
+          }`}
+          minW="200px"
+          maxW="300px"
+          textAlign="center"
+        />
+        <RectangleShape
+          bgColor="yellow.300"
+          title={`Location: ${event.location || "Not specified"}`}
+          minW="200px"
+          maxW="300px"
+          textAlign="center"
+        />
+        <RectangleShape
+          bgColor="orange.300"
+          title={`Date: ${new Date(event.date).toLocaleDateString() || "Not specified"}`}
+          minW="200px"
+          maxW="300px"
+          textAlign="center"
+        />
+      </Flex>
+
+      {/* Butoane pentru interes și participare */}
+      <Flex mx={5} mt={4} gap={4}>
+        <Button
+          bg="green.300"
+          borderRadius="lg"
+          w="150px"
+          h="50px"
+          onClick={() => alert("Marked as going!")}
+        >
+          Mark if going
+        </Button>
+        <Button
+          bg="yellow.300"
+          borderRadius="lg"
+          w="150px"
+          h="50px"
+          onClick={() => alert("Marked as interested!")}
+        >
+          Mark if interested
+        </Button>
+      </Flex>
+
+      {/* Detalii suplimentare */}
+      <Flex mx={8} direction="column">
+        <Heading size="md" mt={6}>
+          Details
         </Heading>
-        <Text fontSize="md" color="gray.500" mt={2}>
-          {event.date
-            ? new Date(event.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })
-            : 'No date provided'}
+        <Text mt={3} fontSize="md" color="gray.600">
+          {event.description || "No additional details available."}
         </Text>
-        <Text fontSize="lg" color="gray.600" mt={2}>
-          {event.description || 'No description available.'}
-        </Text>
-      </Box>
+      </Flex>
 
-      {/* Afișarea tag-urilor */}
-      <Wrap spacing={2}>
-        {event.tags?.length > 0 ? (
-          event.tags.map((tag, index) => (
-            <Tag key={index} colorScheme="purple">
-              {tag}
-            </Tag>
-          ))
-        ) : (
-          <Text fontSize="sm" color="gray.500">
-            No tags available
-          </Text>
-        )}
-      </Wrap>
-
-      {/* Lista participanților interesați */}
-      <Box>
-        <Text fontWeight="bold" fontSize="md" mb={2}>
-          Interested ({event.interestedParticipants?.length || 0})
-        </Text>
-        <VStack align="start" spacing={4}>
-          {interestedToDisplay?.map((participant) => (
-            <HStack key={participant._id} spacing={4}>
-              <Avatar
-                name={`${participant.firstName} ${participant.lastName}`}
-                src={participant.profileImage || 'https://via.placeholder.com/150'}
+      {/* Poze de la eveniment */}
+      {event.images && event.images.length > 0 && (
+        <Box mt={6} mx={8}>
+          <Heading size="md" mb={4}>
+            Pictures from the event
+          </Heading>
+          <Grid templateColumns="repeat(3, 1fr)" gap={4}>
+            {event.images.map((image, index) => (
+              <Image
+                key={index}
+                src={image}
+                alt={`Event Picture ${index + 1}`}
+                borderRadius="md"
+                cursor="pointer"
+                w="100%"
+                h="150px"
+                objectFit="cover"
+                onClick={() => handleImageClick(image)}
               />
-              <Text fontSize="md">
-                {participant.firstName} {participant.lastName}
-              </Text>
-            </HStack>
-          ))}
-        </VStack>
-        {event.interestedParticipants?.length > maxToShow && (
-          <Button
-            variant="link"
-            colorScheme="purple"
-            mt={2}
-            onClick={() => setShowAllInterested((prev) => !prev)}
-          >
-            {showAllInterested ? 'Show Less' : 'Show All'}
-          </Button>
-        )}
-      </Box>
+            ))}
+          </Grid>
+        </Box>
+      )}
 
-      {/* Lista participanților care merg */}
-      <Box>
-        <Text fontWeight="bold" fontSize="md" mb={2}>
-          Going ({event.goingParticipants?.length || 0})
-        </Text>
-        <VStack align="start" spacing={4}>
-          {goingToDisplay?.map((participant) => (
-            <HStack key={participant._id} spacing={4}>
-              <Avatar
-                name={`${participant.firstName} ${participant.lastName}`}
-                src={participant.profileImage || 'https://via.placeholder.com/150'}
-              />
-              <Text fontSize="md">
-                {participant.firstName} {participant.lastName}
-              </Text>
-            </HStack>
-          ))}
-        </VStack>
-        {event.goingParticipants?.length > maxToShow && (
-          <Button
-            variant="link"
-            colorScheme="purple"
-            mt={2}
-            onClick={() => setShowAllGoing((prev) => !prev)}
-          >
-            {showAllGoing ? 'Show Less' : 'Show All'}
-          </Button>
-        )}
-      </Box>
-
-      {/* Buton pentru detalii */}
-      <Button
-        colorScheme="purple"
-        onClick={() => navigate(`/events/${event._id}`)} // Navighează la pagina detaliată a evenimentului
-        w="full"
-      >
-        View Event
-      </Button>
-    </Stack>
+      {/* Modal pentru afișarea imaginii mari */}
+      <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalBody>
+            <Image
+              src={selectedImage}
+              alt="Selected"
+              borderRadius="md"
+              w="100%"
+              h="auto"
+            />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </Box>
   );
-}
+};
+
+export default EventCard;

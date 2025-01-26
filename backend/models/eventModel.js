@@ -6,14 +6,19 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    owner: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User", // Proprietarul galeriei
-          required: true,
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Numele modelului User
+        required: true, // Face ca asocierea să fie obligatorie
         },
     description: {
       type: String,
       default: "",
+    },
+    status: {
+      type: String,
+      enum: ["upcoming", "ongoing", "completed"], // Opțiuni valide pentru status
+      default: "upcoming", // Status implicit
     },
     location: {
       type: String,
