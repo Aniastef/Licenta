@@ -9,7 +9,11 @@ export const getUserProfile = async (req, res) => {
 	const { username } = req.params;
 
     try{
-        const user=await User.findOne({username}).select("-password").select("-updatedAt");
+        const user=await User.findOne({username}).select("-password").select("-updatedAt")
+		.populate("eventsMarkedInterested", "name date location coverImage") // Populează evenimentele marcate ca "going"
+      	.populate("eventsMarkedGoing", "name date location coverImage")// Populează evenimentele marcate ca "interested"
+		.populate("events", "name date location coverImage"); // Populează evenimentele marcate ca "interested"
+
 
         if (!user) 
         return res.status(400).json({ message: "User not found" });
