@@ -5,6 +5,7 @@ import multer from "multer";
 import {uploadToCloudinary} from "../config/imgUpload.js";
 import Comment from "../models/commentModel.js";
 import Event from "../models/eventModel.js";
+import User from "../models/userModel.js";
 
 export const createEvent = async (req, res) => {
   try {
@@ -49,8 +50,10 @@ export const getEvent = async (req, res) => {
     }
 
     const event = await Event.findById(eventId)
-      .populate("interestedParticipants", "firstName lastName profileImage")
-      .populate("goingParticipants", "firstName lastName profileImage");
+    .populate("user", "firstName lastName")
+    .populate("interestedParticipants", "firstName lastName profilePic")
+    .populate("goingParticipants", "firstName lastName profilePic");
+
 
 
     if (!event) {
@@ -68,6 +71,123 @@ export const getEvent = async (req, res) => {
   }
 };
 
+export const markInterested = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized access" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (event.interestedParticipants.includes(req.user._id)) {
+      // Remove user from "interested" list
+      event.interestedParticipants = event.interestedParticipants.filter(
+        (id) => id.toString() !== req.user._id.toString()
+      );
+      user.eventsMarkedInterested = user.eventsMarkedInterested.filter(
+        (id) => id.toString() !== eventId
+      );
+    } else {
+      // Add user to "interested" list
+      event.interestedParticipants.push(req.user._id);
+
+      // Remove from "going" if already marked
+      event.goingParticipants = event.goingParticipants.filter(
+        (id) => id.toString() !== req.user._id.toString()
+      );
+      user.eventsMarkedGoing = user.eventsMarkedGoing.filter(
+        (id) => id.toString() !== eventId
+      );
+
+      user.eventsMarkedInterested.push(eventId);
+    }
+
+    await event.save();
+    await user.save();
+
+    res.status(200).json({
+      message: "Successfully updated interested status",
+      interestedParticipants: event.interestedParticipants,
+      goingParticipants: event.goingParticipants,
+    });
+  } catch (err) {
+    console.error("Error in markInterested:", err.stack || err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const markGoing = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized access" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (event.goingParticipants.includes(req.user._id)) {
+      // Remove user from "going" list
+      event.goingParticipants = event.goingParticipants.filter(
+        (id) => id.toString() !== req.user._id.toString()
+      );
+      user.eventsMarkedGoing = user.eventsMarkedGoing.filter(
+        (id) => id.toString() !== eventId
+      );
+    } else {
+      // Add user to "going" list
+      event.goingParticipants.push(req.user._id);
+
+      // Remove from "interested" if already marked
+      event.interestedParticipants = event.interestedParticipants.filter(
+        (id) => id.toString() !== req.user._id.toString()
+      );
+      user.eventsMarkedInterested = user.eventsMarkedInterested.filter(
+        (id) => id.toString() !== eventId
+      );
+
+      user.eventsMarkedGoing.push(eventId);
+    }
+
+    await event.save();
+    await user.save();
+
+    res.status(200).json({
+      message: "Successfully updated going status",
+      interestedParticipants: event.interestedParticipants,
+      goingParticipants: event.goingParticipants,
+    });
+  } catch (err) {
+    console.error("Error in markGoing:", err.stack || err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 
 export const deleteEvent = async (req, res) => {
@@ -131,60 +251,14 @@ export const updateEvent = async (req, res) => {
   }
 };
 
-export const markInterested = async (req, res) => {
-  try {
-    const { eventId } = req.params;
 
-    // Verifică dacă evenimentul există
-    const event = await Event.findById(eventId);
-    if (!event) {
-      return res.status(404).json({ error: "Event not found" });
-    }
-
-    // Adaugă utilizatorul la lista de participanți interesați
-    if (!event.interestedParticipants.includes(req.user._id)) {
-      event.interestedParticipants.push(req.user._id);
-    }
-
-    // Salvează modificările
-    await event.save();
-    res.status(200).json({ message: "Marked as interested", event });
-  } catch (err) {
-    console.error("Error marking interested:", err.message);
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const markGoing = async (req, res) => {
-  try {
-    const { eventId } = req.params;
-
-    // Verifică dacă evenimentul există
-    const event = await Event.findById(eventId);
-    if (!event) {
-      return res.status(404).json({ error: "Event not found" });
-    }
-
-    // Adaugă utilizatorul la lista de participanți
-    if (!event.goingParticipants.includes(req.user._id)) {
-      event.goingParticipants.push(req.user._id);
-    }
-
-    // Salvează modificările
-    await event.save();
-    res.status(200).json({ message: "Marked as going", event });
-  } catch (err) {
-    console.error("Error marking going:", err.message);
-    res.status(500).json({ error: err.message });
-  }
-};
 
 export const getAllEvents = async (req, res) => {
   try {
     const events = await Event.find()
-      .populate("user", "firstName lastName profileImage") // Populează informații despre utilizatorul care a creat evenimentul
-      .populate("interestedParticipants", "firstName lastName profileImage") // Populează utilizatorii interesați
-      .populate("goingParticipants", "firstName lastName profileImage") // Populează utilizatorii care merg
+      .populate("user", "firstName lastName profilePic") // Populează informații despre utilizatorul care a creat evenimentul
+      .populate("interestedParticipants", "firstName lastName profilePic") // Populează utilizatorii interesați
+      .populate("goingParticipants", "firstName lastName profilePic") // Populează utilizatorii care merg
       .sort({ date: 1 }); // Sortează evenimentele după dată, cel mai apropiat eveniment apare primul
 
     res.status(200).json({ events });
@@ -193,4 +267,5 @@ export const getAllEvents = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch events" });
   }
 };
+
 

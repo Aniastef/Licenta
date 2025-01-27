@@ -3,12 +3,16 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import EventCard from '../components/EventCard';
 import CommentsSection from '../components/CommentsSection';
+import { useRecoilValue } from 'recoil';
+import userAtom from '../atoms/userAtom';
 
 export default function EventPage() {
   const { id } = useParams(); // Obține ID-ul evenimentului din URL
   const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const currentUser = useRecoilValue(userAtom);
+
 
   const fetchEvent = async () => {
     try {
@@ -22,14 +26,13 @@ export default function EventPage() {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     if (id) fetchEvent();
   }, [id]);
 
   return (
     <Flex direction="column">
-      <EventCard event={event} />
+      <EventCard event={event}  currentUserId={currentUser._id} fetchEvent={fetchEvent} />
       <CommentsSection resourceId={id} resourceType="Event"/>
     </Flex>
       

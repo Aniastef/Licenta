@@ -81,6 +81,24 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    eventsMarkedInterested: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Event", // Evenimente marcate ca "interested"
+      },
+    ],
+    eventsMarkedGoing: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Event", // Evenimente marcate ca "going"
+      },
+    ],
+    productsMarkedFavorites: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product", // Produse marcate ca "favorites"
+      },
+    ],
     resetPasswordToken: {
       type: String,
       default: null,

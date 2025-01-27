@@ -3,21 +3,31 @@ import jwt from "jsonwebtoken";
 
 const protectRoute = async (req, res, next) => {
 	try {
-		const token = req.cookies.jwt;
-
-		if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-		const user = await User.findById(decoded.userId).select("-password");
-
-		req.user = user;
-
-		next();
+	  const token = req.cookies.jwt;
+  
+	  if (!token) {
+		console.error("No token provided in cookies");
+		return res.status(401).json({ error: "Unauthorized access" });
+	  }
+  
+	  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  
+	  const user = await User.findById(decoded.userId).select("-password");
+  
+	  if (!user) {
+		console.error("No user found for decoded token:", decoded.userId);
+		return res.status(404).json({ error: "User not found" });
+	  }
+  
+	  console.log("Authenticated user:", user);
+	  req.user = user;
+  
+	  next();
 	} catch (err) {
-		res.status(500).json({ message: err.message });
-		console.log("Error in signupUser: ", err.message);
+	  console.error("Error in protectRoute:", err.stack || err.message);
+	  res.status(500).json({ error: "Internal server error" });
 	}
-};
+  };
+  
 
 export default protectRoute;

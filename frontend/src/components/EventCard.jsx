@@ -11,11 +11,19 @@ import {
   ModalOverlay,
   ModalContent,
   ModalBody,
+  Tag,
+  TagLabel,
   useDisclosure,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Avatar,
 } from "@chakra-ui/react";
 import RectangleShape from "../assets/rectangleShape";
 
-const EventCard = ({ event }) => {
+
+const EventCard = ({ event, currentUserId, fetchEvent }) => {
   if (!event) {
     return (
       <Box>
@@ -23,14 +31,65 @@ const EventCard = ({ event }) => {
       </Box>
     );
   }
+  console.log("lala: "+ currentUserId);
+  console.log("lalsa: "+ event.user?._id);
 
-  const [selectedImage, setSelectedImage] = useState(""); // Imagine selectată pentru pop-up
-  const { isOpen, onOpen, onClose } = useDisclosure(); // Control pentru modal
+  const [selectedImage, setSelectedImage] = useState("");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const isInterested = event?.interestedParticipants?.some(
+    (user) => user._id === currentUserId
+  );
+  const isGoing = event?.goingParticipants?.some(
+    (user) => user._id === currentUserId
+  );
+
+  const isEventOwner = event.user?._id === currentUserId;
+
+  const markInterested = async () => {
+    try {
+      const response = await fetch(`/api/events/${event._id}/interested`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUserId }),
+      });
+
+      if (response.ok) {
+        fetchEvent(); // Reîncarcă datele evenimentului
+      } else {
+        const error = await response.json();
+        alert(error.error || "Failed to mark as interested");
+      }
+    } catch (err) {
+      console.error("Error marking interested:", err);
+    }
+  };
+
+  const markGoing = async () => {
+    try {
+      const response = await fetch(`/api/events/${event._id}/going`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUserId }),
+      });
+
+      if (response.ok) {
+        fetchEvent(); // Reîncarcă datele evenimentului
+      } else {
+        const error = await response.json();
+        alert(error.error || "Failed to mark as going");
+      }
+    } catch (err) {
+      console.error("Error marking going:", err);
+    }
+  };
 
   const handleImageClick = (image) => {
     setSelectedImage(image);
     onOpen();
   };
+
+
 
   return (
     <Box mt={8}>
@@ -60,11 +119,11 @@ const EventCard = ({ event }) => {
       </Box>
 
       {/* Detalii despre eveniment */}
-      <Flex justify="space-between" align="center">
+      <Flex justify="space-between" align="center" >
         <RectangleShape
           bgColor="blue.300"
           title={`Created by: ${event.user?.firstName || "Unknown"} ${
-            event.user?.lastName || ""
+            event.user?.lastName || "User"
           }`}
           minW="200px"
           maxW="300px"
@@ -79,7 +138,9 @@ const EventCard = ({ event }) => {
         />
         <RectangleShape
           bgColor="orange.300"
-          title={`Date: ${new Date(event.date).toLocaleDateString() || "Not specified"}`}
+          title={`Date: ${
+            new Date(event.date).toLocaleDateString() || "Not specified"
+          }`}
           minW="200px"
           maxW="300px"
           textAlign="center"
@@ -87,26 +148,93 @@ const EventCard = ({ event }) => {
       </Flex>
 
       {/* Butoane pentru interes și participare */}
-      <Flex mx={5} mt={4} gap={4}>
-        <Button
-          bg="green.300"
-          borderRadius="lg"
-          w="150px"
-          h="50px"
-          onClick={() => alert("Marked as going!")}
-        >
-          Mark if going
+      {!isEventOwner && (
+        <Flex mt={4} gap={4}>
+        <Button bg={isGoing ? "gray.400" : "green.300"} onClick={markGoing}>
+          {isGoing ? "Unmark Going" : "Mark if Going"}
         </Button>
-        <Button
-          bg="yellow.300"
-          borderRadius="lg"
-          w="150px"
-          h="50px"
-          onClick={() => alert("Marked as interested!")}
-        >
-          Mark if interested
+        <Button bg={isInterested ? "gray.400" : "yellow.300"} onClick={markInterested}>
+          {isInterested ? "Unmark Interested" : "Mark if Interested"}
         </Button>
       </Flex>
+      )}
+
+{/* Dropdown-uri pentru participanți */}
+<Flex mt={4} gap={4}>
+  {/* Dropdown pentru Going */}
+  <Menu>
+    <MenuButton as={Button}>
+      {`Going (${event.goingParticipants?.length || 0})`}
+    </MenuButton>
+    <MenuList>
+      {event.goingParticipants?.length > 0 ? (
+        event.goingParticipants.map((user) => (
+          <MenuItem key={user._id}>
+            <Flex align="center" gap={3}>
+              <Avatar
+                size="sm"
+                src={user.profilePic || "https://via.placeholder.com/150"}
+                name={`${user.firstName} ${user.lastName}`}
+              />
+              <Text>{`${user.firstName} ${user.lastName}`}</Text>
+            </Flex>
+          </MenuItem>
+        ))
+      ) : (
+        <MenuItem>No participants</MenuItem>
+      )}
+    </MenuList>
+  </Menu>
+
+  {/* Dropdown pentru Interested */}
+  <Menu>
+    <MenuButton as={Button} >
+      {`Interested (${event.interestedParticipants?.length || 0})`}
+    </MenuButton>
+    <MenuList>
+      {event.interestedParticipants?.length > 0 ? (
+        event.interestedParticipants.map((user) => (
+          <MenuItem key={user._id}>
+            <Flex align="center" gap={3}>
+              <Avatar
+                size="sm"
+                src={user.profilePic || "https://via.placeholder.com/150"}
+                name={`${user.firstName} ${user.lastName}`}
+              />
+              <Text>{`${user.firstName} ${user.lastName}`}</Text>
+            </Flex>
+          </MenuItem>
+        ))
+      ) : (
+        <MenuItem>No participants</MenuItem>
+      )}
+    </MenuList>
+  </Menu>
+</Flex>
+      {/* Tag-uri ale evenimentului */}
+      <Box mx={8} mt={6}>
+        <Heading size="md" mb={4}>
+          Tags
+        </Heading>
+        <Flex wrap="wrap" gap={2}>
+          {event.tags && event.tags.length > 0 ? (
+            event.tags.map((tag, index) => (
+              <Tag
+                key={index}
+                size="md"
+                borderRadius="full"
+                variant="solid"
+                bg="yellow.500"
+                color="white"
+              >
+                <TagLabel>{tag}</TagLabel>
+              </Tag>
+            ))
+          ) : (
+            <Text color="gray.500">No tags available for this event.</Text>
+          )}
+        </Flex>
+      </Box>
 
       {/* Detalii suplimentare */}
       <Flex mx={8} direction="column">
