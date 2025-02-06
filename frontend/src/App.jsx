@@ -16,6 +16,9 @@ import Incerc from './components/Incerc';
 import UserArtGallery from './pages/UserArtGallery';
 import ProductsPage from './pages/AllProductsPage';
 import EventsPage from './pages/AllEventsPage';
+import ExploreGalleries from './pages/GalleriesPage';
+import CreateGalleryPage from './pages/CreateGallery';
+import GalleryPage from './pages/UserArtGallery';
 
 
 function App() {
@@ -47,6 +50,12 @@ function App() {
         <Route path='/events' element={<EventsPage/>} />
         <Route path="/incerc" element={<Incerc/>} />
         <Route path="/art" element={<UserArtGallery/>} />
+        <Route path="*" element={<Navigate to="/home" />} />
+        <Route path="/galleries" element={<ExploreGalleries/>}/>
+        <Route path="/create/gallery" element={<CreateGalleryPage/>}/>
+        <Route path="/galleries/:username/:galleryName" element={<GalleryPage />} />
+
+
 
 
       </Routes>

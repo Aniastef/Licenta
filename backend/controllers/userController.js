@@ -9,11 +9,29 @@ export const getUserProfile = async (req, res) => {
 	const { username } = req.params;
 
     try{
-        const user=await User.findOne({username}).select("-password").select("-updatedAt")
-		.populate("eventsMarkedInterested", "name date location coverImage") // Populează evenimentele marcate ca "going"
-      	.populate("eventsMarkedGoing", "name date location coverImage")// Populează evenimentele marcate ca "interested"
-		.populate("events", "name date location coverImage"); // Populează evenimentele marcate ca "interested"
-
+		const user = await User.findOne({ username })
+		.select("-password -updatedAt")
+		.populate({
+		  path: "eventsMarkedInterested",
+		  select: "name date location coverImage",
+		  populate: { path: "user", select: "firstName lastName" },
+		})
+		.populate({
+		  path: "eventsMarkedGoing",
+		  select: "name date location coverImage",
+		  populate: { path: "user", select: "firstName lastName" },
+		})
+		.populate({
+		  path: "events",
+		  select: "name date location coverImage",
+		  populate: { path: "user", select: "firstName lastName" },
+		})
+		.populate({
+		  path: "galleries", // ✅ Populează galeriile
+		  select: "name", // ✅ Selectează doar numele galeriei
+		});
+  
+  
 
         if (!user) 
         return res.status(400).json({ message: "User not found" });

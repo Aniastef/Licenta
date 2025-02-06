@@ -1,118 +1,45 @@
-import React, { useState } from 'react';
-import { Button,Box, Flex, Heading, Text, Image, Select, Input } from '@chakra-ui/react';
-import homeCover from "../assets/homeCover.jpg"
-import RectangleShape from '../assets/rectangleShape';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Box, Flex, Heading, Text, Image, Select, Input, Spinner, VStack } from "@chakra-ui/react";
+import GalleryCard from "../components/GalleryCard";
+import CommentsSection from "../components/CommentsSection";
+import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom";
 
-const UserArtGallery = () => {
+export default function GalleryPage() {
+  const { username, galleryName } = useParams();
+  const [gallery, setGallery] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sortOption, setSortOption] = useState('');
   const [filterText, setFilterText] = useState('');
+  const currentUser = useRecoilValue(userAtom);
 
-  // Produse random pentru demonstrație
-  const artGallery = {
-    name: "My Art Gallery",
-    products: [
-      { id: 1, name: "Sunset", price: 100, coverPhoto: "https://via.placeholder.com/150", description: "Beautiful sunset." },
-      { id: 2, name: "Mountain", price: 150, coverPhoto: "https://via.placeholder.com/150", description: "Majestic mountain." },
-      { id: 3, name: "Forest", price: 120, coverPhoto: "https://via.placeholder.com/150", description: "Lush green forest." },
-      { id: 4, name: "Ocean", price: 200, coverPhoto: "https://via.placeholder.com/150", description: "Vast blue ocean." },
-      { id: 5, name: "Desert", price: 180, coverPhoto: "https://via.placeholder.com/150", description: "Golden desert." },
-    ],
-  };
-
-  const handleSortChange = (e) => {
-    setSortOption(e.target.value);
-  };
-
-  const handleFilterChange = (e) => {
-    setFilterText(e.target.value);
-  };
-
-  const getFilteredAndSortedProducts = () => {
-    let filteredProducts = artGallery.products.filter((product) =>
-      product.name.toLowerCase().includes(filterText.toLowerCase())
-    );
-
-    if (sortOption === 'name') {
-      filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortOption === 'price') {
-      filteredProducts.sort((a, b) => a.price - b.price);
+  const fetchGallery = async () => {
+    try {
+      const response = await fetch(`/api/galleries/${username}/${galleryName}`);
+      if (!response.ok) throw new Error("Failed to fetch gallery");
+      const data = await response.json();
+      setGallery(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-
-    return filteredProducts;
   };
 
-  const products = getFilteredAndSortedProducts();
+  useEffect(() => {
+    fetchGallery();
+  }, [username, galleryName]);
+
+  if (isLoading) return <Spinner size="xl" />;
+  if (error) return <Text>Error: {error}</Text>;
+  if (!gallery) return <Text>Gallery not found.</Text>;
 
   return (
-    <Box mt={8} px={4}>
-    <RectangleShape
-      bgColor="#C1AB3C" // Culoare albastră
-      title="x Gallery"
-      maxW="600px"
-      minW="600px"
-      position="relative" // Poziție relativă pentru a fi deasupra portocaliului
-      textAlign="left"
-      py={4}
-    />
-    <Image
-            src={homeCover}
-            alt="Header"
-            w="full"
-            h="300px"
-            objectFit="cover"
-            />
-      <Heading size="lg" mb={4}>{artGallery.name}</Heading>
-      <Flex justify="space-between" mb={4}>
-        <Flex direction="row" align="center">
-        <RectangleShape
-        bgColor="#6AC2D1" // Culoare albastră
-        title="Sort by:"
-        maxW="90px"
-        minW="90px"
-        textAlign="left"
-        />
-        <Select ml={"10px"} placeholder="random" onChange={handleSortChange} width="150px">
-          <option value="name">Name</option>
-          <option value="price">Price</option>
-        </Select>
-        </Flex>
-        <Input
-          placeholder="Filter by name"
-          value={filterText}
-          onChange={handleFilterChange}
-          width="200px"
-        />
-      </Flex>
-      {products.length === 0 ? (
-        <Text mt={5} textAlign="center">
-          No products found.
-        </Text>
-      ) : (
-        <Flex wrap="wrap" justify="space-between">
-          {products.map((product) => (
-            <Box key={product.id} bg="gray.200" p={4} mb={4} borderRadius="md" width="calc(25% - 50px)" boxSizing="border-box">
-              <Box width="100%" height="200px" bg="gray.300" mb={4} borderRadius="md" overflow="hidden">
-                {product.coverPhoto ? (
-                  <Image src={product.coverPhoto} alt={`${product.name} cover photo`} width="100%" height="100%" objectFit="cover" />
-                ) : (
-                  <Box width="100%" height="100%" display="flex" alignItems="center" justifyContent="center" bg="gray.400">
-                    <Text>No cover photo available</Text>
-                  </Box>
-                )}
-              </Box>
-              <Heading size="md">{product.name}</Heading>
-              <Text>${product.price}</Text>
-              <Text>{product.description}</Text>
-              <Flex mt={2} justify="space-between">
-                <Button colorScheme="teal" onClick={() => alert(`Added ${product.name} to favorites!`)}>Favorite</Button>
-                <Button colorScheme="blue" onClick={() => alert(`Added ${product.name} to cart!`)}>Add to Cart</Button>
-              </Flex>
-            </Box>
-          ))}
-        </Flex>
-      )}
-    </Box>
+    <Flex direction="column">
+      <GalleryCard gallery={gallery} currentUserId={currentUser._id} fetchGallery={fetchGallery} />
+      <CommentsSection resourceId={gallery._id} resourceType="Gallery" />
+    </Flex>
   );
-};
-
-export default UserArtGallery;
+}

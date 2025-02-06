@@ -12,7 +12,7 @@ export const addComment = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const validResourceTypes = ["Product", "User", "Event"];
+    const validResourceTypes = ["Product", "User", "Event","Gallery"];
     if (!validResourceTypes.includes(resourceType)) {
       return res.status(400).json({ error: "Invalid resourceType" });
     }
@@ -111,7 +111,7 @@ export const getComments = async (req, res) => {
       return res.status(400).json({ error: "resourceId and resourceType are required" });
     }
 
-    const validResourceTypes = ["Product", "User", "Event"];
+    const validResourceTypes = ["Product", "User", "Event", "Gallery"];
     if (!validResourceTypes.includes(resourceType)) {
       return res.status(400).json({ error: "Invalid resourceType" });
     }

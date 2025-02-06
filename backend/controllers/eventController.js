@@ -19,7 +19,6 @@ export const createEvent = async (req, res) => {
 
     let coverImageUrl = null;
 
-    // Dacă există o imagine încărcată, încarc-o pe Cloudinary
     if (req.file) {
       coverImageUrl = await uploadToCloudinary(req.file); // Funcție pentru încărcarea imaginii pe Cloudinary
     }

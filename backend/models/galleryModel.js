@@ -6,10 +6,9 @@ const gallerySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    type: {
+    category: {
       type: String,
-      enum: ["Photography", "Sculpture", "Painting", "Other"],
-      required: true,
+      default: "General", // Categoria produsului (opțional)
     },
     description: {
       type: String,
@@ -19,6 +18,11 @@ const gallerySchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    tags: [
+      {
+        type: String, // Fiecare tag va fi un string
+      },
+    ],
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,

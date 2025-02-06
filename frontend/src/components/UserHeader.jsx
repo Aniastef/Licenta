@@ -4,19 +4,22 @@ import {
   Flex,
   Text,
   Avatar,
+  Image,
+  Grid,
+  Heading,
 } from "@chakra-ui/react";
 import { useRecoilValue } from "recoil";
 import { Link as RouterLink } from "react-router-dom";
 import userAtom from "../atoms/userAtom";
 import { useState } from "react";
+import EventsSection from "./RenderProfileSection";
 
 const UserHeader = ({ user }) => {
   const currentUser = useRecoilValue(userAtom);
-  const [activeSection, setActiveSection] = useState(null); // Controlează secțiunea activă
+  const [activeSection, setActiveSection] = useState(null);
 
   return (
     <Flex direction="column" p={4}>
-      {/* Profil utilizator */}
       <Flex alignItems="flex-start" direction="row" gap={10}>
         <Flex direction="column" alignItems="center" gap={4}>
           <Avatar
@@ -57,10 +60,9 @@ const UserHeader = ({ user }) => {
         </Flex>
       </Flex>
 
-      {/* Butoane pentru secțiuni */}
       <Flex mt={6} gap={4}>
-      <Button
-          bg={activeSection === "interested" ? "green.300" : "green.100"}
+        <Button
+          bg={activeSection === "created" ? "green.300" : "green.100"}
           _hover={{ bg: "green.500" }}
           borderRadius="full"
           onClick={() =>
@@ -89,150 +91,44 @@ const UserHeader = ({ user }) => {
         >
           See events marked interesting
         </Button>
-        {/* <Button
-          bg={activeSection === "interested" ? "cyan.300" : "cyan.100"}
-          _hover={{ bg: "cyan.500" }}
-          borderRadius="full"
-          onClick={() =>
-            setActiveSection(activeSection === "interested" ? null : "interested")
-          }
-        >
-          See calendar for appointments
-        </Button> */}
-        
       </Flex>
 
-      {/* Secțiune activă */}
-      {activeSection === "created" && (
-  <Box mt={6}>
-    <Text fontSize="xl" fontWeight="bold">
-      Created Events:
-    </Text>
-    {user.createdEvents?.length > 0 ? (
-      user.createdEvents.map((event) => (
-        <Flex
-          key={event._id}
-          p={4}
-          border="1px solid gray"
-          borderRadius="md"
-          mt={2}
-          alignItems="center"
-          gap={4}
-          as="a"
-          href={`/events/${event._id}`} // Redirecționează la pagina evenimentului
-          _hover={{ bg: "gray.100", cursor: "pointer" }}
-        >
-          {/* Imaginea de copertă */}
-          <Box flex="0 0 120px">
-            <Avatar
-              src={event.coverImage || "https://via.placeholder.com/150"}
-              alt={event.name}
-              size="xl"
-              borderRadius="md"
-            />
-          </Box>
-
-          {/* Detalii despre eveniment */}
-          <Box>
-            <Text fontSize="md" fontWeight="bold">{event.name}</Text>
-            <Text fontSize="sm">{new Date(event.date).toLocaleDateString()}</Text>
-            <Text fontSize="sm" color="gray.500">{event.location}</Text>
-          </Box>
+      {user.galleries && user.galleries.length > 0 && (
+        <Flex mt={6} gap={4} wrap="wrap">
+          {user.galleries.map((gallery) => (
+            <RouterLink key={gallery.name} to={`/galleries/${user.username}/${gallery.name}`}>
+              <Button
+                bg="blue.200"
+                _hover={{ bg: "blue.400" }}
+                borderRadius="full"
+              >
+                {gallery.name}
+              </Button>
+            </RouterLink>
+          ))}
         </Flex>
-      ))
-    ) : (
-      <Text color="gray.500">No events created by this user.</Text>
-    )}
-  </Box>
-)}
+      )}
+
+      {activeSection === "interested" && (
+        <EventsSection
+          title="Events Marked Interesting"
+          events={user.eventsMarkedInterested}
+        />
+      )}
 
       {activeSection === "going" && (
-  <Box mt={6}>
-    <Text fontSize="xl" fontWeight="bold">
-      Events Marked Going:
-    </Text>
-    {user.eventsMarkedGoing?.length > 0 ? (
-      user.eventsMarkedGoing.map((event) => (
-        <Flex
-          key={event._id}
-          p={4}
-          border="1px solid gray"
-          borderRadius="md"
-          mt={2}
-          alignItems="center"
-          gap={4}
-          as="a"
-          href={`/events/${event._id}`} // Redirecționează la pagina evenimentului
-          _hover={{ bg: "gray.100", cursor: "pointer" }}
-        >
-          {/* Imaginea de copertă */}
-          <Box flex="0 0 120px">
-            <Avatar
-              src={event.coverImage || "https://via.placeholder.com/150"}
-              alt={event.name}
-              size="xl"
-              borderRadius="md"
-            />
-          </Box>
+        <EventsSection
+          title="Events Marked Going"
+          events={user.eventsMarkedGoing}
+        />
+      )}
 
-          {/* Detalii despre eveniment */}
-          <Box>
-            <Text fontSize="md" fontWeight="bold">{event.name}</Text>
-            <Text fontSize="sm">{new Date(event.date).toLocaleDateString()}</Text>
-            <Text fontSize="sm" color="gray.500">{event.location}</Text>
-          </Box>
-        </Flex>
-      ))
-    ) : (
-      <Text color="gray.500">No events marked as going.</Text>
-    )}
-  </Box>
-)}
-
-{activeSection === "interested" && (
-  <Box mt={6}>
-    <Text fontSize="xl" fontWeight="bold">
-      Events Marked Interesting:
-    </Text>
-    {user.eventsMarkedInterested?.length > 0 ? (
-      user.eventsMarkedInterested.map((event) => (
-        <Flex
-          key={event._id}
-          p={4}
-          border="1px solid gray"
-          borderRadius="md"
-          mt={2}
-          alignItems="center"
-          gap={4}
-          as="a"
-          href={`/events/${event._id}`} // Redirecționează la pagina evenimentului
-          _hover={{ bg: "gray.100", cursor: "pointer" }}
-        >
-          {/* Imaginea de copertă */}
-          <Box flex="0 0 120px">
-            <Avatar
-              src={event.coverImage || "https://via.placeholder.com/150"}
-              alt={event.name}
-              size="xl"
-              borderRadius="md"
-            />
-          </Box>
-
-          {/* Detalii despre eveniment */}
-          <Box>
-            <Text fontSize="md" fontWeight="bold">{event.name}</Text>
-            <Text fontSize="sm">{new Date(event.date).toLocaleDateString()}</Text>
-            <Text fontSize="sm" color="gray.500">{event.location}</Text>
-          </Box>
-        </Flex>
-      ))
-    ) : (
-      <Text color="gray.500">No events marked as interesting.</Text>
-    )}
-  </Box>
-)}
-
-
+      {activeSection === "created" && (
+        <EventsSection
+          title="Events Created by User"
+          events={user.events}
+        />
+      )}
     </Flex>
   );
 };

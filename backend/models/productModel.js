@@ -14,19 +14,24 @@ const productSchema = new mongoose.Schema(
 		type: Number,
 		required: true,
 	  },
+	  tags: [
+		{
+		  type: String, // Fiecare tag va fi un string
+		},
+	  ],
 	  images: [
 		{
 		  type: String,
 		  default: "",
 		},
 	  ],
-	  gallery: { type: String, required: true, enum: ["painting", "sculpture", "drawing"] }, // Categoriile permise
-
 	  user: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "User", // Numele modelului User
 		required: true, // Face ca asocierea să fie obligatorie
 	  },
+	  galleries: [{ type: mongoose.Schema.Types.ObjectId, ref: "Gallery" }], // ✅ Acum produsul poate aparține mai multor galerii
+
 	},
 	{
 	  timestamps: true,
