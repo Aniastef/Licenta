@@ -4,37 +4,50 @@ import mongoose from "mongoose";
 import multer from "multer";
 import {uploadToCloudinary} from "../config/imgUpload.js";
 import Comment from "../models/commentModel.js";
+import Gallery from "../models/galleryModel.js";
 
 export const createProduct = async (req, res) => {
 	try {
-	  const { name, description, price, gallery } = req.body;
+	  const { name, description, price, galleries } = req.body; // ✅ galleries este acum un array
   
 	  if (!req.user) {
 		return res.status(403).json({ error: "User not authenticated" });
 	  }
   
+	  // ✅ Upload imagini la Cloudinary
 	  const uploadedImages = [];
 	  for (const file of req.files) {
 		const imageUrl = await uploadToCloudinary(file);
 		uploadedImages.push(imageUrl);
 	  }
   
+	  // ✅ Creăm produsul
 	  const newProduct = new Product({
 		name,
 		description,
 		price,
-		gallery,
+		galleries: galleries ? galleries : [], // ✅ Poate fi gol
 		images: uploadedImages,
 		user: req.user._id,
 	  });
   
 	  await newProduct.save();
+  
+	  // ✅ Adaugă produsul în fiecare galerie selectată
+	  if (galleries && galleries.length > 0) {
+		await Gallery.updateMany(
+		  { _id: { $in: galleries } },
+		  { $push: { products: newProduct._id } }
+		);
+	  }
+  
 	  res.status(201).json(newProduct);
 	} catch (err) {
 	  console.error("Error while creating product:", err.message);
 	  res.status(500).json({ message: err.message });
 	}
   };
+  
   
   
   
@@ -138,3 +151,37 @@ export const getAllProducts = async (req, res) => {
 
 
 
+  export const getAllProductsWithoutGallery = async (req, res) => {
+    try {
+      const products = await Product.find({ galleries: { $size: 0 } }).populate("user", "firstName lastName");
+      
+      res.status(200).json(products);
+    } catch (err) {
+      console.error("Error fetching all unassigned products:", err.message);
+      res.status(500).json({ error: "Failed to fetch products" });
+    }
+};
+
+
+
+export const getProductsNotInGallery = async (req, res) => {
+  try {
+    const { galleryId } = req.params;
+
+    // Găsește galeria și produsele sale
+    const gallery = await Gallery.findById(galleryId);
+    if (!gallery) {
+      return res.status(404).json({ error: "Gallery not found" });
+    }
+
+    // Găsește produsele care NU sunt în această galerie
+    const products = await Product.find({ _id: { $nin: gallery.products } });
+
+    res.status(200).json({ products });
+  } catch (err) {
+    console.error("Error fetching products not in gallery:", err.message);
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+};
+
+  

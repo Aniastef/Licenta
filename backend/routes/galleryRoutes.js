@@ -7,6 +7,9 @@ import {
   updateGallery,
   deleteGallery,
   getAllGalleries,
+  addProductToGallery,
+  getProductsNotInGallery,
+  addMultipleProductsToGallery,
 } from "../controllers/galleryController.js";
 
 const router = express.Router();
@@ -25,5 +28,9 @@ router.delete("/:galleryId", protectRoute, deleteGallery);
 
 // Obținere toate galeriile
 router.get("/", getAllGalleries);
+router.post("/:galleryId/add-product/:productId", protectRoute, addProductToGallery);
+router.get("/not-in-gallery/:galleryId", protectRoute, getProductsNotInGallery);
+router.post("/:galleryId/add-products", protectRoute, addMultipleProductsToGallery);
+
 
 export default router;
