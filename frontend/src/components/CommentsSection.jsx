@@ -30,12 +30,12 @@ export default function CommentsSection({ resourceId, resourceType }) {
   const fetchComments = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(
-        `/api/comments?resourceId=${resourceId}&resourceType=${resourceType}`
-      );
+      const res = await fetch(`/api/comments?resourceId=${resourceId}&resourceType=${resourceType}`);
       if (!res.ok) throw new Error("Failed to fetch comments");
   
       const data = await res.json();
+  
+      // ✅ Asigură-te că preluăm doar comentariile principale
       setComments(data);
     } catch (err) {
       setError(err.message);
@@ -43,6 +43,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
       setIsLoading(false);
     }
   };
+  
   
   useEffect(() => {
     if (resourceId && resourceType) fetchComments();

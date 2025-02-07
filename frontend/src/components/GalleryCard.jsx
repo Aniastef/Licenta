@@ -14,13 +14,18 @@ import {
   Input,
   useDisclosure,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom"; // Importă hook-ul pentru navigare
 
 const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const [availableProducts, setAvailableProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [filterText, setFilterText] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate(); // Inițializează hook-ul de navigare
 
+
+  
+  
   useEffect(() => {
     const fetchAvailableProducts = async () => {
       try {
@@ -68,19 +73,32 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
 
   const removeProductFromGallery = async (productId) => {
     try {
-      const res = await fetch(`/api/galleries/${gallery._id}/remove-product/${productId}`, {
+      console.log("Removing product ID:", productId, "from gallery:", gallery);
+  
+      const endpoint =
+        gallery._id === "all-products-gallery"
+          ? `/api/products/${productId}` // 🔹 Șterge complet produsul
+          : `/api/galleries/${gallery._id}/remove-product/${productId}`; // 🔹 Elimină doar din galerie
+  
+      const res = await fetch(endpoint, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
-
+  
       if (!res.ok) throw new Error("Failed to remove product");
-
-      await fetchGallery(); // Reîmprospătează galeria
+  
+      await fetchGallery(); // Reîmprospătează lista
     } catch (err) {
       console.error("Error removing product:", err);
     }
   };
+  
+  
+  
+  
+  
+  
 
   return (
     <Box mt={8} px={4}>
@@ -93,11 +111,18 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         objectFit="cover"
       />
 
-      <Flex justify="space-between" my={4}>
+<Flex justify="space-between" my={4}>
+      {gallery._id !== "all-products-gallery" ? (
         <Button colorScheme="blue" onClick={onOpen}>
           Add Existing Product
         </Button>
-      </Flex>
+      ) : (
+        <Button colorScheme="green" onClick={() => navigate("/create/product")}>
+          Create New Product
+        </Button>
+      )}
+    </Flex>
+
 
       <Grid templateColumns="repeat(3, 1fr)" gap={4}>
         {gallery.products.map((product) => (
@@ -113,13 +138,15 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
             <Text>${product.price}</Text>
             <Text>{product.description}</Text>
             <Button
-              colorScheme="red"
-              size="sm"
-              mt={2}
-              onClick={() => removeProductFromGallery(product._id)}
-            >
-              Remove from Gallery
+                colorScheme="red"
+                size="sm"
+                mt={2}
+                onClick={() => removeProductFromGallery(product._id)}
+                >
+                {gallery.name === "All Products" ? "Delete Product" : "Remove from Gallery"}
             </Button>
+
+
           </Box>
         ))}
       </Grid>

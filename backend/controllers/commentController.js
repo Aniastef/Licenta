@@ -116,49 +116,35 @@ export const getComments = async (req, res) => {
       return res.status(400).json({ error: "Invalid resourceType" });
     }
 
-    const comments = await Comment.find({ resourceId, resourceType })
+    // 1️⃣ Obținem toate comentariile pentru resursa respectivă
+    const allComments = await Comment.find({ resourceId, resourceType })
       .populate("userId", "username profilePic")
-      .populate({
-        path: "replies",
-        populate: { path: "userId", select: "username profilePic" },
-      });
+      .populate("replies", "content userId createdAt updatedAt")
+      .lean(); // Convertim documentele în obiecte JSON manipulabile
 
-    res.status(200).json(
-      comments.map((comment) => ({
-        ...comment.toObject(),
-        createdAtFormatted: new Date(comment.createdAt).toLocaleString("en-US", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        updatedAtFormatted: new Date(comment.updatedAt).toLocaleString("en-US", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        replies: comment.replies.map((reply) => ({
-          ...reply.toObject(),
-          createdAtFormatted: new Date(reply.createdAt).toLocaleString("en-US", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          updatedAtFormatted: new Date(reply.updatedAt).toLocaleString("en-US", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        })),
-      }))
-    );
+    // 2️⃣ Construim o structură de date pentru organizarea corectă a reply-urilor
+    const commentMap = {};
+    allComments.forEach((comment) => {
+      comment.replies = []; // Inițializăm array-ul de reply-uri
+      commentMap[comment._id] = comment;
+    });
+
+    // 3️⃣ Organizăm comentariile principale și reply-urile în ierarhie
+    const topLevelComments = [];
+    allComments.forEach((comment) => {
+      if (comment.parentId) {
+        // Dacă este un reply, îl adăugăm la array-ul replies al comentariului părinte
+        if (commentMap[comment.parentId]) {
+          commentMap[comment.parentId].replies.push(comment);
+        }
+      } else {
+        // Dacă nu are parentId, este un comentariu principal
+        topLevelComments.push(comment);
+      }
+    });
+
+    // 4️⃣ Returnăm doar comentariile principale, fiecare conținând array-ul său de replies
+    res.status(200).json(topLevelComments);
   } catch (err) {
     console.error("Error fetching comments:", err.message);
     res.status(500).json({ error: "Failed to fetch comments" });
