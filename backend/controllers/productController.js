@@ -5,6 +5,7 @@ import multer from "multer";
 import {uploadToCloudinary} from "../config/imgUpload.js";
 import Comment from "../models/commentModel.js";
 import Gallery from "../models/galleryModel.js";
+import User from "../models/userModel.js";
 
 export const createProduct = async (req, res) => {
 	try {
@@ -184,4 +185,32 @@ export const getProductsNotInGallery = async (req, res) => {
   }
 };
 
+export const getAllUserProducts = async (req, res) => {
+	try {
+	  const { username } = req.params;
+	  console.log("Fetching products for user:", username);
+  
+	  // Găsește utilizatorul după username
+	  const user = await User.findOne({ username });
+	  if (!user) {
+		console.error("User not found:", username);
+		return res.status(404).json({ error: "User not found" });
+	  }
+  
+	  console.log("User found:", user);
+  
+	  // Găsește toate produsele utilizatorului
+	  const products = await Product.find({ user: user._id });
+	  console.log("Products found:", products);
+  
+	  res.status(200).json({ products });
+	} catch (err) {
+	  console.error("Error fetching user's products:", err.message);
+	  res.status(500).json({ error: "Failed to fetch products" });
+	}
+  };
+  
+
+  
+  
   

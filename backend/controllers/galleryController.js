@@ -216,3 +216,33 @@ export const addMultipleProductsToGallery = async (req, res) => {
         res.status(500).json({ error: "Failed to add products" });
     }
 };
+
+export const removeProductFromGallery = async (req, res) => {
+    try {
+      const { galleryId, productId } = req.params;
+  
+      // Găsește galeria
+      const gallery = await Gallery.findById(galleryId);
+      if (!gallery) {
+        return res.status(404).json({ error: "Gallery not found" });
+      }
+  
+      // Verifică permisiunile
+      if (gallery.owner.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ error: "Unauthorized action" });
+      }
+  
+      // Elimină produsul din galerie
+      gallery.products = gallery.products.filter((id) => id.toString() !== productId);
+      await gallery.save();
+  
+      // Elimină galeria din produs
+      await Product.findByIdAndUpdate(productId, { $pull: { galleries: gallery._id } });
+  
+      res.status(200).json({ message: "Product removed from gallery" });
+    } catch (err) {
+      console.error("Error removing product from gallery:", err.message);
+      res.status(500).json({ error: "Failed to remove product from gallery" });
+    }
+  };
+  

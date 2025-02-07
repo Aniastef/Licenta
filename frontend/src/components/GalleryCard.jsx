@@ -19,8 +19,6 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const [availableProducts, setAvailableProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [filterText, setFilterText] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
@@ -35,10 +33,10 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       }
     };
 
-    if (isModalOpen) {
+    if (isOpen) {
       fetchAvailableProducts();
     }
-  }, [isModalOpen, gallery._id]);
+  }, [isOpen, gallery._id]);
 
   const handleFilterChange = (e) => {
     const searchText = e.target.value.toLowerCase();
@@ -59,10 +57,8 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
 
       if (!res.ok) throw new Error("Failed to add product");
 
-      // Reîmprospătează galeria curentă
-      await fetchGallery();
+      await fetchGallery(); // Reîmprospătează galeria
 
-      // Elimină produsul din lista locală și filtrată
       setAvailableProducts((prev) => prev.filter((product) => product._id !== productId));
       setFilteredProducts((prev) => prev.filter((product) => product._id !== productId));
     } catch (err) {
@@ -70,13 +66,35 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     }
   };
 
+  const removeProductFromGallery = async (productId) => {
+    try {
+      const res = await fetch(`/api/galleries/${gallery._id}/remove-product/${productId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Failed to remove product");
+
+      await fetchGallery(); // Reîmprospătează galeria
+    } catch (err) {
+      console.error("Error removing product:", err);
+    }
+  };
+
   return (
     <Box mt={8} px={4}>
       <Heading size="lg" mb={4}>{gallery.name}</Heading>
-      <Image src={gallery.coverPhoto || "https://via.placeholder.com/800"} alt="Gallery Cover" w="full" h="300px" objectFit="cover" />
+      <Image
+        src={gallery.coverPhoto || "https://via.placeholder.com/800"}
+        alt="Gallery Cover"
+        w="full"
+        h="300px"
+        objectFit="cover"
+      />
 
       <Flex justify="space-between" my={4}>
-        <Button colorScheme="blue" onClick={() => setIsModalOpen(true)}>
+        <Button colorScheme="blue" onClick={onOpen}>
           Add Existing Product
         </Button>
       </Flex>
@@ -84,16 +102,30 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       <Grid templateColumns="repeat(3, 1fr)" gap={4}>
         {gallery.products.map((product) => (
           <Box key={product._id} bg="gray.200" p={4} borderRadius="md">
-            <Image src={product.images[0] || "https://via.placeholder.com/150"} alt={product.name} w="100%" h="150px" objectFit="cover" />
+            <Image
+              src={product.images[0] || "https://via.placeholder.com/150"}
+              alt={product.name}
+              w="100%"
+              h="150px"
+              objectFit="cover"
+            />
             <Heading size="md">{product.name}</Heading>
             <Text>${product.price}</Text>
             <Text>{product.description}</Text>
+            <Button
+              colorScheme="red"
+              size="sm"
+              mt={2}
+              onClick={() => removeProductFromGallery(product._id)}
+            >
+              Remove from Gallery
+            </Button>
           </Box>
         ))}
       </Grid>
 
       {/* Modal pentru alegerea produselor existente */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl" isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalBody p={5}>
@@ -138,4 +170,4 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   );
 };
 
-export default GalleryCard;
+export default GalleryCard; 

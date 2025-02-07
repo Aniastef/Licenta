@@ -93,21 +93,23 @@ const UserHeader = ({ user }) => {
         </Button>
       </Flex>
 
-      {user.galleries && user.galleries.length > 0 && (
-        <Flex mt={6} gap={4} wrap="wrap">
-          {user.galleries.map((gallery) => (
-            <RouterLink key={gallery.name} to={`/galleries/${user.username}/${gallery.name}`}>
-              <Button
-                bg="blue.200"
-                _hover={{ bg: "blue.400" }}
-                borderRadius="full"
-              >
-                {gallery.name}
-              </Button>
-            </RouterLink>
-          ))}
-        </Flex>
-      )}
+      {user.galleries && (
+  <Flex mt={6} gap={4} wrap="wrap">
+      <RouterLink to={`/galleries/${user.username}/all-products`}>
+        <Button bg="teal.200" _hover={{ bg: "teal.400" }} borderRadius="full">
+          All Products
+        </Button>
+    </RouterLink>
+
+    {user.galleries.map((gallery) => (
+      <RouterLink key={gallery.name} to={`/galleries/${user.username}/${gallery.name}`}>
+        <Button bg="blue.200" _hover={{ bg: "blue.400" }} borderRadius="full">
+          {gallery.name}
+        </Button>
+      </RouterLink>
+    ))}
+  </Flex>
+)}
 
       {activeSection === "interested" && (
         <EventsSection

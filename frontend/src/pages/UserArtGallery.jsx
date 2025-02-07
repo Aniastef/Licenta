@@ -17,16 +17,30 @@ export default function GalleryPage() {
 
   const fetchGallery = async () => {
     try {
-      const response = await fetch(`/api/galleries/${username}/${galleryName}`);
-      if (!response.ok) throw new Error("Failed to fetch gallery");
-      const data = await response.json();
-      setGallery(data);
+      if (galleryName === "all-products") {
+        const response = await fetch(`/api/products/user/${username}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch user's products");
+        }
+        const data = await response.json();
+        setGallery({ name: `${username}'s Products`, products: data.products });
+      } else {
+        const response = await fetch(`/api/galleries/${username}/${galleryName}`);
+        if (!response.ok) throw new Error("Failed to fetch gallery");
+        const data = await response.json();
+        setGallery(data);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
+  
+  
+  
+  
 
   useEffect(() => {
     fetchGallery();

@@ -10,6 +10,7 @@ import {
   addProductToGallery,
   getProductsNotInGallery,
   addMultipleProductsToGallery,
+  removeProductFromGallery,
 } from "../controllers/galleryController.js";
 
 const router = express.Router();
@@ -31,6 +32,7 @@ router.get("/", getAllGalleries);
 router.post("/:galleryId/add-product/:productId", protectRoute, addProductToGallery);
 router.get("/not-in-gallery/:galleryId", protectRoute, getProductsNotInGallery);
 router.post("/:galleryId/add-products", protectRoute, addMultipleProductsToGallery);
+router.delete("/:galleryId/remove-product/:productId", protectRoute, removeProductFromGallery);
 
 
 export default router;
