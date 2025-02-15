@@ -40,11 +40,12 @@ const Carousel = () => {
         py={8} // Padding vertical
         css={{
           '&::-webkit-scrollbar': {
-            display: 'none', // Ascunde bara de derulare în browsere bazate pe WebKit
+            display: 'none', // ✅ Corect
           },
-          '-ms-overflow-style': 'none', // Ascunde bara de derulare în Internet Explorer
-          'scrollbar-width': 'none', // Ascunde bara de derulare în Firefox
+          msOverflowStyle: 'none', // ✅ Corect - CamelCase
+          scrollbarWidth: 'none', // ✅ Corect - CamelCase
         }}
+        
       >
         {Array(10)
           .fill("")

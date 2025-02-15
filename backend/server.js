@@ -7,6 +7,7 @@ import productRoutes from "./routes/productRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js"
 import eventRoutes from "./routes/eventRoutes.js"
 import galleryRoutes from "./routes/galleryRoutes.js"
+import messageRoutes from "./routes/messageRoutes.js"
 import upload from "./config/imgUpload.js";
 import { EventEmitter } from "events";
 
@@ -28,6 +29,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/galleries", galleryRoutes);
+app.use("/api/messages", messageRoutes);
 
 
 

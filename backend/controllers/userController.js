@@ -127,6 +127,26 @@ export const loginUser = async (req, res) => {
 	}
 };
 
+export const searchUsers = async (req, res) => {
+	try {
+	  const { query } = req.query;
+	  if (!query) return res.status(400).json({ error: "Query is required" });
+  
+	  const users = await User.find({
+		$or: [
+		  { firstName: new RegExp(query, "i") },
+		  { lastName: new RegExp(query, "i") },
+		  { username: new RegExp(query, "i") },
+		],
+	  }).select("_id firstName lastName username");
+  
+	  res.status(200).json({ users });
+	} catch (err) {
+	  console.error("Error searching users:", err);
+	  res.status(500).json({ error: "Server error" });
+	}
+  };
+  
 export const logoutUser = (req, res) => {
 
 	try {

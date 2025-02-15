@@ -43,9 +43,7 @@ const Navbar = () => {
           <Link href="/events" _hover={{ textDecoration: "none", color: "black" }}>
             Events
           </Link>
-          <Link href="/events" _hover={{ textDecoration: "none", color: "black" }}>
-            Search
-          </Link>
+          
 
            {/* Afișăm Profile dacă user-ul este logat, Auth altfel */}
            {user ? (

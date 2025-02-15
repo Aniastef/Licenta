@@ -19,6 +19,7 @@ import EventsPage from './pages/AllEventsPage';
 import ExploreGalleries from './pages/GalleriesPage';
 import CreateGalleryPage from './pages/CreateGallery';
 import GalleryPage from './pages/UserArtGallery';
+import MessagesPage from './pages/messagesPage';
 
 
 function App() {
@@ -54,6 +55,10 @@ function App() {
         <Route path="/galleries" element={<ExploreGalleries/>}/>
         <Route path="/create/gallery" element={<CreateGalleryPage/>}/>
         <Route path="/galleries/:username/:galleryName" element={<GalleryPage />} />
+        <Route path="/messages" element={<MessagesPage />} /> {/* Pagină pentru mesaje */}
+        <Route path="/messages/:userId" element={<MessagesPage />} />
+
+
 
 
 

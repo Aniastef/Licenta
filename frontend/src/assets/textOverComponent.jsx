@@ -28,7 +28,7 @@ const TextOverImage = () => {
         um doloLorem ipsum dolor sit amet, consectetur adipiscing elit."
         sit amet,Lorem ipsum dolor sit amet, consectetur adipiscing elit."
         consectetur adipiscing elit.
-        <Text>Lorem ipsum </Text>
+        
       </Text>
     </Box>
   );
