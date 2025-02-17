@@ -57,13 +57,39 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    cart: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product", // ✅ Referință către modelul `Product`
+        },
+        quantity: { type: Number, default: 1 },
+      },
+    ],
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product", // Referință către produsele utilizatorului
       },
     ],
-    events: [
+    orders: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+        },
+        price: Number,
+        status: {
+          type: String,
+          enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
+          default: "Pending",
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],events: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Event",

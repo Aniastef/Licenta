@@ -8,6 +8,10 @@ import commentRoutes from "./routes/commentRoutes.js"
 import eventRoutes from "./routes/eventRoutes.js"
 import galleryRoutes from "./routes/galleryRoutes.js"
 import messageRoutes from "./routes/messageRoutes.js"
+import paymentRoutes from "./routes/paymentRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js"; // ✅ Import corect
+import orderRoutes from "./routes/orderRoutes.js"; // ✅ Importă ruta comenzilor
+
 import upload from "./config/imgUpload.js";
 import { EventEmitter } from "events";
 
@@ -30,6 +34,9 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/galleries", galleryRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/cart", cartRoutes); // ✅ Corect
+app.use("/api/orders", orderRoutes); // ✅ Activează ruta comenzilor
 
 
 

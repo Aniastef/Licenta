@@ -20,6 +20,10 @@ import ExploreGalleries from './pages/GalleriesPage';
 import CreateGalleryPage from './pages/CreateGallery';
 import GalleryPage from './pages/UserArtGallery';
 import MessagesPage from './pages/messagesPage';
+import { CartProvider } from './components/CartContext';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import OrdersPage from './pages/OrdersPage';
 
 
 function App() {
@@ -36,6 +40,7 @@ function App() {
 
   console.log(user); 
   return (
+    <CartProvider>
     <Box minH="100vh">
        <Navbar/>
       <Routes>
@@ -57,14 +62,15 @@ function App() {
         <Route path="/galleries/:username/:galleryName" element={<GalleryPage />} />
         <Route path="/messages" element={<MessagesPage />} /> {/* Pagină pentru mesaje */}
         <Route path="/messages/:userId" element={<MessagesPage />} />
-
-
-
-
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} /> {/* ✅ Adaugă ruta corectă */}
+        <Route path="/orders" element={<OrdersPage />} /> {/* ✅ Noua pagină */}
 
 
       </Routes>
     </Box>
+    </CartProvider>
+   
   );
 }
 export default App;

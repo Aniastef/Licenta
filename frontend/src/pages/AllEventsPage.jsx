@@ -67,19 +67,18 @@ const EventsPage = () => {
 
     updatedEvents = updatedEvents.filter((event) => {
       const matchesName =
-        searchBy === "name"
-          ? event.name.toLowerCase().includes(filterText.toLowerCase())
+        searchBy === "name" && event.name
+          ? event.name.toLowerCase().includes(filterText?.toLowerCase() || "")
           : true;
 
-      const matchesCreator =
-        searchBy === "creator"
-          ? `${event.user?.firstName || ""} ${event.user?.lastName || ""}`
-              .toLowerCase()
-              .includes(filterText.toLowerCase()) ||
-            `${event.user?.lastName || ""} ${event.user?.firstName || ""}`
-              .toLowerCase()
-              .includes(filterText.toLowerCase())
-          : true;
+
+          const matchesCreator =
+          searchBy === "creator" && event.user
+            ? `${event.user.firstName || ""} ${event.user.lastName || ""}`
+                .toLowerCase()
+                .includes(filterText?.toLowerCase() || "")
+            : true;
+        
 
       const matchesGallery = filterGallery
         ? event.gallery === filterGallery

@@ -1,0 +1,10 @@
+import express from "express";
+import { getUserOrders, addOrder, deleteOrder } from "../controllers/orderController.js";
+
+const router = express.Router();
+
+router.get("/:userId", getUserOrders); // ✅ Obține comenzile unui utilizator
+router.post("/:userId", addOrder); // ✅ Adaugă o comandă nouă
+router.delete("/:userId/:orderId", deleteOrder); // ✅ Șterge o comandă
+
+export default router;

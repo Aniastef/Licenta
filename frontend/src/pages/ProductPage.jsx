@@ -1,16 +1,18 @@
 
-import { Flex, Spinner, Text, VStack } from '@chakra-ui/react';
+import { Flex, Spinner, Text, useToast, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CommentsSection from '../components/CommentsSection';
 import { Select } from "@chakra-ui/react";
 
+
 export default function ProductPage() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
 
   const fetchProduct = async () => {
     try {

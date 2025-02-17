@@ -69,7 +69,7 @@ const Incerc = () => {
             right="-20"
             top="10"
           >
-            Price: ${product.price}
+            Price: {product.price} RON
           </Button>
           <Box ml={5} mt={5} maxW="450px">
             <Text mt={5} fontWeight={"bold"}>

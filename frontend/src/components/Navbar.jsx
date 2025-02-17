@@ -2,6 +2,8 @@ import React from "react";
 import {
   Box,
   HStack,
+  Flex,
+  Image,
   Link,
   Text,
   Menu,
@@ -14,10 +16,13 @@ import { useState } from "react";
 import userAtom from "../atoms/userAtom";
 import { useRecoilValue } from "recoil";
 import useLogout from "../hooks/useLogout";
-
+import cartIcon from "../assets/cart.png"; // ✅ Importă imaginea cart.png
+import { useCart } from "../components/CartContext"; 
 const Navbar = () => {
   const user = useRecoilValue(userAtom); 
   const handleLogout = useLogout(); 
+  const { cart } = useCart(); // ✅ Accesează cart-ul
+  const cartCount = cart.length; // 🔢 Numărul de produse
 
   console.log(user);
 
@@ -34,6 +39,9 @@ const Navbar = () => {
           <Link href="/home" _hover={{ textDecoration: "none", color: "black" }}>
             Home
           </Link>
+          <Link href="/orders" _hover={{ textDecoration: "none", color: "black" }}>
+            My orders
+          </Link>
           <Link href="/galleries" _hover={{ textDecoration: "none", color: "black" }}>
             Galleries
           </Link>
@@ -43,7 +51,12 @@ const Navbar = () => {
           <Link href="/events" _hover={{ textDecoration: "none", color: "black" }}>
             Events
           </Link>
-          
+          <Link href="/cart">
+          <Button variant="ghost" colorScheme="teal" display="flex" alignItems="center" gap={2}>
+            <Image src={cartIcon} alt="Cart" boxSize="24px" /> {/* ✅ Iconița cart.png */}
+            {cartCount > 0 && <Text fontSize="md">({cartCount})</Text>} {/* ✅ Număr produse */}
+          </Button>
+        </Link>
 
            {/* Afișăm Profile dacă user-ul este logat, Auth altfel */}
            {user ? (
@@ -72,6 +85,7 @@ const Navbar = () => {
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </MenuList>
             </Menu>
+            
           ) : (
             <Link href="/auth" _hover={{ textDecoration: "none", color: "black" }}>
               Auth

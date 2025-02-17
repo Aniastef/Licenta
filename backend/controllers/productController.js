@@ -64,7 +64,7 @@ export const createProduct = async (req, res) => {
   
 	  const product = await Product.findById(id)
 		.populate("user", "firstName lastName email") // Populează utilizatorul
-		.populate("gallery", "name type"); // Exemplu dacă există galerie
+		.populate("galleries", "name type"); // Exemplu dacă există galerie
   
 	  if (!product) {
 		return res.status(404).json({ error: "Product not found" });
