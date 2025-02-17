@@ -7,8 +7,8 @@ import {
   Image,
   Select,
   Input,
-  Button,
   Grid,
+  Tag,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import RectangleShape from "../assets/rectangleShape";
@@ -20,6 +20,7 @@ const ProductsPage = () => {
   const [filterText, setFilterText] = useState("");
   const [filterGallery, setFilterGallery] = useState("");
   const [searchBy, setSearchBy] = useState("name");
+  const [filterForSale, setFilterForSale] = useState(""); // ✅ Filtrare "For Sale" / "Not for Sale"
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,10 +41,9 @@ const ProductsPage = () => {
   };
 
   const handleSortChange = (e) => setSortOption(e.target.value);
-
   const handleFilterChange = (e) => setFilterText(e.target.value);
-
   const handleGalleryFilter = (e) => setFilterGallery(e.target.value);
+  const handleForSaleFilter = (e) => setFilterForSale(e.target.value);
 
   useEffect(() => {
     let updatedProducts = [...products];
@@ -68,7 +68,14 @@ const ProductsPage = () => {
         ? product.gallery === filterGallery
         : true;
 
-      return matchesName && matchesCreator && matchesGallery;
+      const matchesForSale =
+        filterForSale === "forsale"
+          ? product.forSale
+          : filterForSale === "notforsale"
+          ? !product.forSale
+          : true;
+
+      return matchesName && matchesCreator && matchesGallery && matchesForSale;
     });
 
     if (sortOption === "name") {
@@ -78,11 +85,11 @@ const ProductsPage = () => {
     } else if (sortOption === "date") {
       updatedProducts.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      ); // Descrescător
+      );
     }
 
     setFilteredProducts(updatedProducts);
-  }, [products, sortOption, filterText, filterGallery, searchBy]);
+  }, [products, sortOption, filterText, filterGallery, searchBy, filterForSale]);
 
   return (
     <Box>
@@ -123,10 +130,11 @@ const ProductsPage = () => {
             bg="gray.100"
           />
         </Flex>
+
         <Select
           placeholder="Filter by gallery"
           value={filterGallery}
-          onChange={(e) => setFilterGallery(e.target.value)}
+          onChange={handleGalleryFilter}
           w="200px"
           bg="gray.100"
         >
@@ -134,6 +142,18 @@ const ProductsPage = () => {
           <option value="sculpture">Sculpture</option>
           <option value="drawing">Drawing</option>
         </Select>
+
+        <Select
+          placeholder="Filter by sale status"
+          value={filterForSale}
+          onChange={handleForSaleFilter}
+          w="200px"
+          bg="gray.100"
+        >
+          <option value="forsale">For Sale</option>
+          <option value="notforsale">Not for Sale</option>
+        </Select>
+
         <Select
           placeholder="Sort by"
           value={sortOption}
@@ -174,47 +194,44 @@ const ProductsPage = () => {
                   overflow="hidden"
                   _hover={{ transform: "scale(1.02)", transition: "0.2s" }}
                 >
+                  {/* ✅ Afișăm imaginea produsului sau mesaj "No image available" */}
                   <Box
                     width="100%"
-                    height="300px"
+                    height="250px"
                     bg="gray.300"
                     mb={4}
                     borderRadius="md"
                     overflow="hidden"
                   >
-                    {product.images?.[0] ? (
+                    {product.images?.length > 0 ? (
                       <Image
                         src={product.images[0]}
-                        alt={`${product.name} cover photo`}
+                        alt={`${product.name} cover`}
                         width="100%"
                         height="100%"
                         objectFit="cover"
                       />
                     ) : (
-                      <Box
+                      <Flex
                         width="100%"
                         height="100%"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
+                        align="center"
+                        justify="center"
                         bg="gray.400"
                       >
-                        <Text>No cover photo available</Text>
-                      </Box>
+                        <Text>No image available</Text>
+                      </Flex>
                     )}
                   </Box>
-                  <Heading size="md" mb={2}>
-                    {product.name}
-                  </Heading>
-                  <Text mb={1}>${product.price}</Text>
-                  <Text mb={1}>Gallery: {product.gallery}</Text>
-                  <Text mb={1}>
-                    Creator: {product.user?.firstName || "Unknown"}{" "}
-                    {product.user?.lastName || ""}
-                  </Text>
-                  <Text mb={1}>
-                    Created At: {new Date(product.createdAt).toLocaleDateString()}
-                  </Text>
+
+                  <Heading size="md" mb={2}>{product.name}</Heading>
+                  <Text mb={1}>{product.price} RON</Text>
+                   <Tag 
+                                colorScheme={product.forSale ? (product.quantity > 0 ? "green" : "red") : "gray"}
+                                mt={2}
+                              >
+                                {!product.forSale ? "Not for Sale" : product.quantity > 0 ? `Stock: ${product.quantity} left` : "Out of Stock"}
+                  </Tag>
                 </Box>
               </Link>
             ))}

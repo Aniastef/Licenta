@@ -9,6 +9,52 @@ import User from "../models/userModel.js";
 
 
 
+// export const handlePaymentSuccess = async (req, res) => {
+//     try {
+//         const { userId } = req.body;
+
+//         console.log("🔹 Payment success request for user:", userId);
+
+//         const user = await User.findById(userId).populate("cart.product");
+
+//         if (!user) {
+//             console.log("❌ User not found!");
+//             return res.status(404).json({ error: "User not found" });
+//         }
+
+//         if (!user.cart.length) {
+//             console.log("🛒 Cart already empty!");
+//             return res.status(400).json({ error: "Cart is empty" });
+//         }
+
+//         console.log("🛍 Moving products to orders:", user.cart);
+
+//         const newOrders = user.cart.map(item => ({
+//             product: item.product._id,
+//             price: item.product.price,
+//             status: "Pending",
+//             date: new Date(),
+//         }));
+
+//         user.orders.push(...newOrders);
+//         user.cart = []; // ✅ Golește coșul
+
+//         // 🔹 Folosește `findByIdAndUpdate` în loc de `.save()`, ca să eviți problema de versiune
+//         await User.findByIdAndUpdate(
+//             userId,
+//             { $set: { cart: [] }, $push: { orders: { $each: newOrders } } },
+//             { new: true, runValidators: true } // ✅ Evită problema cu versiunea documentului
+//         );
+
+//         console.log("✅ Order placed successfully");
+//         res.status(200).json({ message: "Order placed successfully", orders: newOrders });
+
+//     } catch (error) {
+//         console.error("❌ Error handling payment success:", error);
+//         res.status(500).json({ error: "Failed to process order" });
+//     }
+// };
+
 export const handlePaymentSuccess = async (req, res) => {
     try {
         const { userId } = req.body;
@@ -29,25 +75,38 @@ export const handlePaymentSuccess = async (req, res) => {
 
         console.log("🛍 Moving products to orders:", user.cart);
 
-        const newOrders = user.cart.map(item => ({
-            product: item.product._id,
-            price: item.product.price,
-            status: "Pending",
-            date: new Date(),
-        }));
+        const newOrders = user.cart.map(async (item) => {
+            const product = await Product.findById(item.product._id);
+            if (!product || !product.forSale) {
+                return null; // ✅ Nu permite cumpărarea produselor care nu sunt de vânzare
+            }
 
-        user.orders.push(...newOrders);
+            if (product.quantity < item.quantity) {
+                return res.status(400).json({ error: `Not enough stock for ${product.name}` });
+            }
+
+            product.quantity -= item.quantity; // ✅ Scădem cantitatea produsului
+            await product.save();
+
+            return {
+                product: item.product._id,
+                price: item.product.price,
+                status: "Pending",
+                date: new Date(),
+            };
+        });
+
+        user.orders.push(...(await Promise.all(newOrders.filter(o => o !== null))));
         user.cart = []; // ✅ Golește coșul
 
-        // 🔹 Folosește `findByIdAndUpdate` în loc de `.save()`, ca să eviți problema de versiune
         await User.findByIdAndUpdate(
             userId,
-            { $set: { cart: [] }, $push: { orders: { $each: newOrders } } },
-            { new: true, runValidators: true } // ✅ Evită problema cu versiunea documentului
+            { $set: { cart: [] }, $push: { orders: { $each: user.orders } } },
+            { new: true, runValidators: true }
         );
 
         console.log("✅ Order placed successfully");
-        res.status(200).json({ message: "Order placed successfully", orders: newOrders });
+        res.status(200).json({ message: "Order placed successfully", orders: user.orders });
 
     } catch (error) {
         console.error("❌ Error handling payment success:", error);

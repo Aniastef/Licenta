@@ -9,45 +9,45 @@ import User from "../models/userModel.js";
 
 export const createProduct = async (req, res) => {
 	try {
-	  const { name, description, price, galleries } = req.body; // ✅ galleries este acum un array
-  
+	  const { name, description, price, quantity, forSale, galleries } = req.body;
+
 	  if (!req.user) {
 		return res.status(403).json({ error: "User not authenticated" });
 	  }
-  
-	  // ✅ Upload imagini la Cloudinary
+
 	  const uploadedImages = [];
 	  for (const file of req.files) {
 		const imageUrl = await uploadToCloudinary(file);
 		uploadedImages.push(imageUrl);
 	  }
-  
-	  // ✅ Creăm produsul
+
 	  const newProduct = new Product({
 		name,
 		description,
 		price,
-		galleries: galleries ? galleries : [], // ✅ Poate fi gol
+		quantity: quantity || 0, // ✅ Adaugă cantitatea
+		forSale: forSale !== undefined ? forSale : true, // ✅ Produs de vânzare implicit
+		galleries: galleries ? galleries : [],
 		images: uploadedImages,
 		user: req.user._id,
 	  });
-  
+
 	  await newProduct.save();
-  
-	  // ✅ Adaugă produsul în fiecare galerie selectată
+
 	  if (galleries && galleries.length > 0) {
 		await Gallery.updateMany(
 		  { _id: { $in: galleries } },
 		  { $push: { products: newProduct._id } }
 		);
 	  }
-  
+
 	  res.status(201).json(newProduct);
 	} catch (err) {
 	  console.error("Error while creating product:", err.message);
 	  res.status(500).json({ message: err.message });
 	}
-  };
+};
+
   
   
   
@@ -217,6 +217,30 @@ export const getAllUserProducts = async (req, res) => {
   };
   
 
-  
-  
+  export const getAvailableProducts = async (req, res) => {
+	try {
+	  const products = await Product.find({ forSale: true, quantity: { $gt: 0 } })
+		.populate("user", "firstName lastName")
+		.sort({ createdAt: -1 });
+
+	  res.status(200).json({ products });
+	} catch (err) {
+	  console.error("Error fetching available products:", err.message);
+	  res.status(500).json({ error: "Failed to fetch products" });
+	}
+};
+
+export const getDisplayOnlyProducts = async (req, res) => {
+	try {
+	  const products = await Product.find({ forSale: false })
+		.populate("user", "firstName lastName")
+		.sort({ createdAt: -1 });
+
+	  res.status(200).json({ products });
+	} catch (err) {
+	  console.error("Error fetching display-only products:", err.message);
+	  res.status(500).json({ error: "Failed to fetch products" });
+	}
+};
+
   

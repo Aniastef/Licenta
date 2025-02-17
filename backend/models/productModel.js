@@ -2,42 +2,18 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
 	{
-	  name: {
-		type: String,
-		required: true,
-	  },
-	  description: {
-		type: String,
-		default: "",
-	  },
-	  price: {
-		type: Number,
-		required: true,
-	  },
-	  tags: [
-		{
-		  type: String, // Fiecare tag va fi un string
-		},
-	  ],
-	  images: [
-		{
-		  type: String,
-		  default: "",
-		},
-	  ],
-	  user: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: "User", // Numele modelului User
-		required: true, // Face ca asocierea să fie obligatorie
-	  },
-	  galleries: [{ type: mongoose.Schema.Types.ObjectId, ref: "Gallery" }], // ✅ Acum produsul poate aparține mai multor galerii
-
+	  name: { type: String, required: true },
+	  description: { type: String, default: "" },
+	  price: { type: Number, required: true },
+	  quantity: { type: Number, required: true, default: 0 }, // ✅ Stocul produsului
+	  forSale: { type: Boolean, default: true }, // ✅ Dacă produsul este de vânzare sau doar pentru afișare
+	  tags: [{ type: String }],
+	  images: [{ type: String, default: "" }],
+	  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+	  galleries: [{ type: mongoose.Schema.Types.ObjectId, ref: "Gallery" }]
 	},
-	{
-	  timestamps: true,
-	}
+	{ timestamps: true }
 );  
 
 const Product = mongoose.model("Product", productSchema);
-
 export default Product;

@@ -10,6 +10,9 @@ import {
 	Image,
 	Flex,
 	Select,
+	Switch,
+	FormControl,
+	FormLabel,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import useShowToast from "../hooks/useShowToast";
@@ -23,7 +26,9 @@ const CreateProductPage = () => {
 		name: "",
 		description: "",
 		price: "",
-		galleries: [], // Array pentru a permite mai multe galerii
+		quantity: 1, // ✅ Default 1 buc.
+		forSale: true, // ✅ Default produs de vânzare
+		galleries: [],
 		images: [],
 	});
 	const [imageFiles, setImageFiles] = useState([]);
@@ -43,7 +48,6 @@ const CreateProductPage = () => {
 					},
 				});
 				
-		
 				const data = await res.json();
 				if (data.galleries) {
 					console.log("Fetched galleries:", data.galleries);
@@ -57,11 +61,10 @@ const CreateProductPage = () => {
 		};
 		fetchGalleries();
 	}, []);
-	
 
 	const handleAddProduct = async () => {
-		if (!newProduct.name || !newProduct.price || newProduct.price <= 0) {
-			showToast("Error", "Name and valid price are required", "error");
+		if (!newProduct.name || !newProduct.price || newProduct.price <= 0 || newProduct.quantity < 0) {
+			showToast("Error", "Name, valid price, and quantity are required", "error");
 			return;
 		}
 
@@ -72,6 +75,8 @@ const CreateProductPage = () => {
 			formData.append("name", newProduct.name);
 			formData.append("description", newProduct.description);
 			formData.append("price", newProduct.price);
+			formData.append("quantity", newProduct.quantity); // ✅ Adaugă cantitate
+			formData.append("forSale", newProduct.forSale); // ✅ Adaugă dacă este de vânzare
 			newProduct.galleries.forEach((galleryId) => formData.append("galleries", galleryId));
 			imageFiles.forEach((file) => formData.append("images", file));
 
@@ -138,6 +143,29 @@ const CreateProductPage = () => {
 								setNewProduct({ ...newProduct, price: e.target.value })
 							}
 						/>
+
+						{/* ✅ Câmp pentru cantitate */}
+						<Input
+							placeholder="Quantity"
+							type="number"
+							min="0"
+							value={newProduct.quantity}
+							onChange={(e) =>
+								setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })
+							}
+						/>
+
+						{/* ✅ Switch pentru "De vânzare" */}
+						<FormControl display="flex" alignItems="center">
+							<FormLabel mb="0">For Sale</FormLabel>
+							<Switch
+								isChecked={newProduct.forSale}
+								onChange={(e) =>
+									setNewProduct({ ...newProduct, forSale: e.target.checked })
+								}
+							/>
+						</FormControl>
+
 						<Select
 							placeholder="Select a gallery or All Products"
 							value={newProduct.galleries[0] || ""}
