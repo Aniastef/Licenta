@@ -24,6 +24,7 @@ import { CartProvider } from './components/CartContext';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
+import AdminPanel from './pages/AdminPanel';
 
 
 function App() {
@@ -65,6 +66,7 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} /> {/* ✅ Adaugă ruta corectă */}
         <Route path="/orders" element={<OrdersPage />} /> {/* ✅ Noua pagină */}
+        <Route path='/admin-panel' element={<AdminPanel/>}/>
 
 
       </Routes>

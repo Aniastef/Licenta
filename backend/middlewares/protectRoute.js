@@ -12,7 +12,7 @@ const protectRoute = async (req, res, next) => {
   
 	  const decoded = jwt.verify(token, process.env.JWT_SECRET);
   
-	  const user = await User.findById(decoded.userId).select("-password");
+	  const user = await User.findById(decoded.id || decoded.userId).select("-password");
   
 	  if (!user) {
 		console.error("No user found for decoded token:", decoded.userId);
@@ -21,7 +21,10 @@ const protectRoute = async (req, res, next) => {
   
 	  console.log("Authenticated user:", user);
 	  req.user = user;
-  
+	  console.log("Decoded JWT:", decoded);
+	  console.log("Authenticated User:", user);
+	  console.log("User Role:", user.role);
+	  
 	  next();
 	} catch (err) {
 	  console.error("Error in protectRoute:", err.stack || err.message);

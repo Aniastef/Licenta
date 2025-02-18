@@ -5,46 +5,68 @@ import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
 
 export const getUserProfile = async (req, res) => {
+    try {
+        let user;
 
-	const { username } = req.params;
+        if (req.user) { // ✅ Dacă e autentificat, ia userul din token
+            user = await User.findById(req.user._id)
+                .select("-password -updatedAt")
+                .populate({
+                    path: "eventsMarkedInterested",
+                    select: "name date location coverImage",
+                    populate: { path: "user", select: "firstName lastName" },
+                })
+                .populate({
+                    path: "eventsMarkedGoing",
+                    select: "name date location coverImage",
+                    populate: { path: "user", select: "firstName lastName" },
+                })
+                .populate({
+                    path: "events",
+                    select: "name date location coverImage",
+                    populate: { path: "user", select: "firstName lastName" },
+                })
+                .populate({
+                    path: "galleries",
+                    select: "name",
+                });
+        } else if (req.params.username) { // ✅ Dacă e accesat prin username
+            user = await User.findOne({ username: req.params.username })
+                .select("-password -updatedAt")
+                .populate({
+                    path: "eventsMarkedInterested",
+                    select: "name date location coverImage",
+                    populate: { path: "user", select: "firstName lastName" },
+                })
+                .populate({
+                    path: "eventsMarkedGoing",
+                    select: "name date location coverImage",
+                    populate: { path: "user", select: "firstName lastName" },
+                })
+                .populate({
+                    path: "events",
+                    select: "name date location coverImage",
+                    populate: { path: "user", select: "firstName lastName" },
+                })
+                .populate({
+                    path: "galleries",
+                    select: "name",
+                });
+        } else {
+            return res.status(400).json({ error: "Invalid request" });
+        }
 
-    try{
-		const user = await User.findOne({ username })
-		.select("-password -updatedAt")
-		.populate({
-		  path: "eventsMarkedInterested",
-		  select: "name date location coverImage",
-		  populate: { path: "user", select: "firstName lastName" },
-		})
-		.populate({
-		  path: "eventsMarkedGoing",
-		  select: "name date location coverImage",
-		  populate: { path: "user", select: "firstName lastName" },
-		})
-		.populate({
-		  path: "events",
-		  select: "name date location coverImage",
-		  populate: { path: "user", select: "firstName lastName" },
-		})
-		.populate({
-		  path: "galleries", // ✅ Populează galeriile
-		  select: "name", // ✅ Selectează doar numele galeriei
-		});
-  
-  
-
-        if (!user) 
-        return res.status(400).json({ message: "User not found" });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
         res.status(200).json(user);
-
-    } catch (err) 
-    {
+    } catch (err) {
         res.status(500).json({ error: err.message });
-        console.log("Error in getUserProfile: ", err.message);  
-    }   
+        console.log("Error in getUserProfile: ", err.message);
+    }
+};
 
-}
 
 
 export const signupUser = async (req, res) => {
@@ -63,13 +85,18 @@ export const signupUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({
-      firstName,
-	  lastName,
-      email,
-      username,
-      password: hashedPassword, 
-    });
+	const isFirstUser = (await User.countDocuments()) === 0;
+
+	const newUser = new User({
+	firstName,
+	lastName,
+	email,
+	username,
+	password: hashedPassword,
+	role: isFirstUser ? "superadmin" : "user", // ✅ Primul user devine superadmin
+	});
+
+	
 
     await newUser.save();
 

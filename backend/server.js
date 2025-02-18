@@ -11,7 +11,7 @@ import messageRoutes from "./routes/messageRoutes.js"
 import paymentRoutes from "./routes/paymentRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js"; // ✅ Import corect
 import orderRoutes from "./routes/orderRoutes.js"; // ✅ Importă ruta comenzilor
-
+import adminRoutes from "./routes/adminRoutes.js"; // ✅ Import Admin Panel
 import upload from "./config/imgUpload.js";
 import { EventEmitter } from "events";
 
@@ -37,7 +37,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/cart", cartRoutes); // ✅ Corect
 app.use("/api/orders", orderRoutes); // ✅ Activează ruta comenzilor
-
+app.use("/api/admin", adminRoutes); // ✅ Adăugat Admin Panel
 
 
 app.use((req, res) => {

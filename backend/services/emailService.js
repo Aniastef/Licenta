@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail", // Poți folosi SendGrid, Mailgun etc.
+  service: "gmail", // Poți folosi și alte servicii (SendGrid, Mailgun etc.)
   auth: {
     user: process.env.EMAIL_USER, // Email-ul tău
     pass: process.env.EMAIL_PASS, // Parola sau App Password
@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendVerificationEmail = async (userEmail, verificationToken) => {
-  const verificationLink = `http://localhost:5173/verify/${verificationToken}`; // Schimbă domeniul în producție
+  const verificationLink = `http://localhost:5173/verify/${verificationToken}`;
 
   const mailOptions = {
     from: process.env.EMAIL_USER,

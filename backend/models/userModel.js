@@ -133,9 +133,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    isAdmin: {
-      type: Boolean,
-      default: false,
+    role: {
+      type: String,
+      enum: ["user", "admin", "superadmin"], // ✅ Mai multe roluri
+      default: "user",
     },
     isVerified: { type: Boolean, default: false }, // ✅ Verificare email
     verificationToken: { type: String }, // ✅ Token pentru activare
