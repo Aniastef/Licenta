@@ -83,7 +83,7 @@ export default function UpdateProfilePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...inputs, profilePic: imgUrl}),
+        body: JSON.stringify({ ...inputs, profilePicture: imgUrl}),
       });
       const data = await res.json();
 
@@ -117,7 +117,7 @@ export default function UpdateProfilePage() {
 
     <Flex ml={20} gap={20} direction="row">
       <Flex gap={4} direction="column">
-        <Avatar src={user?.profilePic || ""}
+        <Avatar src={user?.profilePicture || ""}
             size="2xl"
             borderWidth={4}
             borderColor="white"

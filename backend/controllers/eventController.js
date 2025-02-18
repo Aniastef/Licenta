@@ -50,8 +50,8 @@ export const getEvent = async (req, res) => {
 
     const event = await Event.findById(eventId)
     .populate("user", "firstName lastName")
-    .populate("interestedParticipants", "firstName lastName profilePic")
-    .populate("goingParticipants", "firstName lastName profilePic");
+    .populate("interestedParticipants", "firstName lastName profilePicture")
+    .populate("goingParticipants", "firstName lastName profilePicture");
 
 
 
@@ -255,9 +255,9 @@ export const updateEvent = async (req, res) => {
 export const getAllEvents = async (req, res) => {
   try {
     const events = await Event.find()
-      .populate("user", "firstName lastName profilePic") // Populează informații despre utilizatorul care a creat evenimentul
-      .populate("interestedParticipants", "firstName lastName profilePic") // Populează utilizatorii interesați
-      .populate("goingParticipants", "firstName lastName profilePic") // Populează utilizatorii care merg
+      .populate("user", "firstName lastName profilePicture") // Populează informații despre utilizatorul care a creat evenimentul
+      .populate("interestedParticipants", "firstName lastName profilePicture") // Populează utilizatorii interesați
+      .populate("goingParticipants", "firstName lastName profilePicture") // Populează utilizatorii care merg
       .sort({ date: 1 }); // Sortează evenimentele după dată, cel mai apropiat eveniment apare primul
 
     res.status(200).json({ events });

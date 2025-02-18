@@ -28,7 +28,7 @@ const UserHeader = ({ user }) => {
 
       <Flex mt={16} ml={16} gap={2} alignItems="flex-start" direction="column" >
         <Avatar
-            src={user?.profilePic || ""}
+            src={user?.profilePicture || ""}
             size="2xl"
             borderWidth={4}
             borderColor="white"

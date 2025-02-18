@@ -228,7 +228,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
               {/* Profil utilizator */}
               <Flex align="center" mb={3}>
                 <Link to={`/profile/${comment.userId?.username}`}>
-                  <Avatar src={comment.userId?.profilePic} size="sm" cursor="pointer" />
+                  <Avatar src={comment.userId?.profilePicture} size="sm" cursor="pointer" />
                 </Link>
                 <Link to={`/profile/${comment.userId?.username}`}>
                   <Text ml={2} fontWeight="bold" cursor="pointer">
@@ -275,7 +275,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
                   >
                     <Flex align="center" mb={2}>
                       <Link to={`/profile/${reply.userId?.username}`}>
-                        <Avatar src={reply.userId?.profilePic} size="xs" cursor="pointer" />
+                        <Avatar src={reply.userId?.profilePicture} size="xs" cursor="pointer" />
                       </Link>
                       <Link to={`/profile/${reply.userId?.username}`}>
                         <Text ml={2} fontWeight="bold" cursor="pointer">

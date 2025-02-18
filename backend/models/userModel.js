@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
       minLength: 6,
       required: true,
     },
-    profilePic: {
+    profilePicture: {
       type: String,
       default: "",
     },
@@ -137,6 +137,8 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isVerified: { type: Boolean, default: false }, // ✅ Verificare email
+    verificationToken: { type: String }, // ✅ Token pentru activare
   },
   {
     timestamps: true,

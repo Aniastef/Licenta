@@ -46,32 +46,36 @@ export const createGallery = async (req, res) => {
 
   export const getGallery = async (req, res) => {
     try {
-        const { username, galleryName } = req.params;
-        if (!username || !galleryName) {
-            return res.status(400).json({ error: "Username and Gallery Name are required" });
-        }
-
-        // ✅ Găsește utilizatorul după username
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        // ✅ Caută galeria și populează atât utilizatorul, cât și produsele
-        const gallery = await Gallery.findOne({ owner: user._id, name: galleryName })
-            .populate("owner", "firstName lastName username")
-            .populate("products"); // ✅ Populează produsele galeriei
-
-        if (!gallery) {
-            return res.status(404).json({ error: "Gallery not found" });
-        }
-
-        res.status(200).json(gallery);
+      const { username, galleryName } = req.params;
+      if (!username || !galleryName) {
+        return res.status(400).json({ error: "Username and Gallery Name are required" });
+      }
+  
+      // ✅ Găsește utilizatorul după username
+      const user = await User.findOne({ username });
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      // ✅ Caută galeria și populează atât utilizatorul, cât și produsele
+      const gallery = await Gallery.findOne({ owner: user._id, name: galleryName })
+        .populate("owner", "firstName lastName username")
+        .populate({
+          path: "products",
+          select: "images", // ✅ Populează doar imaginile produselor
+        });
+  
+      if (!gallery) {
+        return res.status(404).json({ error: "Gallery not found" });
+      }
+  
+      res.status(200).json(gallery);
     } catch (err) {
-        console.error("Error fetching gallery:", err.message);
-        res.status(500).json({ message: err.message });
+      console.error("Error fetching gallery:", err.message);
+      res.status(500).json({ message: err.message });
     }
-};
+  };
+  
 
   
 export const getProductsNotInGallery = async (req, res) => {
@@ -146,7 +150,11 @@ export const updateGallery = async (req, res) => {
 export const getAllGalleries = async (req, res) => {
   try {
     const galleries = await Gallery.find()
-      .populate("owner", "firstName lastName profilePic")
+      .populate("owner", "firstName lastName profilePicture")
+      .populate({
+        path: "products",
+        select: "images", // ✅ Populează doar imaginile produselor
+      })
       .sort({ createdAt: -1 });
 
     res.status(200).json({ galleries });
@@ -155,6 +163,7 @@ export const getAllGalleries = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch galleries" });
   }
 };
+
 
 export const addProductToGallery = async (req, res) => {
     try {

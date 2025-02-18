@@ -73,7 +73,7 @@ export const addReply = async (req, res) => {
     parentComment.replies.push(reply._id);
     await parentComment.save();
 
-    const populatedReply = await reply.populate("userId", "username profilePic");
+    const populatedReply = await reply.populate("userId", "username profilePicture");
 
     res.status(201).json({
       message: "Reply added successfully",
@@ -118,7 +118,7 @@ export const getComments = async (req, res) => {
 
     // 1️⃣ Obținem toate comentariile pentru resursa respectivă
     const allComments = await Comment.find({ resourceId, resourceType })
-      .populate("userId", "username profilePic")
+      .populate("userId", "username profilePicture")
       .populate("replies", "content userId createdAt updatedAt")
       .lean(); // Convertim documentele în obiecte JSON manipulabile
 

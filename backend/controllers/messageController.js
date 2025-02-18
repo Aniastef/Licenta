@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 import User from "../models/userModel.js";
 import Message from "../models/messageModel.js";
 
-
-
 export const getConversations = async (req, res) => {
   try {
     if (!req.user || !req.user._id) {
@@ -41,7 +39,7 @@ export const getConversations = async (req, res) => {
           "user._id": 1,
           "user.firstName": 1,
           "user.lastName": 1,
-          "user.profilePicture": 1,  // ✅ Adăugăm poza de profil
+          "user.profilePicture": 1,  // ✅ Corectare typo
           "lastMessage": 1,
         }
       }
@@ -55,11 +53,10 @@ export const getConversations = async (req, res) => {
   }
 };
 
-
 export const getMessages = async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log("📢 Fetching messages between:", req.user._id, "and", userId); // DEBUG
+    console.log("📢 Fetching messages between:", req.user._id, "and", userId);
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       console.error("❌ Invalid user ID:", userId);
@@ -67,17 +64,18 @@ export const getMessages = async (req, res) => {
     }
 
     const messages = await Message.find({
-      $or: [
-        { sender: req.user._id, receiver: userId },
-        { sender: userId, receiver: req.user._id },
-      ],
-    })
-    .populate("sender", "firstName lastName profilePicture")
-    .populate("receiver", "firstName lastName profilePicture")
-    .sort({ timestamp: 1 });
-    
+  $or: [
+    { sender: req.user._id, receiver: userId },
+    { sender: userId, receiver: req.user._id },
+  ],
+})
+.populate("sender", "firstName lastName profilePicture") // ✅ Verifică aici
+.populate("receiver", "firstName lastName profilePicture")
+.sort({ timestamp: 1 });
 
-    console.log("✅ Found messages:", messages);
+
+    console.log("✅ Messages response:", JSON.stringify(messages, null, 2)); // 🔥 DEBUGGING
+
     res.status(200).json({ messages });
   } catch (err) {
     console.error("❌ Error fetching messages:", err);
@@ -111,7 +109,10 @@ export const sendMessage = async (req, res) => {
 
     await message.save();
 
-    res.status(201).json({ message: "Message sent successfully", data: message });
+    // ✅ Populează sender pentru a include detaliile user-ului curent
+    const populatedMessage = await message.populate("sender", "firstName lastName profilePicture");
+
+    res.status(201).json({ message: "Message sent successfully", data: populatedMessage });
   } catch (err) {
     console.error("Error in sendMessage:", err);
     res.status(500).json({ error: "Server error" });

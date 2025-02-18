@@ -173,7 +173,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
             <Flex align="center" gap={3}>
               <Avatar
                 size="sm"
-                src={user.profilePic || "https://via.placeholder.com/150"}
+                src={user.profilePicture || "https://via.placeholder.com/150"}
                 name={`${user.firstName} ${user.lastName}`}
               />
               <Text>{`${user.firstName} ${user.lastName}`}</Text>
@@ -198,7 +198,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
             <Flex align="center" gap={3}>
               <Avatar
                 size="sm"
-                src={user.profilePic || "https://via.placeholder.com/150"}
+                src={user.profilePicture || "https://via.placeholder.com/150"}
                 name={`${user.firstName} ${user.lastName}`}
               />
               <Text>{`${user.firstName} ${user.lastName}`}</Text>

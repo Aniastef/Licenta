@@ -26,7 +26,7 @@ export const getAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({
       $or: [{ createdBy: req.user._id }, { participant: req.user._id }],
-    }).populate("createdBy", "username profilePic").populate("participant", "username profilePic");
+    }).populate("createdBy", "username profilePicture").populate("participant", "username profilePicture");
 
     res.status(200).json(appointments);
   } catch (err) {

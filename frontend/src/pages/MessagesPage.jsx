@@ -10,15 +10,13 @@ import {
   HStack,
   Avatar,
   Spinner,
-  Divider,
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import searchIcon from "../assets/searchIcon.png";
 
-
 const MessagesPage = () => {
   const { userId } = useParams();
-console.log("📢 Current userId from URL:", userId);
+  console.log("📢 Current userId from URL:", userId);
 
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
@@ -28,7 +26,6 @@ console.log("📢 Current userId from URL:", userId);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-
 
   useEffect(() => {
     fetchConversations();
@@ -45,8 +42,8 @@ console.log("📢 Current userId from URL:", userId);
       console.log("🔄 Fetching conversations...");
       const response = await fetch("/api/messages/conversations", {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       const data = await response.json();
       console.log("✅ Conversations fetched:", data);
@@ -55,90 +52,78 @@ console.log("📢 Current userId from URL:", userId);
       console.error("❌ Error fetching conversations:", error);
     }
   };
-  
 
   const fetchMessages = async () => {
     try {
-        console.log(`📢 Fetching messages for user: ${userId}`); // DEBUG
+      console.log(`📢 Fetching messages for user: ${userId}`);
 
-        const response = await fetch(`/api/messages/${userId}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}` // ✅ Verifică dacă token-ul este setat
-            },
-        });
+      const response = await fetch(`/api/messages/${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-        const data = await response.json();
-        console.log("✅ Messages response:", data); // DEBUG
+      const data = await response.json();
+      console.log("✅ Messages response:", data);
 
-        if (response.ok) {
-            setMessages(data.messages || []);
-        } else {
-            console.error("❌ Error fetching messages:", data);
-        }
+      if (response.ok) {
+        setMessages(data.messages || []);
+      } else {
+        console.error("❌ Error fetching messages:", data);
+      }
     } catch (error) {
-        console.error("❌ Error fetching messages:", error);
+      console.error("❌ Error fetching messages:", error);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
+  const handleSearch = async () => {
+    if (!search.trim()) return;
 
-  
-  
-
-const handleSearch = async () => {
-  if (!search.trim()) return; // Evită căutări goale
-
-  try {
+    try {
       console.log(`🔍 Searching for: ${search}`);
       const response = await fetch(`/api/users/search?query=${search}`);
       const data = await response.json();
       console.log("✅ Search results:", data);
       setSearchResults(data.users || []);
-  } catch (error) {
+    } catch (error) {
       console.error("❌ Error searching users:", error);
-  }
-};
-
-
-const handleSelectUser = (user) => {
-  setSelectedUser(user); // 🔥 Stochează user-ul selectat
-  navigate(`/messages/${user._id}`);
-  setSearch("");
-  setSearchResults([]);
-};
-
-
-
-
-const handleSendMessage = async () => {
-  if (!newMessage.trim()) return;
-
-  try {
-    const response = await fetch("/api/messages/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify({ receiverId: userId, content: newMessage }),
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      setMessages([...messages, data.data]);
-      setNewMessage("");
-      fetchConversations();  // 🔥 Actualizează lista conversațiilor
     }
-  } catch (error) {
-    console.error("❌ Error sending message:", error);
-  }
-};
+  };
 
+  const handleSelectUser = (user) => {
+    setSelectedUser(user);
+    navigate(`/messages/${user._id}`);
+    setSearch("");
+    setSearchResults([]);
+  };
 
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
 
+    try {
+      const response = await fetch("/api/messages/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ receiverId: userId, content: newMessage }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setMessages([...messages, data.data]);
+        setNewMessage("");
+        fetchConversations();
+      }
+    } catch (error) {
+      console.error("❌ Error sending message:", error);
+    }
+  };
 
   return (
     <Flex height="100vh">
@@ -146,36 +131,36 @@ const handleSendMessage = async () => {
       <Box width="30%" p={4} borderRight="1px solid #ddd">
         <Heading size="md">Chats</Heading>
         <Flex mt={3} align="center">
-  <Input
-    placeholder="Search users..."
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-    flex="1"
-  />
-  <Button ml={2} onClick={handleSearch} bg="transparent" _hover={{ bg: "gray.200" }}>
-    <img src={searchIcon} alt="Search" width="20px" height="20px" />
-  </Button>
-</Flex>
+          <Input
+            placeholder="Search users..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            flex="1"
+          />
+          <Button ml={2} onClick={handleSearch} bg="transparent" _hover={{ bg: "gray.200" }}>
+            <img src={searchIcon} alt="Search" width="20px" height="20px" />
+          </Button>
+        </Flex>
 
-       {searchResults.length > 0 && (
-  <VStack mt={2} align="start" spacing={1} bg="gray.100" p={2} borderRadius="md">
-    {searchResults.map((user) => (
-      <HStack
-        key={user._id}
-        p={2}
-        borderRadius="md"
-        width="100%"
-        _hover={{ backgroundColor: "gray.200" }}
-        onClick={() => handleSelectUser(user)}
-        cursor="pointer"
-      >
-        <Avatar size="sm" name={user.firstName} />
-        <Text>{user.firstName} {user.lastName}</Text>
-      </HStack>
-    ))}
-  </VStack>
-)}
+        {searchResults.length > 0 && (
+          <VStack mt={2} align="start" spacing={1} bg="gray.100" p={2} borderRadius="md">
+            {searchResults.map((user) => (
+              <HStack
+                key={user._id}
+                p={2}
+                borderRadius="md"
+                width="100%"
+                _hover={{ backgroundColor: "gray.200" }}
+                onClick={() => handleSelectUser(user)}
+                cursor="pointer"
+              >
+                <Avatar size="sm" name={user.firstName} />
+                <Text>{user.firstName} {user.lastName}</Text>
+              </HStack>
+            ))}
+          </VStack>
+        )}
 
         <VStack mt={4} align="start" spacing={2}>
           {conversations.map((conv) => (
@@ -188,18 +173,17 @@ const handleSendMessage = async () => {
               onClick={() => handleSelectUser(conv.user)}
               cursor="pointer"
             >
-              <Avatar 
-  size="sm" 
-  name={conv.user.firstName} 
-  src={conv.user.profilePicture || undefined} 
-/>
-
+              <Avatar
+                size="sm"
+                name={conv.user.firstName}
+                src={conv.user.profilePicture || "/default-avatar.png"} // ✅ Fix aici
+              />
               <Text>{conv.user.firstName} {conv.user.lastName}</Text>
             </HStack>
           ))}
         </VStack>
       </Box>
-      
+
       {/* Chat Window */}
       <Box width="70%" p={5}>
         <Heading size="lg">Messages</Heading>
@@ -220,23 +204,21 @@ const handleSendMessage = async () => {
           ) : (
             <VStack spacing={3} align="start">
               {messages.map((msg, index) => (
-  <HStack
-    key={index}
-    alignSelf={msg.sender.toString() === userId.toString() ? "flex-start" : "flex-end"}
-    bg={msg.sender.toString() === userId.toString() ? "gray.200" : "blue.200"}
-    p={3}
-    borderRadius="md"
-  >
-    <Avatar 
-  size="sm" 
-  name={msg.sender.firstName} 
-  src={msg.sender.profilePicture || undefined} 
-/>
-
-    <Text>{msg.content}</Text>
-  </HStack>
-))}
-
+                <HStack
+                  key={index}
+                  alignSelf={msg.sender?._id === userId ? "flex-start" : "flex-end"}
+                  bg={msg.sender?._id === userId ? "gray.200" : "blue.200"}
+                  p={3}
+                  borderRadius="md"
+                >
+                  <Avatar
+                    size="sm"
+                    name={msg.sender?.firstName || "User"}
+                    src={msg.sender?.profilePicture || "/default-avatar.png"} // ✅ Fix avatar în mesaje
+                  />
+                  <Text>{msg.content}</Text>
+                </HStack>
+              ))}
             </VStack>
           )}
         </Box>
@@ -245,6 +227,7 @@ const handleSendMessage = async () => {
             placeholder="Type a message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             flex={1}
           />
           <Button ml={2} colorScheme="blue" onClick={handleSendMessage}>

@@ -1,187 +1,182 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Heading,
-  Flex,
   Text,
   Image,
-  Select,
+  Grid,
+  Stack,
   Input,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  LinkBox,
+  LinkOverlay,
 } from "@chakra-ui/react";
-import RectangleShape from "../assets/rectangleShape";
+import { Link } from "react-router-dom";
+
+const colorPalette = [
+  "blue.200",
+  "teal.200",
+  "purple.200",
+  "pink.200",
+  "orange.200",
+  "green.200",
+  "yellow.200",
+];
 
 const ExploreGalleries = () => {
-  const allGalleries = [
-    {
-      id: 1,
-      name: "Modern Art Gallery",
-      category: "Painting",
-      creatorName: "John Doe",
-      description: "A collection of modern and abstract paintings.",
-      coverPhoto: "https://via.placeholder.com/400x200",
-    },
-    {
-      id: 2,
-      name: "Sculpture Studio",
-      category: "Sculpture",
-      creatorName: "Jane Smith",
-      description: "A studio showcasing intricate sculptures.",
-      coverPhoto: "https://via.placeholder.com/400x200",
-    },
-    {
-      id: 3,
-      name: "Photography World",
-      category: "Photography",
-      creatorName: "Anna Lee",
-      description: "Captivating photographs from around the world.",
-      coverPhoto: "https://via.placeholder.com/400x200",
-    },
-    {
-      id: 4,
-      name: "Abstract Wonders",
-      category: "Painting",
-      creatorName: "Mark Taylor",
-      description: "Abstract art that challenges the imagination.",
-      coverPhoto: "https://via.placeholder.com/400x200",
-    },
-  ];
+  const [galleries, setGalleries] = useState([]);
+  const [filteredGalleries, setFilteredGalleries] = useState([]);
+  const [searchTags, setSearchTags] = useState([]);
+  const [tagInput, setTagInput] = useState("");
 
-  const [searchBy, setSearchBy] = useState("name"); // Criteriul de căutare selectat
-  const [searchValue, setSearchValue] = useState(""); // Valoarea căutată
-  const [sortOrder, setSortOrder] = useState("asc"); // Ordinea sortării
-  const [categoryFilter, setCategoryFilter] = useState(""); // Filtrare pe categorie
+  useEffect(() => {
+    fetchGalleries();
+  }, []);
 
-  // Filtrare și sortare galerii
-  const filteredGalleries = allGalleries
-    .filter((gallery) => {
-      const matchesName =
-        searchBy === "name" &&
-        gallery.name.toLowerCase().includes(searchValue.toLowerCase());
-      const matchesCreator =
-        searchBy === "creator" &&
-        gallery.creatorName.toLowerCase().includes(searchValue.toLowerCase());
-      const matchesCategory = categoryFilter
-        ? gallery.category === categoryFilter
-        : true;
+  const fetchGalleries = async () => {
+    try {
+      const response = await fetch("/api/galleries");
+      const data = await response.json();
+      const fetchedGalleries = data.galleries || [];
 
-      return (matchesName || matchesCreator) && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a.name.localeCompare(b.name);
-      } else {
-        return b.name.localeCompare(a.name);
+      setGalleries(fetchedGalleries);
+      setFilteredGalleries(fetchedGalleries);
+    } catch (error) {
+      console.error("Error fetching galleries:", error.message);
+    }
+  };
+
+  // 🔍 Funcție de filtrare a galeriilor după tag-uri
+  useEffect(() => {
+    if (searchTags.length === 0) {
+      setFilteredGalleries(galleries);
+    } else {
+      const filtered = galleries.filter((gallery) =>
+        searchTags.every((tag) =>
+          gallery.tags?.some((galleryTag) =>
+            galleryTag.toLowerCase().includes(tag.toLowerCase())
+          )
+        )
+      );
+      setFilteredGalleries(filtered);
+    }
+  }, [searchTags, galleries]);
+
+  // 🔹 Adăugare tag nou în lista de filtrare
+  const handleTagAdd = (e) => {
+    if (e.key === "Enter" && tagInput.trim() !== "") {
+      const newTag = tagInput.trim().toLowerCase();
+      if (!searchTags.includes(newTag)) {
+        setSearchTags([...searchTags, newTag]);
       }
-    });
+      setTagInput("");
+    }
+  };
+
+  // ❌ Ștergere tag din filtrare
+  const handleTagRemove = (tag) => {
+    setSearchTags(searchTags.filter((t) => t !== tag));
+  };
 
   return (
-    <Box mt={8}>
-      <RectangleShape
-        bgColor="teal.300"
-        title="Explore Galleries"
-        minW="300px"
-        maxW="300px"
-        minH="80px"
-        textAlign="left"
-      />
+    <Box mt={8} px={4}>
+      <Heading as="h2" size="lg" mb={6}>
+        Explore Galleries
+      </Heading>
 
-      {/* Bara de căutare combinată și sortare */}
-      <Flex mt={4} mb={5} justify="space-between" wrap="wrap" gap={4}>
-        <Flex direction="row" alignItems="center" gap={4}>
-          <RectangleShape
-            bgColor="yellow.300"
-            title="Search by"
-            minW="100px"
-            maxW="100px"
-            minH="20px"
-            textAlign="left"
-          />
-          <Select
-            w="150px"
-            bg="gray.100"
-            value={searchBy}
-            onChange={(e) => setSearchBy(e.target.value)}
-          >
-            <option value="name">Gallery Name</option>
-            <option value="creator">Creator</option>
-          </Select>
-          <Input
-            placeholder={`Search by ${searchBy}...`}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            w="300px"
-            bg="gray.100"
-          />
-        </Flex>
+      {/* ✅ Căutare după tag-uri */}
+      <Box mb={4}>
+        <Input
+          placeholder="Type a tag and press Enter..."
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+          onKeyDown={handleTagAdd}
+          maxW="400px"
+          mb={2}
+          bg="white"
+        />
+        <Stack direction="row" spacing={2} flexWrap="wrap">
+          {searchTags.map((tag, index) => (
+            <Tag key={index} size="md" borderRadius="full" colorScheme="blue">
+              <TagLabel>{tag}</TagLabel>
+              <TagCloseButton onClick={() => handleTagRemove(tag)} />
+            </Tag>
+          ))}
+        </Stack>
+      </Box>
 
-        <Flex direction="row" alignItems="center" gap={4}>
-          <RectangleShape
-            bgColor="yellow.300"
-            title="Filter by"
-            minW="100px"
-            maxW="100px"
-            minH="20px"
-            textAlign="left"
-          />
-          <Select
-            placeholder="Category"
-            w="150px"
-            bg="gray.100"
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            <option value="Painting">Painting</option>
-            <option value="Sculpture">Sculpture</option>
-            <option value="Photography">Photography</option>
-          </Select>
-          <Select
-            placeholder="Sort by Name"
-            w="150px"
-            bg="gray.100"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-          >
-            <option value="asc">A-Z</option>
-            <option value="desc">Z-A</option>
-          </Select>
-        </Flex>
-      </Flex>
-
-      {/* Lista de galerii */}
-      <Flex direction="column" px={5}>
+      {/* ✅ Afișare galerii filtrate */}
+      <Grid templateColumns="repeat(auto-fit, minmax(280px, 1fr))" gap={6}>
         {filteredGalleries.length > 0 ? (
-          filteredGalleries.map((gallery) => (
-            <Box key={gallery.id} bg="gray.200" p={4} mb={4} borderRadius="md">
-              <Box
-                width="100%"
-                height="200px"
-                bg="gray.300"
-                mb={4}
-                borderRadius="md"
+          filteredGalleries.map((gallery, index) => {
+            const bgColor = colorPalette[index % colorPalette.length];
+            const productImages = (gallery.products || [])
+              .filter((product) => product.images?.length > 0)
+              .flatMap((product) => product.images)
+              .slice(0, 6);
+
+            return (
+              <LinkBox
+                key={gallery._id}
+                bg={bgColor}
+                p={4}
+                borderRadius="lg"
+                boxShadow="md"
                 overflow="hidden"
+                _hover={{ boxShadow: "xl", transform: "scale(1.02)", transition: "0.3s" }}
               >
-                <Image
-                  src={gallery.coverPhoto}
-                  alt={`${gallery.name} cover`}
-                  width="100%"
-                  height="100%"
-                  objectFit="cover"
-                />
-              </Box>
-              <Flex direction="row" justify="space-between" align="center" mb={2}>
-                <Heading size="md">{gallery.name}</Heading>
-                <Text>Category: {gallery.category}</Text>
-              </Flex>
-              <Text mb={1}>Created by: {gallery.creatorName}</Text>
-              <Text>{gallery.description}</Text>
-            </Box>
-          ))
+                <Stack spacing={2} mb={3}>
+                  <Heading size="md">
+                    <LinkOverlay as={Link} to={`/gallery/${gallery._id}`}>
+                      {gallery.name}
+                    </LinkOverlay>
+                  </Heading>
+                  <Text color="gray.600">{gallery.products?.length || 0} products</Text>
+                  {/* 🔹 Afișare tag-uri galerii */}
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {gallery.tags?.map((tag, idx) => (
+                      <Tag key={idx} size="sm" colorScheme="gray">
+                        {tag}
+                      </Tag>
+                    ))}
+                  </Stack>
+                </Stack>
+
+                {/* 📌 Grid adaptiv pentru imagini */}
+                {productImages.length > 0 ? (
+                  <Grid
+                    templateColumns={productImages.length === 1 ? "1fr" : "repeat(2, 1fr)"}
+                    gap={2}
+                    borderRadius="md"
+                    overflow="hidden"
+                  >
+                    {productImages.map((img, idx) => (
+                      <Image
+                        key={idx}
+                        src={img}
+                        alt={`Gallery image ${idx}`}
+                        width="100%"
+                        height="auto"
+                        maxH={productImages.length === 1 ? "240px" : "120px"}
+                        objectFit="cover"
+                        borderRadius="md"
+                      />
+                    ))}
+                  </Grid>
+                ) : (
+                  <Text textAlign="center" color="gray.500">
+                    No images available
+                  </Text>
+                )}
+              </LinkBox>
+            );
+          })
         ) : (
-          <Text mt={5} textAlign="center" color="gray.500">
-            No galleries found.
-          </Text>
+          <Text>No galleries found.</Text>
         )}
-      </Flex>
+      </Grid>
     </Box>
   );
 };

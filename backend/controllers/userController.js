@@ -118,7 +118,7 @@ export const loginUser = async (req, res) => {
 			email: user.email,
 			username: user.username,
 			bio: user.bio,
-			profilePic: user.profilePic,
+			profilePicture: user.profilePicture,
 		});
 
 	} catch (error) {
@@ -176,7 +176,7 @@ export const updateUser = async (req, res) => {
 	  webpage,
 	} = req.body;
   
-	let { profilePic} = req.body;
+	let { profilePicture} = req.body;
   
 	const userId = req.user._id;
   
@@ -194,7 +194,7 @@ export const updateUser = async (req, res) => {
 	  user.lastName = lastName || user.lastName;
 	  user.email = email || user.email;
 	  user.username = username || user.username;
-	  user.profilePic = profilePic || user.profilePic;
+	  user.profilePicture = profilePicture || user.profilePicture;
 	  user.bio = bio || user.bio;
 	  user.location = location || user.location;
 	  user.profession = profession || user.profession;
@@ -280,8 +280,8 @@ export const getUserWithGalleries = async (req, res) => {
 	  }
   
 	  // Ștergem avatarul și imaginea de copertă de pe Cloudinary, dacă există
-	  if (userToDelete.profilePic) {
-		await cloudinary.uploader.destroy(userToDelete.profilePic.split("/").pop().split(".")[0]);
+	  if (userToDelete.profilePicture) {
+		await cloudinary.uploader.destroy(userToDelete.profilePicture.split("/").pop().split(".")[0]);
 	  }
 	  
   
