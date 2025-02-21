@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Flex,
@@ -43,19 +43,45 @@ const LoginCard= () => {
         },
         body: JSON.stringify(inputs),
       });
+  
       const data = await res.json();
-      console.log(data);
-      if (data.error) {
-        showToast("Error", data.error, "error");
+  
+      if (!res.ok) { // ✅ Verifică și afișează eroarea pentru conturi blocate
+        showToast("Error", data.error || "Login failed", "error");
         return;
       }
+  
       localStorage.setItem("licenta", JSON.stringify(data));
       setUser(data);
-      console.log("Login successful", data)
+      console.log("Login successful", data);
     } catch (error) {
-      showToast("Error", error, "error");
+      showToast("Error", "Server error. Please try again later.", "error");
     }
   };
+  
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      try {
+        const res = await fetch("/api/users/profile", {
+          credentials: "include",
+        });
+  
+        const data = await res.json();
+  
+        if (!res.ok || data.isBlocked) {
+          localStorage.removeItem("licenta");
+          window.location.href = "/login"; // ✅ Deconectează user-ul blocat
+        }
+      } catch (error) {
+        console.error("Error checking user status:", error);
+      }
+    };
+  
+    const interval = setInterval(checkUserStatus, 30000); // ✅ Verifică la fiecare 30 secunde
+  
+    return () => clearInterval(interval);
+  }, []);
+  
 
   return (
     <Flex minH="100vh" bg="gray.100" align="center" justify="center">

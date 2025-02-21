@@ -140,6 +140,11 @@ const userSchema = new mongoose.Schema(
     },
     isVerified: { type: Boolean, default: false }, // ✅ Verificare email
     verificationToken: { type: String }, // ✅ Token pentru activare
+    isBlocked: {
+      type: Boolean,
+      default: false
+    },
+    
   },
   {
     timestamps: true,

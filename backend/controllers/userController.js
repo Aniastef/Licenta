@@ -123,36 +123,42 @@ export const signupUser = async (req, res) => {
 
 
 export const loginUser = async (req, res) => {
-
 	try {
-		const { username, password } = req.body;
-		const user = await User.findOne({ username });
-
-        if (!user) 
-            return res.status(400).json({ error: "Invalid username or password" });
-        
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
-
-		if (!isPasswordCorrect) 
-            return res.status(400).json({ error: "Invalid username or password" });
-
-		generateTokenAndSetCookie(user._id, res);
-
-		res.status(200).json({
-			_id: user._id,
-			firstName: user.firstName,
-			lastName: user.lastName,
-			email: user.email,
-			username: user.username,
-			bio: user.bio,
-			profilePicture: user.profilePicture,
-		});
-
+	  const { username, password } = req.body;
+	  const user = await User.findOne({ username });
+  
+	  if (!user) 
+		return res.status(400).json({ error: "Invalid username or password" });
+  
+	  // ✅ Verifică dacă utilizatorul este blocat
+	  if (user.isBlocked) {
+		return res.status(403).json({ error: "Your account has been blocked. Contact support for assistance." });
+	  }
+  
+	  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  
+	  if (!isPasswordCorrect) 
+		return res.status(400).json({ error: "Invalid username or password" });
+  
+	  generateTokenAndSetCookie(user._id, res);
+  
+	  res.status(200).json({
+		_id: user._id,
+		firstName: user.firstName,
+		lastName: user.lastName,
+		email: user.email,
+		username: user.username,
+		bio: user.bio,
+		profilePicture: user.profilePicture,
+	  });
+  
 	} catch (error) {
-		res.status(500).json({ error: error.message });
-		console.log("Error in loginUser: ", error.message);
+	  res.status(500).json({ error: error.message });
+	  console.log("Error in loginUser: ", error.message);
 	}
-};
+  };
+  
+  
 
 export const searchUsers = async (req, res) => {
 	try {
@@ -203,25 +209,23 @@ export const updateUser = async (req, res) => {
 	  webpage,
 	} = req.body;
   
-	let { profilePicture} = req.body;
-  
-	const userId = req.user._id;
+	const userId = req.user._id; // Utilizatorul care face cererea
   
 	try {
 	  let user = await User.findById(userId);
-	  if (!user) return res.status(400).json({ error: "User not found" });
+	  if (!user) return res.status(404).json({ error: "User not found" });
   
-	  if (req.params.id !== userId.toString())
-		return res.status(400).json({ error: "You cannot update another user's profile" });
+	  // ✅ Utilizatorii nu pot modifica alți useri
+	  if (req.params.id !== userId.toString()) {
+		return res.status(403).json({ error: "You cannot update another user's profile" });
+	  }
   
-	  
-  
-	  // Restul câmpurilor și logicii pentru actualizarea utilizatorului
+	  // ✅ Actualizare doar a propriilor informații
 	  user.firstName = firstName || user.firstName;
 	  user.lastName = lastName || user.lastName;
 	  user.email = email || user.email;
 	  user.username = username || user.username;
-	  user.profilePicture = profilePicture || user.profilePicture;
+	  user.profilePicture = req.body.profilePicture || user.profilePicture;
 	  user.bio = bio || user.bio;
 	  user.location = location || user.location;
 	  user.profession = profession || user.profession;
@@ -230,34 +234,26 @@ export const updateUser = async (req, res) => {
 	  user.instagram = instagram || user.instagram;
 	  user.webpage = webpage || user.webpage;
   
-	  if (oldPassword || password) {
-		if (!oldPassword || !password) {
-		  return res.status(400).json({
-			error: "Both old and new passwords are required to update password",
-		  });
+	  // ✅ Utilizatorii își pot schimba parola doar dacă furnizează `oldPassword`
+	  if (password) {
+		if (!oldPassword) {
+		  return res.status(400).json({ error: "Old password required" });
 		}
-  
 		const isMatch = await bcrypt.compare(oldPassword, user.password);
-		if (!isMatch) {
-		  return res.status(400).json({ error: "Old password is incorrect" });
-		}
+		if (!isMatch) return res.status(400).json({ error: "Old password is incorrect" });
   
 		const salt = await bcrypt.genSalt(10);
 		user.password = await bcrypt.hash(password, salt);
 	  }
   
-	  // Salvează modificările
-	  user = await user.save();
-  
-	  // Elimină parola din obiectul returnat
-	  user.password = null;
-  
-	  res.status(200).json(user);
+	  await user.save();
+	  res.status(200).json({ message: "Profile updated successfully" });
 	} catch (err) {
 	  res.status(500).json({ error: err.message });
-	  console.log("Error in updateUser: ", err.message);
+	  console.log("Error in updateUser:", err.message);
 	}
-};
+  };
+  
   
 export const getUserWithGalleries = async (req, res) => {
     try {

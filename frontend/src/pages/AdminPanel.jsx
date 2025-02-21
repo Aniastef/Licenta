@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, Spinner, useToast } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom"; // ✅ Pentru redirecționare
+import {
+  Box, Button, Table, Thead, Tbody, Tr, Th, Td, Spinner, useToast,
+  Select, Input, Modal, ModalOverlay, ModalContent, ModalHeader,
+  ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Textarea
+} from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null); // ✅ Stocăm userul logat
+  const [currentUser, setCurrentUser] = useState(null);
+  const [editUser, setEditUser] = useState(null);
+  const [newProfilePicture, setNewProfilePicture] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const toast = useToast();
-  const navigate = useNavigate(); // ✅ Pentru redirecționare
+  const navigate = useNavigate();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     fetchCurrentUser();
@@ -18,64 +27,164 @@ const AdminPanel = () => {
     try {
       const response = await fetch("/api/users/profile", { credentials: "include" });
       const data = await response.json();
-
-      console.log("Fetched current user:", data); // ✅ Debugging
-
-      if (!data || !data.role) {
-        console.error("User not found or missing role, redirecting...");
-        navigate("/"); // ✅ Redirecționează utilizatorii non-admin
-        return;
-      }
-
-      if (data.role !== "admin" && data.role !== "superadmin") {
-        console.error("User does not have admin privileges, redirecting...");
-        navigate("/");
-        return;
-      }
-
+      if (!data || !data.role) navigate("/");
+      if (data.role !== "admin" && data.role !== "superadmin") navigate("/");
       setCurrentUser(data);
     } catch (err) {
-      console.error("Error fetching user:", err);
-      navigate("/"); // ✅ Dacă există eroare, redirecționează la homepage
+      navigate("/");
     }
-};
+  };
 
-  
-  
-  
   const fetchUsers = async () => {
     try {
       const response = await fetch("/api/admin/users");
       const data = await response.json();
-  
-      console.log("Fetched users:", data); // ✅ Debugging
-  
-      if (!Array.isArray(data)) { // ✅ Verifică dacă e array
-        console.error("Error fetching users: Invalid response format", data);
-        toast({ title: "Error fetching users", status: "error" });
-        return;
-      }
-  
       setUsers(data);
       setLoading(false);
     } catch (err) {
-      console.error("Error in fetchUsers:", err);
       toast({ title: "Error fetching users", status: "error" });
       setLoading(false);
     }
   };
-  
-  
-  
 
+  const handleEditUser = (user) => {
+    setEditUser(user);
+    setNewPassword("");
+    setNewProfilePicture(null);
+    onOpen();
+  };
 
-  if (!currentUser) {
-    return <Spinner />;
-  }
+  const handleSaveEdit = async () => {
+    try {
+      const updateData = {
+        firstName: editUser.firstName,
+        lastName: editUser.lastName,
+        email: editUser.email,
+        bio: editUser.bio,
+        age: editUser.age,
+        profession: editUser.profession,
+        location: editUser.location,
+        facebook: editUser.facebook,
+        instagram: editUser.instagram,
+        webpage: editUser.webpage,
+      };
+
+      if (newPassword) {
+        updateData.password = newPassword;
+      }
+
+      if (newProfilePicture) {
+        const formData = new FormData();
+        formData.append("file", newProfilePicture);
+        const uploadResponse = await fetch(`/api/admin/users/${editUser._id}/upload`, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+        const uploadResult = await uploadResponse.json();
+        if (!uploadResponse.ok) throw new Error(uploadResult.error || "Failed to upload image");
+        updateData.profilePicture = uploadResult.url;
+      }
+
+      const response = await fetch(`/api/admin/users/${editUser._id}/update`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updateData),
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Failed to update user");
+
+      toast({ title: "User updated successfully", status: "success" });
+      onClose();
+      fetchUsers();
+    } catch (err) {
+      toast({ title: err.message, status: "error" });
+    }
+  };
+
+  const handleBlockUser = async (user) => {
+    try {
+      const response = await fetch(`/api/admin/users/${user._id}/block`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Failed to update user status");
+
+      if (user._id === currentUser._id) {
+        localStorage.removeItem("licenta");
+        window.location.href = "/login";
+      }
+
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u._id === user._id ? { ...u, isBlocked: !u.isBlocked } : u))
+      );
+
+      toast({ title: `User ${user.isBlocked ? "unblocked" : "blocked"} successfully`, status: "success" });
+    } catch (err) {
+      toast({ title: err.message, status: "error" });
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error deleting user");
+      }
+
+      toast({ title: "User deleted successfully", status: "success" });
+      fetchUsers();
+    } catch (err) {
+      toast({ title: err.message, status: "error" });
+    }
+  };
+
+  const handleUploadPicture = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+  
+    const formData = new FormData();
+    formData.append("profilePicture", file);
+  
+    try {
+      const response = await fetch(`/api/admin/users/${editUser._id}/upload`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+  
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to upload picture");
+  
+      toast({ title: "Profile picture updated successfully", status: "success" });
+  
+      // ✅ Actualizează user-ul cu noua imagine
+      setEditUser((prevUser) => ({ ...prevUser, profilePicture: data.url }));
+    } catch (err) {
+      toast({ title: err.message, status: "error" });
+    }
+  };
+  
 
   return (
     <Box p={5}>
       <h1>Admin Panel - User Management</h1>
+      <Input
+        placeholder="Search users..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        mb={3}
+      />
       {loading ? (
         <Spinner />
       ) : (
@@ -84,28 +193,55 @@ const AdminPanel = () => {
             <Tr>
               <Th>Name</Th>
               <Th>Email</Th>
-              <Th>Admin</Th>
+              <Th>Role</Th>
               <Th>Actions</Th>
             </Tr>
           </Thead>
           <Tbody>
-  {Array.isArray(users) && users.length > 0 ? (
-    users.map((user) => (
-      <Tr key={user._id}>
-        <Td>{user.firstName} {user.lastName}</Td>
-        <Td>{user.email}</Td>
-        <Td>{user.role}</Td> {/* ✅ Afișează rolul utilizatorului */}
-      </Tr>
-    ))
-  ) : (
-    <Tr>
-      <Td colSpan="3" textAlign="center">No users found</Td>
-    </Tr>
-  )}
-</Tbody>
-
-
+            {users.map((user) => (
+              <Tr key={user._id}>
+                <Td>{user.firstName} {user.lastName}</Td>
+                <Td>{user.email}</Td>
+                <Td>
+                  <Button colorScheme="blue" onClick={() => handleEditUser(user)}>Edit</Button>
+                  <Button colorScheme={user.isBlocked ? "green" : "red"} onClick={() => handleBlockUser(user)}>
+                    {user.isBlocked ? "Unblock" : "Block"}
+                  </Button>
+                  <Button colorScheme="red" onClick={() => handleDeleteUser(user._id)} isDisabled={user.role === "superadmin"}>
+                    Delete
+                  </Button>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
         </Table>
+      )}
+
+      {editUser && (
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Edit User</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Input placeholder="First Name" value={editUser.firstName} onChange={(e) => setEditUser({ ...editUser, firstName: e.target.value })} mb={3} />
+              <Input placeholder="Last Name" value={editUser.lastName} onChange={(e) => setEditUser({ ...editUser, lastName: e.target.value })} mb={3} />
+              <Input placeholder="Email" value={editUser.email} onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} mb={3} />
+              <Textarea placeholder="Bio" value={editUser.bio} onChange={(e) => setEditUser({ ...editUser, bio: e.target.value })} mb={3} />
+              <Input placeholder="Profession" value={editUser.profession} onChange={(e) => setEditUser({ ...editUser, profession: e.target.value })} mb={3} />
+              <Input placeholder="Location" value={editUser.location} onChange={(e) => setEditUser({ ...editUser, location: e.target.value })} mb={3} />
+              <Input placeholder="New Password (optional)" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} mb={3} />
+              <Input type="file" accept="image/*" onChange={handleUploadPicture} mb={3} />
+                {editUser.profilePicture && (
+                  <img src={`http://localhost:5000${editUser.profilePicture}`} alt="Profile" width="100" />
+                )}
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" onClick={handleSaveEdit}>Save</Button>
+              <Button ml={3} onClick={onClose}>Cancel</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
     </Box>
   );
