@@ -5,6 +5,8 @@ import {
   ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Textarea
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { saveAs } from "file-saver"; // ✅ Pentru descărcare fișiere
+import Papa from "papaparse"; // ✅ Pentru generare CSV
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
@@ -49,8 +51,8 @@ const AdminPanel = () => {
     fetchUsers();
   }, []);
 
-  const handleNavigateToProfile = (userId) => {
-    navigate(`/profile/${userId}`);
+  const handleNavigateToProfile = (username) => {
+    navigate(`/profile/${username}`);
   };
 
   const fetchCurrentUser = async () => {
@@ -229,6 +231,30 @@ const AdminPanel = () => {
     }
   };
   
+  const exportUsersToCSV = () => {
+    if (users.length === 0) {
+      toast({ title: "No users to export", status: "warning" });
+      return;
+    }
+
+    const csvData = Papa.unparse(users.map(user => ({
+      ID: user._id,
+      Name: `${user.firstName} ${user.lastName}`,
+      Email: user.email,
+      Role: user.role,
+      Status: user.isBlocked ? "Blocked" : "Active"
+    })));
+
+    const csvBlob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    saveAs(csvBlob, "users_list.csv");
+    toast({ title: "Users exported successfully!", status: "success" });
+  };
+  
+  const filteredUsers = users.filter(user =>
+    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
 
   return (
@@ -254,65 +280,72 @@ const AdminPanel = () => {
 
       {activeTab === "users" && (
         <>
-      <Input
-        placeholder="Search users..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        mb={3}
-      />
-      {loading ? (
-        <Spinner />
-      ) : (
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Email</Th>
-              <Th>Role</Th>
-              <Th>Actions</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-  {Array.isArray(users) && users.length > 0 ? (
-    users.map((user) => (
-      <Tr key={user._id}>
-        <Td 
-                  onClick={() => handleNavigateToProfile(user._id)}
-                  style={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
-                >
-                  {user.firstName} {user.lastName}
-                </Td>
-        <Td>{user.email}</Td>
-        <Td>
-          <Select
-            value={user.role}
-            onChange={(e) => handleRoleChange(user._id, e.target.value)}
-            size="sm"
-          >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-            <option value="superadmin">Superadmin</option>
-          </Select>
-        </Td>
-        <Td>
-          <Button colorScheme="blue" onClick={() => handleEditUser(user)}>Edit</Button>
-          <Button colorScheme={user.isBlocked ? "green" : "red"} onClick={() => handleBlockUser(user)}>
-            {user.isBlocked ? "Unblock" : "Block"}
-          </Button>
-          <Button colorScheme="red" onClick={() => handleDeleteUser(user._id)} isDisabled={user.role === "superadmin"}>
-            Delete
-          </Button>
-        </Td>
+        <Button colorScheme="blue" mb={4} onClick={exportUsersToCSV}>
+        Export Users (CSV)
+      </Button>
+      {/* Search Input */}
+<Input
+  placeholder="Search users..."
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  mb={3}
+/>
+
+{/* Tabel cu filtrare activă */}
+{loading ? (
+  <Spinner />
+) : (
+  <Table variant="simple">
+    <Thead>
+      <Tr>
+        <Th>Name</Th>
+        <Th>Email</Th>
+        <Th>Role</Th>
+        <Th>Actions</Th>
       </Tr>
-    ))
-  ) : (
-    <Tr>
-      <Td colSpan="4">No users found</Td>
-    </Tr>
-  )}
-</Tbody>
-</Table>
+    </Thead>
+    <Tbody>
+      {filteredUsers.length > 0 ? (
+        filteredUsers.map((user) => (
+          <Tr key={user._id}>
+            <Td 
+              onClick={() => handleNavigateToProfile(user.username)}
+              style={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
+            >
+              {user.firstName} {user.lastName}
+            </Td>
+            <Td>{user.email}</Td>
+            <Td>
+              <Select
+                value={user.role}
+                onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                size="sm"
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                <option value="superadmin">Superadmin</option>
+              </Select>
+            </Td>
+            <Td>
+              <Button colorScheme="blue" onClick={() => handleEditUser(user)}>Edit</Button>
+              <Button colorScheme={user.isBlocked ? "green" : "red"} onClick={() => handleBlockUser(user)}>
+                {user.isBlocked ? "Unblock" : "Block"}
+              </Button>
+              <Button colorScheme="red" onClick={() => handleDeleteUser(user._id)} isDisabled={user.role === "superadmin"}>
+                Delete
+              </Button>
+            </Td>
+          </Tr>
+        ))
+      ) : (
+        <Tr>
+          <Td colSpan="4">No users found</Td>
+        </Tr>
+      )}
+    </Tbody>
+  </Table>
 )}
+
 
 
       {editUser && (
