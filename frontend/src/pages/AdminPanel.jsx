@@ -23,6 +23,10 @@ const AdminPanel = () => {
     fetchUsers();
   }, []);
 
+  const handleNavigateToProfile = (userId) => {
+    navigate(`/profile/${userId}`);
+  };
+  
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch("/api/users/profile", { credentials: "include" });
@@ -168,12 +172,37 @@ const AdminPanel = () => {
   
       toast({ title: "Profile picture updated successfully", status: "success" });
   
-      // ✅ Actualizează user-ul cu noua imagine
+      // ✅ Actualizează imaginea utilizatorului cu URL-ul de pe Cloudinary
       setEditUser((prevUser) => ({ ...prevUser, profilePicture: data.url }));
     } catch (err) {
       toast({ title: err.message, status: "error" });
     }
   };
+
+  
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/role`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ role: newRole }),
+        credentials: "include", // ✅ Asigură-te că este inclus
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error updating role");
+      }
+  
+      toast({ title: "Role updated successfully", status: "success" });
+      fetchUsers();
+    } catch (err) {
+      toast({ title: err.message, status: "error" });
+    }
+  };
+  
   
 
   return (
@@ -198,22 +227,47 @@ const AdminPanel = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {users.map((user) => (
-              <Tr key={user._id}>
-                <Td>{user.firstName} {user.lastName}</Td>
-                <Td>{user.email}</Td>
-                <Td>
-                  <Button colorScheme="blue" onClick={() => handleEditUser(user)}>Edit</Button>
-                  <Button colorScheme={user.isBlocked ? "green" : "red"} onClick={() => handleBlockUser(user)}>
-                    {user.isBlocked ? "Unblock" : "Block"}
-                  </Button>
-                  <Button colorScheme="red" onClick={() => handleDeleteUser(user._id)} isDisabled={user.role === "superadmin"}>
-                    Delete
-                  </Button>
+  {Array.isArray(users) && users.length > 0 ? (
+    users.map((user) => (
+      <Tr key={user._id}>
+        <Td 
+                  onClick={() => handleNavigateToProfile(user._id)}
+                  style={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
+                >
+                  {user.firstName} {user.lastName}
                 </Td>
-              </Tr>
-            ))}
-          </Tbody>
+        <Td>{user.email}</Td>
+        <Td>
+          <Select
+            value={user.role}
+            onChange={(e) => handleRoleChange(user._id, e.target.value)}
+            size="sm"
+          >
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Superadmin</option>
+          </Select>
+        </Td>
+        <Td>
+          <Button colorScheme="blue" onClick={() => handleEditUser(user)}>Edit</Button>
+          <Button colorScheme={user.isBlocked ? "green" : "red"} onClick={() => handleBlockUser(user)}>
+            {user.isBlocked ? "Unblock" : "Block"}
+          </Button>
+          <Button colorScheme="red" onClick={() => handleDeleteUser(user._id)} isDisabled={user.role === "superadmin"}>
+            Delete
+          </Button>
+        </Td>
+      </Tr>
+    ))
+  ) : (
+    <Tr>
+      <Td colSpan="4">No users found</Td>
+    </Tr>
+  )}
+</Tbody>
+
+
+
         </Table>
       )}
 
@@ -235,6 +289,7 @@ const AdminPanel = () => {
                 {editUser.profilePicture && (
                   <img src={`http://localhost:5000${editUser.profilePicture}`} alt="Profile" width="100" />
                 )}
+
             </ModalBody>
             <ModalFooter>
               <Button colorScheme="blue" onClick={handleSaveEdit}>Save</Button>

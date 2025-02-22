@@ -1,19 +1,24 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
+import {uploadToCloudinary} from "../config/imgUpload.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
-      return res.status(403).json({ error: "Access denied" });
-    }
+      console.log("Authenticated user:", req.user); // 🔍 Debugging
 
-    const users = await User.find().select("-password");
-    res.status(200).json(users);
+      if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
+          return res.status(403).json({ error: "Access denied" });
+      }
+
+      const users = await User.find().select("-password");
+      res.status(200).json(users);
   } catch (err) {
-    console.error("Error fetching users:", err);
-    res.status(500).json({ error: "Server error" });
+      console.error("Error fetching users:", err);
+      res.status(500).json({ error: "Server error" });
   }
 };
+
+
 
 export const deleteUser = async (req, res) => {
   try {
@@ -144,11 +149,50 @@ export const uploadProfilePicture = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    user.profilePicture = `/uploads/${req.file.filename}`;
+    // ✅ Încarcă imaginea pe Cloudinary
+    const imageUrl = await uploadToCloudinary(req.file);
+
+    // ✅ Salvează URL-ul în baza de date
+    user.profilePicture = imageUrl;
     await user.save();
 
-    res.status(200).json({ message: "Profile picture updated", url: user.profilePicture });
+    res.status(200).json({ message: "Profile picture updated", url: imageUrl });
   } catch (err) {
+    console.error("Error uploading profile picture:", err);
     res.status(500).json({ error: "Server error" });
   }
+}; 
+
+
+export const handleRoleChange = async (req, res) => {
+  try {
+    const { role } = req.body;
+    const requestingUser = req.user;
+
+    // Verifică dacă utilizatorul autentificat este superadmin
+    if (!requestingUser || requestingUser.role !== "superadmin") {
+      return res.status(403).json({ error: "Only superadmins can update roles" });
+    }
+
+    // Verifică dacă rolul trimis este valid
+    if (!["user", "admin", "superadmin"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Superadminii nu pot fi retrogradați de altcineva
+    if (user.role === "superadmin" && role !== "superadmin") {
+      return res.status(400).json({ error: "Superadmin cannot be downgraded" });
+    }
+
+    user.role = role;
+    await user.save();
+
+    res.json({ message: "User role updated successfully", user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
+
