@@ -1,24 +1,23 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
-import {uploadToCloudinary} from "../config/imgUpload.js";
+import { uploadToCloudinary } from "../config/imgUpload.js";
+import { addAuditLog } from "./auditLogController.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-      console.log("Authenticated user:", req.user); // 🔍 Debugging
+    console.log("Authenticated user:", req.user);
 
-      if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
-          return res.status(403).json({ error: "Access denied" });
-      }
+    if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
+      return res.status(403).json({ error: "Access denied" });
+    }
 
-      const users = await User.find().select("-password");
-      res.status(200).json(users);
+    const users = await User.find().select("-password");
+    res.status(200).json(users);
   } catch (err) {
-      console.error("Error fetching users:", err);
-      res.status(500).json({ error: "Server error" });
+    console.error("Error fetching users:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
-
-
 
 export const deleteUser = async (req, res) => {
   try {
@@ -34,6 +33,10 @@ export const deleteUser = async (req, res) => {
     }
 
     await User.findByIdAndDelete(req.params.id);
+
+    // ✅ Salvează log-ul acțiunii
+    await addAuditLog("User deleted", req.user._id, user._id, `Deleted user: ${user.email}`);
+
     res.json({ message: "User deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
@@ -55,13 +58,16 @@ export const updateAdminRole = async (req, res) => {
 
     user.role = req.body.role;
     await user.save();
+
+    // ✅ Salvează log-ul acțiunii
+    await addAuditLog("Admin role updated", req.user._id, user._id, `Changed role to: ${user.role}`);
+
     res.json({ message: "User role updated", user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Blocare utilizator + deconectare instantanee
 export const toggleBlockUser = async (req, res) => {
   try {
     const requestingUser = req.user;
@@ -69,7 +75,6 @@ export const toggleBlockUser = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // 🔒 Adminii nu pot bloca superadmini
     if (user.role === "superadmin") {
       return res.status(403).json({ error: "Superadmins cannot be blocked" });
     }
@@ -77,10 +82,8 @@ export const toggleBlockUser = async (req, res) => {
     user.isBlocked = !user.isBlocked;
     await user.save();
 
-    // ✅ Dacă user-ul blocat este cel logat, ștergem token-ul
-    if (user.isBlocked) {
-      res.clearCookie("jwt");
-    }
+    // ✅ Salvează log-ul acțiunii
+    await addAuditLog("User blocked/unblocked", req.user._id, user._id, `User ${user.isBlocked ? "blocked" : "unblocked"}`);
 
     res.json({ message: `User ${user.isBlocked ? "blocked" : "unblocked"} successfully` });
   } catch (err) {
@@ -89,7 +92,6 @@ export const toggleBlockUser = async (req, res) => {
   }
 };
 
-// ✅ Actualizare completă a utilizatorului (inclusiv bio și profil)
 export const updateUserAdmin = async (req, res) => {
   const {
     firstName, lastName, email, username, role, password, bio, location,
@@ -102,17 +104,16 @@ export const updateUserAdmin = async (req, res) => {
     let user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // 🔒 Superadminii nu își pot schimba unii altora datele
     if (user.role === "superadmin" && requestingUser.role === "superadmin") {
       return res.status(403).json({ error: "Superadmin cannot modify another superadmin" });
     }
 
-    // 🔹 Adminii nu pot schimba rolul unui superadmin
     if (role && user.role === "superadmin" && requestingUser.role !== "superadmin") {
       return res.status(403).json({ error: "Only superadmins can change superadmin roles" });
     }
 
-    // ✅ Actualizare date utilizator
+    const oldData = { ...user._doc };
+
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
     user.email = email || user.email;
@@ -126,20 +127,22 @@ export const updateUserAdmin = async (req, res) => {
     user.webpage = webpage || user.webpage;
     user.profilePicture = profilePicture || user.profilePicture;
 
-    // ✅ Adminii pot reseta parola fără `oldPassword`
     if (password) {
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
     }
 
     await user.save();
+
+    // ✅ Salvează log-ul acțiunii
+    await addAuditLog("User updated", req.user._id, user._id, `Updated fields: ${JSON.stringify(req.body)}`);
+
     res.status(200).json({ message: "User updated successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Endpoint pentru upload imagine de profil
 export const uploadProfilePicture = async (req, res) => {
   try {
     if (!req.file) {
@@ -149,32 +152,30 @@ export const uploadProfilePicture = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // ✅ Încarcă imaginea pe Cloudinary
     const imageUrl = await uploadToCloudinary(req.file);
 
-    // ✅ Salvează URL-ul în baza de date
     user.profilePicture = imageUrl;
     await user.save();
+
+    // ✅ Salvează log-ul acțiunii
+    await addAuditLog("Profile picture updated", req.user._id, user._id, `Updated profile picture for user: ${user.email}`);
 
     res.status(200).json({ message: "Profile picture updated", url: imageUrl });
   } catch (err) {
     console.error("Error uploading profile picture:", err);
     res.status(500).json({ error: "Server error" });
   }
-}; 
-
+};
 
 export const handleRoleChange = async (req, res) => {
   try {
     const { role } = req.body;
     const requestingUser = req.user;
 
-    // Verifică dacă utilizatorul autentificat este superadmin
     if (!requestingUser || requestingUser.role !== "superadmin") {
       return res.status(403).json({ error: "Only superadmins can update roles" });
     }
 
-    // Verifică dacă rolul trimis este valid
     if (!["user", "admin", "superadmin"].includes(role)) {
       return res.status(400).json({ error: "Invalid role" });
     }
@@ -182,7 +183,6 @@ export const handleRoleChange = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Superadminii nu pot fi retrogradați de altcineva
     if (user.role === "superadmin" && role !== "superadmin") {
       return res.status(400).json({ error: "Superadmin cannot be downgraded" });
     }
@@ -190,9 +190,11 @@ export const handleRoleChange = async (req, res) => {
     user.role = role;
     await user.save();
 
+    // ✅ Salvează log-ul acțiunii
+    await addAuditLog("Role changed", req.user._id, user._id, `Changed role to: ${role}`);
+
     res.json({ message: "User role updated successfully", user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-

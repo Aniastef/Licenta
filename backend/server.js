@@ -14,6 +14,7 @@ import orderRoutes from "./routes/orderRoutes.js"; // ✅ Importă ruta comenzil
 import adminRoutes from "./routes/adminRoutes.js"; // ✅ Import Admin Panel
 import upload from "./config/imgUpload.js";
 import { EventEmitter } from "events";
+import auditRoutes from "./routes/auditRoutes.js";
 
 EventEmitter.defaultMaxListeners = 20;
 
@@ -38,6 +39,8 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/cart", cartRoutes); // ✅ Corect
 app.use("/api/orders", orderRoutes); // ✅ Activează ruta comenzilor
 app.use("/api/admin", adminRoutes); // ✅ Adăugat Admin Panel
+app.use("/api/audit", auditRoutes);
+
 
 
 app.use((req, res) => {

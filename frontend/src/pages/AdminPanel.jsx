@@ -17,6 +17,32 @@ const AdminPanel = () => {
   const toast = useToast();
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [logs, setLogs] = useState([]);
+  const [activeTab, setActiveTab] = useState("users"); // ✅ Adăugare tab switcher
+
+  const fetchLogs = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/audit/logs", { credentials: "include" });
+      const data = await response.json();
+  
+      // ✅ Sortare descrescătoare după timestamp
+      const sortedLogs = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+      console.log("Fetched logs:", sortedLogs); // ✅ Debugging
+      setLogs(sortedLogs);
+    } catch (err) {
+      toast({ title: "Error fetching logs", status: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+  
+  useEffect(() => {
+    fetchLogs();
+  }, []);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -26,7 +52,7 @@ const AdminPanel = () => {
   const handleNavigateToProfile = (userId) => {
     navigate(`/profile/${userId}`);
   };
-  
+
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch("/api/users/profile", { credentials: "include" });
@@ -207,7 +233,27 @@ const AdminPanel = () => {
 
   return (
     <Box p={5}>
-      <h1>Admin Panel - User Management</h1>
+      <h1>Admin Panel</h1>
+      <Box mb={5} display="flex" gap={4}>
+        <Button 
+          colorScheme={activeTab === "users" ? "blue" : "gray"} 
+          onClick={() => setActiveTab("users")}
+        >
+          User Management
+        </Button>
+        <Button 
+          colorScheme={activeTab === "logs" ? "blue" : "gray"} 
+          onClick={() => {
+            setActiveTab("logs");
+            fetchLogs(); // ✅ Încarcă logurile doar când e activ tab-ul
+          }}
+        >
+          View Audit Logs
+        </Button>
+      </Box>
+
+      {activeTab === "users" && (
+        <>
       <Input
         placeholder="Search users..."
         value={searchQuery}
@@ -265,11 +311,9 @@ const AdminPanel = () => {
     </Tr>
   )}
 </Tbody>
+</Table>
+)}
 
-
-
-        </Table>
-      )}
 
       {editUser && (
         <Modal isOpen={isOpen} onClose={onClose}>
@@ -298,6 +342,41 @@ const AdminPanel = () => {
           </ModalContent>
         </Modal>
       )}
+        </>
+      )}
+
+ {/* ✅ Secțiunea Audit Logs */}
+      {activeTab === "logs" && (
+        <>
+          {loading ? (
+            <Spinner />
+          ) : (
+  <Table variant="simple" size="sm" mt={5}>
+    <Thead>
+      <Tr>
+        <Th>Action</Th>
+        <Th>Performed By</Th>
+        <Th>Target User</Th>
+        <Th>Details</Th>
+        <Th>Timestamp</Th>
+      </Tr>
+    </Thead>
+    <Tbody>
+      {logs.map((log) => (
+        <Tr key={log._id}>
+          <Td>{log.action}</Td>
+          <Td>{log.performedBy.firstName} {log.performedBy.lastName}</Td>
+          <Td>{log.targetUser ? `${log.targetUser.firstName} ${log.targetUser.lastName}` : "N/A"}</Td>
+          <Td>{log.details}</Td>
+          <Td>{new Date(log.timestamp).toLocaleString()}</Td>
+        </Tr>
+      ))}
+    </Tbody>
+  </Table>
+)}
+        </>
+      )}  
+
     </Box>
   );
 };
