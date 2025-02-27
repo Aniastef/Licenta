@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import {
   Box, Button, Table, Thead, Tbody, Tr, Th, Td, Spinner, useToast,
   Select, Input, Modal, ModalOverlay, ModalContent, ModalHeader,
-  ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Textarea
+  ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Textarea, Flex
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver"; // ✅ Pentru descărcare fișiere
 import Papa from "papaparse"; // ✅ Pentru generare CSV
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
@@ -16,11 +17,16 @@ const AdminPanel = () => {
   const [newProfilePicture, setNewProfilePicture] = useState(null);
   const [newPassword, setNewPassword] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortField, setSortField] = useState("firstName");
+  const [sortOrder, setSortOrder] = useState("asc");
   const toast = useToast();
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [logs, setLogs] = useState([]);
   const [activeTab, setActiveTab] = useState("users"); // ✅ Adăugare tab switcher
+  const [actionFilter, setActionFilter] = useState("all");
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -250,13 +256,62 @@ const AdminPanel = () => {
     toast({ title: "Users exported successfully!", status: "success" });
   };
   
-  const filteredUsers = users.filter(user =>
-    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredUsers = users.filter(user =>
+  //   `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   user.role.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
   
+  const filteredUsers = users
+    .filter(user =>
+      (roleFilter === "all" || user.role === roleFilter) &&
+      (statusFilter === "all" || (statusFilter === "active" ? !user.isBlocked : user.isBlocked)) &&
+      (`${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+    .sort((a, b) => {
+      const fieldA = a[sortField]?.toString().toLowerCase() || "";
+      const fieldB = b[sortField]?.toString().toLowerCase() || "";
+      if (fieldA < fieldB) return sortOrder === "asc" ? -1 : 1;
+      if (fieldA > fieldB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
 
+    const totalUsers = users.length;
+  const activeUsers = users.filter(user => !user.isBlocked).length;
+  const blockedUsers = users.filter(user => user.isBlocked).length;
+
+  const userRegistrationsPerMonth = users.reduce((acc, user) => {
+    const month = new Date(user.createdAt).toLocaleString("default", { month: "short" });
+    acc[month] = (acc[month] || 0) + 1;
+    return acc;
+  }, {});
+
+  const registrationData = Object.entries(userRegistrationsPerMonth).map(([month, count]) => ({ month, count }));
+
+  const filteredLogs = logs.filter(log =>
+    (actionFilter === "all" || log.action === actionFilter) &&
+    (log.performedBy.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     log.performedBy.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     log.details.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const exportLogsToCSV = () => {
+    if (logs.length === 0) {
+      toast({ title: "No logs to export", status: "warning" });
+      return;
+    }
+    const csvData = Papa.unparse(logs.map(log => ({
+      Action: log.action,
+      PerformedBy: `${log.performedBy.firstName} ${log.performedBy.lastName}`,
+      Details: log.details,
+      Timestamp: new Date(log.timestamp).toLocaleString()
+    })));
+    const csvBlob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    saveAs(csvBlob, "audit_logs.csv");
+    toast({ title: "Logs exported successfully!", status: "success" });
+  };
+  
   return (
     <Box p={5}>
       <h1>Admin Panel</h1>
@@ -276,20 +331,68 @@ const AdminPanel = () => {
         >
           View Audit Logs
         </Button>
+        <Button 
+          colorScheme={activeTab === "users" ? "blue" : "gray"} 
+          onClick={() => setActiveTab("dashboard")}
+        >
+          Dashboard
+        </Button>
       </Box>
 
+        {activeTab === "dashboard" && (
+                <Box>
+                  <h2>📊 Dashboard</h2>
+                  <Box display="flex" gap={4} mb={4}>
+                    <Box p={4} border="1px solid gray" borderRadius="md">Total Users: {totalUsers}</Box>
+                    <Box p={4} border="1px solid gray" borderRadius="md">Active Users: {activeUsers}</Box>
+                    <Box p={4} border="1px solid gray" borderRadius="md">Blocked Users: {blockedUsers}</Box>
+                  </Box>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={registrationData}>
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#3182ce" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+              )}
       {activeTab === "users" && (
         <>
         <Button colorScheme="blue" mb={4} onClick={exportUsersToCSV}>
         Export Users (CSV)
       </Button>
+      <Input
+          placeholder="Search users..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       {/* Search Input */}
-<Input
-  placeholder="Search users..."
-  value={searchQuery}
-  onChange={(e) => setSearchQuery(e.target.value)}
-  mb={3}
-/>
+      <Flex mt={4} direction="row"  gap={2} >
+      
+        <Select size="sm" maxWidth="200px" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+          <option value="all">All Roles</option>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+          <option value="superadmin">Superadmin</option>
+        </Select>
+
+        <Select size="sm" maxWidth="200px" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="all">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="blocked">Blocked</option>
+        </Select>
+
+        <Select size="sm" maxWidth="200px" value={sortField} onChange={(e) => setSortField(e.target.value)}>
+          <option value="firstName">Sort by Name</option>
+          <option value="username">Sort by Username</option>
+          <option value="createdAt">Sort by Date</option>
+        </Select>
+
+        <Button size="sm" onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}>
+          {sortOrder === "asc" ? "⬆️ Ascending" : "⬇️ Descending"}
+        </Button>
+      </Flex>
 
 {/* Tabel cu filtrare activă */}
 {loading ? (
@@ -384,6 +487,7 @@ const AdminPanel = () => {
           {loading ? (
             <Spinner />
           ) : (
+  
   <Table variant="simple" size="sm" mt={5}>
     <Thead>
       <Tr>

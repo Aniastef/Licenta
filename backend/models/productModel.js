@@ -4,6 +4,7 @@ const productSchema = new mongoose.Schema(
 	{
 	  name: { type: String, required: true },
 	  description: { type: String, default: "" },
+	  favoritedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	  price: { type: Number, required: true },
 	  quantity: { type: Number, required: true, default: 0 }, // ✅ Stocul produsului
 	  forSale: { type: Boolean, default: true }, // ✅ Dacă produsul este de vânzare sau doar pentru afișare

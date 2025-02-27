@@ -54,7 +54,7 @@ export const createProduct = async (req, res) => {
   
   
 
-  export const getProduct = async (req, res) => {
+export const getProduct = async (req, res) => {
 	try {
 	  const { id } = req.params;
   
@@ -63,8 +63,8 @@ export const createProduct = async (req, res) => {
 	  }
   
 	  const product = await Product.findById(id)
-		.populate("user", "firstName lastName email") // Populează utilizatorul
-		.populate("galleries", "name type"); // Exemplu dacă există galerie
+		.populate("user", "firstName lastName email")
+		.populate("galleries", "name type");
   
 	  if (!product) {
 		return res.status(404).json({ error: "Product not found" });
@@ -243,4 +243,76 @@ export const getDisplayOnlyProducts = async (req, res) => {
 	}
 };
 
+export const addToFavorites = async (req, res) => {
+	try {
+	  const { id: productId } = req.params;
+	  const userId = req.user.id;
   
+	  const user = await User.findById(userId);
+	  if (!user) return res.status(404).json({ message: "User not found" });
+  
+	  if (!Array.isArray(user.favorites)) {
+		user.favorites = [];
+	  }
+  
+	  if (!user.favorites.includes(productId)) {
+		user.favorites.push(productId);
+		await user.save();
+		return res.json({ message: "Product added to favorites", favorites: user.favorites });
+	  }
+  
+	  return res.status(400).json({ message: "Product already in favorites" });
+	} catch (error) {
+	  console.error("Error adding to favorites:", error);
+	  return res.status(500).json({ message: "Server error", error });
+	}
+  };
+
+
+  
+export const removeFromFavorites = async (req, res) => {
+    try {
+        const { id: productId } = req.params; // Extragem ID-ul produsului
+        const userId = req.user.id; // ID-ul utilizatorului autentificat
+
+        console.log("Removing favorite product:", productId, "for user:", userId);
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Eliminăm produsul din lista de favorite
+        user.favorites = user.favorites.filter((fav) => fav.toString() !== productId);
+        await user.save(); // ✅ Salvăm modificarea
+
+        return res.json({ message: "Product removed from favorites" });
+    } catch (error) {
+        console.error("Error removing product from favorites:", error);
+        return res.status(500).json({ message: "Server error", error });
+    }
+};
+
+
+//   export const getFavoriteProducts = async (req, res) => {
+// 	try {
+// 	  const user = await User.findById(req.params.userId).populate("favorites");
+// 	  if (!user) return res.status(404).json({ message: "User not found" });
+  
+// 	  res.json(user.favorites);
+// 	} catch (error) {
+// 	  res.status(500).json({ message: "Server error", error });
+// 	}
+//   };
+  
+export const getFavoriteProducts = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const user = await User.findById(userId).populate("favorites");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json(user.favorites);
+  } catch (error) {
+    console.error("Error fetching favorite products:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

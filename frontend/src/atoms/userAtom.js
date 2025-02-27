@@ -5,4 +5,4 @@ const userAtom = atom({
 	default: JSON.parse(localStorage.getItem("licenta")),
 });
 
-export default userAtom;
+export default userAtom; 

@@ -13,6 +13,7 @@ import { Link as RouterLink } from "react-router-dom";
 import userAtom from "../atoms/userAtom";
 import { useState } from "react";
 import EventsSection from "./RenderProfileSection";
+import FavoriteProductsPage from "../pages/FavoriteProductsPage";
 
 const UserHeader = ({ user }) => {
   const currentUser = useRecoilValue(userAtom);
@@ -101,6 +102,12 @@ const UserHeader = ({ user }) => {
         </Button>
     </RouterLink>
 
+    <RouterLink to={`/galleries/${user.username}/favorites`}>
+      <Button bg="orange.300" _hover={{ bg: "orange.500" }} borderRadius="full">
+        Favorite Products
+      </Button>
+    </RouterLink>
+
     {user.galleries.map((gallery) => (
       <RouterLink key={gallery.name} to={`/galleries/${user.username}/${gallery.name}`}>
         <Button bg="blue.200" _hover={{ bg: "blue.400" }} borderRadius="full">
@@ -131,6 +138,8 @@ const UserHeader = ({ user }) => {
           events={user.events}
         />
       )}
+
+
     </Flex>
   );
 };
