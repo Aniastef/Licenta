@@ -26,6 +26,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
 import AdminPanel from './pages/AdminPanel';
 import FavoriteProductsPage from './pages/FavoriteProductsPage';
+import UserAllProductsPage from './pages/UserAllProductsPage';
 
 
 function App() {
@@ -68,7 +69,8 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} /> {/* ✅ Adaugă ruta corectă */}
         <Route path="/orders" element={<OrdersPage />} /> {/* ✅ Noua pagină */}
         <Route path='/admin-panel' element={<AdminPanel/>}/>
-        <Route path="/galleries/:username/favorites" element={<FavoriteProductsPage />} />
+        <Route path="/:username/favorites" element={<FavoriteProductsPage />} />
+        <Route path="/:username/all-products" element={<UserAllProductsPage />} />
 
 
       </Routes>

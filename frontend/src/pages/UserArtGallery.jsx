@@ -18,30 +18,11 @@ export default function GalleryPage() {
   const fetchGallery = async () => {
     try {
       console.log("Fetching gallery for:", username, galleryName);
-  
-      if (galleryName === "all-products") {
-        const response = await fetch(`/api/products/user/${username}`);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to fetch user's products");
-        }
-        const data = await response.json();
-  
-        console.log("All Products Data:", data);
-  
-        setGallery({
-          _id: "all-products-gallery", // ✅ Setăm un ID fix pentru all-products
-          name: `${username}'s Products`,
-          products: data.products,
-        });
-      } else {
-        const response = await fetch(`/api/galleries/${username}/${galleryName}`);
-        if (!response.ok) throw new Error("Failed to fetch gallery");
-        const data = await response.json();
-  
-        console.log("Fetched Gallery Data:", data);
-        setGallery(data);
-      }
+      const response = await fetch(`/api/galleries/${username}/${galleryName}`);
+      if (!response.ok) throw new Error("Failed to fetch gallery");
+      const data = await response.json();
+      console.log("Fetched Gallery Data:", data);
+      setGallery(data);
     } catch (err) {
       console.error("Error fetching gallery:", err);
       setError(err.message);
@@ -49,13 +30,6 @@ export default function GalleryPage() {
       setIsLoading(false);
     }
   };
-  
-  
-  
-  
-  
-  
-  
 
   useEffect(() => {
     fetchGallery();

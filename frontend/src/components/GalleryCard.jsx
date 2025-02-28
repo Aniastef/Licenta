@@ -72,10 +72,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     try {
       console.log("Removing product ID:", productId, "from gallery:", gallery);
 
-      const endpoint =
-        gallery._id === "all-products-gallery"
-          ? `/api/products/${productId}` 
-          : `/api/galleries/${gallery._id}/remove-product/${productId}`; 
+      const endpoint = `/api/galleries/${gallery._id}/remove-product/${productId}`; 
 
       const res = await fetch(endpoint, {
         method: "DELETE",
@@ -103,15 +100,11 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       />
 
       <Flex justify="space-between" my={4}>
-        {gallery._id !== "all-products-gallery" ? (
+        
           <Button colorScheme="blue" onClick={onOpen}>
             Add Existing Product
           </Button>
-        ) : (
-          <Button colorScheme="green" onClick={() => navigate("/create/product")}>
-            Create New Product
-          </Button>
-        )}
+      
       </Flex>
 
       <Grid templateColumns="repeat(3, 1fr)" gap={4}>
@@ -143,7 +136,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               mt={2}
               onClick={() => removeProductFromGallery(product._id)}
             >
-              {gallery.name === "All Products" ? "Delete Product" : "Remove from Gallery"}
+              Remove from Gallery
             </Button>
           </Box>
         ))}

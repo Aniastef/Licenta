@@ -94,15 +94,15 @@ const UserHeader = ({ user }) => {
         </Button>
       </Flex>
 
-      {user.galleries && (
+     
   <Flex mt={6} gap={4} wrap="wrap">
-      <RouterLink to={`/galleries/${user.username}/all-products`}>
+      <RouterLink to={`/${user.username}/all-products`}>
         <Button bg="teal.200" _hover={{ bg: "teal.400" }} borderRadius="full">
           All Products
         </Button>
     </RouterLink>
 
-    <RouterLink to={`/galleries/${user.username}/favorites`}>
+    <RouterLink to={`/${user.username}/favorites`}>
       <Button bg="orange.300" _hover={{ bg: "orange.500" }} borderRadius="full">
         Favorite Products
       </Button>
@@ -116,7 +116,6 @@ const UserHeader = ({ user }) => {
       </RouterLink>
     ))}
   </Flex>
-)}
 
       {activeSection === "interested" && (
         <EventsSection
