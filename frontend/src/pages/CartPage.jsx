@@ -10,8 +10,15 @@ const CartPage = () => {
 
   console.log("Cart contents:", cart); // 🛠️ Debugging
 
+  // 🔍 Warn about null products
+  cart.forEach(item => {
+    if (!item.product) {
+      console.warn("⚠️ Null product in cart item:", item);
+    }
+  });
+
   const calculateTotal = () => {
-    return cart.reduce((acc, item) => acc + item.product.price, 0).toFixed(2);
+    return cart.reduce((acc, item) => acc + (item.product?.price || 0), 0).toFixed(2);
   };
 
   return (
@@ -20,50 +27,52 @@ const CartPage = () => {
         Shopping Cart
       </Text>
 
-      {cart.length === 0 ? (
+      {cart.filter(item => item.product).length === 0 ? (
         <Text>Your cart is empty.</Text>
       ) : (
-        cart.map((item, index) => (
-          <Box key={index} p={4} borderWidth={1} borderRadius={8} width="100%">
-            <HStack align="start" spacing={5}>
-              {/* Imagine produs */}
-              <Image
-                src={item.product.images?.[0] || "/placeholder.jpg"}
-                alt={item.product.name}
-                boxSize="120px"
-                objectFit="cover"
-                borderRadius="md"
-              />
+        cart
+          .filter(item => item.product) // ✅ Ignore null products
+          .map((item, index) => (
+            <Box key={index} p={4} borderWidth={1} borderRadius={8} width="100%">
+              <HStack align="start" spacing={5}>
+                {/* Imagine produs */}
+                <Image
+                  src={item.product.images?.[0] || "/placeholder.jpg"}
+                  alt={item.product.name}
+                  boxSize="120px"
+                  objectFit="cover"
+                  borderRadius="md"
+                />
 
-              {/* Informații despre produs */}
-              <VStack align="start" flex="1">
-                <Text fontSize="lg" fontWeight="bold">
-                  {item.product.name}
-                </Text>
-                <Text fontSize="md" color="gray.600">
-                  {item.product.price.toFixed(2)} RON
-                </Text>
-                <Text fontSize="sm" color="gray.500">
-                  {item.product.description.slice(0, 100)}...
-                </Text>
+                {/* Informații despre produs */}
+                <VStack align="start" flex="1">
+                  <Text fontSize="lg" fontWeight="bold">
+                    {item.product.name}
+                  </Text>
+                  <Text fontSize="md" color="gray.600">
+                    {item.product.price.toFixed(2)} RON
+                  </Text>
+                  <Text fontSize="sm" color="gray.500">
+                    {item.product.description.slice(0, 100)}...
+                  </Text>
 
-                {/* Tag-uri produs */}
-                <Wrap>
-                  {item.product.tags?.map((tag, i) => (
-                    <Tag key={i} colorScheme="blue">
-                      {tag}
-                    </Tag>
-                  ))}
-                </Wrap>
-              </VStack>
+                  {/* Tag-uri produs */}
+                  <Wrap>
+                    {item.product.tags?.map((tag, i) => (
+                      <Tag key={i} colorScheme="blue">
+                        {tag}
+                      </Tag>
+                    ))}
+                  </Wrap>
+                </VStack>
 
-              {/* Buton de ștergere */}
-              <Button colorScheme="red" onClick={() => removeFromCart(item.product._id)}>
-                Remove
-              </Button>
-            </HStack>
-          </Box>
-        ))
+                {/* Buton de ștergere */}
+                <Button colorScheme="red" onClick={() => removeFromCart(item.product._id)}>
+                  Remove
+                </Button>
+              </HStack>
+            </Box>
+          ))
       )}
 
       <Divider />
@@ -74,10 +83,9 @@ const CartPage = () => {
       </Text>
 
       {/* Buton checkout */}
-      {cart.length > 0 && (
-       <Button colorScheme="green" onClick={() => navigate("/checkout")}>
-       Go to Checkout
-     </Button>
+      {cart.filter(item => item.product).length > 0 && (
+        <Button colorScheme="green" onClick={() => navigate("/checkout")}>\n          Go to Checkout
+        </Button>
       )}
     </VStack>
   );

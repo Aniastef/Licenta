@@ -3,33 +3,36 @@ import Product from "../models/productModel.js";
 
 // ✅ Adaugă un produs în cart
 export const addToCart = async (req, res) => {
-    try {
-      const { userId, productId, quantity } = req.body;
-  
-      const user = await User.findById(userId).populate("cart.product");
-      if (!user) return res.status(404).json({ error: "User not found" });
-  
-      const product = await Product.findById(productId);
-      if (!product) return res.status(404).json({ error: "Product not found" });
-  
-      const existingItem = user.cart.find((item) =>
-        item.product.equals(productId)
-      );
-  
-      if (existingItem) {
-        existingItem.quantity += quantity || 1;
-      } else {
-        user.cart.push({ product: productId, quantity: quantity || 1 });
-      }
-  
-      await user.save();
-      const updatedUser = await User.findById(userId).populate("cart.product"); // 🔹 Populează produsele
-      res.json(updatedUser.cart);
-    } catch (error) {
-      console.error("Server error:", error);
-      res.status(500).json({ error: "Something went wrong" });
+  try {
+    const { userId, productId, quantity } = req.body;
+
+    const user = await User.findById(userId).populate("cart.product");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // 🔍 Curăță produsele invalide (șterse din DB)
+    user.cart = user.cart.filter(item => item.product !== null);
+
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    const existingItem = user.cart.find((item) =>
+      item.product && item.product.equals(productId)
+    );
+
+    if (existingItem) {
+      existingItem.quantity += quantity || 1;
+    } else {
+      user.cart.push({ product: productId, quantity: quantity || 1 });
     }
-  };
+
+    await user.save();
+    const updatedUser = await User.findById(userId).populate("cart.product"); // 🔹 Populează produsele
+    res.json(updatedUser.cart);
+  } catch (error) {
+    console.error("Server error:", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
   
   
   
