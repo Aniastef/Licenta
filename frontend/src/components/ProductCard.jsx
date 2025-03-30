@@ -224,7 +224,7 @@ const ProductCard = ({ product }) => {
             {product.user._id === user._id ? (
               <Button
                 as={RouterLink}
-                to={`/edit-product/${product._id}`}
+                to={`/update/product/${product._id}`}
                 bg="blue.400"
                 borderRadius="lg"
                 width={190}

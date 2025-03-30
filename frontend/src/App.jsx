@@ -27,6 +27,7 @@ import OrdersPage from './pages/OrdersPage';
 import AdminPanel from './pages/AdminPanel';
 import FavoriteProductsPage from './pages/FavoriteProductsPage';
 import UserAllProductsPage from './pages/UserAllProductsPage';
+import UpdateProductPage from './pages/UpdateProductPage';
 
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
         <Route path='/admin-panel' element={<AdminPanel/>}/>
         <Route path="/:username/favorites" element={<FavoriteProductsPage />} />
         <Route path="/:username/all-products" element={<UserAllProductsPage />} />
+        <Route path="/update/product/:id" element={<UpdateProductPage />} />
 
 
       </Routes>
