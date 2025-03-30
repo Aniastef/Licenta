@@ -46,6 +46,7 @@ const CreateGalleryPage = () => {
 			const res = await fetch("/api/galleries/create", {
 				method: "POST",
 				body: formData,
+				credentials: "include", // ✅ Adaugă această linie
 			});
 
 			const data = await res.json();

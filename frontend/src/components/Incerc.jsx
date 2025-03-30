@@ -69,7 +69,7 @@ const AdminPanel = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("/api/admin/users");
+      const response = await fetch("/api/admin/users", { credentials: "include" });
       const data = await response.json();
       setUsers(data);
       setLoading(false);
@@ -364,7 +364,15 @@ const AdminPanel = () => {
               <Input placeholder="New Password (optional)" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} mb={3} />
               <Input type="file" accept="image/*" onChange={handleUploadPicture} mb={3} />
                 {editUser.profilePicture && (
-                  <img src={`http://localhost:5000${editUser.profilePicture}`} alt="Profile" width="100" />
+                  <img
+                    src={
+                      editUser.profilePicture
+                        ? `http://localhost:5000${editUser.profilePicture}`
+                        : "https://via.placeholder.com/100"
+                    }
+                    alt="Profile"
+                    width="100"
+                  />
                 )}
 
             </ModalBody>

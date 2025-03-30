@@ -1,26 +1,25 @@
-import Product from "../models/productModel.js"
+import Product from "../models/productModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
-import multer from "multer";
-import {uploadToCloudinary} from "../config/imgUpload.js";
 import Comment from "../models/commentModel.js";
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
 
 export const createEvent = async (req, res) => {
   try {
-    const { name, description, date, tags } = req.body;
+    const { name, description, date, tags, coverImage } = req.body;
     console.log("Body received:", req.body);
-    console.log("File received:", req.file);
 
     if (!name || !date) {
       return res.status(400).json({ error: "Name and date are required" });
     }
 
-    let coverImageUrl = null;
+    let coverImageUrl = coverImage || null;
 
-    if (req.file) {
-      coverImageUrl = await uploadToCloudinary(req.file); // Funcție pentru încărcarea imaginii pe Cloudinary
+    // Dacă coverImage este un Base64 sau URL temporar, îl urcăm pe Cloudinary
+    if (coverImage && coverImage.startsWith("data:")) {
+      const uploaded = await cloudinary.uploader.upload(coverImage);
+      coverImageUrl = uploaded.secure_url;
     }
 
     const newEvent = new Event({
@@ -49,11 +48,9 @@ export const getEvent = async (req, res) => {
     }
 
     const event = await Event.findById(eventId)
-    .populate("user", "firstName lastName")
-    .populate("interestedParticipants", "firstName lastName profilePicture")
-    .populate("goingParticipants", "firstName lastName profilePicture");
-
-
+      .populate("user", "firstName lastName")
+      .populate("interestedParticipants", "firstName lastName profilePicture")
+      .populate("goingParticipants", "firstName lastName profilePicture");
 
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
@@ -93,7 +90,6 @@ export const markInterested = async (req, res) => {
     }
 
     if (event.interestedParticipants.includes(req.user._id)) {
-      // Remove user from "interested" list
       event.interestedParticipants = event.interestedParticipants.filter(
         (id) => id.toString() !== req.user._id.toString()
       );
@@ -101,17 +97,13 @@ export const markInterested = async (req, res) => {
         (id) => id.toString() !== eventId
       );
     } else {
-      // Add user to "interested" list
       event.interestedParticipants.push(req.user._id);
-
-      // Remove from "going" if already marked
       event.goingParticipants = event.goingParticipants.filter(
         (id) => id.toString() !== req.user._id.toString()
       );
       user.eventsMarkedGoing = user.eventsMarkedGoing.filter(
         (id) => id.toString() !== eventId
       );
-
       user.eventsMarkedInterested.push(eventId);
     }
 
@@ -152,7 +144,6 @@ export const markGoing = async (req, res) => {
     }
 
     if (event.goingParticipants.includes(req.user._id)) {
-      // Remove user from "going" list
       event.goingParticipants = event.goingParticipants.filter(
         (id) => id.toString() !== req.user._id.toString()
       );
@@ -160,17 +151,13 @@ export const markGoing = async (req, res) => {
         (id) => id.toString() !== eventId
       );
     } else {
-      // Add user to "going" list
       event.goingParticipants.push(req.user._id);
-
-      // Remove from "interested" if already marked
       event.interestedParticipants = event.interestedParticipants.filter(
         (id) => id.toString() !== req.user._id.toString()
       );
       user.eventsMarkedInterested = user.eventsMarkedInterested.filter(
         (id) => id.toString() !== eventId
       );
-
       user.eventsMarkedGoing.push(eventId);
     }
 
@@ -188,26 +175,20 @@ export const markGoing = async (req, res) => {
   }
 };
 
-
 export const deleteEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
-
-    // Găsește evenimentul în baza de date
     const event = await Event.findById(eventId);
 
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    // Verifică dacă utilizatorul are permisiunea să șteargă evenimentul
     if (event.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized action" });
     }
 
-    // Șterge evenimentul
     await event.deleteOne();
-
     res.status(200).json({ message: "Event deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -215,34 +196,34 @@ export const deleteEvent = async (req, res) => {
   }
 };
 
-
 export const updateEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const { name, description, date, coverImage, tags } = req.body;
 
-    // Găsește evenimentul în baza de date
     const event = await Event.findById(eventId);
 
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    // Verifică dacă utilizatorul are permisiunea să actualizeze evenimentul
     if (event.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized action" });
     }
 
-    // Actualizează câmpurile evenimentului
+    let coverImageUrl = coverImage || event.coverImage;
+    if (coverImage && coverImage.startsWith("data:")) {
+      const uploaded = await cloudinary.uploader.upload(coverImage);
+      coverImageUrl = uploaded.secure_url;
+    }
+
     event.name = name || event.name;
     event.description = description || event.description;
     event.date = date || event.date;
-    event.coverImage = coverImage || event.coverImage;
+    event.coverImage = coverImageUrl;
     event.tags = tags || event.tags;
 
-    // Salvează modificările
     await event.save();
-
     res.status(200).json(event);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -250,15 +231,13 @@ export const updateEvent = async (req, res) => {
   }
 };
 
-
-
 export const getAllEvents = async (req, res) => {
   try {
     const events = await Event.find()
-      .populate("user", "firstName lastName profilePicture") // Populează informații despre utilizatorul care a creat evenimentul
-      .populate("interestedParticipants", "firstName lastName profilePicture") // Populează utilizatorii interesați
-      .populate("goingParticipants", "firstName lastName profilePicture") // Populează utilizatorii care merg
-      .sort({ date: 1 }); // Sortează evenimentele după dată, cel mai apropiat eveniment apare primul
+      .populate("user", "firstName lastName profilePicture")
+      .populate("interestedParticipants", "firstName lastName profilePicture")
+      .populate("goingParticipants", "firstName lastName profilePicture")
+      .sort({ date: 1 });
 
     res.status(200).json({ events });
   } catch (err) {
@@ -266,5 +245,3 @@ export const getAllEvents = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch events" });
   }
 };
-
-

@@ -26,12 +26,16 @@ const CreateProductPage = () => {
 		name: "",
 		description: "",
 		price: "",
-		quantity: 1, // ✅ Default 1 buc.
-		forSale: true, // ✅ Default produs de vânzare
+		quantity: 1,
+		forSale: true,
 		galleries: [],
 		images: [],
+		videos: [],
+		audios: [],
 	});
 	const [imageFiles, setImageFiles] = useState([]);
+	const [videoFiles, setVideoFiles] = useState([]);
+	const [audioFiles, setAudioFiles] = useState([]);
 	const [userGalleries, setUserGalleries] = useState([]);
 	const showToast = useShowToast();
 	const [isLoading, setIsLoading] = useState(false);
@@ -46,8 +50,9 @@ const CreateProductPage = () => {
 						Authorization: `Bearer ${localStorage.getItem("token")}`,
 						"Content-Type": "application/json",
 					},
+					credentials: "include" // ✅ Include cookies (like jwt)
 				});
-				
+
 				const data = await res.json();
 				if (data.galleries) {
 					console.log("Fetched galleries:", data.galleries);
@@ -62,6 +67,14 @@ const CreateProductPage = () => {
 		fetchGalleries();
 	}, []);
 
+	const fileToBase64 = (file) =>
+		new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onloadend = () => resolve(reader.result);
+			reader.onerror = reject;
+			reader.readAsDataURL(file);
+		});
+
 	const handleAddProduct = async () => {
 		if (!newProduct.name || !newProduct.price || newProduct.price <= 0 || newProduct.quantity < 0) {
 			showToast("Error", "Name, valid price, and quantity are required", "error");
@@ -71,31 +84,31 @@ const CreateProductPage = () => {
 		setIsLoading(true);
 
 		try {
-			const formData = new FormData();
-			formData.append("name", newProduct.name);
-			formData.append("description", newProduct.description);
-			formData.append("price", newProduct.price);
-			formData.append("quantity", newProduct.quantity); // ✅ Adaugă cantitate
-			formData.append("forSale", newProduct.forSale); // ✅ Adaugă dacă este de vânzare
-			newProduct.galleries.forEach((galleryId) => formData.append("galleries", galleryId));
-			imageFiles.forEach((file) => formData.append("images", file));
+			const imagesBase64 = await Promise.all(imageFiles.map(fileToBase64));
+			const videosBase64 = await Promise.all(videoFiles.map(fileToBase64));
+			const audiosBase64 = await Promise.all(audioFiles.map(fileToBase64));
 
 			const res = await fetch("/api/products/create", {
 				method: "POST",
-				body: formData,
+				headers: { "Content-Type": "application/json" },
+				credentials: "include",
+				body: JSON.stringify({
+					...newProduct,
+					images: imagesBase64,
+					videos: videosBase64,
+					audios: audiosBase64,
+				}),
 			});
 
 			const data = await res.json();
 
 			if (data.error) {
 				showToast("Error creating product", data.error, "error");
-				setIsLoading(false);
-				return;
+			} else {
+				setProduct(data);
+				showToast("Product created successfully", "", "success");
+				navigate(`/products/${data._id}`);
 			}
-
-			setProduct(data);
-			showToast("Product created successfully", "", "success");
-			navigate(`/products/${data._id}`);
 		} catch (error) {
 			showToast("Error", error.message, "error");
 		} finally {
@@ -115,79 +128,34 @@ const CreateProductPage = () => {
 	return (
 		<Container maxW="container.md" py={8}>
 			<VStack spacing={8}>
-				<Heading as="h1" size="2xl">
-					Create New Product
-				</Heading>
-
+				<Heading>Create New Product</Heading>
 				<Box w="full" p={6} rounded="lg" shadow="md">
 					<VStack spacing={4}>
-						<Input
-							placeholder="Product Name"
-							value={newProduct.name}
-							onChange={(e) =>
-								setNewProduct({ ...newProduct, name: e.target.value })
-							}
-						/>
-						<Textarea
-							placeholder="Product Description"
-							value={newProduct.description}
-							onChange={(e) =>
-								setNewProduct({ ...newProduct, description: e.target.value })
-							}
-						/>
-						<Input
-							placeholder="Price"
-							type="number"
-							value={newProduct.price}
-							onChange={(e) =>
-								setNewProduct({ ...newProduct, price: e.target.value })
-							}
-						/>
+						<Input placeholder="Product Name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
+						<Textarea placeholder="Product Description" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
+						<Input type="number" placeholder="Price" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
+						<Input type="number" placeholder="Quantity" min="0" value={newProduct.quantity} onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })} />
 
-						{/* ✅ Câmp pentru cantitate */}
-						<Input
-							placeholder="Quantity"
-							type="number"
-							min="0"
-							value={newProduct.quantity}
-							onChange={(e) =>
-								setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })
-							}
-						/>
-
-						{/* ✅ Switch pentru "De vânzare" */}
 						<FormControl display="flex" alignItems="center">
 							<FormLabel mb="0">For Sale</FormLabel>
-							<Switch
-								isChecked={newProduct.forSale}
-								onChange={(e) =>
-									setNewProduct({ ...newProduct, forSale: e.target.checked })
-								}
-							/>
+							<Switch isChecked={newProduct.forSale} onChange={(e) => setNewProduct({ ...newProduct, forSale: e.target.checked })} />
 						</FormControl>
 
 						<Select
-							placeholder="Select a gallery or All Products"
+							placeholder="Select a gallery"
 							value={newProduct.galleries[0] || ""}
-							onChange={(e) =>
-								setNewProduct({ ...newProduct, galleries: [e.target.value] })
-							}
+							onChange={(e) => setNewProduct({ ...newProduct, galleries: [e.target.value] })}
 						>
 							<option value="">All Products</option>
 							{userGalleries.map((gallery) => (
 								<option key={gallery._id} value={gallery._id}>{gallery.name}</option>
 							))}
 						</Select>
-						<Stack spacing={2} w="full">
-							<Heading as="h4" size="sm">Images</Heading>
-							<Input type="file" accept="image/*" multiple onChange={handleFileChange} />
-						</Stack>
 
-						<Flex wrap="wrap" gap={4}>
-							{imageFiles.map((file, index) => (
-								<Image key={index} src={URL.createObjectURL(file)} alt={`Preview ${index}`} boxSize="100px" objectFit="cover" borderRadius="md" />
-							))}
-						</Flex>
+						{/* 🔽 Upload fields */}
+						<Input type="file" accept="image/*" multiple onChange={(e) => setImageFiles([...e.target.files])} />
+						<Input type="file" accept="video/*" multiple onChange={(e) => setVideoFiles([...e.target.files])} />
+						<Input type="file" accept="audio/*" multiple onChange={(e) => setAudioFiles([...e.target.files])} />
 
 						<Button colorScheme="blue" onClick={handleAddProduct} w="full" isLoading={isLoading}>
 							Add Product

@@ -18,8 +18,10 @@ export default function GalleryPage() {
   const fetchGallery = async () => {
     try {
       console.log("Fetching gallery for:", username, galleryName);
-      const response = await fetch(`/api/galleries/${username}/${galleryName}`);
-      if (!response.ok) throw new Error("Failed to fetch gallery");
+      const response = await fetch(`/api/galleries/${username}/${galleryName}`, {
+        credentials: "include", // 🔐 pentru autentificare cu sesiune
+      });
+            if (!response.ok) throw new Error("Failed to fetch gallery");
       const data = await response.json();
       console.log("Fetched Gallery Data:", data);
       setGallery(data);

@@ -37,8 +37,10 @@ const ExploreGalleries = () => {
 
   const fetchGalleries = async () => {
     try {
-      const response = await fetch("/api/galleries");
-      const data = await response.json();
+      const response = await fetch("/api/galleries", {
+        credentials: "include", // ✅ Include cookies pentru autentificare
+      });
+            const data = await response.json();
       const fetchedGalleries = data.galleries || [];
 
       setGalleries(fetchedGalleries);

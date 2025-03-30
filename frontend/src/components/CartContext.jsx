@@ -37,7 +37,9 @@ export const CartProvider = ({ children }) => {
     const fetchCart = async () => {
       try {
         console.log(`🛒 Fetching cart for user ${userId}`);
-        const response = await fetch(`/api/cart/${userId}`);
+        const response = await fetch(`/api/cart/${userId}`, {
+          credentials: "include", // ✅ Adăugat
+        });
         
         if (!response.ok) throw new Error("Failed to fetch cart");
 
@@ -64,6 +66,7 @@ export const CartProvider = ({ children }) => {
       const response = await fetch("/api/cart/add-to-cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ Adăugat
         body: JSON.stringify({ userId, productId: product._id, quantity: 1 }),
       });
 
@@ -89,6 +92,7 @@ export const CartProvider = ({ children }) => {
       const response = await fetch("/api/cart/remove-from-cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ Adăugat
         body: JSON.stringify({ userId, productId }),
       });
 

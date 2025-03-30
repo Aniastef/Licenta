@@ -83,6 +83,7 @@ export default function UpdateProfilePage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // 🔐 Adaugă asta dacă backend-ul se bazează pe cookie-uri
         body: JSON.stringify({ ...inputs, profilePicture: imgUrl}),
       });
       const data = await res.json();

@@ -26,7 +26,9 @@ export default function UserAllProductsPage() {
   useEffect(() => {
     const fetchUserProducts = async () => {
       try {
-        const res = await fetch(`/api/products/user/${username}`);
+        const res = await fetch(`/api/products/user/${username}`, {
+          credentials: "include", // 🔐 dacă folosești cookie-uri pentru autentificare
+        });
         const data = await res.json();
         setProducts(data.products);
       } catch (error) {
@@ -47,6 +49,7 @@ export default function UserAllProductsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include", // 🔐 adaugă și aici
       });
 
       if (!res.ok) {

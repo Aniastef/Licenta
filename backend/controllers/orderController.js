@@ -25,31 +25,35 @@ export const getUserOrders = async (req, res) => {
  * Adaugă o comandă nouă
  */
 export const addOrder = async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const { products } = req.body;
-  
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-  
-      products.forEach((product) => {
-        user.orders.push({
-          product: product._id,
-          price: product.price,
-          status: "Pending", // ✅ Starea inițială a comenzii
-          date: new Date(),
-        });
-      });
-  
-      await user.save();
-      res.status(201).json({ message: "Order added successfully", orders: user.orders });
-    } catch (err) {
-      console.error("Error adding order:", err.message);
-      res.status(500).json({ error: "Failed to add order" });
+  try {
+    const { userId } = req.params;
+    const { products } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
-  };
+
+    products.forEach((product) => {
+      user.orders.push({
+        product: product._id,
+        price: product.price,
+        quantity: product.quantity || 1, // ✅ Adaugă cantitatea (default 1)
+        status: "Pending",
+        date: new Date(),
+      });
+    });
+
+    await user.save();
+    res
+      .status(201)
+      .json({ message: "Order added successfully", orders: user.orders });
+  } catch (err) {
+    console.error("Error adding order:", err.message);
+    res.status(500).json({ error: "Failed to add order" });
+  }
+};
+
   
 
 /**

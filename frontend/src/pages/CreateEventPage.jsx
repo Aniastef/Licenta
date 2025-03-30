@@ -14,11 +14,9 @@ import { useSetRecoilState } from "recoil";
 import eventAtom from "../atoms/eventAtom";
 import { useNavigate } from "react-router-dom";
 
-
 const CreateEventPage = () => {
 	const setEvent = useSetRecoilState(eventAtom);
 	const navigate = useNavigate();
-
 
 	const [newEvent, setNewEvent] = useState({
 		name: "",
@@ -30,6 +28,16 @@ const CreateEventPage = () => {
 	const showToast = useShowToast();
 	const [isLoading, setIsLoading] = useState(false);
 
+	// 🔹 Convert file to Base64
+	const fileToBase64 = (file) => {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onload = () => resolve(reader.result);
+			reader.onerror = (error) => reject(error);
+		});
+	};
+
 	const handleAddEvent = async () => {
 		if (!newEvent.name || !newEvent.date) {
 			showToast("Error", "Name and date are required", "error");
@@ -39,18 +47,21 @@ const CreateEventPage = () => {
 		setIsLoading(true);
 
 		try {
-			const formData = new FormData();
-			formData.append("name", newEvent.name);
-			formData.append("description", newEvent.description);
-			formData.append("date", newEvent.date);
-			formData.append("tags", newEvent.tags);
+			let base64Image = null;
 			if (coverImage) {
-				formData.append("coverImage", coverImage);
+				base64Image = await fileToBase64(coverImage);
 			}
 
 			const res = await fetch("/api/events/create", {
 				method: "POST",
-				body: formData,
+				headers: {
+					"Content-Type": "application/json",
+				},
+				credentials: "include",
+				body: JSON.stringify({
+					...newEvent,
+					coverImage: base64Image, // 🔹 trimite ca string Base64
+				}),
 			});
 
 			const data = await res.json();
@@ -63,7 +74,7 @@ const CreateEventPage = () => {
 
 			setEvent(data);
 			showToast("Event created successfully", "", "success");
-			navigate(`/events/${data._id}`); // Redirecționează către pagina produsului
+			navigate(`/events/${data._id}`);
 		} catch (error) {
 			showToast("Error", error.message, "error");
 		} finally {
@@ -99,7 +110,6 @@ const CreateEventPage = () => {
 							}
 						/>
 						<Input
-							placeholder="Event Date"
 							type="date"
 							value={newEvent.date}
 							onChange={(e) =>

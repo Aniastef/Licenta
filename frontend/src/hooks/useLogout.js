@@ -13,11 +13,13 @@ const useLogout = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // ✅ esențial pentru logout-ul corect
       });
+
       const data = await res.json();
 
-      if (data.error) {
-        showToast("Error", data.error, "error");
+      if (!res.ok || data.error) {
+        showToast("Error", data.error || "Logout failed", "error");
         return;
       }
 

@@ -5,11 +5,13 @@ const generateTokenAndSetCookie = (userId, res) => {
 		expiresIn: "15d",
 	});
 
+	const isProduction = process.env.NODE_ENV === "production";
+
 	res.cookie("jwt", token, {
-		httpOnly: true, // more secure
-		secure: false,      // ❌ Pune `true` doar dacă folosești HTTPS
-		maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
-		sameSite: "strict", // CSRF
+		httpOnly: true,
+		secure: isProduction,              // true doar în producție
+		sameSite: isProduction ? "none" : "lax", // compatibil cu CORS în producție
+		maxAge: 15 * 24 * 60 * 60 * 1000   // 15 zile
 	});
 
 	return token;

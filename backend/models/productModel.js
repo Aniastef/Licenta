@@ -10,6 +10,8 @@ const productSchema = new mongoose.Schema(
 	  forSale: { type: Boolean, default: true }, // ✅ Dacă produsul este de vânzare sau doar pentru afișare
 	  tags: [{ type: String }],
 	  images: [{ type: String, default: "" }],
+	  videos: [{ type: String, default: "" }], // ✅ Nou
+	  audios: [{ type: String, default: "" }], // ✅ Nou
 	  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 	  galleries: [{ type: mongoose.Schema.Types.ObjectId, ref: "Gallery" }]
 	},

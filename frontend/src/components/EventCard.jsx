@@ -51,8 +51,10 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
       const response = await fetch(`/api/events/${event._id}/interested`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ esențial pentru autentificare prin cookie
         body: JSON.stringify({ userId: currentUserId }),
       });
+      
 
       if (response.ok) {
         fetchEvent(); // Reîncarcă datele evenimentului
@@ -70,6 +72,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
       const response = await fetch(`/api/events/${event._id}/going`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ esențial pentru autentificare prin cookie
         body: JSON.stringify({ userId: currentUserId }),
       });
 

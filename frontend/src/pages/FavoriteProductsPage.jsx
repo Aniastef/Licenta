@@ -26,8 +26,10 @@ export default function FavoriteProductsPage() {
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        const res = await fetch(`/api/users/favorites/${username}`);
-        const data = await res.json();
+        const res = await fetch(`/api/users/favorites/${username}`, {
+          credentials: "include", // ✅ Adaugă asta
+        });
+                const data = await res.json();
         setFavoriteProducts(data);
       } catch (error) {
         console.error("Error fetching favorite products:", error);
@@ -47,6 +49,7 @@ export default function FavoriteProductsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include", // ✅ Adaugă asta
       });
 
       if (!res.ok) {

@@ -1,7 +1,6 @@
 import Product from "../models/productModel.js"
 import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
-import multer from "multer";
 import {uploadToCloudinary} from "../config/imgUpload.js";
 import Comment from "../models/commentModel.js";
 import Gallery from "../models/galleryModel.js";
@@ -9,49 +8,68 @@ import User from "../models/userModel.js";
 
 export const createProduct = async (req, res) => {
 	try {
-	  const { name, description, price, quantity, forSale, galleries } = req.body;
-
+	  const { name, description, price, quantity, forSale, galleries, images = [], videos = [], audios = [] } = req.body;
+  
 	  if (!req.user) {
 		return res.status(403).json({ error: "User not authenticated" });
 	  }
-
+  
 	  const uploadedImages = [];
-	  for (const file of req.files) {
-		const imageUrl = await uploadToCloudinary(file);
-		uploadedImages.push(imageUrl);
+	  const uploadedVideos = [];
+	  const uploadedAudios = [];
+  
+	  // Upload images
+	  for (const img of images) {
+		if (img.startsWith("data:")) {
+		  const uploadRes = await cloudinary.uploader.upload(img);
+		  uploadedImages.push(uploadRes.secure_url);
+		}
 	  }
-
+  
+	  // Upload videos
+	  for (const video of videos) {
+		if (video.startsWith("data:")) {
+		  const uploadRes = await cloudinary.uploader.upload(video, { resource_type: "video" });
+		  uploadedVideos.push(uploadRes.secure_url);
+		}
+	  }
+  
+	  // Upload audios
+	  for (const audio of audios) {
+		if (audio.startsWith("data:")) {
+		  const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: "video" }); // Cloudinary tratează audio ca video
+		  uploadedAudios.push(uploadRes.secure_url);
+		}
+	  }
+  
 	  const newProduct = new Product({
 		name,
 		description,
 		price,
-		quantity: quantity || 0, // ✅ Adaugă cantitatea
-		forSale: forSale !== undefined ? forSale : true, // ✅ Produs de vânzare implicit
-		galleries: galleries ? galleries : [],
+		quantity: quantity || 0,
+		forSale: forSale !== undefined ? forSale : true,
+		galleries: galleries || [],
 		images: uploadedImages,
+		videos: uploadedVideos,
+		audios: uploadedAudios,
 		user: req.user._id,
 	  });
-
+  
 	  await newProduct.save();
-
+  
 	  if (galleries && galleries.length > 0) {
 		await Gallery.updateMany(
 		  { _id: { $in: galleries } },
 		  { $push: { products: newProduct._id } }
 		);
 	  }
-
+  
 	  res.status(201).json(newProduct);
 	} catch (err) {
 	  console.error("Error while creating product:", err.message);
 	  res.status(500).json({ message: err.message });
 	}
-};
-
-  
-  
-  
-  
+  };
   
 
 export const getProduct = async (req, res) => {

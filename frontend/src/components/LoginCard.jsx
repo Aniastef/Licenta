@@ -41,6 +41,7 @@ const LoginCard= () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // 👈 ADĂUGĂ ASTA
         body: JSON.stringify(inputs),
       });
   

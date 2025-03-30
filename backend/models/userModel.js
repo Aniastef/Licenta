@@ -79,6 +79,10 @@ const userSchema = new mongoose.Schema(
           ref: "Product",
         },
         price: Number,
+        quantity: {
+          type: Number,
+          default: 1,
+        },
         status: {
           type: String,
           enum: ["Pending", "Shipped", "Delivered", "Cancelled"],

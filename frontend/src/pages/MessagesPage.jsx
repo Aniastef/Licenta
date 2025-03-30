@@ -44,6 +44,7 @@ const MessagesPage = () => {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include", // ✅ include cookie-ul
       });
       const data = await response.json();
       console.log("✅ Conversations fetched:", data);
@@ -63,6 +64,7 @@ const MessagesPage = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include", // ✅ include cookie-ul
       });
 
       const data = await response.json();
@@ -85,7 +87,9 @@ const MessagesPage = () => {
 
     try {
       console.log(`🔍 Searching for: ${search}`);
-      const response = await fetch(`/api/users/search?query=${search}`);
+      const response = await fetch(`/api/users/search?query=${search}`, {
+        credentials: "include", // ✅ include cookies dacă sunt folosite pentru auth
+      });
       const data = await response.json();
       console.log("✅ Search results:", data);
       setSearchResults(data.users || []);
@@ -111,6 +115,7 @@ const MessagesPage = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include", // ✅ important dacă backend-ul se bazează pe cookie
         body: JSON.stringify({ receiverId: userId, content: newMessage }),
       });
 

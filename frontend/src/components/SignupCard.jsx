@@ -76,6 +76,7 @@ const SignupCard = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inputs),
+        credentials: "include", // 🔥 esențial pentru cookie-based auth!
       });
 
       const data = await res.json();

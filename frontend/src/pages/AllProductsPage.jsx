@@ -29,7 +29,9 @@ const ProductsPage = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("/api/products");
+      const response = await fetch("/api/products", {
+        credentials: "include",
+      });
       const data = await response.json();
       setProducts(data.products || []);
       setFilteredProducts(data.products || []);

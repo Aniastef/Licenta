@@ -8,7 +8,9 @@ const useGetUserProfile = () => {
   useEffect(() => {
     const getUser = async () => {
       try {
-        const res = await fetch(`/api/users/profile/${username}`);
+        const res = await fetch(`/api/users/profile/${username}`, {
+          credentials: "include",
+        });
         const data = await res.json();
 
         if (data.error) {

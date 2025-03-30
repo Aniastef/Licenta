@@ -32,7 +32,7 @@ const EventsPage = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("/api/events");
+      const response = await fetch("/api/events", { credentials: "include" });
       const data = await response.json();
       setEvents(data.events || []);
       setFilteredEvents(data.events || []);

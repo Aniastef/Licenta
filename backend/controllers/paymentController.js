@@ -10,84 +10,81 @@ import Product from "../models/productModel.js";
 
 export const handlePaymentSuccess = async (req, res) => {
     try {
-        const { userId } = req.body;
+      const { userId } = req.body;
+  
+      console.log("🔹 Payment success request for user:", userId);
+  
+      const user = await User.findById(userId).populate("cart.product");
+      if (!user) return res.status(404).json({ error: "User not found" });
+  
+      if (!user.cart.length) {
+        console.log("🛒 Cart already empty!");
+        return res.status(400).json({ error: "Cart is empty" });
+      }
+  
+      const newOrders = [];
 
-        console.log("🔹 Payment success request for user:", userId);
+      for (const item of user.cart) {
+        const product = await Product.findById(item.product._id);
 
-        const user = await User.findById(userId).populate("cart.product");
-
-        if (!user) {
-            console.log("❌ User not found!");
-            return res.status(404).json({ error: "User not found" });
+        if (!product || !product.forSale) {
+          console.log(`⚠️ Product not for sale: ${item.product.name}`);
+          continue;
         }
 
-        if (!user.cart.length) {
-            console.log("🛒 Cart already empty!");
-            return res.status(400).json({ error: "Cart is empty" });
+        // 🔐 Previne cumpărarea propriului produs
+        if (product.user.toString() === userId.toString()) {
+          console.log(`⛔ User tried to buy their own product: ${product.name}`);
+          continue;
         }
 
-        console.log("🛍 Moving products to orders:", user.cart);
-
-        const newOrders = [];
-
-        for (const item of user.cart) {
-            const product = await Product.findById(item.product._id);
-
-            if (!product || !product.forSale) {
-                console.log(`⚠️ Product not available for sale: ${item.product.name}`);
-                continue; // Skip this item
-            }
-
-            if (product.quantity < item.quantity) {
-                return res.status(400).json({ error: `Not enough stock for ${product.name}` });
-            }
-
-            product.quantity -= item.quantity;
-            await product.save();
-
-            newOrders.push({
-                product: item.product._id,
-                price: item.product.price,
-                status: "Pending",
-                date: new Date(),
-            });
+        if (product.quantity < item.quantity) {
+          return res.status(400).json({ error: `Not enough stock for ${product.name}` });
         }
 
-        if (!newOrders.length) {
-            return res.status(400).json({ error: "No valid orders could be processed." });
-        }
+        product.quantity -= item.quantity;
+        await product.save();
 
-        user.orders.push(...newOrders);
-        user.cart = []; // ✅ Golește coșul
+        newOrders.push({
+          product: item.product._id,
+          price: item.product.price,
+          quantity: item.quantity,
+          status: "Pending",
+          date: new Date(),
+        });
+      }
 
-        await User.findByIdAndUpdate(
-            userId,
-            { $set: { cart: [] }, $push: { orders: { $each: newOrders } } },
-            { new: true, runValidators: true }
-        );
+      if (!newOrders.length) {
+        return res.status(400).json({ error: "No valid orders could be processed." });
+      }
 
-        console.log("✅ Order placed successfully");
-        return res.status(200).json({ message: "Order placed successfully", orders: newOrders });
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $set: { cart: [] },
+          $push: { orders: { $each: newOrders } },
+        },
+        { new: true, runValidators: true }
+      );
+
+      console.log("✅ Order placed successfully");
+      return res.status(200).json({ message: "Order placed successfully", orders: newOrders });
 
     } catch (error) {
-        console.error("❌ Error handling payment success:", error);
-        return res.status(500).json({ error: "Failed to process order" });
+      console.error("❌ Error handling payment success:", error);
+      return res.status(500).json({ error: "Failed to process order" });
     }
 };
 
-
-
-
 export const processPayment = async (req, res) => {
     try {
-        const userId = req.user._id; // Asigură-te că ai userId-ul extras corect
+        const userId = req.user._id;
         const user = await User.findById(userId).populate("cart.product");
 
         if (!user || !user.cart.length) {
-            return res.status(400).json({ message: "Cart is empty" });
+            return res.status(200).json({ message: "Cart already processed" });
         }
 
-        // Creăm comanda cu produsele din cart
         const order = new Order({
             user: userId,
             products: user.cart.map(item => ({
@@ -100,7 +97,6 @@ export const processPayment = async (req, res) => {
 
         await order.save();
 
-        // Golim cart-ul
         user.cart = [];
         await user.save();
 
@@ -113,47 +109,43 @@ export const processPayment = async (req, res) => {
 
 export const createCheckoutSession = async (req, res) => {
     try {
-        const { items } = req.body;
+      const { items } = req.body;
 
-        if (!items || items.length === 0) {
-            return res.status(400).json({ error: "No items provided" });
-        }
+      if (!items || items.length === 0) {
+        return res.status(400).json({ error: "No items provided" });
+      }
 
-        const lineItems = items.map((item) => ({
-            price_data: {
-                currency: "ron", // Moneda setată corect în RON
-                product_data: { name: item.name },
-                unit_amount: Math.round(item.price * 100), // Prețul în bani (cenți)
-            },
-            quantity: item.quantity || 1, // Dacă nu există cantitate, presupunem 1
-        }));
+      const lineItems = items.map((item) => ({
+        price_data: {
+          currency: "ron",
+          product_data: { name: item.name },
+          unit_amount: Math.round(item.price * 100),
+        },
+        quantity: item.quantity || 1,
+      }));
 
-        // Verifică prețul total
-        const totalAmount = lineItems.reduce((total, item) => total + item.price_data.unit_amount * item.quantity, 0);
-        console.log("🔹 Total amount in cents:", totalAmount);
+      const totalAmount = lineItems.reduce((total, item) => total + item.price_data.unit_amount * item.quantity, 0);
+      console.log("🔹 Total amount in cents:", totalAmount);
 
-        // Dacă totalul este mai mic de 2 RON, returnează o eroare
-        if (totalAmount < 200) {
-            return res.status(400).json({
-                error: "The Checkout Session's total amount due must add up to at least Lei2.00 ron",
-            });
-        }
-
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items: lineItems,
-            mode: "payment",
-            success_url: "http://localhost:5173/checkout?success=true",
-            cancel_url: "http://localhost:5173/checkout?canceled=true",
+      if (totalAmount < 200) {
+        return res.status(400).json({
+          error: "Total must be at least 2 RON",
         });
+      }
 
-        console.log("✅ Checkout session created:", session.id);
-        res.json({ sessionId: session.id });
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: lineItems,
+        mode: "payment",
+        success_url: "http://localhost:5173/checkout?success=true",
+        cancel_url: "http://localhost:5173/checkout?canceled=true",
+      });
+
+      console.log("✅ Checkout session created:", session.id);
+      res.json({ sessionId: session.id });
+
     } catch (error) {
-        console.error("❌ Error creating checkout session:", error);
-        res.status(500).json({ error: error.message });
+      console.error("❌ Error creating checkout session:", error);
+      res.status(500).json({ error: error.message });
     }
 };
-
-
-  

@@ -30,8 +30,10 @@ export default function CommentsSection({ resourceId, resourceType }) {
   const fetchComments = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/comments?resourceId=${resourceId}&resourceType=${resourceType}`);
-      if (!res.ok) throw new Error("Failed to fetch comments");
+      const res = await fetch(`/api/comments?resourceId=${resourceId}&resourceType=${resourceType}`, {
+        credentials: "include", // ✅ Adăugat
+      });
+            if (!res.ok) throw new Error("Failed to fetch comments");
   
       const data = await res.json();
   
