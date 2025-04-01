@@ -9,10 +9,12 @@ import {
   HStack,
   Avatar,
   useToast,
+  Link as ChakraLink,
 } from "@chakra-ui/react";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import RectangleShape from "../assets/rectangleShape";
+import { Link } from "react-router-dom";
 
 export default function ReviewsSection({ productId }) {
   const user = useRecoilValue(userAtom);
@@ -86,11 +88,14 @@ export default function ReviewsSection({ productId }) {
             bg="gray.50"
           >
             <Flex align="center" mb={2} gap={3}>
-              <Avatar
-                src={review.userId?.profilePicture}
-                name={review.userId?.username}
-                size="sm"
-              />
+              <Link to={`/profile/${review.userId?.username}`}>
+                <Avatar
+                  src={review.userId?.profilePicture}
+                  name={review.userId?.username}
+                  size="sm"
+                  cursor="pointer"
+                />
+              </Link>
               <Text fontWeight="bold">{review.userId?.username}</Text>
               <Text color="yellow.500" fontWeight="semibold">
                 {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}

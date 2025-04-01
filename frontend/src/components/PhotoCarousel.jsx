@@ -1,20 +1,41 @@
-import React from "react";
-import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
+import { Box, Button, Flex, Image, Text, VStack } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 
 const Carousel = () => {
+  const [topRated, setTopRated] = useState([]);
+
+  useEffect(() => {
+    const fetchTopRated = async () => {
+      try {
+        const res = await fetch("/api/products", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        const sorted = data.products
+          .filter(p => p.images && p.images.length > 0)
+          .sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
+          .slice(0, 10);
+        setTopRated(sorted);
+      } catch (err) {
+        console.error("Error loading top-rated products:", err);
+      }
+    };
+    fetchTopRated();
+  }, []);
+
   const scrollLeft = () => {
     const carousel = document.getElementById("carousel");
-    carousel.scrollLeft -= 200; // Derulează 200px la stânga
+    carousel.scrollLeft -= 200;
   };
 
   const scrollRight = () => {
     const carousel = document.getElementById("carousel");
-    carousel.scrollLeft += 200; // Derulează 200px la dreapta
+    carousel.scrollLeft += 200;
   };
 
   return (
     <Box position="relative" w="full">
-      {/* Buton pentru derulare la stânga */}
       <Button
         onClick={scrollLeft}
         position="absolute"
@@ -29,45 +50,40 @@ const Carousel = () => {
         {"<"}
       </Button>
 
-      {/* Containerul caruselului */}
       <Flex
         id="carousel"
-        overflowX="scroll" // Permite derularea pe axa X
-        scrollBehavior="smooth" // Face derularea să fie lină
-        whiteSpace="nowrap" // Elementele rămân pe un singur rând
-        gap={6} // Spațiu între elemente
-        px={8} // Padding lateral
-        py={8} // Padding vertical
+        overflowX="scroll"
+        scrollBehavior="smooth"
+        whiteSpace="nowrap"
+        gap={6}
+        px={8}
+        py={8}
         css={{
-          '&::-webkit-scrollbar': {
-            display: 'none', // ✅ Corect
-          },
-          msOverflowStyle: 'none', // ✅ Corect - CamelCase
-          scrollbarWidth: 'none', // ✅ Corect - CamelCase
+          '&::-webkit-scrollbar': { display: 'none' },
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
         }}
-        
       >
-        {Array(10)
-          .fill("")
-          .map((_, index) => (
-            <VStack key={index} minW="200px" spacing={4}>
-              <Box
-                w="full"
+        {topRated.map((product) => (
+          <VStack key={product._id} minW="200px" spacing={3}>
+            <Link to={`/products/${product._id}`}>
+              <Image
+                src={product.images[0]}
+                alt={product.name}
+                w="200px"
                 h="200px"
-                bg="gray.200"
+                objectFit="cover"
                 borderRadius="md"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Text>Photography {index + 1}</Text>
-              </Box>
-              <Text>Photography</Text>
-            </VStack>
-          ))}
+              />
+            </Link>
+            <Text fontWeight="semibold" noOfLines={1}>{product.name}</Text>
+            <Text color="yellow.500" fontSize="sm">
+              {"★".repeat(Math.round(product.averageRating)) + "☆".repeat(5 - Math.round(product.averageRating))} ({product.averageRating}/5)
+            </Text>
+          </VStack>
+        ))}
       </Flex>
 
-      {/* Buton pentru derulare la dreapta */}
       <Button
         onClick={scrollRight}
         position="absolute"

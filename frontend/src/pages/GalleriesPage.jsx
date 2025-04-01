@@ -12,6 +12,7 @@ import {
   TagCloseButton,
   LinkBox,
   LinkOverlay,
+  Flex,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
@@ -38,9 +39,9 @@ const ExploreGalleries = () => {
   const fetchGalleries = async () => {
     try {
       const response = await fetch("/api/galleries", {
-        credentials: "include", // ✅ Include cookies pentru autentificare
+        credentials: "include",
       });
-            const data = await response.json();
+      const data = await response.json();
       const fetchedGalleries = data.galleries || [];
 
       setGalleries(fetchedGalleries);
@@ -50,7 +51,6 @@ const ExploreGalleries = () => {
     }
   };
 
-  // 🔍 Funcție de filtrare a galeriilor după tag-uri
   useEffect(() => {
     if (searchTags.length === 0) {
       setFilteredGalleries(galleries);
@@ -66,7 +66,6 @@ const ExploreGalleries = () => {
     }
   }, [searchTags, galleries]);
 
-  // 🔹 Adăugare tag nou în lista de filtrare
   const handleTagAdd = (e) => {
     if (e.key === "Enter" && tagInput.trim() !== "") {
       const newTag = tagInput.trim().toLowerCase();
@@ -77,18 +76,19 @@ const ExploreGalleries = () => {
     }
   };
 
-  // ❌ Ștergere tag din filtrare
   const handleTagRemove = (tag) => {
     setSearchTags(searchTags.filter((t) => t !== tag));
   };
 
   return (
     <Box mt={8} px={4}>
-      <Heading as="h2" size="lg" mb={6}>
+      <Heading as="h2" size="lg" mb={1}>
         Explore Galleries
       </Heading>
+      <Text fontSize="md" color="gray.600" mb={6}>
+        Discover curated art collections by users
+      </Text>
 
-      {/* ✅ Căutare după tag-uri */}
       <Box mb={4}>
         <Input
           placeholder="Type a tag and press Enter..."
@@ -109,7 +109,6 @@ const ExploreGalleries = () => {
         </Stack>
       </Box>
 
-      {/* ✅ Afișare galerii filtrate */}
       <Grid templateColumns="repeat(auto-fit, minmax(280px, 1fr))" gap={6}>
         {filteredGalleries.length > 0 ? (
           filteredGalleries.map((gallery, index) => {
@@ -123,11 +122,12 @@ const ExploreGalleries = () => {
               <LinkBox
                 key={gallery._id}
                 bg={bgColor}
-                p={4}
-                borderRadius="lg"
-                boxShadow="md"
-                overflow="hidden"
-                _hover={{ boxShadow: "xl", transform: "scale(1.02)", transition: "0.3s" }}
+                p={5}
+                borderRadius="2xl"
+                boxShadow="xl"
+                minH="320px"
+                transition="all 0.3s ease"
+                _hover={{ boxShadow: "2xl", transform: "scale(1.03)" }}
               >
                 <Stack spacing={2} mb={3}>
                   <Heading size="md">
@@ -136,17 +136,15 @@ const ExploreGalleries = () => {
                     </LinkOverlay>
                   </Heading>
                   <Text color="gray.600">{gallery.products?.length || 0} products</Text>
-                  {/* 🔹 Afișare tag-uri galerii */}
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                  <Flex wrap="wrap" gap={2}>
                     {gallery.tags?.map((tag, idx) => (
-                      <Tag key={idx} size="sm" colorScheme="gray">
+                      <Tag key={idx} size="sm" colorScheme="purple">
                         {tag}
                       </Tag>
                     ))}
-                  </Stack>
+                  </Flex>
                 </Stack>
 
-                {/* 📌 Grid adaptiv pentru imagini */}
                 {productImages.length > 0 ? (
                   <Grid
                     templateColumns={productImages.length === 1 ? "1fr" : "repeat(2, 1fr)"}
