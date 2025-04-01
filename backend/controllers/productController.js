@@ -129,71 +129,80 @@ export const getProduct = async (req, res) => {
   
   
 
-  export const updateProduct = async (req, res) => {
-	try {
-	  const { productId } = req.params;
-	  const { name, description, price, quantity, forSale, galleries, images = [], videos = [], audios = [] } = req.body;
-  
-	  const product = await Product.findById(productId);
-	  if (!product) {
-		return res.status(404).json({ error: "Product not found" });
-	  }
-  
-	  if (product.user.toString() !== req.user._id.toString()) {
-		return res.status(403).json({ error: "Unauthorized action" });
-	  }
-  
-	  // Upload updated images
-	  const uploadedImages = [];
-	  for (const img of images) {
-		if (img.startsWith("data:")) {
-		  const uploadRes = await cloudinary.uploader.upload(img);
-		  uploadedImages.push(uploadRes.secure_url);
-		} else {
-		  uploadedImages.push(img); // Already uploaded image
-		}
-	  }
-  
-	  // Upload updated videos
-	  const uploadedVideos = [];
-	  for (const video of videos) {
-		if (video.startsWith("data:")) {
-		  const uploadRes = await cloudinary.uploader.upload(video, { resource_type: "video" });
-		  uploadedVideos.push(uploadRes.secure_url);
-		} else {
-		  uploadedVideos.push(video);
-		}
-	  }
-  
-	  // Upload updated audios
-	  const uploadedAudios = [];
-	  for (const audio of audios) {
-		if (audio.startsWith("data:")) {
-		  const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: "video" }); // audio = video tip pentru Cloudinary
-		  uploadedAudios.push(uploadRes.secure_url);
-		} else {
-		  uploadedAudios.push(audio);
-		}
-	  }
-  
-	  // Update fields
-	  product.name = name || product.name;
-	  product.description = description || product.description;
-	  product.price = price ?? product.price;
-	  product.quantity = quantity ?? product.quantity;
-	  product.forSale = forSale !== undefined ? forSale : product.forSale;
-	  product.galleries = galleries || product.galleries;
-	  product.images = uploadedImages;
-	  product.videos = uploadedVideos;
-	  product.audios = uploadedAudios;
-  
-	  await product.save();
-	  res.status(200).json(product);
-	} catch (err) {
-	  console.error("Error updating product:", err.message);
-	  res.status(500).json({ error: err.message });
+export const updateProduct = async (req, res) => {
+try {
+	const { productId } = req.params;
+	const { name, description, price, quantity, forSale, galleries, images = [], videos = [], audios = [] } = req.body;
+
+	const product = await Product.findById(productId);
+	if (!product) {
+	return res.status(404).json({ error: "Product not found" });
 	}
-  };
+
+	if (product.user.toString() !== req.user._id.toString()) {
+	return res.status(403).json({ error: "Unauthorized action" });
+	}
+
+	// Upload updated images
+	const uploadedImages = [];
+	for (const img of images) {
+	if (img.startsWith("data:")) {
+		const uploadRes = await cloudinary.uploader.upload(img);
+		uploadedImages.push(uploadRes.secure_url);
+	} else {
+		uploadedImages.push(img); // Already uploaded image
+	}
+	}
+
+	// Upload updated videos
+	const uploadedVideos = [];
+	for (const video of videos) {
+	if (video.startsWith("data:")) {
+		const uploadRes = await cloudinary.uploader.upload(video, { resource_type: "video" });
+		uploadedVideos.push(uploadRes.secure_url);
+	} else {
+		uploadedVideos.push(video);
+	}
+	}
+
+	// Upload updated audios
+	const uploadedAudios = [];
+	for (const audio of audios) {
+	if (audio.startsWith("data:")) {
+		const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: "video" }); // audio = video tip pentru Cloudinary
+		uploadedAudios.push(uploadRes.secure_url);
+	} else {
+		uploadedAudios.push(audio);
+	}
+	}
+
+	// Update fields
+	product.name = name || product.name;
+	product.description = description || product.description;
+	product.price = price ?? product.price;
+	product.quantity = quantity ?? product.quantity;
+	product.forSale = forSale !== undefined ? forSale : product.forSale;
+	product.galleries = galleries || product.galleries;
+	product.images = uploadedImages;
+	product.videos = uploadedVideos;
+	product.audios = uploadedAudios;
+
+	await product.save();
+	res.status(200).json(product);
+} catch (err) {
+	console.error("Error updating product:", err.message);
+	res.status(500).json({ error: err.message });
+}
+};
+  
+
+// export const updateProductRating = async (productId) => {
+// const comments = await Comment.find({ resourceId: productId, resourceType: "Product", rating: { $exists: true } });
+// if (comments.length > 0) {
+// 	const avg = comments.reduce((sum, c) => sum + c.rating, 0) / comments.length;
+// 	await Product.findByIdAndUpdate(productId, { averageRating: avg.toFixed(2) });
+// }
+// };
   
   
 export const getAllProducts = async (req, res) => {

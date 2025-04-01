@@ -15,6 +15,7 @@ import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import auditRoutes from "./routes/auditRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js"; // ✅ nou
 
 import upload from "./config/imgUpload.js";
 import { EventEmitter } from "events";
@@ -22,6 +23,7 @@ import { EventEmitter } from "events";
 EventEmitter.defaultMaxListeners = 20;
 
 dotenv.config();
+console.log("📦 MONGO_URI:", process.env.MONGO_URI);
 connectDB();
 
 const app = express();
@@ -50,6 +52,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/audit", auditRoutes);
+app.use("/api/reviews", reviewRoutes); // ✅ nou
 
 // Not Found fallback
 app.use((req, res) => {

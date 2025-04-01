@@ -20,7 +20,7 @@ const ProductsPage = () => {
   const [filterText, setFilterText] = useState("");
   const [filterGallery, setFilterGallery] = useState("");
   const [searchBy, setSearchBy] = useState("name");
-  const [filterForSale, setFilterForSale] = useState(""); // ✅ Filtrare "For Sale" / "Not for Sale"
+  const [filterForSale, setFilterForSale] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -88,6 +88,8 @@ const ProductsPage = () => {
       updatedProducts.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
+    } else if (sortOption === "rating") {
+      updatedProducts.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
     }
 
     setFilteredProducts(updatedProducts);
@@ -166,6 +168,7 @@ const ProductsPage = () => {
           <option value="name">Name</option>
           <option value="price">Price</option>
           <option value="date">Date Created</option>
+          <option value="rating">Rating</option>
         </Select>
       </Flex>
 
@@ -196,7 +199,6 @@ const ProductsPage = () => {
                   overflow="hidden"
                   _hover={{ transform: "scale(1.02)", transition: "0.2s" }}
                 >
-                  {/* ✅ Afișăm imaginea produsului sau mesaj "No image available" */}
                   <Box
                     width="100%"
                     height="250px"
@@ -228,11 +230,18 @@ const ProductsPage = () => {
 
                   <Heading size="md" mb={2}>{product.name}</Heading>
                   <Text mb={1}>{product.price} RON</Text>
-                   <Tag 
-                                colorScheme={product.forSale ? (product.quantity > 0 ? "green" : "red") : "gray"}
-                                mt={2}
-                              >
-                                {!product.forSale ? "Not for Sale" : product.quantity > 0 ? `Stock: ${product.quantity} left` : "Out of Stock"}
+
+                  {product.averageRating > 0 && (
+                    <Text fontSize="sm" color="yellow.500" fontWeight="semibold" mt={1}>
+                      {"★".repeat(Math.round(product.averageRating)) + "☆".repeat(5 - Math.round(product.averageRating))} ({product.averageRating}/5)
+                    </Text>
+                  )}
+
+                  <Tag 
+                    colorScheme={product.forSale ? (product.quantity > 0 ? "green" : "red") : "gray"}
+                    mt={2}
+                  >
+                    {!product.forSale ? "Not for Sale" : product.quantity > 0 ? `Stock: ${product.quantity} left` : "Out of Stock"}
                   </Tag>
                 </Box>
               </Link>
@@ -245,3 +254,6 @@ const ProductsPage = () => {
 };
 
 export default ProductsPage;
+
+
+//trebuie sa modific filtrele la final aici

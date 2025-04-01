@@ -13,7 +13,8 @@ const productSchema = new mongoose.Schema(
 	  videos: [{ type: String, default: "" }], // ✅ Nou
 	  audios: [{ type: String, default: "" }], // ✅ Nou
 	  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-	  galleries: [{ type: mongoose.Schema.Types.ObjectId, ref: "Gallery" }]
+	  galleries: [{ type: mongoose.Schema.Types.ObjectId, ref: "Gallery" }],
+	  averageRating: { type: Number, default: 0 },
 	},
 	{ timestamps: true }
 );  

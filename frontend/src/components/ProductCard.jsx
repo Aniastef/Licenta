@@ -116,6 +116,13 @@ const ProductCard = ({ product }) => {
               minW="600px"
               maxW="600px"
             />
+            {product.averageRating > 0 && (
+            <Text fontSize="lg" fontWeight="semibold" color="yellow.500" ml={2} mt={2}>
+              {"★".repeat(Math.round(product.averageRating)) + "☆".repeat(5 - Math.round(product.averageRating))}{" "}
+              ({product.averageRating} / 5)
+            </Text>
+          )}
+
 
             <Flex align="center" mt={4}>
               {product.forSale && (
