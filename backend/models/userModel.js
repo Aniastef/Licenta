@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
       minLength: 6,
       required: true,
     },
+    blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     profilePicture: {
       type: String,
       default: "",

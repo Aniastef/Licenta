@@ -331,4 +331,56 @@ export const getUserWithGalleries = async (req, res) => {
   };
   
 
+  export const blockUser = async (req, res) => {
+	try {
+	  const userToBlock = req.params.userId;
+	  const currentUser = await User.findById(req.user._id);
+  
+	  if (!currentUser.blockedUsers.includes(userToBlock)) {
+		currentUser.blockedUsers.push(userToBlock);
+		await currentUser.save();
+	  }
+  
+	  res.status(200).json({ message: "User blocked successfully" });
+	} catch (error) {
+	  console.error("Error blocking user:", error.message);
+	  res.status(500).json({ error: "Failed to block user" });
+	}
+  };
 
+  export const unblockUser = async (req, res) => {
+	try {
+	  const user = await User.findById(req.user._id);
+	  user.blockedUsers = user.blockedUsers.filter(
+		(id) => id.toString() !== req.params.userId
+	  );
+	  await user.save();
+	  res.status(200).json({ message: "User unblocked" });
+	} catch (err) {
+	  console.error("Unblock error:", err);
+	  res.status(500).json({ error: "Failed to unblock user" });
+	}
+  };
+  
+  export const getBlockedUsers = async (req, res) => {
+	try {
+	  const user = await User.findById(req.user._id).populate("blockedUsers", "firstName lastName profilePicture");
+	  res.status(200).json({ blockedUsers: user.blockedUsers });
+	} catch (err) {
+	  console.error("Get blocked users error:", err);
+	  res.status(500).json({ error: "Failed to get blocked users" });
+	}
+  };
+
+  export const getMe = async (req, res) => {
+	try {
+	  const user = await User.findById(req.user._id).populate("blockedUsers", "_id");
+	  if (!user) return res.status(404).json({ error: "User not found" });
+	  res.status(200).json(user);
+	} catch (error) {
+	  console.error("getMe error:", error);
+	  res.status(500).json({ error: "Internal server error" });
+	}
+  };
+  
+  

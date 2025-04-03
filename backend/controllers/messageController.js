@@ -18,11 +18,23 @@ export const getConversations = async (req, res) => {
         },
       },
       {
+        $sort: { timestamp: -1 }
+      },
+      {
         $group: {
           _id: {
             $cond: [{ $eq: ["$sender", req.user._id] }, "$receiver", "$sender"],
           },
-          lastMessage: { $last: "$content" },
+          lastMessage: { $first: "$content" },
+          isUnread: {
+            $first: {
+              $cond: [
+                { $and: [{ $eq: ["$receiver", req.user._id] }, { $eq: ["$isRead", false] }] },
+                true,
+                false,
+              ],
+            },
+          },
         },
       },
       {
@@ -39,11 +51,13 @@ export const getConversations = async (req, res) => {
           "user._id": 1,
           "user.firstName": 1,
           "user.lastName": 1,
-          "user.profilePicture": 1,  // ✅ Corectare typo
+          "user.profilePicture": 1,
           "lastMessage": 1,
-        }
-      }
+          "isUnread": 1,
+        },
+      },
     ]);
+    
 
     console.log("✅ Conversations found:", conversations);
     res.status(200).json({ conversations });
@@ -87,34 +101,54 @@ export const getMessages = async (req, res) => {
 export const sendMessage = async (req, res) => {
   try {
     const { receiverId, content } = req.body;
+    const senderId = req.user._id;
 
     if (!receiverId || !content) {
-      return res.status(400).json({ error: "Receiver and content are required" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(receiverId)) {
-      return res.status(400).json({ error: "Invalid receiver ID" });
+      return res.status(400).json({ error: "Missing fields." });
     }
 
     const receiver = await User.findById(receiverId);
-    if (!receiver) {
-      return res.status(404).json({ error: "Receiver not found" });
+    if (receiver.blockedUsers.includes(senderId)) {
+      return res.status(403).json({ error: "You are blocked by this user." });
     }
 
-    const message = new Message({
-      sender: req.user._id,
+    const newMessage = new Message({
+      sender: senderId,
       receiver: receiverId,
       content,
     });
 
-    await message.save();
-
-    // ✅ Populează sender pentru a include detaliile user-ului curent
-    const populatedMessage = await message.populate("sender", "firstName lastName profilePicture");
-
-    res.status(201).json({ message: "Message sent successfully", data: populatedMessage });
+    await newMessage.save();
+    res.status(200).json({ data: newMessage });
   } catch (err) {
-    console.error("Error in sendMessage:", err);
+    console.error("Send message error:", err);
+    res.status(500).json({ error: "Failed to send message." });
+  }
+};
+
+
+export const markMessagesAsRead = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    await Message.updateMany(
+      { sender: userId, receiver: req.user._id, isRead: false },
+      {
+        $set: {
+          isRead: true,
+          readAt: new Date(), // 👈 setăm ora la care s-a citit
+        },
+      }
+    );
+    
+
+    res.status(200).json({ message: "Messages marked as read" });
+  } catch (err) {
+    console.error("❌ Error marking messages as read:", err);
     res.status(500).json({ error: "Server error" });
   }
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Flex,
@@ -10,14 +10,16 @@ import {
   HStack,
   Avatar,
   Spinner,
+  useToast
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import searchIcon from "../assets/searchIcon.png";
+
+const MotionBox = motion(Box);
 
 const MessagesPage = () => {
   const { userId } = useParams();
-  console.log("📢 Current userId from URL:", userId);
-
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -26,9 +28,23 @@ const MessagesPage = () => {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const currentUserId = localStorage.getItem("userId");
+  const messagesEndRef = useRef(null);
+  const toast = useToast();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     fetchConversations();
+    fetchCurrentUser();
   }, []);
 
   useEffect(() => {
@@ -37,46 +53,103 @@ const MessagesPage = () => {
     }
   }, [userId]);
 
+  useEffect(() => {
+    if (userId && conversations.length > 0) {
+      const found = conversations.find((conv) => conv.user._id === userId);
+      if (found) setSelectedUser(found.user);
+    }
+  }, [userId, conversations]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch("/api/users/me", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        credentials: "include",
+      });
+      const data = await res.json();
+      setCurrentUser(data);
+    } catch (error) {
+      console.error("Failed to fetch current user", error);
+    }
+  };
+
+  const isUserBlocked = () => {
+    if (!currentUser || !Array.isArray(currentUser.blockedUsers)) return false;
+    return currentUser.blockedUsers.some(id => id.toString() === userId);
+  };
+  
+
+  const handleToggleBlock = async () => {
+    const isBlocked = isUserBlocked();
+    const route = isBlocked ? "unblock" : "block";
+
+    try {
+      const res = await fetch(`/api/users/${route}/${userId}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        await fetchCurrentUser(); // fix: force refresh user after block/unblock
+        toast({
+          title: isBlocked ? "User unblocked" : "User blocked",
+          status: isBlocked ? "success" : "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (err) {
+      console.error("Toggle block error", err);
+    }
+  };
+
   const fetchConversations = async () => {
     try {
-      console.log("🔄 Fetching conversations...");
       const response = await fetch("/api/messages/conversations", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        credentials: "include", // ✅ include cookie-ul
+        credentials: "include",
       });
       const data = await response.json();
-      console.log("✅ Conversations fetched:", data);
       setConversations(data.conversations || []);
     } catch (error) {
-      console.error("❌ Error fetching conversations:", error);
+      console.error("Error fetching conversations:", error);
     }
   };
 
   const fetchMessages = async () => {
     try {
-      console.log(`📢 Fetching messages for user: ${userId}`);
-
       const response = await fetch(`/api/messages/${userId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        credentials: "include", // ✅ include cookie-ul
+        credentials: "include",
       });
 
       const data = await response.json();
-      console.log("✅ Messages response:", data);
 
       if (response.ok) {
         setMessages(data.messages || []);
+        await fetch(`/api/messages/seen/${userId}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          credentials: "include",
+        });
       } else {
-        console.error("❌ Error fetching messages:", data);
+        console.error("Error fetching messages:", data);
       }
     } catch (error) {
-      console.error("❌ Error fetching messages:", error);
+      console.error("Error fetching messages:", error);
     } finally {
       setLoading(false);
     }
@@ -86,15 +159,13 @@ const MessagesPage = () => {
     if (!search.trim()) return;
 
     try {
-      console.log(`🔍 Searching for: ${search}`);
       const response = await fetch(`/api/users/search?query=${search}`, {
-        credentials: "include", // ✅ include cookies dacă sunt folosite pentru auth
+        credentials: "include",
       });
       const data = await response.json();
-      console.log("✅ Search results:", data);
       setSearchResults(data.users || []);
     } catch (error) {
-      console.error("❌ Error searching users:", error);
+      console.error("Error searching users:", error);
     }
   };
 
@@ -106,8 +177,19 @@ const MessagesPage = () => {
   };
 
   const handleSendMessage = async () => {
+    if (isUserBlocked()) {
+      toast({
+        title: "You have blocked this user.",
+        description: "You cannot send messages to someone you blocked.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+  
     if (!newMessage.trim()) return;
-
+  
     try {
       const response = await fetch("/api/messages/send", {
         method: "POST",
@@ -115,24 +197,46 @@ const MessagesPage = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        credentials: "include", // ✅ important dacă backend-ul se bazează pe cookie
+        credentials: "include",
         body: JSON.stringify({ receiverId: userId, content: newMessage }),
       });
-
+  
       const data = await response.json();
+  
+      if (response.status === 403) {
+        toast({
+          title: "You were blocked.",
+          description: data.error || "You cannot message this user.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+  
       if (response.ok) {
         setMessages([...messages, data.data]);
         setNewMessage("");
         fetchConversations();
       }
     } catch (error) {
-      console.error("❌ Error sending message:", error);
+      console.error("Error sending message:", error);
     }
+  };
+  
+  
+  const getLastSeenMessage = () => {
+    const sentMessages = messages.filter(
+      (msg) => String(msg.sender?._id) === String(currentUserId) && msg.isRead && msg.readAt
+    );
+    return sentMessages.length > 0
+      ? sentMessages[sentMessages.length - 1]
+      : null;
   };
 
   return (
     <Flex height="100vh">
-      {/* Sidebar - Conversations List */}
+      {/* Sidebar */}
       <Box width="30%" p={4} borderRight="1px solid #ddd">
         <Heading size="md">Chats</Heading>
         <Flex mt={3} align="center">
@@ -177,13 +281,19 @@ const MessagesPage = () => {
               _hover={{ backgroundColor: "gray.100" }}
               onClick={() => handleSelectUser(conv.user)}
               cursor="pointer"
+              justify="space-between"
             >
-              <Avatar
-                size="sm"
-                name={conv.user.firstName}
-                src={conv.user.profilePicture || "/default-avatar.png"} // ✅ Fix aici
-              />
-              <Text>{conv.user.firstName} {conv.user.lastName}</Text>
+              <HStack>
+                <Avatar
+                  size="sm"
+                  name={conv.user.firstName}
+                  src={conv.user.profilePicture || "https://i.pravatar.cc/150"}
+                />
+                <Text>{conv.user.firstName} {conv.user.lastName}</Text>
+              </HStack>
+              {conv.isUnread && (
+                <Box w="10px" h="10px" borderRadius="full" bg="red.400" />
+              )}
             </HStack>
           ))}
         </VStack>
@@ -191,14 +301,54 @@ const MessagesPage = () => {
 
       {/* Chat Window */}
       <Box width="70%" p={5}>
-        <Heading size="lg">Messages</Heading>
+        {selectedUser ? (
+          <VStack mb={4} align="start" spacing={3}>
+            <HStack spacing={4} align="center">
+              <Avatar
+                name={selectedUser.firstName}
+                src={selectedUser.profilePicture || "https://i.pravatar.cc/150"}
+                size="md"
+              />
+              <Heading size="lg">
+                Chat with {selectedUser.firstName} {selectedUser.lastName}
+              </Heading>
+            </HStack>
+            <Button
+              colorScheme={isUserBlocked() ? "green" : "red"}
+              size="sm"
+              onClick={handleToggleBlock}
+            >
+              {isUserBlocked() ? "Unblock User" : "Block User"}
+            </Button>
+          </VStack>
+        ) : (
+          <Heading size="lg" mb={2}>Messages</Heading>
+        )}
+
+<Box width="70%" p={5}>
+        {selectedUser ? (
+          <HStack mb={4} spacing={4} align="center">
+            <Avatar
+              name={selectedUser.firstName}
+              src={selectedUser.profilePicture || "https://i.pravatar.cc/150"}
+              size="md"
+            />
+            <Heading size="lg">
+              Chat with {selectedUser.firstName} {selectedUser.lastName}
+            </Heading>
+          </HStack>
+        ) : (
+          <Heading size="lg" mb={2}>Messages</Heading>
+        )}
+
         <Box
           border="1px solid #ddd"
           borderRadius="md"
           p={4}
-          mt={4}
-          height="400px"
+          mt={2}
+          height="65vh"
           overflowY="auto"
+          backgroundColor="gray.50"
         >
           {loading ? (
             <Flex justify="center" align="center" height="100%">
@@ -207,26 +357,69 @@ const MessagesPage = () => {
           ) : messages.length === 0 ? (
             <Text>No messages yet.</Text>
           ) : (
-            <VStack spacing={3} align="start">
-              {messages.map((msg, index) => (
-                <HStack
-                  key={index}
-                  alignSelf={msg.sender?._id === userId ? "flex-start" : "flex-end"}
-                  bg={msg.sender?._id === userId ? "gray.200" : "blue.200"}
-                  p={3}
-                  borderRadius="md"
-                >
-                  <Avatar
-                    size="sm"
-                    name={msg.sender?.firstName || "User"}
-                    src={msg.sender?.profilePicture || "/default-avatar.png"} // ✅ Fix avatar în mesaje
-                  />
-                  <Text>{msg.content}</Text>
-                </HStack>
-              ))}
+            <VStack spacing={5} align="stretch">
+              {messages.map((msg, index) => {
+                const isCurrentUser = String(msg.sender?._id) === String(currentUserId);
+                const lastSeen = getLastSeenMessage();
+                const isLastSeen = lastSeen && lastSeen._id === msg._id;
+
+                return (
+                  <Flex
+                    key={index}
+                    direction="column"
+                    align={isCurrentUser ? "flex-end" : "flex-start"}
+                  >
+                    <MotionBox
+                      bg={isCurrentUser ? "blue.100" : "gray.200"}
+                      px={6}
+                      py={4}
+                      fontSize="lg"
+                      borderRadius="2xl"
+                      maxWidth="80%"
+                      wordBreak="break-word"
+                      boxShadow="md"
+                      alignSelf={isCurrentUser ? "flex-end" : "flex-start"}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {!isCurrentUser && (
+                        <Flex align="center" mb={2}>
+                          <Avatar
+                            size="sm"
+                            name={msg.sender?.firstName}
+                            src={msg.sender?.profilePicture || "https://i.pravatar.cc/150"}
+                            mr={3}
+                          />
+                          <Text fontWeight="bold" fontSize="md">
+                            {msg.sender?.firstName}
+                          </Text>
+                        </Flex>
+                      )}
+                      <Text fontSize="md" whiteSpace="pre-wrap">{msg.content}</Text>
+                      <Text fontSize="sm" color="gray.500" textAlign="right" mt={2}>
+                        {new Date(msg.timestamp).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </Text>
+                      {isCurrentUser && isLastSeen && (
+                        <Text fontSize="sm" color="gray.500" mt={1}>
+                          Seen at {new Date(msg.readAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      )}
+                    </MotionBox>
+                  </Flex>
+                );
+              })}
+              <div ref={messagesEndRef} />
             </VStack>
           )}
         </Box>
+
         <Flex mt={4}>
           <Input
             placeholder="Type a message..."
@@ -234,11 +427,15 @@ const MessagesPage = () => {
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             flex={1}
+            fontSize="lg"
+            py={3}
           />
-          <Button ml={2} colorScheme="blue" onClick={handleSendMessage}>
+          <Button ml={2} colorScheme="blue" onClick={handleSendMessage} px={6} fontSize="lg">
             Send
           </Button>
         </Flex>
+      </Box>
+
       </Box>
     </Flex>
   );

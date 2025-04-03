@@ -1,5 +1,5 @@
 import express from "express";
-import { signupUser,loginUser,logoutUser,updateUser, getUserProfile, getUserWithGalleries, searchUsers, getFavoriteProducts,} from "../controllers/userController.js";
+import { signupUser,loginUser,logoutUser,updateUser, getUserProfile, getUserWithGalleries, searchUsers, getFavoriteProducts, blockUser, unblockUser, getBlockedUsers,getMe} from "../controllers/userController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 
 const router=express.Router();
@@ -13,6 +13,10 @@ router.put("/update/:id",protectRoute, updateUser)
 router.get("/galleries", protectRoute, getUserWithGalleries);
 router.get("/search", protectRoute, searchUsers);
 router.get("/favorites/:username", getFavoriteProducts);
+router.post("/block/:userId", protectRoute, blockUser);
+router.get("/blocked", protectRoute, getBlockedUsers);
+router.get("/me", protectRoute, getMe);
+
 
 
 export default router;
