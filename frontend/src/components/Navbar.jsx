@@ -64,6 +64,9 @@ const Navbar = () => {
                 <MenuItem as={Link} to="/update">
                   Edit Profile
                 </MenuItem>
+                <MenuItem as={Link} to="/blocked-users">
+                  Blocked Users
+                </MenuItem>
                 <MenuItem as={Link} to="/calendar">
                   Calendar
                 </MenuItem>

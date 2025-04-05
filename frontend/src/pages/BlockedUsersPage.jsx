@@ -8,25 +8,23 @@ import {
   Text,
   Button,
   Spinner,
+  useToast
 } from "@chakra-ui/react";
 
 const BlockedUsersPage = () => {
   const [blockedUsers, setBlockedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   const fetchBlockedUsers = async () => {
     try {
       const res = await fetch("/api/users/blocked", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
         credentials: "include",
       });
-
       const data = await res.json();
       setBlockedUsers(data.blockedUsers || []);
     } catch (err) {
-      console.error("Failed to fetch blocked users", err);
+      console.error("Error fetching blocked users:", err);
     } finally {
       setLoading(false);
     }
@@ -36,17 +34,27 @@ const BlockedUsersPage = () => {
     try {
       const res = await fetch(`/api/users/unblock/${userId}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
         credentials: "include",
       });
 
       if (res.ok) {
-        setBlockedUsers((prev) => prev.filter((user) => user._id !== userId));
+        toast({
+          title: "User unblocked",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        fetchBlockedUsers(); // Refresh lista
+      } else {
+        toast({
+          title: "Failed to unblock user",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       }
     } catch (err) {
-      console.error("Failed to unblock user", err);
+      console.error("Unblock error:", err);
     }
   };
 
@@ -55,28 +63,21 @@ const BlockedUsersPage = () => {
   }, []);
 
   return (
-    <Box p={6} maxWidth="700px" mx="auto">
-      <Heading size="lg" mb={6}>Blocked Users</Heading>
+    <Box maxW="600px" mx="auto" mt={10} p={5}>
+      <Heading mb={6}>Blocked Users</Heading>
       {loading ? (
         <Spinner />
       ) : blockedUsers.length === 0 ? (
-        <Text>No users are currently blocked.</Text>
+        <Text>You have not blocked any users.</Text>
       ) : (
         <VStack spacing={4} align="stretch">
           {blockedUsers.map((user) => (
-            <HStack key={user._id} justify="space-between" p={4} borderWidth="1px" borderRadius="md">
+            <HStack key={user._id} justify="space-between">
               <HStack>
-                <Avatar
-                  name={user.firstName}
-                  src={user.profilePicture || "/default-avatar.png"}
-                />
+                <Avatar src={user.profilePicture} name={`${user.firstName} ${user.lastName}`} />
                 <Text>{user.firstName} {user.lastName}</Text>
               </HStack>
-              <Button
-                colorScheme="green"
-                size="sm"
-                onClick={() => handleUnblock(user._id)}
-              >
+              <Button colorScheme="green" onClick={() => handleUnblock(user._id)}>
                 Unblock
               </Button>
             </HStack>

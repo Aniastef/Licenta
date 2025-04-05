@@ -27,7 +27,7 @@ import AdminPanel from './pages/AdminPanel';
 import FavoriteProductsPage from './pages/FavoriteProductsPage';
 import UserAllProductsPage from './pages/UserAllProductsPage';
 import UpdateProductPage from './pages/UpdateProductPage';
-
+import BlockedUsersPage from './pages/BlockedUsersPage';
 
 function App() {
   const user = useRecoilValue(userAtom);
@@ -71,6 +71,7 @@ function App() {
         <Route path="/:username/favorites" element={<FavoriteProductsPage />} />
         <Route path="/:username/all-products" element={<UserAllProductsPage />} />
         <Route path="/update/product/:id" element={<UpdateProductPage />} />
+        <Route path="/blocked-users" element={<BlockedUsersPage />} /> {/* Pagină pentru utilizatorii blocați */}
 
 
       </Routes>

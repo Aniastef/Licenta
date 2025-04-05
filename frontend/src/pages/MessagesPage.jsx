@@ -15,7 +15,6 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import searchIcon from "../assets/searchIcon.png";
-import { syncUser } from "../utils/syncUser";
 
 const MotionBox = motion(Box);
 
@@ -30,14 +29,7 @@ const MessagesPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-  // const [blockToggle, setBlockToggle] = useState(false);
-  // const [isBlocked, setIsBlocked] = useState(false);
-
-  // useEffect(() => {
-  //   if (currentUser && userId) {
-  //     setIsBlocked(currentUser.blockedUsers?.includes(userId));
-  //   }
-  // }, [currentUser, userId]);
+  
   const [isBlocked, setIsBlocked] = useState(false);
 
 
@@ -97,15 +89,6 @@ const MessagesPage = () => {
     }
   };
   
-  
-  
-
-  // const isUserBlocked = useCallback(() => {
-  //   if (!currentUser || !Array.isArray(currentUser.blockedUsers)) return false;
-  //   return currentUser.blockedUsers.includes(userId);
-  // }, [currentUser, userId, blockToggle]);
-  
-  
 
   const handleToggleBlock = async () => {
     try {
@@ -143,11 +126,6 @@ const MessagesPage = () => {
       console.error("Block/unblock error:", err.message);
     }
   };
-  
-  
-  
-  
-  
   
   
   
@@ -220,16 +198,6 @@ const MessagesPage = () => {
   };
 
   const handleSendMessage = async () => {
-    // if (isUserBlocked()) {
-    //   toast({
-    //     title: "You have blocked this user.",
-    //     description: "You cannot send messages to someone you blocked.",
-    //     status: "error",
-    //     duration: 3000,
-    //     isClosable: true,
-    //   });
-    //   return;
-    // }
   
     if (!newMessage.trim()) return;
   
