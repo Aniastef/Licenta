@@ -27,29 +27,43 @@ export const getUserOrders = async (req, res) => {
 export const addOrder = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { products } = req.body;
+    const {
+      products,
+      paymentMethod,
+      deliveryMethod,
+      firstName,
+      lastName,
+      address,
+      postalCode,
+      city,
+      phone,
+    } = req.body;
+    
 
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     products.forEach((product) => {
       user.orders.push({
         product: product._id,
         price: product.price,
-        quantity: product.quantity || 1, // ✅ Adaugă cantitatea (default 1)
+        quantity: product.quantity || 1,
         status: "Pending",
         date: new Date(),
+        paymentMethod: paymentMethod || "card",      // 
+        deliveryMethod: deliveryMethod || "courier", // 
+        firstName,
+        lastName,
+        address,
+        postalCode,
+        city,
+        phone,
       });
     });
 
     await user.save();
-    res
-      .status(201)
-      .json({ message: "Order added successfully", orders: user.orders });
+    res.status(201).json({ message: "Order added", orders: user.orders });
   } catch (err) {
-    console.error("Error adding order:", err.message);
     res.status(500).json({ error: "Failed to add order" });
   }
 };
@@ -78,5 +92,28 @@ export const deleteOrder = async (req, res) => {
   }
 };
 
+
+// ✅ Endpoint: anulare comandă (nu o șterge, doar îi schimbă statusul)
+export const cancelOrder = async (req, res) => {
+  try {
+    const { userId, orderId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const order = user.orders.id(orderId);
+    if (!order) return res.status(404).json({ error: "Order not found" });
+
+    order.status = "Cancelled";
+    await user.save();
+
+    res.status(200).json({ message: "Order cancelled successfully" });
+  } catch (err) {
+    console.error("Error cancelling order:", err.message);
+    res.status(500).json({ error: "Failed to cancel order" });
+  }
+};
+
+// (aici rămân celelalte funcții pe care le ai deja, gen addOrder, getOrders etc.)
 
   

@@ -78,23 +78,37 @@ const userSchema = new mongoose.Schema(
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
+          required: true,
         },
         price: Number,
-        quantity: {
-          type: Number,
-          default: 1,
-        },
+        quantity: { type: Number, default: 1 },
         status: {
           type: String,
-          enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
+          enum: ["Pending", "Delivered", "Cancelled"],
           default: "Pending",
         },
-        date: {
-          type: Date,
-          default: Date.now,
+        date: { type: Date, default: Date.now },
+    
+        // ➕ NOU:
+        paymentMethod: {
+          type: String,
+          enum: ["online", "cash", "card_on_delivery"],
+          default: "online",
         },
-      },
-    ],events: [
+        deliveryMethod: {
+          type: String,
+          enum: ["courier", "easybox"],
+          default: "courier",
+        },
+        firstName: String,
+        lastName: String,
+        address: String,
+        postalCode: String,
+        city: String,
+        phone: String,
+      }
+    ],
+    events: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Event",
