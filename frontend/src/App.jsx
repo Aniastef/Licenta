@@ -12,7 +12,6 @@ import CreateProductPage from './pages/CreateProductPage';
 import ProductPage from './pages/ProductPage';
 import CreateEventPage from './pages/CreateEventPage';
 import EventPage from './pages/EventPage';
-import Incerc from './components/Incerc';
 import UserArtGallery from './pages/UserArtGallery';
 import ProductsPage from './pages/AllProductsPage';
 import EventsPage from './pages/AllEventsPage';
@@ -58,7 +57,6 @@ function App() {
         <Route path="/create/event" element={user ? <CreateEventPage /> : <Navigate to="/auth" />} />
         <Route path="/events/:id" element={<EventPage/>} />
         <Route path='/events' element={<EventsPage/>} />
-        <Route path="/incerc" element={<Incerc/>} />
         <Route path="/art" element={<UserArtGallery/>} />
         <Route path="*" element={<Navigate to="/home" />} />
         <Route path="/galleries" element={<ExploreGalleries/>}/>

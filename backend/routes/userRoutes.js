@@ -14,6 +14,7 @@ router.get("/galleries", protectRoute, getUserWithGalleries);
 router.get("/search", protectRoute, searchUsers);
 router.get("/favorites/:username", getFavoriteProducts);
 router.post("/block/:userId", protectRoute, blockUser);
+router.post("/unblock/:userId", protectRoute, unblockUser);
 router.get("/blocked", protectRoute, getBlockedUsers);
 router.get("/me", protectRoute, getMe);
 

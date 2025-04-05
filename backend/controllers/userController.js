@@ -1,5 +1,5 @@
 import User from "../models/userModel.js"
-import generateTokenAndSetCookie from "../utils/generateTokenAndSetCookie.js.js";
+import generateTokenAndSetCookie from "../utils/generateTokenAndSetCookie.js";
 import bcrypt from "bcryptjs"
 import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
@@ -341,13 +341,14 @@ export const getUserWithGalleries = async (req, res) => {
 		await currentUser.save();
 	  }
   
-	  res.status(200).json({ message: "User blocked successfully" });
+	  // ✅ Trimite user-ul actualizat înapoi
+	  res.status(200).json(currentUser);
 	} catch (error) {
 	  console.error("Error blocking user:", error.message);
 	  res.status(500).json({ error: "Failed to block user" });
 	}
   };
-
+  
   export const unblockUser = async (req, res) => {
 	try {
 	  const user = await User.findById(req.user._id);
@@ -355,12 +356,15 @@ export const getUserWithGalleries = async (req, res) => {
 		(id) => id.toString() !== req.params.userId
 	  );
 	  await user.save();
-	  res.status(200).json({ message: "User unblocked" });
+  
+	  // ✅ Trimite user-ul actualizat înapoi
+	  res.status(200).json(user);
 	} catch (err) {
 	  console.error("Unblock error:", err);
 	  res.status(500).json({ error: "Failed to unblock user" });
 	}
   };
+  
   
   export const getBlockedUsers = async (req, res) => {
 	try {

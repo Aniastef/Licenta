@@ -108,6 +108,14 @@ export const sendMessage = async (req, res) => {
     }
 
     const receiver = await User.findById(receiverId);
+    const sender = await User.findById(senderId);
+
+    // ✅ Dacă expeditorul l-a blocat pe destinatar
+    if (sender.blockedUsers.includes(receiverId)) {
+      return res.status(403).json({ error: "You blocked this user." });
+    }
+
+    // ✅ Dacă destinatarul l-a blocat pe expeditor
     if (receiver.blockedUsers.includes(senderId)) {
       return res.status(403).json({ error: "You are blocked by this user." });
     }
@@ -125,6 +133,7 @@ export const sendMessage = async (req, res) => {
     res.status(500).json({ error: "Failed to send message." });
   }
 };
+
 
 
 export const markMessagesAsRead = async (req, res) => {

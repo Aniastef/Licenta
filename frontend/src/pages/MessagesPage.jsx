@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   Flex,
@@ -15,6 +15,7 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import searchIcon from "../assets/searchIcon.png";
+import { syncUser } from "../utils/syncUser";
 
 const MotionBox = motion(Box);
 
@@ -29,6 +30,16 @@ const MessagesPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  // const [blockToggle, setBlockToggle] = useState(false);
+  // const [isBlocked, setIsBlocked] = useState(false);
+
+  // useEffect(() => {
+  //   if (currentUser && userId) {
+  //     setIsBlocked(currentUser.blockedUsers?.includes(userId));
+  //   }
+  // }, [currentUser, userId]);
+  const [isBlocked, setIsBlocked] = useState(false);
+
 
   const currentUserId = localStorage.getItem("userId");
   const messagesEndRef = useRef(null);
@@ -37,6 +48,8 @@ const MessagesPage = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  
 
   useEffect(() => {
     scrollToBottom();
@@ -68,46 +81,76 @@ const MessagesPage = () => {
         },
         credentials: "include",
       });
+  
       const data = await res.json();
       setCurrentUser(data);
+  
+      // 🧠 Setăm corect isBlocked — comparăm .toString()
+      if (userId && data.blockedUsers) {
+        const isBlocked = data.blockedUsers.some(
+          (u) => String(u._id || u) === String(userId)
+        );
+        setIsBlocked(isBlocked);
+      }
     } catch (error) {
       console.error("Failed to fetch current user", error);
     }
   };
+  
+  
+  
 
-  const isUserBlocked = () => {
-    if (!currentUser || !Array.isArray(currentUser.blockedUsers)) return false;
-    return currentUser.blockedUsers.some(id => id.toString() === userId);
-  };
+  // const isUserBlocked = useCallback(() => {
+  //   if (!currentUser || !Array.isArray(currentUser.blockedUsers)) return false;
+  //   return currentUser.blockedUsers.includes(userId);
+  // }, [currentUser, userId, blockToggle]);
+  
   
 
   const handleToggleBlock = async () => {
-    const isBlocked = isUserBlocked();
-    const route = isBlocked ? "unblock" : "block";
-
     try {
+      const route = isBlocked ? "unblock" : "block";
+  
       const res = await fetch(`/api/users/${route}/${userId}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
         credentials: "include",
       });
-
+  
       if (res.ok) {
-        await fetchCurrentUser(); // fix: force refresh user after block/unblock
+        const updatedUser = await res.json();
+        setCurrentUser(updatedUser);
+  
+        const isBlockedNow = updatedUser.blockedUsers.some(
+          (u) => String(u._id || u) === String(userId)
+        );
+        setIsBlocked(isBlockedNow);
+  
         toast({
-          title: isBlocked ? "User unblocked" : "User blocked",
-          status: isBlocked ? "success" : "warning",
+          title: route === "unblock" ? "User unblocked" : "User blocked",
+          status: route === "unblock" ? "success" : "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Failed to update block status",
+          status: "error",
           duration: 3000,
           isClosable: true,
         });
       }
     } catch (err) {
-      console.error("Toggle block error", err);
+      console.error("Block/unblock error:", err.message);
     }
   };
-
+  
+  
+  
+  
+  
+  
+  
+  
   const fetchConversations = async () => {
     try {
       const response = await fetch("/api/messages/conversations", {
@@ -177,16 +220,16 @@ const MessagesPage = () => {
   };
 
   const handleSendMessage = async () => {
-    if (isUserBlocked()) {
-      toast({
-        title: "You have blocked this user.",
-        description: "You cannot send messages to someone you blocked.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
+    // if (isUserBlocked()) {
+    //   toast({
+    //     title: "You have blocked this user.",
+    //     description: "You cannot send messages to someone you blocked.",
+    //     status: "error",
+    //     duration: 3000,
+    //     isClosable: true,
+    //   });
+    //   return;
+    // }
   
     if (!newMessage.trim()) return;
   
@@ -233,6 +276,15 @@ const MessagesPage = () => {
       ? sentMessages[sentMessages.length - 1]
       : null;
   };
+
+  
+  useEffect(() => {
+    if (userId && currentUser) {
+      const found = conversations.find((conv) => conv.user._id === userId);
+      if (found) setSelectedUser(found.user);
+    }
+  }, [currentUser]);
+  
 
   return (
     <Flex height="100vh">
@@ -313,13 +365,19 @@ const MessagesPage = () => {
                 Chat with {selectedUser.firstName} {selectedUser.lastName}
               </Heading>
             </HStack>
-            <Button
-              colorScheme={isUserBlocked() ? "green" : "red"}
-              size="sm"
-              onClick={handleToggleBlock}
-            >
-              {isUserBlocked() ? "Unblock User" : "Block User"}
-            </Button>
+            {selectedUser && currentUser && (
+          <Button
+          colorScheme={isBlocked ? "green" : "red"}
+          onClick={handleToggleBlock}
+        >
+          {isBlocked ? "Unblock User" : "Block User"}
+        </Button>
+        
+        
+        )}
+
+
+
           </VStack>
         ) : (
           <Heading size="lg" mb={2}>Messages</Heading>
@@ -420,6 +478,7 @@ const MessagesPage = () => {
           )}
         </Box>
 
+
         <Flex mt={4}>
           <Input
             placeholder="Type a message..."
@@ -434,6 +493,17 @@ const MessagesPage = () => {
             Send
           </Button>
         </Flex>
+    
+      {!isBlocked && (
+  <Flex mt={4}> ... </Flex>
+)}
+{isBlocked && (
+  <Text mt={4} fontSize="md" color="red.500">
+    You have blocked this user. Unblock them to continue the conversation.
+  </Text>
+)}
+
+
       </Box>
 
       </Box>
