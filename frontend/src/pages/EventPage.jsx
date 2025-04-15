@@ -16,18 +16,18 @@ export default function EventPage() {
 
   const fetchEvent = async () => {
     try {
-      const res = await fetch(`/api/events/${id}`, {
-        credentials: "include", // ✅ Trimite cookie-ul de autentificare
-      });
-            if (!res.ok) throw new Error("Failed to fetch event details");
-      const data = await res.json();
-      setEvent(data.event);
+       const res = await fetch(`/api/events/${id}`, { credentials: "include" });
+       if (!res.ok) throw new Error("Failed to fetch event details");
+       const data = await res.json();
+       console.log("Event data received:", data);
+       setEvent(data.event);
     } catch (err) {
-      setError(err.message);
+       setError(err.message);
     } finally {
-      setIsLoading(false);
+       setIsLoading(false);
     }
-  };
+ };
+ 
   useEffect(() => {
     if (id) fetchEvent();
   }, [id]);

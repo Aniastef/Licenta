@@ -28,10 +28,16 @@ import FavoriteProductsPage from './pages/FavoriteProductsPage';
 import UserAllProductsPage from './pages/UserAllProductsPage';
 import UpdateProductPage from './pages/UpdateProductPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
+import useLoadGoogleMapsScript from './hooks/useLoadGoogleMapsScript';
 
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
+  const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs'; // Replace with your real key
+  const { isLoaded } = useLoadGoogleMapsScript(apiKey); // Load Google Maps script
+
+// Definește funcția initMap care va fi apelată când API-ul este gata
+
 
   useEffect(() => {
     const isAuthPage = window.location.pathname === '/auth';

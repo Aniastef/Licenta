@@ -24,6 +24,16 @@ const eventSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    coordinates: { // Adăugarea câmpului de coordonate
+      lat: {
+        type: Number,
+        required: true, // Asigură-te că latitudinea este obligatorie
+      },
+      lng: {
+        type: Number,
+        required: true, // Asigură-te că longitudinea este obligatorie
+      },
+    },
     date: {
       type: Date,
       required: true,
@@ -49,6 +59,36 @@ const eventSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+      price: {
+        type: Number,
+        default: 0,
+      },
+      ticketType: {
+        type: String,
+        enum: ["free", "paid", "donation"],
+        default: "free",
+      },
+      language: {
+        type: String,
+        default: "ro",
+      },
+      collaborators: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
+      gallery: [
+        {
+          type: String, // Cloudinary URLs
+        },
+      ],
+      attachments: [
+        {
+          fileName: String,
+          fileUrl: String,
+        },
+      ],
   },
   {
     timestamps: true, // Include createdAt și updatedAt

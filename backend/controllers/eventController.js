@@ -5,18 +5,37 @@ import Comment from "../models/commentModel.js";
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
 
+import axios from 'axios';  // To make an API request to the geocoding service
+
+
 export const createEvent = async (req, res) => {
   try {
-    const { name, description, date, tags, coverImage } = req.body;
+    const { name, description, date, tags, coverImage, location, capacity, price, ticketType, language, collaborators, gallery, attachments } = req.body;
+
     console.log("Body received:", req.body);
 
     if (!name || !date) {
       return res.status(400).json({ error: "Name and date are required" });
     }
 
-    let coverImageUrl = coverImage || null;
+    // Check if the location is provided
+    let coordinates = { lat: null, lng: null };
+    if (location) {
+      const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs`;
+      const geocodeResponse = await axios.get(geocodingUrl);
+      const results = geocodeResponse.data.results;
 
-    // Dacă coverImage este un Base64 sau URL temporar, îl urcăm pe Cloudinary
+      if (results.length > 0) {
+        coordinates = {
+          lat: results[0].geometry.location.lat,
+          lng: results[0].geometry.location.lng,
+        };
+      } else {
+        return res.status(400).json({ error: "Unable to find coordinates for the provided location" });
+      }
+    }
+
+    let coverImageUrl = coverImage || null;
     if (coverImage && coverImage.startsWith("data:")) {
       const uploaded = await cloudinary.uploader.upload(coverImage);
       coverImageUrl = uploaded.secure_url;
@@ -27,8 +46,17 @@ export const createEvent = async (req, res) => {
       description,
       date,
       coverImage: coverImageUrl,
-      tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+      tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
       user: req.user._id,
+      location,
+      coordinates,  // Save coordinates here
+      capacity,
+      price,
+      ticketType,
+      language,
+      collaborators,
+      gallery,
+      attachments,
     });
 
     await newEvent.save();
@@ -38,6 +66,9 @@ export const createEvent = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
 
 export const getEvent = async (req, res) => {
   try {
@@ -199,7 +230,21 @@ export const deleteEvent = async (req, res) => {
 export const updateEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
-    const { name, description, date, coverImage, tags } = req.body;
+    const {
+      name,
+      description,
+      date,
+      coverImage,
+      tags,
+      location,
+      capacity,
+      price,
+      ticketType,
+      language,
+      collaborators,
+      gallery,
+      attachments,
+    } = req.body;
 
     const event = await Event.findById(eventId);
 
@@ -207,7 +252,7 @@ export const updateEvent = async (req, res) => {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    if (event.createdBy.toString() !== req.user._id.toString()) {
+    if (event.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized action" });
     }
 
@@ -222,6 +267,15 @@ export const updateEvent = async (req, res) => {
     event.date = date || event.date;
     event.coverImage = coverImageUrl;
     event.tags = tags || event.tags;
+
+    event.location = location || event.location;
+    event.capacity = capacity ?? event.capacity;
+    event.price = price ?? event.price;
+    event.ticketType = ticketType || event.ticketType;
+    event.language = language || event.language;
+    event.collaborators = collaborators || event.collaborators;
+    event.gallery = gallery || event.gallery;
+    event.attachments = attachments || event.attachments;
 
     await event.save();
     res.status(200).json(event);
