@@ -1,5 +1,5 @@
 import express from "express";
-import { signupUser,loginUser,logoutUser,updateUser, getUserProfile, getUserWithGalleries, searchUsers, getFavoriteProducts, blockUser, unblockUser, getBlockedUsers,getMe} from "../controllers/userController.js";
+import { signupUser,loginUser,logoutUser,updateUser, getUserProfile, getUserWithGalleries, searchUsers, getFavoriteProducts, blockUser, unblockUser, getBlockedUsers,getMe, moveToFavorites} from "../controllers/userController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 
 const router=express.Router();
@@ -18,6 +18,7 @@ router.post("/unblock/:userId", protectRoute, unblockUser);
 router.get("/blocked", protectRoute, getBlockedUsers);
 router.get("/me", protectRoute, getMe);
 
+router.post("/favorites/move", moveToFavorites);
 
 
 export default router;

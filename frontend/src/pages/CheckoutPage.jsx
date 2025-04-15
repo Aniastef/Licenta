@@ -18,122 +18,111 @@ import userAtom from "../atoms/userAtom";
 const stripePromise = loadStripe("pk_test_51Qsp7AE2YvnJG5vYoqLfiAbuRiZY2BwF9Jh0Uc6RrQmGp3KcmTImPoFMic0JChEYbXPs1flUqZC728RWyPgjUVO200emlBMRwp");
 
 const CheckoutPage = () => {
-  const { cart, clearCart } = useCart();
+  const { cart, setCart, fetchCart } = useCart(); // 🆕 adăugat fetchCart
   const user = useRecoilValue(userAtom);
-  const userId = user?._id;
-  const navigate = useNavigate();
   const toast = useToast();
+  const navigate = useNavigate();
 
   const [paymentMethod, setPaymentMethod] = useState("online");
   const [deliveryMethod, setDeliveryMethod] = useState("courier");
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
   const [address, setAddress] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [city, setCity] = useState("");
   const [phone, setPhone] = useState("");
 
-  const totalPrice = cart.reduce((acc, item) => {
-    const price = item?.product?.price || 0;
-    return acc + price * (item.quantity || 1);
-  }, 0);
-
-  const handlePaymentSuccess = async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("success") && !localStorage.getItem("hasProcessed")) {
-      localStorage.setItem("hasProcessed", "true");
-
-      try {
-        const res = await fetch("/api/payment/payment-success", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-          credentials: "include",
-        });
-
-        if (res.ok) {
-          clearCart();
-          navigate("/orders");
-        } else {
-          console.error("❌ Payment processing failed");
-        }
-      } catch (err) {
-        console.error("❌ Error processing payment:", err);
-      }
-    }
-  };
-
+  const totalPrice = cart.reduce((acc, item) => acc + (item.product?.price || 0) * item.quantity, 0);
   useEffect(() => {
-    handlePaymentSuccess();
-    return () => localStorage.removeItem("hasProcessed");
+    fetchCart(); // 💥 forțează actualizarea cart-ului la intrarea în pagină
   }, []);
-
-  const validateDeliveryFields = () => {
-    return (
-      firstName &&
-      lastName &&
-      address &&
-      postalCode &&
-      city &&
-      phone
-    );
-  };
-
-  const handleDeliveryOrder = async () => {
-    if (!validateDeliveryFields()) {
+  
+  const handlePaymentSuccess = async () => {
+    const validCart = cart.filter(item => item.product);
+  
+    // ✅ Verificăm local dacă ai produse cu stoc insuficient
+    const hasInvalidItems = validCart.some(item => {
+      return item.quantity > item.product.quantity;
+    });
+  
+    if (hasInvalidItems) {
       toast({
-        title: "Complete all delivery fields.",
+        title: "Stoc insuficient",
+        description: "Unul sau mai multe produse nu mai au stoc suficient.",
         status: "warning",
-        duration: 3000,
+        duration: 4000,
         isClosable: true,
       });
-      return;
+  
+      await fetchCart(); // 🔁 Sincronizează cart-ul
+      return; // ❌ Oprim aici
     }
-
+  
     try {
-      const response = await fetch(`/api/orders/${userId}`, {
+      const res = await fetch("/api/payment/payment-success", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          products: cart.map((item) => ({
-            _id: item.product._id,
-            price: item.product.price,
-            quantity: item.quantity,
-          })),
+          userId: user._id,
+          cart: validCart,
+          totalAmount: totalPrice,
           paymentMethod,
           deliveryMethod,
           firstName,
           lastName,
           address,
-          postalCode,
           city,
+          postalCode,
           phone,
         }),
       });
-
-      if (response.ok) {
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        const errorMessage = data?.error || "Failed to process order";
+        console.error("❌ Payment processing failed", errorMessage);
+  
         toast({
-          title: "Order placed successfully!",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-        clearCart();
-        navigate("/orders");
-      } else {
-        toast({
-          title: "Order failed!",
+          title: "Plata a eșuat",
+          description: errorMessage,
           status: "error",
-          duration: 3000,
+          duration: 4000,
           isClosable: true,
         });
+  
+        await fetchCart(); // 🔁 Reîncarcă cart-ul dacă apare eroare de la server
+        throw new Error(errorMessage);
       }
+  
+      toast({ title: "Plată reușită!", status: "success", duration: 3000 });
+      setCart([]);
+      navigate("/orders");
+  
     } catch (err) {
-      console.error("❌ Error placing order:", err);
+      console.error("❌ Payment processing failed", err);
+      toast({
+        title: "Plata a eșuat",
+        description: err.message,
+        status: "error",
+        duration: 3000,
+      });
     }
   };
+  
+  
+  
+
+  useEffect(() => {
+    const shouldProcess = localStorage.getItem("hasProcessed");
+    if (shouldProcess) {
+      handlePaymentSuccess().finally(() => {
+        localStorage.removeItem("hasProcessed");
+      });
+    }
+  }, []);
 
   const handlePayment = async () => {
     if (paymentMethod !== "online") {
@@ -162,72 +151,95 @@ const CheckoutPage = () => {
       return;
     }
 
+    localStorage.setItem("hasProcessed", "true");
     await stripe.redirectToCheckout({ sessionId: data.sessionId });
+  };
+
+  const validateDeliveryFields = () => {
+    return firstName && lastName && address && postalCode && city && phone;
+  };
+
+  const handleDeliveryOrder = async () => {
+    if (!validateDeliveryFields()) {
+      toast({
+        title: "Complete all delivery fields.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/orders/${user._id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          products: cart.map((item) => ({
+            _id: item.product._id,
+            price: item.product.price,
+            quantity: item.quantity,
+          })),
+          paymentMethod,
+          deliveryMethod,
+          firstName,
+          lastName,
+          address,
+          postalCode,
+          city,
+          phone,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Order placed successfully!",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        setCart([]);
+        navigate("/orders");
+      } else {
+        toast({
+          title: "Order failed!",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (err) {
+      console.error("❌ Error placing order:", err);
+    }
   };
 
   return (
     <VStack spacing={6} align="center" p={5}>
-      <Text fontSize="2xl" fontWeight="bold">
-        Checkout
-      </Text>
+      <Text fontSize="2xl" fontWeight="bold">Checkout</Text>
       <Text fontSize="lg">Total: {totalPrice.toFixed(2)} RON</Text>
 
-      <Select
-        placeholder="Select payment method"
-        value={paymentMethod}
-        onChange={(e) => setPaymentMethod(e.target.value)}
-        w="300px"
-      >
+      <Select w="300px" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
         <option value="online">Pay online with card</option>
         <option value="card_on_delivery">Pay with card at delivery</option>
         <option value="cash">Pay cash at delivery</option>
       </Select>
 
-      <Select
-        placeholder="Select delivery method"
-        value={deliveryMethod}
-        onChange={(e) => setDeliveryMethod(e.target.value)}
-        w="300px"
-      >
+      <Select w="300px" value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value)}>
         <option value="courier">Home delivery (courier)</option>
         <option value="easybox">EasyBox locker</option>
       </Select>
 
       {paymentMethod !== "online" && (
         <VStack spacing={3} w="100%" maxW="500px">
-          <Text fontWeight="semibold">Delivery Information</Text>
-          <Input
-            placeholder="First Name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-          <Input
-            placeholder="Last Name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-          />
-          <Input
-            placeholder="Full Address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
+          <Input placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+          <Input placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+          <Input placeholder="Full Address" value={address} onChange={(e) => setAddress(e.target.value)} />
           <HStack w="100%">
-            <Input
-              placeholder="Postal Code"
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-            />
-            <Input
-              placeholder="City / Village / Commune"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-            />
+            <Input placeholder="Postal Code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+            <Input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
           </HStack>
-          <Input
-            placeholder="Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
+          <Input placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} />
         </VStack>
       )}
 

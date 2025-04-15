@@ -1,116 +1,140 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import userAtom from "../atoms/userAtom";
+import React, { createContext, useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom";
+import { useContext } from "react";
 
-const CartContext = createContext();
+export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const user = useRecoilValue(userAtom);
-  const userId = user?._id; // ✅ Ia userId din userAtom
+  const userId = user?._id;
+  const [cart, setCart] = useState([]);
 
-  const [cart, setCart] = useState(() => {
-    const storedCart = localStorage.getItem("cart");
-    return storedCart ? JSON.parse(storedCart) : [];
-  });
+  useEffect(() => {
+    if (userId) {
+      fetchCart(); // 🛒 actualizează cartul de fiecare dată când userul se loghează
+    }
+  }, [userId]);
+  
 
-  const clearCart = () => {
-    console.log("🚮 Clearing cart in frontend...");
-    setCart([]);
-    localStorage.removeItem("cart");
+  const fetchCart = async () => {
+    try {
+      const res = await fetch(`/api/cart/${userId}`, { credentials: "include" });
+      const data = await res.json();
+      setCart(data);
+      console.log("🛍 Cart fetched:", data);
+    } catch (err) {
+      console.error("❌ Error fetching cart:", err);
+    }
   };
 
-  console.log("🔍 Extracted userId:", userId);
-  console.log("🔍 User from Recoil:", user);
-
-  useEffect(() => {
-    console.log("Updated Cart:", cart); // 🔍 Debugging
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
-  // ✅ Fix: Nu blocăm contextul dacă utilizatorul nu este logat
-  useEffect(() => {
-    if (!userId) {
-      console.warn("⚠️ No user logged in! Cart won't be loaded.");
-      return;
-    }
-
-    const fetchCart = async () => {
-      try {
-        console.log(`🛒 Fetching cart for user ${userId}`);
-        const response = await fetch(`/api/cart/${userId}`, {
-          credentials: "include", // ✅ Adăugat
-        });
-        
-        if (!response.ok) throw new Error("Failed to fetch cart");
-
-        const userCart = await response.json();
-        console.log("🛍 Cart fetched:", userCart);
-        setCart(userCart);
-      } catch (error) {
-        console.error("❌ Error fetching cart:", error);
-      }
-    };
-
-    fetchCart();
-  }, [userId]);
-
-  const addToCart = async (product) => {
-    if (!userId) {
-      console.error("❌ User not logged in. Cannot add to cart.");
-      return;
-    }
-
-    console.log(`🛒 Adding product: ${product.name} (ID: ${product._id}) for user ${userId}`);
-
+  const updateCartQuantity = async (productId, quantity) => {
     try {
-      const response = await fetch("/api/cart/add-to-cart", {
+      const res = await fetch(`/api/cart/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ✅ Adăugat
-        body: JSON.stringify({ userId, productId: product._id, quantity: 1 }),
+        credentials: "include",
+        body: JSON.stringify({ productId, quantity, userId }),
       });
-
-      if (!response.ok) throw new Error("Failed to add product to cart");
-
-      const updatedCart = await response.json();
-      console.log("✅ Cart updated:", updatedCart);
-      setCart(updatedCart);
-    } catch (error) {
-      console.error("❌ Error adding product to cart:", error);
+      const data = await res.json();
+      setCart(data);
+    } catch (err) {
+      console.error("❌ Error updating quantity:", err);
     }
   };
+  
 
   const removeFromCart = async (productId) => {
-    if (!userId) {
-      console.error("❌ User not logged in. Cannot remove from cart.");
-      return;
-    }
-
-    console.log(`🗑 Removing product ID: ${productId} from cart`);
-
     try {
-      const response = await fetch("/api/cart/remove-from-cart", {
-        method: "POST",
+      const res = await fetch(`/api/cart/remove`, {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ✅ Adăugat
-        body: JSON.stringify({ userId, productId }),
+        credentials: "include",
+        body: JSON.stringify({ userId, productId }), // ✅ Correct usage
       });
-
-      if (!response.ok) throw new Error("Failed to remove product from cart");
-
-      const updatedCart = await response.json();
-      console.log("✅ Cart updated after removal:", updatedCart);
-      setCart(updatedCart);
-    } catch (error) {
-      console.error("❌ Error removing product from cart:", error);
+      const data = await res.json();
+      setCart(data);
+    } catch (err) {
+      console.error("❌ Error removing from cart:", err);
     }
   };
+  
+  
+
+  const addToCart = async (newItem) => {
+    if (!newItem || !newItem.product || !newItem.product._id) {
+      console.error("❌ Invalid item passed to addToCart:", newItem);
+      return;
+    }
+  
+    if (!Array.isArray(cart)) {
+      console.error("❌ cart is not an array:", cart);
+      return;
+    }
+  
+    const existingItem = cart.find((i) => i.product._id === newItem.product._id);
+  
+    if (existingItem) {
+      const totalQty = existingItem.quantity + (newItem.quantity || 1);
+      if (totalQty > newItem.product.quantity) {
+        console.warn("❌ Nu există stoc suficient pentru", newItem.product.name);
+        return;
+      }
+      updateCartQuantity(newItem.product._id, totalQty);
+      return;
+    }
+    // Dacă nu există item, dar cantitatea cerută > stoc disponibil
+if (newItem.quantity > newItem.product.quantity) {
+  console.warn("❌ Cerere depășește stocul pentru", newItem.product.name);
+  return;
+}
+
+  
+    try {
+      const res = await fetch(`/api/cart/add-to-cart`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          userId,
+          productId: newItem.product._id,
+          quantity: newItem.quantity || 1,
+        }),
+      });
+  
+      const data = await res.json();
+  
+      if (!Array.isArray(data)) {
+        console.error("❌ Server a returnat o eroare:", data);
+        return;
+      }
+  
+      setCart(data);
+    } catch (err) {
+      console.error("❌ Error adding to cart:", err);
+    }
+  };
+  
+  
+  
+  
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider
+  value={{
+    cart,
+    setCart,
+    updateCartQuantity,
+    removeFromCart,
+    addToCart,
+    fetchCart, // 🔁 expus aici
+  }}
+>
+
       {children}
     </CartContext.Provider>
   );
 };
+
 
 export const useCart = () => useContext(CartContext);

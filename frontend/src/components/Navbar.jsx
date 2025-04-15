@@ -18,6 +18,8 @@ import { useRecoilValue } from "recoil";
 import useLogout from "../hooks/useLogout";
 import cartIcon from "../assets/cart.png";
 import { useCart } from "../components/CartContext"; 
+import { CartContext } from "../components/CartContext";
+import { useContext } from "react";
 
 const Navbar = () => {
   const user = useRecoilValue(userAtom); 

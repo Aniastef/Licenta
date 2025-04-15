@@ -272,6 +272,28 @@ export const getUserWithGalleries = async (req, res) => {
     }
 };
 
+export const moveToFavorites = async (req, res) => {
+	try {
+	  const { userId, productId } = req.body;
+  
+	  const user = await User.findById(userId);
+	  if (!user) return res.status(404).json({ error: "User not found" });
+  
+	  // Nu adăuga duplicat
+	  if (!user.favorites.includes(productId)) {
+		user.favorites.push(productId);
+	  }
+  
+	  // 🔁 Opțional: șterge produsul din coș
+	  user.cart = user.cart.filter((item) => !item.product.equals(productId));
+  
+	  await user.save();
+	  res.status(200).json({ favorites: user.favorites, cart: user.cart });
+	} catch (err) {
+	  console.error("❌ Error in moveToFavorites:", err.message);
+	  res.status(500).json({ error: "Failed to move to favorites" });
+	}
+  };
   
 
 

@@ -75,13 +75,17 @@ const userSchema = new mongoose.Schema(
     ],
     orders: [
       {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
-        },
-        price: Number,
-        quantity: { type: Number, default: 1 },
+        products: [
+          {
+            product: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Product",
+              required: true,
+            },
+            price: Number,
+            quantity: { type: Number, default: 1 },
+          }
+        ],
         status: {
           type: String,
           enum: ["Pending", "Delivered", "Cancelled"],
@@ -89,7 +93,6 @@ const userSchema = new mongoose.Schema(
         },
         date: { type: Date, default: Date.now },
     
-        // ➕ NOU:
         paymentMethod: {
           type: String,
           enum: ["online", "cash", "card_on_delivery"],
@@ -167,6 +170,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    optimisticConcurrency: true,
   }
 );
 

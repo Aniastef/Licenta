@@ -62,8 +62,32 @@ export const removeFromCart = async (req, res) => {
     user.cart = user.cart.filter((item) => !item.product.equals(productId));
     await user.save();
 
-    res.json(user.cart);
-  } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    // ✅ Populează din nou produsele
+    const updatedUser = await User.findById(userId).populate("cart.product");
+    res.json(updatedUser.cart);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to remove from cart" });
   }
 };
+
+
+export const updateCartItem = async (req, res) => {
+  try {
+    const { userId, productId, quantity } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const item = user.cart.find((i) => i.product.equals(productId));
+    if (item) item.quantity = quantity;
+
+    await user.save();
+
+    // ✅ Populăm produsele din nou
+    const updatedUser = await User.findById(userId).populate("cart.product");
+    res.json(updatedUser.cart);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update item" });
+  }
+};
+

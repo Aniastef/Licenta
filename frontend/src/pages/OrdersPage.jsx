@@ -14,12 +14,14 @@ import {
   Tab,
   TabPanel,
   Button,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
 } from "@chakra-ui/react";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-
 
 const OrdersPage = () => {
   const user = useRecoilValue(userAtom);
@@ -45,10 +47,8 @@ const OrdersPage = () => {
     if (user?._id) fetchOrders();
   }, [user]);
 
-  const groupedOrdersList = orders;
-
   const filterOrdersByStatus = (status) =>
-    groupedOrdersList.filter((order) => order.status === status);
+    orders.filter((order) => order.status === status);
 
   const handleCancelOrder = async (orderId) => {
     try {
@@ -56,9 +56,8 @@ const OrdersPage = () => {
         method: "PATCH",
         credentials: "include",
       });
-  
+
       if (response.ok) {
-        // 🔁 Updatăm local doar statusul
         setOrders((prev) =>
           prev.map((order) =>
             order._id === orderId ? { ...order, status: "Cancelled" } : order
@@ -71,7 +70,111 @@ const OrdersPage = () => {
       console.error("Error cancelling order:", err.message);
     }
   };
-  
+
+  const OrderAccordion = ({ orders }) => (
+    <Accordion allowToggle>
+      {orders.map((order) => {
+        const total = Array.isArray(order.products)
+          ? order.products.reduce((acc, p) => acc + p.price * p.quantity, 0)
+          : order.price * order.quantity;
+
+        return (
+          <AccordionItem key={order._id}>
+            <h2>
+              <AccordionButton _expanded={{ bg: "teal.100" }}>
+                <Box flex="1" textAlign="left">
+                  <Text fontWeight="bold">Comanda #{order._id.slice(-6)}</Text>
+                  <Text fontSize="sm">
+                    Data: {new Date(order.date).toLocaleDateString()}
+                  </Text>
+                  <Text fontSize="sm">Total: {total.toFixed(2)} RON</Text>
+                </Box>
+                <Badge
+                  colorScheme={
+                    order.status === "Delivered"
+                      ? "green"
+                      : order.status === "Pending"
+                      ? "orange"
+                      : "red"
+                  }
+                >
+                  {order.status}
+                </Badge>
+                <AccordionIcon />
+              </AccordionButton>
+            </h2>
+            <AccordionPanel pb={4}>
+              <VStack spacing={4} align="start">
+                {Array.isArray(order.products) ? (
+                  order.products.map((item, idx) => (
+                    <HStack key={idx} spacing={4} align="start" w="100%">
+                      <Image
+                        src={item.product?.images?.[0] || "/placeholder.jpg"}
+                        alt={item.product?.name}
+                        boxSize="100px"
+                        objectFit="cover"
+                        borderRadius="md"
+                      />
+                      <VStack align="start" spacing={1} flex="1">
+                        <Text fontWeight="bold">{item.product?.name}</Text>
+                        <Text fontSize="sm">Preț unitar: {item.price} RON</Text>
+                        <Text fontSize="sm">Cantitate: {item.quantity}</Text>
+                        <Text fontWeight="semibold">
+                          Total: {(item.price * item.quantity).toFixed(2)} RON
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  ))
+                ) : (
+                  <HStack spacing={4} align="start" w="100%">
+                    <Image
+                      src={order.product?.images?.[0] || "/placeholder.jpg"}
+                      alt={order.product?.name}
+                      boxSize="100px"
+                      objectFit="cover"
+                      borderRadius="md"
+                    />
+                    <VStack align="start" spacing={1} flex="1">
+                      <Text fontWeight="bold">{order.product?.name}</Text>
+                      <Text fontSize="sm">Preț unitar: {order.price} RON</Text>
+                      <Text fontSize="sm">Cantitate: {order.quantity}</Text>
+                      <Text fontWeight="semibold">
+                        Total: {(order.price * order.quantity).toFixed(2)} RON
+                      </Text>
+                    </VStack>
+                  </HStack>
+                )}
+                <Divider />
+                <Text fontWeight="semibold">Livrare:</Text>
+                <Text fontSize="sm">🏠 {order.address}, {order.city}</Text>
+                <Text fontSize="sm">📞 {order.phone}</Text>
+                <Text fontSize="sm">
+                  💳 {order.paymentMethod === "cash"
+                    ? "Cash"
+                    : order.paymentMethod === "online"
+                    ? "Card online"
+                    : "Card la livrare"}
+                </Text>
+                <Text fontSize="sm">
+                  🚚 {order.deliveryMethod === "easybox" ? "EasyBox" : "Courier"}
+                </Text>
+                {order.status === "Pending" && (
+                  <Button
+                    colorScheme="red"
+                    size="sm"
+                    mt={2}
+                    onClick={() => handleCancelOrder(order._id)}
+                  >
+                    Anulează Comanda
+                  </Button>
+                )}
+              </VStack>
+            </AccordionPanel>
+          </AccordionItem>
+        );
+      })}
+    </Accordion>
+  );
 
   return (
     <Box p={5}>
@@ -81,7 +184,7 @@ const OrdersPage = () => {
 
       {loading ? (
         <Spinner size="xl" />
-      ) : groupedOrdersList.length === 0 ? (
+      ) : orders.length === 0 ? (
         <Text>No orders found.</Text>
       ) : (
         <Tabs variant="enclosed" colorScheme="teal" isFitted>
@@ -93,19 +196,13 @@ const OrdersPage = () => {
 
           <TabPanels>
             <TabPanel>
-              {filterOrdersByStatus("Pending").map((order) => (
-                <OrderCard key={order._id} order={order} onCancel={handleCancelOrder} />
-              ))}
+              <OrderAccordion orders={filterOrdersByStatus("Pending")} />
             </TabPanel>
             <TabPanel>
-              {filterOrdersByStatus("Delivered").map((order) => (
-                <OrderCard key={order._id} order={order} />
-              ))}
+              <OrderAccordion orders={filterOrdersByStatus("Delivered")} />
             </TabPanel>
             <TabPanel>
-              {filterOrdersByStatus("Cancelled").map((order) => (
-                <OrderCard key={order._id} order={order} />
-              ))}
+              <OrderAccordion orders={filterOrdersByStatus("Cancelled")} />
             </TabPanel>
           </TabPanels>
         </Tabs>
@@ -113,162 +210,5 @@ const OrdersPage = () => {
     </Box>
   );
 };
-
-const generateInvoicePDF = (order) => {
-  const doc = new jsPDF();
-
-  doc.setFontSize(18);
-  doc.text("Factura Comandă", 14, 22);
-
-  doc.setFontSize(12);
-  doc.text(`Comandat de: ${order.firstName} ${order.lastName}`, 14, 32);
-  doc.text(`Adresă: ${order.address}, ${order.postalCode} ${order.city}`, 14, 38);
-  doc.text(`Telefon: ${order.phone}`, 14, 44);
-  doc.text(`Data: ${new Date(order.date).toLocaleDateString()}`, 14, 50);
-  doc.text(`Metodă plată: ${{
-    online: "Card online",
-    card_on_delivery: "Card la livrare",
-    cash: "Cash la livrare",
-  }[order.paymentMethod] || "Necunoscut"}`, 14, 56);
-
-  autoTable(doc, {
-    startY: 65,
-    head: [["Produs", "Cantitate", "Preț unitar (RON)", "Total"]],
-    body: [
-      [
-        order.product?.name || "Produs",
-        order.quantity,
-        order.price.toFixed(2),
-        (order.price * order.quantity).toFixed(2),
-      ],
-    ],
-  });
-
-  doc.text(`Total general: ${(order.price * order.quantity).toFixed(2)} RON`, 14, doc.lastAutoTable.finalY + 10);
-
-  doc.save(`factura_${order._id}.pdf`);
-};
-
-
-// 🧩 Card detaliat pentru fiecare comandă
-const OrderCard = ({ order, onCancel }) => (
-  <Box
-    borderWidth={1}
-    borderRadius="xl"
-    p={5}
-    my={4}
-    w="100%"
-    maxW="600px"
-    boxShadow="md"
-    bg="white"
-    _hover={{ boxShadow: "lg", transform: "scale(1.01)" }}
-    transition="all 0.2s ease-in-out"
-  >
-    <HStack spacing={4}>
-      <Image
-        src={order.product?.images?.[0] || "https://via.placeholder.com/150"}
-        alt={order.product?.name}
-        boxSize="100px"
-        objectFit="cover"
-        borderRadius="md"
-      />
-      <VStack align="start" spacing={1} flex="1">
-        <Text fontSize="xl" fontWeight="bold">
-          {order.product?.name}
-        </Text>
-        <Badge
-          colorScheme={
-            order.status === "Delivered"
-              ? "green"
-              : order.status === "Pending"
-              ? "orange"
-              : order.status === "Cancelled"
-              ? "red"
-              : "gray"
-          }
-          fontSize="sm"
-          px={2}
-          py={1}
-          borderRadius="md"
-        >
-          {order.status}
-        </Badge>
-        <Text fontSize="sm" color="gray.500">
-          Ordered on: {new Date(order.date).toLocaleDateString()}
-        </Text>
-      </VStack>
-    </HStack>
-
-    <Divider my={3} />
-
-    <VStack spacing={2} align="start">
-      <HStack justify="space-between" w="100%">
-        <Text fontWeight="medium">Unit Price:</Text>
-        <Text>{order.price} RON</Text>
-      </HStack>
-      <HStack justify="space-between" w="100%">
-        <Text fontWeight="medium">Quantity:</Text>
-        <Text>{order.quantity}</Text>
-      </HStack>
-      <HStack justify="space-between" w="100%">
-        <Text fontWeight="bold">Total:</Text>
-        <Text>{(order.price * order.quantity).toFixed(2)} RON</Text>
-      </HStack>
-    </VStack>
-
-    {(order.firstName || order.paymentMethod) && (
-      <>
-        <Divider my={3} />
-        <Text fontWeight="semibold" mb={1}>Delivery Info</Text>
-        <VStack spacing={1} align="start" fontSize="sm">
-          {order.firstName && (
-            <Text>
-              👤 {order.firstName} {order.lastName}
-            </Text>
-          )}
-          {order.address && (
-            <Text>
-              🏠 {order.address}, {order.postalCode} {order.city}
-            </Text>
-          )}
-          {order.phone && (
-            <Text>
-              📞 {order.phone}
-            </Text>
-          )}
-          <Text>
-            🚚 Delivery: {order.deliveryMethod === "easybox" ? "EasyBox" : "Courier"}
-          </Text>
-          <Text>
-            💳 Payment: {{
-              online: "Card (online)",
-              cash: "Cash on delivery",
-              card_on_delivery: "Card at delivery",
-            }[order.paymentMethod] || "Unknown"}
-          </Text>
-        </VStack>
-      </>
-    )}
-  
-  {order.status !== "Cancelled" && (
-  <Button
-    onClick={() => generateInvoicePDF(order)}
-    colorScheme="blue"
-    mt={3}
-    size="sm"
-  >
-    Descarcă Factură PDF
-  </Button>
-)}
-
-    {order.status === "Pending" && onCancel && (
-      <Box mt={4}>
-        <Button colorScheme="red" onClick={() => onCancel(order._id)}>
-          Cancel Order
-        </Button>
-      </Box>
-    )}
-  </Box>
-);
 
 export default OrdersPage;

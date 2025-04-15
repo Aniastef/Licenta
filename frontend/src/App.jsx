@@ -34,14 +34,15 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
+    const isAuthPage = window.location.pathname === '/auth';
+    if (!user && !isAuthPage) {
       navigate('/auth');
     }
   }, [user, navigate]);
+  
 
+  // console.log("👤 Current user:", JSON.stringify(user, null, 2));
 
-
-  console.log(user); 
   return (
     <CartProvider>
     <Box minH="100vh">

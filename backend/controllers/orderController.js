@@ -8,7 +8,8 @@ import Product from "../models/productModel.js";
 export const getUserOrders = async (req, res) => {
     try {
         const { userId } = req.params;
-        const user = await User.findById(userId).populate("orders.product");
+        const user = await User.findById(userId).populate("orders.products.product")
+
 
         if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -38,20 +39,25 @@ export const addOrder = async (req, res) => {
       city,
       phone,
     } = req.body;
-    
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    products.forEach((product) => {
+    // Adaugă fiecare produs ca o comandă separată
+    products.forEach((p) => {
+      if (!p._id) {
+        console.warn("❗️ Missing product ID in order item:", p);
+        return;
+      }
+
       user.orders.push({
-        product: product._id,
-        price: product.price,
-        quantity: product.quantity || 1,
+        product: p._id,
+        price: p.price,
+        quantity: p.quantity || 1,
         status: "Pending",
         date: new Date(),
-        paymentMethod: paymentMethod || "card",      // 
-        deliveryMethod: deliveryMethod || "courier", // 
+        paymentMethod: paymentMethod || "card",
+        deliveryMethod: deliveryMethod || "courier",
         firstName,
         lastName,
         address,
@@ -62,11 +68,14 @@ export const addOrder = async (req, res) => {
     });
 
     await user.save();
-    res.status(201).json({ message: "Order added", orders: user.orders });
+    res.status(201).json({ message: "Order(s) added", orders: user.orders });
   } catch (err) {
+    console.error("Error saving order:", err);
     res.status(500).json({ error: "Failed to add order" });
   }
 };
+
+
 
   
 

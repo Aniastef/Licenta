@@ -46,7 +46,10 @@ const ProductCard = ({ product }) => {
   }, [user?.username, product?._id]);
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart({
+      product,
+      quantity: 1,
+    });
     toast({
       title: "Product added!",
       description: `${product.name} was added to your cart.`,
