@@ -6,32 +6,30 @@ import {
   Button,
   Text,
   Image,
-  Grid,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalBody,
-  Tag,
-  TagLabel,
   useDisclosure,
   Avatar,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
+  ModalCloseButton,
+  SimpleGrid,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import RectangleShape from "../assets/rectangleShape";
-import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
-import { useParams } from "react-router-dom";
 import useLoadGoogleMapsScript from "../hooks/useLoadGoogleMapsScript";
 
 const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const mapRef = useRef(null);
-  const { isLoaded, error } = useLoadGoogleMapsScript("AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs");
-
-  const [googleMaps, setGoogleMaps] = useState(null);
+  const navigate = useNavigate();
+  const { isLoaded } = useLoadGoogleMapsScript("YOUR_API_KEY");
   const [selectedImage, setSelectedImage] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [showGallery, setShowGallery] = useState(false);
 
   const isInterested = event?.interestedParticipants?.some((user) => user._id === currentUserId);
   const isGoing = event?.goingParticipants?.some((user) => user._id === currentUserId);
@@ -52,12 +50,37 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
     }
   }, [isLoaded, event]);
 
+  // const handleDownload = (fileName, base64Data) => {
+  //   if (!base64Data || typeof base64Data !== "string" || !base64Data.includes(",")) {
+  //     alert("Invalid or missing file data.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const byteString = atob(base64Data.split(",")[1]);
+  //     const mimeString = base64Data.split(",")[0].split(":")[1].split(";")[0];
+  //     const ab = new ArrayBuffer(byteString.length);
+  //     const ia = new Uint8Array(ab);
+  //     for (let i = 0; i < byteString.length; i++) {
+  //       ia[i] = byteString.charCodeAt(i);
+  //     }
+  //     const blob = new Blob([ab], { type: mimeString });
+  //     const url = window.URL.createObjectURL(blob);
+  //     const a = document.createElement("a");
+  //     a.href = url;
+  //     a.download = fileName;
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     a.remove();
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (err) {
+  //     console.error("Download failed:", err);
+  //     alert("Error downloading file.");
+  //   }
+  // };
+
   if (!event) {
-    return (
-      <Box>
-        <Text>Loading event details...</Text>
-      </Box>
-    );
+    return <Box><Text>Loading event details...</Text></Box>;
   }
 
   const markInterested = async () => {
@@ -68,13 +91,8 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         credentials: "include",
         body: JSON.stringify({ userId: currentUserId }),
       });
-
-      if (response.ok) {
-        fetchEvent(); // Reîncarcă datele evenimentului
-      } else {
-        const error = await response.json();
-        alert(error.error || "Failed to mark as interested");
-      }
+      if (response.ok) fetchEvent();
+      else alert((await response.json()).error || "Failed to mark as interested");
     } catch (err) {
       console.error("Error marking interested:", err);
     }
@@ -88,13 +106,8 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         credentials: "include",
         body: JSON.stringify({ userId: currentUserId }),
       });
-
-      if (response.ok) {
-        fetchEvent(); // Reîncarcă datele evenimentului
-      } else {
-        const error = await response.json();
-        alert(error.error || "Failed to mark as going");
-      }
+      if (response.ok) fetchEvent();
+      else alert((await response.json()).error || "Failed to mark as going");
     } catch (err) {
       console.error("Error marking going:", err);
     }
@@ -106,77 +119,36 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   };
 
   const openGoogleMaps = () => {
-    if (event.coordinates && event.coordinates.lat && event.coordinates.lng) {
-      const { lat, lng } = event.coordinates;
-      const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-      window.open(googleMapsUrl, "_blank");
+    if (event.coordinates?.lat && event.coordinates?.lng) {
+      window.open(`https://www.google.com/maps?q=${event.coordinates.lat},${event.coordinates.lng}`, "_blank");
     } else {
-      console.error("Coordinates are missing for this event.");
       alert("Unable to open map. Coordinates not available.");
     }
   };
-  
-  
 
   return (
     <Box mt={8}>
       <Flex justifyContent="space-between" alignItems="center">
-        <Text mx={5} fontSize="lg" color="gray.500">
-          {event.status || "Upcoming Event"}
-        </Text>
-        <RectangleShape
-          bgColor="yellow.300"
-          title={event.name}
-          minW="500px"
-          maxW="500px"
-          textAlign="center"
-        />
+        <Text mx={5} fontSize="lg" color="gray.500">{event.status || "Upcoming Event"}</Text>
+        <RectangleShape bgColor="yellow.300" title={event.name} minW="500px" maxW="500px" textAlign="center" />
       </Flex>
 
       <Box overflow="hidden">
-        <Image
-          src={event.coverImage || "https://via.placeholder.com/800"}
-          alt={event.name}
-          w="100%"
-          h="400px"
-          objectFit="cover"
-        />
+        <Image src={event.coverImage || "https://via.placeholder.com/800"} alt={event.name} w="100%" h="400px" objectFit="cover" />
       </Box>
 
       <Flex justify="space-between" align="center">
-        <RectangleShape
-          bgColor="blue.300"
-          title={`Created by: ${event.user?.firstName || "Unknown"} ${event.user?.lastName || "User"}`}
-          minW="200px"
-          maxW="300px"
-          textAlign="center"
-        />
-
-        <RectangleShape
-          bgColor="yellow.300"
-          title={`Location: ${event.location || "Not specified"}`}
-          minW="200px"
-          maxW="300px"
-          textAlign="center"
-        />
-
-        {event.location && (
-          <Box mt={4} mx={8}>
-            <Heading size="md" mb={2}>Map</Heading>
-            <div
-              ref={mapRef}
-              style={{ width: "100%", height: "300px", borderRadius: "12px" }}
-            ></div>
-            <Button
-              mt={4}
-              colorScheme="blue"
-              onClick={openGoogleMaps}
-            >
-              Open in Google Maps
-            </Button>
-          </Box>
-        )}
+        <RectangleShape bgColor="blue.300" title={`Created by: ${event.user?.firstName || "Unknown"} ${event.user?.lastName || "User"}`} minW="200px" maxW="300px" textAlign="center" />
+        <RectangleShape bgColor="yellow.300" title={`Location: ${event.location || "Not specified"}`} minW="200px" maxW="300px" textAlign="center" />
       </Flex>
+
+      {event.coordinates?.lat && event.coordinates?.lng && (
+        <Box mt={4} mx={8}>
+          <Heading size="md" mb={2}>Map</Heading>
+          <div ref={mapRef} style={{ width: "100%", height: "300px", borderRadius: "12px" }}></div>
+          <Button mt={4} colorScheme="blue" onClick={openGoogleMaps}>Open in Google Maps</Button>
+        </Box>
+      )}
 
       <Flex mx={8} mt={6} direction="column" gap={2}>
         <Heading size="md">Ticket & Info</Heading>
@@ -186,23 +158,47 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         <Text><strong>Language:</strong> {event.language?.toUpperCase() || "N/A"}</Text>
       </Flex>
 
-       {/* Butoane pentru interes și participare */}
-       {!isEventOwner && (
+      {Array.isArray(event.attachments) && event.attachments.length > 0 && (
+        <Box mx={8} mt={6}>
+          <Heading size="md" mb={2}>Attachments</Heading>
+          {event.attachments.map((att, index) => (
+            <Text key={index}>
+              <Button
+                variant="link"
+                color="blue.500"
+                onClick={() => window.open(att.fileUrl, "_blank")}
+                >
+                {att.fileName}
+              </Button>
+            </Text>
+          ))}
+        </Box>
+      )}
+
+      {event.gallery?.length > 0 && (
+        <Flex mt={4} mx={8}>
+          <Button onClick={() => setShowGallery(!showGallery)}>
+            {showGallery ? "Hide Gallery" : "Show Gallery"}
+          </Button>
+        </Flex>
+      )}
+
+      {!isEventOwner && (
         <Flex mt={4} gap={4}>
-        <Button bg={isGoing ? "gray.400" : "green.300"} onClick={markGoing}>
-          {isGoing ? "Unmark Going" : "Mark if Going"}
-        </Button>
-        <Button bg={isInterested ? "gray.400" : "yellow.300"} onClick={markInterested}>
-          {isInterested ? "Unmark Interested" : "Mark if Interested"}
-        </Button>
-      </Flex>
+          <Button bg={isGoing ? "gray.400" : "green.300"} onClick={markGoing}>{isGoing ? "Unmark Going" : "Mark if Going"}</Button>
+          <Button bg={isInterested ? "gray.400" : "yellow.300"} onClick={markInterested}>{isInterested ? "Unmark Interested" : "Mark if Interested"}</Button>
+        </Flex>
+      )}
+
+      {isEventOwner && (
+        <Flex mt={4} mx={8}>
+          <Button colorScheme="blue" onClick={() => navigate(`/events/${event._id}/edit`)}>Edit Event</Button>
+        </Flex>
       )}
 
       <Flex mt={4} gap={4}>
         <Menu>
-          <MenuButton as={Button}>
-            {`Going (${event.goingParticipants?.length || 0})`}
-          </MenuButton>
+          <MenuButton as={Button}>{`Going (${event.goingParticipants?.length || 0})`}</MenuButton>
           <MenuList>
             {event.goingParticipants?.length > 0 ? (
               event.goingParticipants.map((user) => (
@@ -220,9 +216,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         </Menu>
 
         <Menu>
-          <MenuButton as={Button}>
-            {`Interested (${event.interestedParticipants?.length || 0})`}
-          </MenuButton>
+          <MenuButton as={Button}>{`Interested (${event.interestedParticipants?.length || 0})`}</MenuButton>
           <MenuList>
             {event.interestedParticipants?.length > 0 ? (
               event.interestedParticipants.map((user) => (
@@ -238,7 +232,37 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
             )}
           </MenuList>
         </Menu>
+
+        <Modal isOpen={isOpen} onClose={onClose} size="3xl" isCentered>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody p={0}>
+              <Image src={selectedImage} alt="Selected" w="100%" h="auto" />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       </Flex>
+
+      {showGallery && (
+        <Box mt={4} mx={8}>
+          <SimpleGrid columns={[1, 2, 3]} spacing={4}>
+            {event.gallery.map((imgUrl, idx) => (
+              <Image
+                key={idx}
+                src={imgUrl}
+                alt={`Gallery image ${idx + 1}`}
+                borderRadius="md"
+                objectFit="cover"
+                w="100%"
+                h="200px"
+                cursor="pointer"
+                onClick={() => handleImageClick(imgUrl)}
+              />
+            ))}
+          </SimpleGrid>
+        </Box>
+      )}
     </Box>
   );
 };

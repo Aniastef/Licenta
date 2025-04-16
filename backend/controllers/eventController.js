@@ -10,35 +10,48 @@ import axios from 'axios';  // To make an API request to the geocoding service
 
 export const createEvent = async (req, res) => {
   try {
-    const { name, description, date, tags, coverImage, location, capacity, price, ticketType, language, collaborators, gallery, attachments } = req.body;
+    const {
+      name, description, date, tags, coverImage, location, coordinates: clientCoordinates,
+      capacity, price, ticketType, language, collaborators, gallery, attachments,
+      visibility, isDraft
+    } = req.body;
 
-    console.log("Body received:", req.body);
-
-    if (!name || !date) {
-      return res.status(400).json({ error: "Name and date are required" });
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
     }
 
-    // Check if the location is provided
     let coordinates = { lat: null, lng: null };
-    if (location) {
-      const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs`;
-      const geocodeResponse = await axios.get(geocodingUrl);
-      const results = geocodeResponse.data.results;
-
-      if (results.length > 0) {
-        coordinates = {
-          lat: results[0].geometry.location.lat,
-          lng: results[0].geometry.location.lng,
-        };
-      } else {
-        return res.status(400).json({ error: "Unable to find coordinates for the provided location" });
-      }
+    if (clientCoordinates?.lat && clientCoordinates?.lng) {
+      coordinates = clientCoordinates;
     }
 
     let coverImageUrl = coverImage || null;
     if (coverImage && coverImage.startsWith("data:")) {
       const uploaded = await cloudinary.uploader.upload(coverImage);
       coverImageUrl = uploaded.secure_url;
+    }
+
+    let galleryUrls = [];
+    if (gallery?.length > 0) {
+      for (let img of gallery) {
+        if (img.startsWith("data:")) {
+          const uploaded = await cloudinary.uploader.upload(img);
+          galleryUrls.push(uploaded.secure_url);
+        }
+      }
+    }
+
+    let attachmentUrls = [];
+    if (attachments?.length > 0) {
+      for (let att of attachments) {
+        if (att.fileData?.startsWith("data:")) {
+          const uploaded = await cloudinary.uploader.upload(att.fileData, {
+            resource_type: "raw",
+            folder: "event_attachments",
+          });
+          attachmentUrls.push({ fileName: att.fileName, fileUrl: uploaded.secure_url });
+        }
+      }
     }
 
     const newEvent = new Event({
@@ -49,14 +62,16 @@ export const createEvent = async (req, res) => {
       tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
       user: req.user._id,
       location,
-      coordinates,  // Save coordinates here
+      coordinates,
       capacity,
       price,
       ticketType,
       language,
       collaborators,
-      gallery,
-      attachments,
+      gallery: galleryUrls,
+      attachments: attachmentUrls,
+      visibility,
+      isDraft,
     });
 
     await newEvent.save();
@@ -98,60 +113,7 @@ export const getEvent = async (req, res) => {
   }
 };
 
-export const markInterested = async (req, res) => {
-  try {
-    const { eventId } = req.params;
-
-    if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized access" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(eventId)) {
-      return res.status(400).json({ error: "Invalid event ID" });
-    }
-
-    const event = await Event.findById(eventId);
-    if (!event) {
-      return res.status(404).json({ error: "Event not found" });
-    }
-
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    if (event.interestedParticipants.includes(req.user._id)) {
-      event.interestedParticipants = event.interestedParticipants.filter(
-        (id) => id.toString() !== req.user._id.toString()
-      );
-      user.eventsMarkedInterested = user.eventsMarkedInterested.filter(
-        (id) => id.toString() !== eventId
-      );
-    } else {
-      event.interestedParticipants.push(req.user._id);
-      event.goingParticipants = event.goingParticipants.filter(
-        (id) => id.toString() !== req.user._id.toString()
-      );
-      user.eventsMarkedGoing = user.eventsMarkedGoing.filter(
-        (id) => id.toString() !== eventId
-      );
-      user.eventsMarkedInterested.push(eventId);
-    }
-
-    await event.save();
-    await user.save();
-
-    res.status(200).json({
-      message: "Successfully updated interested status",
-      interestedParticipants: event.interestedParticipants,
-      goingParticipants: event.goingParticipants,
-    });
-  } catch (err) {
-    console.error("Error in markInterested:", err.stack || err.message);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
+// Update the markGoing function
 export const markGoing = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -174,6 +136,8 @@ export const markGoing = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // No need to check coordinates here
+    // Toggle the going status
     if (event.goingParticipants.includes(req.user._id)) {
       event.goingParticipants = event.goingParticipants.filter(
         (id) => id.toString() !== req.user._id.toString()
@@ -206,6 +170,65 @@ export const markGoing = async (req, res) => {
   }
 };
 
+// Update the markInterested function similarly
+export const markInterested = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized access" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // No need to check coordinates here
+    // Toggle the interested status
+    if (event.interestedParticipants.includes(req.user._id)) {
+      event.interestedParticipants = event.interestedParticipants.filter(
+        (id) => id.toString() !== req.user._id.toString()
+      );
+      user.eventsMarkedInterested = user.eventsMarkedInterested.filter(
+        (id) => id.toString() !== eventId
+      );
+    } else {
+      event.interestedParticipants.push(req.user._id);
+      event.goingParticipants = event.goingParticipants.filter(
+        (id) => id.toString() !== req.user._id.toString()
+      );
+      user.eventsMarkedGoing = user.eventsMarkedGoing.filter(
+        (id) => id.toString() !== eventId
+      );
+      user.eventsMarkedInterested.push(eventId);
+    }
+
+    await event.save();
+    await user.save();
+
+    res.status(200).json({
+      message: "Successfully updated interested status",
+      interestedParticipants: event.interestedParticipants,
+      goingParticipants: event.goingParticipants,
+    });
+  } catch (err) {
+    console.error("Error in markInterested:", err.stack || err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
 export const deleteEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -231,27 +254,13 @@ export const updateEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const {
-      name,
-      description,
-      date,
-      coverImage,
-      tags,
-      location,
-      capacity,
-      price,
-      ticketType,
-      language,
-      collaborators,
-      gallery,
-      attachments,
+      name, description, date, coverImage, tags, location, capacity, price,
+      ticketType, language, collaborators, gallery, attachments,
+      visibility, isDraft, coordinates
     } = req.body;
 
     const event = await Event.findById(eventId);
-
-    if (!event) {
-      return res.status(404).json({ error: "Event not found" });
-    }
-
+    if (!event) return res.status(404).json({ error: "Event not found" });
     if (event.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized action" });
     }
@@ -262,20 +271,49 @@ export const updateEvent = async (req, res) => {
       coverImageUrl = uploaded.secure_url;
     }
 
+    let galleryUrls = [];
+    if (gallery?.length > 0) {
+      for (let img of gallery) {
+        if (img.startsWith("data:")) {
+          const uploaded = await cloudinary.uploader.upload(img);
+          galleryUrls.push(uploaded.secure_url);
+        } else {
+          galleryUrls.push(img);
+        }
+      }
+    }
+
+    let finalAttachments = [];
+    if (attachments?.length > 0) {
+      for (let att of attachments) {
+        if (att.fileData?.startsWith("data:")) {
+          const uploaded = await cloudinary.uploader.upload(att.fileData, {
+            resource_type: "raw",
+            folder: "event_attachments",
+          });
+          finalAttachments.push({ fileName: att.fileName, fileUrl: uploaded.secure_url });
+        } else if (att.fileUrl) {
+          finalAttachments.push(att);
+        }
+      }
+    }
+
     event.name = name || event.name;
     event.description = description || event.description;
     event.date = date || event.date;
     event.coverImage = coverImageUrl;
     event.tags = tags || event.tags;
-
     event.location = location || event.location;
+    event.coordinates = coordinates || event.coordinates;
     event.capacity = capacity ?? event.capacity;
     event.price = price ?? event.price;
     event.ticketType = ticketType || event.ticketType;
     event.language = language || event.language;
     event.collaborators = collaborators || event.collaborators;
-    event.gallery = gallery || event.gallery;
-    event.attachments = attachments || event.attachments;
+    event.gallery = galleryUrls;
+    event.attachments = finalAttachments;
+    event.visibility = visibility || event.visibility;
+    event.isDraft = typeof isDraft === 'boolean' ? isDraft : event.isDraft;
 
     await event.save();
     res.status(200).json(event);
@@ -284,6 +322,7 @@ export const updateEvent = async (req, res) => {
     console.error("Error updating event: ", err.message);
   }
 };
+
 
 export const getAllEvents = async (req, res) => {
   try {

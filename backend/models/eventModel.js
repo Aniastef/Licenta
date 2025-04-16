@@ -27,16 +27,16 @@ const eventSchema = new mongoose.Schema(
     coordinates: { // Adăugarea câmpului de coordonate
       lat: {
         type: Number,
-        required: true, // Asigură-te că latitudinea este obligatorie
+        required: false, // Asigură-te că latitudinea este obligatorie
       },
       lng: {
         type: Number,
-        required: true, // Asigură-te că longitudinea este obligatorie
+        required: false, // Asigură-te că longitudinea este obligatorie
       },
     },
     date: {
       type: Date,
-      required: true,
+      required: false
     },
     coverImage: {
       type: String,
@@ -89,6 +89,16 @@ const eventSchema = new mongoose.Schema(
           fileUrl: String,
         },
       ],
+      visibility: {
+        type: String,
+        enum: ["public", "private"],
+        default: "public",
+      },
+      isDraft: {
+        type: Boolean,
+        default: false,
+      },
+      
   },
   {
     timestamps: true, // Include createdAt și updatedAt
