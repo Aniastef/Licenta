@@ -30,6 +30,7 @@ import UpdateProductPage from './pages/UpdateProductPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
 import useLoadGoogleMapsScript from './hooks/useLoadGoogleMapsScript';
 import EditEventPage from './pages/EditEventPage';
+import EditGalleryPage from './pages/EditGalleryPage';
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -80,6 +81,7 @@ function App() {
         <Route path="/update/product/:id" element={<UpdateProductPage />} />
         <Route path="/blocked-users" element={<BlockedUsersPage />} /> {/* Pagină pentru utilizatorii blocați */}
         <Route path="/events/:eventId/edit" element={<EditEventPage />} />
+        <Route path="/edit-gallery/:galleryId" element={<EditGalleryPage />} />
 
 
       </Routes>

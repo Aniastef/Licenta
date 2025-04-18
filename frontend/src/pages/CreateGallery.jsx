@@ -7,6 +7,10 @@ import {
 	Textarea,
 	VStack,
 	Stack,
+	HStack,
+	Avatar,
+	Text,
+	Flex,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import useShowToast from "../hooks/useShowToast";
@@ -25,6 +29,35 @@ const CreateGalleryPage = () => {
 	const showToast = useShowToast();
 	const [isLoading, setIsLoading] = useState(false);
 
+	const [collaborators, setCollaborators] = useState([]);
+	const [searchText, setSearchText] = useState("");
+	const [suggestions, setSuggestions] = useState([]);
+
+	const handleSearchUsers = async () => {
+		if (!searchText.trim()) return;
+		try {
+			const res = await fetch(`/api/users/search?query=${searchText}`, {
+				credentials: "include",
+			});
+			const data = await res.json();
+			setSuggestions(data.users || []);
+		} catch (err) {
+			console.error("User search failed", err);
+		}
+	};
+
+	const addCollaborator = (user) => {
+		if (!collaborators.find((c) => c._id === user._id)) {
+			setCollaborators([...collaborators, user]);
+		}
+		setSearchText("");
+		setSuggestions([]);
+	};
+
+	const removeCollaborator = (userId) => {
+		setCollaborators((prev) => prev.filter((u) => u._id !== userId));
+	};
+
 	const handleAddGallery = async () => {
 		if (!newGallery.name) {
 			showToast("Error", "Gallery name is required", "error");
@@ -39,6 +72,8 @@ const CreateGalleryPage = () => {
 			formData.append("category", newGallery.category);
 			formData.append("description", newGallery.description);
 			formData.append("tags", newGallery.tags);
+			formData.append("collaborators", collaborators.map((u) => u._id).join(","));
+
 			if (coverPhoto) {
 				formData.append("coverPhoto", coverPhoto);
 			}
@@ -46,7 +81,7 @@ const CreateGalleryPage = () => {
 			const res = await fetch("/api/galleries/create", {
 				method: "POST",
 				body: formData,
-				credentials: "include", // ✅ Adaugă această linie
+				credentials: "include",
 			});
 
 			const data = await res.json();
@@ -107,6 +142,52 @@ const CreateGalleryPage = () => {
 								setNewGallery({ ...newGallery, tags: e.target.value })
 							}
 						/>
+
+						{/* 🔍 Căutare colaboratori */}
+						<Input
+							placeholder="Search collaborators by username"
+							value={searchText}
+							onChange={(e) => setSearchText(e.target.value)}
+							onKeyDown={(e) => e.key === "Enter" && handleSearchUsers()}
+						/>
+
+						{suggestions.length > 0 && (
+							<Box bg="gray.100" p={2} borderRadius="md" w="full">
+								{suggestions.map((user) => (
+									<HStack
+										key={user._id}
+										onClick={() => addCollaborator(user)}
+										_hover={{ bg: "gray.200" }}
+										p={2}
+										cursor="pointer"
+									>
+										<Avatar size="sm" name={user.username} />
+										<Text>{user.username}</Text>
+									</HStack>
+								))}
+							</Box>
+						)}
+
+						{collaborators.length > 0 && (
+							<Box w="full">
+								<Text fontWeight="bold" mt={2}>Selected collaborators:</Text>
+								<Flex wrap="wrap" gap={2} mt={2}>
+									{collaborators.map((user) => (
+										<HStack key={user._id} p={1} bg="gray.200" borderRadius="md">
+											<Text>{user.username}</Text>
+											<Button
+												size="xs"
+												colorScheme="red"
+												onClick={() => removeCollaborator(user._id)}
+											>
+												✕
+											</Button>
+										</HStack>
+									))}
+								</Flex>
+							</Box>
+						)}
+
 						<Stack spacing={2} w="full">
 							<Heading as="h4" size="sm">
 								Cover Photo

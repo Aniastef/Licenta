@@ -34,6 +34,12 @@ const gallerySchema = new mongoose.Schema(
       ref: "User", // Proprietarul galeriei
       required: true,
     },
+    collaborators: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],    
   },
   {
     timestamps: true,

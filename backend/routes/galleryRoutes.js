@@ -4,6 +4,7 @@ import upload from "../config/imgUpload.js";
 import {
   createGallery,
   getGallery,
+  getGalleryById,
   updateGallery,
   deleteGallery,
   getAllGalleries,
@@ -16,25 +17,29 @@ import {
 
 const router = express.Router();
 
-// Creare galerie
-router.post("/create", upload.single("coverPhoto"), protectRoute, createGallery);
+// 🔄 Obținere galerie după ID (folosită pentru editare)
+router.get("/:galleryId", protectRoute, getGalleryById); // trebuie să fie înainte de username/name
 
-// Obținere detalii despre o galerie specifică
+// 👤 Obținere galerie după username + gallery name (pentru afișare publică)
 router.get("/:username/:galleryName", getGallery);
 
-// Actualizare galerie
-router.put("/:galleryId", protectRoute, updateGallery);
+// ✅ Creare galerie
+router.post("/create", upload.single("coverPhoto"), protectRoute, createGallery);
 
-// Ștergere galerie
+// 🔁 Actualizare galerie
+router.put("/:galleryId", protectRoute, upload.single("coverPhoto"), updateGallery);
+
+// ❌ Ștergere galerie
 router.delete("/:galleryId", protectRoute, deleteGallery);
 
-// Obținere toate galeriile
+// 🌍 Toate galeriile
 router.get("/", getAllGalleries);
+
+// 🧩 Produse
 router.post("/:galleryId/add-product/:productId", protectRoute, addProductToGallery);
-router.get("/not-in-gallery/:galleryId", protectRoute, getProductsNotInGallery);
 router.post("/:galleryId/add-products", protectRoute, addMultipleProductsToGallery);
 router.delete("/:galleryId/remove-product/:productId", protectRoute, removeProductFromGallery);
 router.put("/:galleryId/reorder-products", protectRoute, updateProductOrder);
-
+router.get("/not-in-gallery/:galleryId", protectRoute, getProductsNotInGallery);
 
 export default router;

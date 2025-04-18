@@ -13,7 +13,6 @@ import {
   Input,
   Tag,
   useDisclosure,
-  SimpleGrid,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { ReactSortable } from "react-sortablejs";
@@ -27,6 +26,8 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const navigate = useNavigate();
 
   const isOwner = gallery?.owner?._id === currentUserId;
+  const isCollaborator = gallery?.collaborators?.some((c) => c._id === currentUserId);
+  const canEdit = isOwner || isCollaborator;
 
   useEffect(() => {
     if (gallery?.products?.length && gallery.products.every(p => p?.product?._id)) {
@@ -121,58 +122,68 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         objectFit="cover"
       />
 
-      {isOwner && (
-        <Flex justify="space-between" my={4}>
+      {gallery.collaborators?.length > 0 && (
+        <Box mt={4}>
+          <Heading size="sm">Collaborators:</Heading>
+          {gallery.collaborators.map((user) => (
+            <Text key={user._id}>• {user.username}</Text>
+          ))}
+        </Box>
+      )}
+
+      {canEdit && (
+        <Flex justify="space-between" my={4} gap={4} wrap="wrap">
           <Button colorScheme="blue" onClick={onOpen}>Add Existing Product</Button>
+          <Button colorScheme="gray" variant="outline" onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
+            Edit Gallery
+          </Button>
         </Flex>
       )}
 
-<ReactSortable
-  list={products}
-  setList={handleSort}
-  animation={200}
-  style={{
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)', // 4 produse pe rând
-    gap: '1rem',
-  }}
->
-  {products.map((item) => {
-    const p = item.product;
-    return (
-      <Box key={p._id} bg="gray.100" p={4} borderRadius="md">
-        <Image
-          src={p.images?.[0] || "https://via.placeholder.com/150"}
-          alt={p.name}
-          w="100%"
-          h="150px"
-          objectFit="cover"
-        />
-        <Heading size="sm" mt={2}>{p.name}</Heading>
-        <Text>{p.price} RON</Text>
-        <Tag
-          colorScheme={p.forSale ? (p.quantity > 0 ? "green" : "red") : "gray"}
-          mt={1}
-        >
-          {!p.forSale ? "Not for Sale" : p.quantity > 0 ? `Stock: ${p.quantity} left` : "Out of Stock"}
-        </Tag>
-        <Text mt={2}>{p.description}</Text>
-        {isOwner && (
-          <Button
-            colorScheme="red"
-            size="sm"
-            mt={2}
-            onClick={() => removeProductFromGallery(p._id)}
-          >
-            Remove from Gallery
-          </Button>
-        )}
-      </Box>
-    );
-  })}
-</ReactSortable>
-
-
+      <ReactSortable
+        list={products}
+        setList={handleSort}
+        animation={200}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '1rem',
+        }}
+      >
+        {products.map((item) => {
+          const p = item.product;
+          return (
+            <Box key={p._id} bg="gray.100" p={4} borderRadius="md">
+              <Image
+                src={p.images?.[0] || "https://via.placeholder.com/150"}
+                alt={p.name}
+                w="100%"
+                h="150px"
+                objectFit="cover"
+              />
+              <Heading size="sm" mt={2}>{p.name}</Heading>
+              <Text>{p.price} RON</Text>
+              <Tag
+                colorScheme={p.forSale ? (p.quantity > 0 ? "green" : "red") : "gray"}
+                mt={1}
+              >
+                {!p.forSale ? "Not for Sale" : p.quantity > 0 ? `Stock: ${p.quantity} left` : "Out of Stock"}
+              </Tag>
+              <Text mt={2}>{p.description}</Text>
+              {canEdit && (
+                <Button
+                  colorScheme="red"
+                  size="sm"
+                  mt={2}
+                  onClick={() => removeProductFromGallery(p._id)}
+                >
+                  Remove from Gallery
+                </Button>
+              )}
+            </Box>
+          );
+        })}
+      </ReactSortable>
 
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
         <ModalOverlay />
