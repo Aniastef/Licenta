@@ -9,7 +9,6 @@ import theme from "../theme.js";
 import { CartProvider } from "./components/CartContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
     <RecoilRoot>
       <BrowserRouter>
         <ChakraProvider theme={theme}> 
@@ -17,5 +16,5 @@ createRoot(document.getElementById("root")).render(
         </ChakraProvider>
       </BrowserRouter>
     </RecoilRoot>
-  </StrictMode>
+
 );

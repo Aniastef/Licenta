@@ -61,9 +61,11 @@ export const createGallery = async (req, res) => {
       const gallery = await Gallery.findOne({ owner: user._id, name: galleryName })
         .populate("owner", "firstName lastName username")
         .populate({
-          path: "products",
-          select: "images", // ✅ Populează doar imaginile produselor
+          path: "products.product",
+          select: "images name price quantity forSale description",
         });
+        gallery.products.sort((a, b) => a.order - b.order);
+
   
       if (!gallery) {
         return res.status(404).json({ error: "Gallery not found" });
@@ -179,11 +181,18 @@ export const addProductToGallery = async (req, res) => {
         return res.status(403).json({ error: "Unauthorized action" });
       }
   
-      // ✅ Adaugă produsul în galeria selectată
-      if (!gallery.products.includes(product._id)) {
-        gallery.products.push(product._id);
+      const alreadyInGallery = gallery.products.some(
+        (item) => item.product.toString() === product._id.toString()
+      );
+      
+      if (!alreadyInGallery) {
+        gallery.products.push({
+          product: product._id,
+          order: gallery.products.length
+        });
         await gallery.save();
       }
+      
   
       // ✅ Adaugă galeria la lista de galerii ale produsului
       if (!product.galleries.includes(gallery._id)) {
@@ -199,59 +208,86 @@ export const addProductToGallery = async (req, res) => {
 };
   
 export const addMultipleProductsToGallery = async (req, res) => {
-    try {
-        const { galleryId } = req.params;
-        const { productIds } = req.body;
+  try {
+    const { galleryId } = req.params;
+    const { productIds } = req.body;
 
-        const gallery = await Gallery.findById(galleryId);
-        if (!gallery) {
-            return res.status(404).json({ error: "Gallery not found" });
-        }
-
-        // ✅ Adaugă produsele la galerie
-        const newProducts = productIds.filter(id => !gallery.products.includes(id));
-        gallery.products.push(...newProducts);
-        await gallery.save();
-
-        // ✅ Adaugă galeria la produsele respective
-        await Product.updateMany(
-            { _id: { $in: newProducts } },
-            { $push: { galleries: gallery._id } }
-        );
-
-        res.status(200).json({ message: "Products added successfully" });
-    } catch (err) {
-        console.error("Error adding multiple products to gallery:", err.message);
-        res.status(500).json({ error: "Failed to add products" });
+    const gallery = await Gallery.findById(galleryId);
+    if (!gallery) {
+      return res.status(404).json({ error: "Gallery not found" });
     }
+
+    const existingIds = gallery.products.map((p) => p.product.toString());
+    const newProducts = productIds.filter((id) => !existingIds.includes(id));
+
+    newProducts.forEach((id, index) => {
+      gallery.products.push({
+        product: id,
+        order: gallery.products.length + index,
+      });
+    });
+
+    await gallery.save();
+
+    await Product.updateMany(
+      { _id: { $in: newProducts } },
+      { $push: { galleries: gallery._id } }
+    );
+
+    res.status(200).json({ message: "Products added successfully" });
+  } catch (err) {
+    console.error("Error adding multiple products to gallery:", err.message);
+    res.status(500).json({ error: "Failed to add products" });
+  }
 };
 
+
 export const removeProductFromGallery = async (req, res) => {
+  try {
+    const { galleryId, productId } = req.params;
+
+    const gallery = await Gallery.findById(galleryId);
+    if (!gallery) {
+      return res.status(404).json({ error: "Gallery not found" });
+    }
+
+    if (gallery.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Unauthorized action" });
+    }
+
+    gallery.products = gallery.products.filter(
+      (item) => item.product.toString() !== productId
+    );
+    await gallery.save();
+
+    await Product.findByIdAndUpdate(productId, { $pull: { galleries: gallery._id } });
+
+    res.status(200).json({ message: "Product removed from gallery" });
+  } catch (err) {
+    console.error("Error removing product from gallery:", err.message);
+    res.status(500).json({ error: "Failed to remove product from gallery" });
+  }
+};
+
+  export const updateProductOrder = async (req, res) => {
+    const { galleryId } = req.params;
+    const { orderedProductIds } = req.body;
+  
     try {
-      const { galleryId, productId } = req.params;
-  
-      // Găsește galeria
       const gallery = await Gallery.findById(galleryId);
-      if (!gallery) {
-        return res.status(404).json({ error: "Gallery not found" });
-      }
+      if (!gallery) return res.status(404).json({ error: "Gallery not found" });
   
-      // Verifică permisiunile
-      if (gallery.owner.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ error: "Unauthorized action" });
-      }
+      // Reordonează produsele după ID-urile primite
+      gallery.products = orderedProductIds.map((productId, index) => ({
+        product: productId,
+        order: index,
+      }));
   
-      // Elimină produsul din galerie
-      gallery.products = gallery.products.filter((id) => id.toString() !== productId);
       await gallery.save();
-  
-      // Elimină galeria din produs
-      await Product.findByIdAndUpdate(productId, { $pull: { galleries: gallery._id } });
-  
-      res.status(200).json({ message: "Product removed from gallery" });
+      res.status(200).json({ message: "Product order updated" });
     } catch (err) {
-      console.error("Error removing product from gallery:", err.message);
-      res.status(500).json({ error: "Failed to remove product from gallery" });
+      console.error("Error updating product order:", err.message);
+      res.status(500).json({ error: "Failed to update product order" });
     }
   };
   

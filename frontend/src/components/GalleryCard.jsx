@@ -6,7 +6,6 @@ import {
   Button,
   Text,
   Image,
-  Grid,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -16,13 +15,23 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const [availableProducts, setAvailableProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [filterText, setFilterText] = useState("");
+  const [products, setProducts] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
+
+  const isOwner = gallery?.owner?._id === currentUserId;
+
+  useEffect(() => {
+    if (gallery?.products?.length && gallery.products.every(p => p?.product?._id)) {
+      setProducts(gallery.products);
+    }
+  }, [gallery.products]);
 
   useEffect(() => {
     const fetchAvailableProducts = async () => {
@@ -70,11 +79,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
 
   const removeProductFromGallery = async (productId) => {
     try {
-      console.log("Removing product ID:", productId, "from gallery:", gallery);
-
-      const endpoint = `/api/galleries/${gallery._id}/remove-product/${productId}`; 
-
-      const res = await fetch(endpoint, {
+      const res = await fetch(`/api/galleries/${gallery._id}/remove-product/${productId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -88,9 +93,32 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     }
   };
 
+  const handleDragEnd = async (result) => {
+    if (!result.destination || result.destination.index === result.source.index) return;
+
+    const updated = Array.from(products);
+    const [moved] = updated.splice(result.source.index, 1);
+    updated.splice(result.destination.index, 0, moved);
+
+    setProducts(updated);
+
+    try {
+      const orderedIds = updated.map((item) => item.product._id);
+      await fetch(`/api/galleries/${gallery._id}/reorder-products`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ orderedProductIds: orderedIds }),
+      });
+    } catch (err) {
+      console.error("Failed to update order", err);
+    }
+  };
+
   return (
     <Box mt={8} px={4}>
-      <Heading size="lg" mb={4}>{gallery.name}</Heading>
+      <Heading size="lg" mb={2}>{gallery.name}</Heading>
+      <Text fontSize="md" mb={4}>{gallery.description}</Text>
       <Image
         src={gallery.coverPhoto || "https://via.placeholder.com/800"}
         alt="Gallery Cover"
@@ -99,50 +127,83 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         objectFit="cover"
       />
 
-      <Flex justify="space-between" my={4}>
-        
-          <Button colorScheme="blue" onClick={onOpen}>
-            Add Existing Product
-          </Button>
-      
-      </Flex>
+      {isOwner && (
+        <Flex justify="space-between" my={4}>
+          <Button colorScheme="blue" onClick={onOpen}>Add Existing Product</Button>
+        </Flex>
+      )}
 
-      <Grid templateColumns="repeat(3, 1fr)" gap={4}>
-        {gallery.products.map((product) => (
-          <Box key={product._id} bg="gray.200" p={4} borderRadius="md">
-            <Image
-              src={product.images[0] || "https://via.placeholder.com/150"}
-              alt={product.name}
-              w="100%"
-              h="150px"
-              objectFit="cover"
-            />
-            <Heading size="md">{product.name}</Heading>
-            <Text>{product.price} RON</Text>
-
-            {/* ✅ Afișăm "For Sale", "Not for Sale" și stocul */}
-            <Tag 
-              colorScheme={product.forSale ? (product.quantity > 0 ? "green" : "red") : "gray"}
-              mt={2}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="products" direction="horizontal">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "1rem",
+              }}
             >
-              {!product.forSale ? "Not for Sale" : product.quantity > 0 ? `Stock: ${product.quantity} left` : "Out of Stock"}
-            </Tag>
+              {products.map((item, index) => {
+                const p = item.product;
+                return (
+                  <Draggable
+                    key={p._id}
+                    draggableId={p._id}
+                    index={index}
+                  >
+                    {(provided, snapshot) => (
+                      <Box bg="gray.200"
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        style={{
+                          ...provided.draggableProps.style,
+                          transition: "transform 200ms ease",
+                          boxShadow: snapshot.isDragging ? "0 0 10px rgba(0,0,0,0.3)" : "none",
+                          background: "gray.100",
+                          padding: "1rem",
+                          borderRadius: "md",
+                        }}
+                      >
+                        <Image
+                          src={p.images?.[0] || "https://via.placeholder.com/150"}
+                          alt={p.name}
+                          w="100%"
+                          h="150px"
+                          objectFit="cover"
+                        />
+                        <Heading size="sm" mt={2}>{p.name}</Heading>
+                        <Text>{p.price} RON</Text>
+                        <Tag
+                          colorScheme={p.forSale ? (p.quantity > 0 ? "green" : "red") : "gray"}
+                          mt={1}
+                        >
+                          {!p.forSale ? "Not for Sale" : p.quantity > 0 ? `Stock: ${p.quantity} left` : "Out of Stock"}
+                        </Tag>
+                        <Text mt={2}>{p.description}</Text>
+                        {isOwner && (
+                          <Button
+                            colorScheme="red"
+                            size="sm"
+                            mt={2}
+                            onClick={() => removeProductFromGallery(p._id)}
+                          >
+                            Remove from Gallery
+                          </Button>
+                        )}
+                      </Box>
+                    )}
+                  </Draggable>
+                );
+              })}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
-            <Text mt={2}>{product.description}</Text>
-
-            <Button
-              colorScheme="red"
-              size="sm"
-              mt={2}
-              onClick={() => removeProductFromGallery(product._id)}
-            >
-              Remove from Gallery
-            </Button>
-          </Box>
-        ))}
-      </Grid>
-
-      {/* Modal pentru alegerea produselor existente */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
         <ModalOverlay />
         <ModalContent>
@@ -154,7 +215,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               onChange={handleFilterChange}
               mb={4}
             />
-            <Grid templateColumns="repeat(3, 1fr)" gap={4}>
+            <Flex wrap="wrap" gap={4}>
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <Box key={product._id} bg="gray.200" p={4} borderRadius="md">
@@ -167,15 +228,12 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                     />
                     <Heading size="sm">{product.name}</Heading>
                     <Text>{product.price} RON</Text>
-                    
-                    {/* ✅ Afișăm "For Sale", "Not for Sale" și stocul */}
-                    <Tag 
+                    <Tag
                       colorScheme={product.forSale ? (product.quantity > 0 ? "green" : "red") : "gray"}
                       mt={2}
                     >
                       {!product.forSale ? "Not for Sale" : product.quantity > 0 ? `Stock: ${product.quantity} left` : "Out of Stock"}
                     </Tag>
-
                     <Button
                       colorScheme="green"
                       size="sm"
@@ -189,7 +247,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               ) : (
                 <Text>No products match your search.</Text>
               )}
-            </Grid>
+            </Flex>
           </ModalBody>
         </ModalContent>
       </Modal>

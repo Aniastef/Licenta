@@ -11,6 +11,7 @@ import {
   getProductsNotInGallery,
   addMultipleProductsToGallery,
   removeProductFromGallery,
+  updateProductOrder,
 } from "../controllers/galleryController.js";
 
 const router = express.Router();
@@ -33,6 +34,7 @@ router.post("/:galleryId/add-product/:productId", protectRoute, addProductToGall
 router.get("/not-in-gallery/:galleryId", protectRoute, getProductsNotInGallery);
 router.post("/:galleryId/add-products", protectRoute, addMultipleProductsToGallery);
 router.delete("/:galleryId/remove-product/:productId", protectRoute, removeProductFromGallery);
+router.put("/:galleryId/reorder-products", protectRoute, updateProductOrder);
 
 
 export default router;

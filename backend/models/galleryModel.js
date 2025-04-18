@@ -25,10 +25,10 @@ const gallerySchema = new mongoose.Schema(
     ],
     products: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product", // Produse asociate galeriei
-      },
-    ],
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        order: { type: Number, default: 0 }
+      }
+    ],    
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // Proprietarul galeriei
