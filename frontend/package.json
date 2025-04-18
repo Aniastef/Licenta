@@ -26,8 +26,10 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.0.1",
+    "react-sortablejs": "^6.1.4",
     "recharts": "^2.15.1",
     "recoil": "^0.7.7",
+    "sortablejs": "^1.15.6",
     "use-places-autocomplete": "^4.0.1"
   },
   "devDependencies": {

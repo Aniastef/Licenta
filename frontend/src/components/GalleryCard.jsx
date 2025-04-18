@@ -13,9 +13,10 @@ import {
   Input,
   Tag,
   useDisclosure,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { ReactSortable } from "react-sortablejs";
 
 const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const [availableProducts, setAvailableProducts] = useState([]);
@@ -93,17 +94,10 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     }
   };
 
-  const handleDragEnd = async (result) => {
-    if (!result.destination || result.destination.index === result.source.index) return;
-
-    const updated = Array.from(products);
-    const [moved] = updated.splice(result.source.index, 1);
-    updated.splice(result.destination.index, 0, moved);
-
-    setProducts(updated);
-
+  const handleSort = async (newList) => {
+    setProducts(newList);
     try {
-      const orderedIds = updated.map((item) => item.product._id);
+      const orderedIds = newList.map((item) => item.product._id);
       await fetch(`/api/galleries/${gallery._id}/reorder-products`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -133,76 +127,52 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         </Flex>
       )}
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="products" direction="horizontal">
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "1rem",
-              }}
-            >
-              {products.map((item, index) => {
-                const p = item.product;
-                return (
-                  <Draggable
-                    key={p._id}
-                    draggableId={p._id}
-                    index={index}
-                  >
-                    {(provided, snapshot) => (
-                      <Box bg="gray.200"
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={{
-                          ...provided.draggableProps.style,
-                          transition: "transform 200ms ease",
-                          boxShadow: snapshot.isDragging ? "0 0 10px rgba(0,0,0,0.3)" : "none",
-                          background: "gray.100",
-                          padding: "1rem",
-                          borderRadius: "md",
-                        }}
-                      >
-                        <Image
-                          src={p.images?.[0] || "https://via.placeholder.com/150"}
-                          alt={p.name}
-                          w="100%"
-                          h="150px"
-                          objectFit="cover"
-                        />
-                        <Heading size="sm" mt={2}>{p.name}</Heading>
-                        <Text>{p.price} RON</Text>
-                        <Tag
-                          colorScheme={p.forSale ? (p.quantity > 0 ? "green" : "red") : "gray"}
-                          mt={1}
-                        >
-                          {!p.forSale ? "Not for Sale" : p.quantity > 0 ? `Stock: ${p.quantity} left` : "Out of Stock"}
-                        </Tag>
-                        <Text mt={2}>{p.description}</Text>
-                        {isOwner && (
-                          <Button
-                            colorScheme="red"
-                            size="sm"
-                            mt={2}
-                            onClick={() => removeProductFromGallery(p._id)}
-                          >
-                            Remove from Gallery
-                          </Button>
-                        )}
-                      </Box>
-                    )}
-                  </Draggable>
-                );
-              })}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+<ReactSortable
+  list={products}
+  setList={handleSort}
+  animation={200}
+  style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)', // 4 produse pe rând
+    gap: '1rem',
+  }}
+>
+  {products.map((item) => {
+    const p = item.product;
+    return (
+      <Box key={p._id} bg="gray.100" p={4} borderRadius="md">
+        <Image
+          src={p.images?.[0] || "https://via.placeholder.com/150"}
+          alt={p.name}
+          w="100%"
+          h="150px"
+          objectFit="cover"
+        />
+        <Heading size="sm" mt={2}>{p.name}</Heading>
+        <Text>{p.price} RON</Text>
+        <Tag
+          colorScheme={p.forSale ? (p.quantity > 0 ? "green" : "red") : "gray"}
+          mt={1}
+        >
+          {!p.forSale ? "Not for Sale" : p.quantity > 0 ? `Stock: ${p.quantity} left` : "Out of Stock"}
+        </Tag>
+        <Text mt={2}>{p.description}</Text>
+        {isOwner && (
+          <Button
+            colorScheme="red"
+            size="sm"
+            mt={2}
+            onClick={() => removeProductFromGallery(p._id)}
+          >
+            Remove from Gallery
+          </Button>
+        )}
+      </Box>
+    );
+  })}
+</ReactSortable>
+
+
 
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
         <ModalOverlay />
