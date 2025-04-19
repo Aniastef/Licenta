@@ -4,10 +4,12 @@ import mongoose from "mongoose";
 import { uploadToCloudinary } from "../config/imgUpload.js";
 import User from "../models/userModel.js";
 import Product from "../models/productModel.js";
+import Notification from "../models/notificationModel.js";
+import { createNotification } from "./notificationController.js"; // adaugă sus
 
 export const createGallery = async (req, res) => {
   try {
-    const { name, category, description, tags, collaborators } = req.body;
+    const { name, category, description, tags, collaborators, isPublic } = req.body;
     if (!name) {
       return res.status(400).json({ error: "Gallery name is required" });
     }
@@ -17,9 +19,28 @@ export const createGallery = async (req, res) => {
       coverPhotoUrl = await uploadToCloudinary(req.file);
     }
 
-    const collaboratorIds = collaborators
-      ? collaborators.split(",").map((id) => id.trim()).filter(Boolean)
-      : [];
+    const currentUserId = req.user._id.toString();
+
+    // ✅ Parsează ID-urile de colaboratori (indiferent de format)
+    let parsedCollaborators = [];
+    try {
+      const raw = typeof collaborators === "string" ? JSON.parse(collaborators) : collaborators;
+      parsedCollaborators = Array.isArray(raw)
+        ? raw.map((c) => {
+            const id = typeof c === "string" ? c : c?.value;
+            return mongoose.Types.ObjectId.isValid(id) ? id : null;
+          }).filter(Boolean)
+        : [];
+    } catch (e) {
+      parsedCollaborators = [];
+    }
+
+    // ✅ Elimină duplicări: ownerul și colaboratori existenți
+    const uniquePendingCollaborators = [
+      ...new Set(
+        parsedCollaborators.filter((id) => id.toString() !== currentUserId)
+      ),
+    ];
 
     const newGallery = new Gallery({
       name,
@@ -27,17 +48,31 @@ export const createGallery = async (req, res) => {
       description,
       coverPhoto: coverPhotoUrl,
       tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
-      owner: req.user._id,
-      collaborators: collaboratorIds,
+      owner: currentUserId,
+      pendingCollaborators: uniquePendingCollaborators,
+      isPublic: isPublic === "true" || isPublic === true,
     });
 
     await newGallery.save();
+    await newGallery.populate("owner", "username");
 
     await User.findByIdAndUpdate(
-      req.user._id,
+      currentUserId,
       { $push: { galleries: newGallery._id } },
       { new: true }
     );
+
+    // ✅ Trimite notificări doar colaboratorilor adăugați efectiv
+    for (const userId of uniquePendingCollaborators) {
+      await createNotification({
+        userId,
+        type: "invite",
+        message: `${req.user.firstName} ${req.user.lastName} invited you to collaborate on gallery "${name}"`,
+        link: `/galleries/${req.user.username}/${name}`,
+        meta: { galleryId: newGallery._id },
+      });
+      console.log("📩 Notificare pentru:", userId);
+    }
 
     res.status(201).json(newGallery);
   } catch (err) {
@@ -46,40 +81,67 @@ export const createGallery = async (req, res) => {
   }
 };
 
+
+
+
+
   
 
+// ✅ MODIFICAT pentru a controla accesul corect în funcție de owner/collaborator/pending
+// ✅ MODIFICAT pentru a controla accesul corect în funcție de owner/collaborator/pending
 export const getGallery = async (req, res) => {
   try {
-    const { username, galleryName } = req.params;
-    if (!username || !galleryName) {
-      return res.status(400).json({ error: "Username and Gallery Name are required" });
-    }
+    const { username } = req.params;
+    const galleryName = decodeURIComponent(req.params.galleryName);
+    const currentUserId = req.user?._id?.toString();
 
     const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    const gallery = await Gallery.findOne({ owner: user._id, name: galleryName })
-      .populate("owner", "firstName lastName username")
-      .populate("collaborators", "username firstName lastName")
+    // 🔄 Caută galeria după nume și owner SAU colaborator
+    const gallery = await Gallery.findOne({
+      name: galleryName,
+      $or: [
+        { owner: user._id },
+        { collaborators: user._id },
+      ],
+    })
+      .populate("owner", "firstName lastName username _id")
+      .populate("collaborators", "username firstName lastName _id")
+      .populate("pendingCollaborators", "username firstName lastName _id")
       .populate({
         path: "products.product",
         select: "images name price quantity forSale description",
       });
 
-    if (!gallery) {
-      return res.status(404).json({ error: "Gallery not found" });
+    if (!gallery) return res.status(404).json({ error: "Gallery not found" });
+
+    const ownerId =
+      typeof gallery.owner === "object" && gallery.owner._id
+        ? gallery.owner._id.toString()
+        : gallery.owner.toString();
+
+    const isOwner = currentUserId && ownerId === currentUserId;
+    const isCollaborator =
+      currentUserId &&
+      gallery.collaborators.some((c) => c._id.toString() === currentUserId);
+
+    // 🔐 Verifică accesul
+    if (!gallery.isPublic && !isOwner && !isCollaborator) {
+      return res.status(403).json({ error: "This gallery is private." });
     }
 
     gallery.products.sort((a, b) => a.order - b.order);
-
-    res.status(200).json(gallery);
+    return res.status(200).json(gallery);
   } catch (err) {
     console.error("Error fetching gallery:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
+
 
 
   
@@ -129,23 +191,75 @@ export const updateGallery = async (req, res) => {
   try {
     const { galleryId } = req.params;
     const { name, category, description, tags, collaborators, isPublic } = req.body;
-    const gallery = await Gallery.findById(galleryId);
 
+    const gallery = await Gallery.findById(galleryId);
     if (!gallery) return res.status(404).json({ error: "Gallery not found" });
+
     if (gallery.owner.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized action" });
     }
 
+    // 🔄 Actualizări de bază
     gallery.name = name || gallery.name;
     gallery.category = category || gallery.category;
     gallery.description = description || gallery.description;
     gallery.tags = tags ? tags.split(",").map((t) => t.trim()) : gallery.tags;
-    gallery.collaborators = collaborators
-      ? collaborators.split(",").map((id) => id.trim())
-      : gallery.collaborators;
     gallery.isPublic = isPublic === "true" || isPublic === true;
 
-    // 🧹 Șterge imaginea anterioară dacă nu mai e dorită
+    // ✅ Parsează colaboratori din request
+    let parsedCollaborators = [];
+    try {
+      const raw = typeof collaborators === "string" ? JSON.parse(collaborators) : collaborators;
+      parsedCollaborators = Array.isArray(raw)
+        ? raw.map((c) => {
+            const id = typeof c === "string" ? c : c?.value;
+            return mongoose.Types.ObjectId.isValid(id) ? id : null;
+          }).filter(Boolean)
+        : [];
+    } catch (err) {
+      parsedCollaborators = [];
+    }
+
+    // ✅ Curățăm listele
+    const currentUserId = req.user._id.toString();
+    const newCollaborators = new Set();
+    const newPending = new Set();
+
+    for (const id of parsedCollaborators) {
+      const idStr = id.toString();
+      if (idStr === currentUserId) continue; // nu adăuga ownerul
+
+      if (gallery.collaborators.map((c) => c.toString()).includes(idStr)) {
+        newCollaborators.add(idStr); // rămâne colaborator
+      } else {
+        newPending.add(idStr); // invitat nou
+      }
+    }
+
+    // ✅ Setăm listele
+    gallery.collaborators = Array.from(newCollaborators);
+    gallery.pendingCollaborators = Array.from(newPending);
+
+    // ✅ Trimitere notificări DOAR celor noi în pending
+    for (const userId of newPending) {
+      const alreadyNotified = await Notification.findOne({
+        user: userId,
+        type: "invite",
+        "meta.galleryId": gallery._id,
+      });
+
+      if (!alreadyNotified) {
+        await createNotification({
+          userId,
+          type: "invite",
+          message: `${req.user.firstName} ${req.user.lastName} invited you to collaborate on gallery "${gallery.name}"`,
+          link: `/galleries/${req.user.username}/${gallery.name}`,
+          meta: { galleryId: gallery._id },
+        });
+      }
+    }
+
+    // 🖼️ Gestionare imagine (opțional)
     const shouldRemoveCover = !req.file && req.body.coverPhoto === "null";
     if (shouldRemoveCover && gallery.coverPhoto) {
       const publicId = gallery.coverPhoto.split("/").pop().split(".")[0];
@@ -153,7 +267,6 @@ export const updateGallery = async (req, res) => {
       gallery.coverPhoto = null;
     }
 
-    // 🔄 Înlocuiește cu imagine nouă
     if (req.file) {
       if (gallery.coverPhoto) {
         const publicId = gallery.coverPhoto.split("/").pop().split(".")[0];
@@ -169,6 +282,7 @@ export const updateGallery = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 
@@ -236,7 +350,7 @@ export const getGalleryById = async (req, res) => {
   try {
     const gallery = await Gallery.findById(req.params.galleryId)
       .populate("owner", "username")
-      .populate("collaborators", "username firstName lastName")
+      .populate("collaborators", "username firstName lastName _id")
       .populate({
         path: "products.product",
         select: "images name price quantity forSale description",
@@ -246,17 +360,23 @@ export const getGalleryById = async (req, res) => {
       return res.status(404).json({ error: "Gallery not found" });
     }
 
-    // verificare dacă owner există după populate
     if (!gallery.owner) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(gallery);
+    // ✅ Include și ID-ul userului logat în răspuns
+    const currentUserId = req.user?._id?.toString();
+
+    res.status(200).json({
+      ...gallery.toObject(), // convertim la obiect pur pentru a putea extinde
+      currentUserId,
+    });
   } catch (err) {
     console.error("Error fetching gallery by ID:", err.message);
     res.status(500).json({ error: "Failed to fetch gallery" });
   }
 };
+
 
 
 
@@ -358,3 +478,68 @@ export const removeProductFromGallery = async (req, res) => {
   };
   
   
+  export const acceptGalleryInvite = async (req, res) => {
+    try {
+      const { galleryId } = req.params;
+      const userId = req.user._id;
+  
+      const gallery = await Gallery.findById(galleryId);
+      if (!gallery) return res.status(404).json({ error: "Gallery not found" });
+  
+      const isPending = gallery.pendingCollaborators.some(
+        (id) => id.toString() === userId.toString()
+      );
+            if (!isPending) return res.status(400).json({ error: "No invitation found" });
+  
+      gallery.collaborators.push(userId);
+      gallery.pendingCollaborators = gallery.pendingCollaborators.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+
+      
+      await gallery.save();
+
+      console.log("🎯 Pending:", gallery.pendingCollaborators.map(id => id.toString()));
+console.log("👤 Current:", userId.toString());
+
+  
+      res.status(200).json({ message: "You are now a collaborator" });
+    } catch (err) {
+      console.error("Error accepting invite:", err.message);
+      res.status(500).json({ error: "Failed to accept invite" });
+    }
+  };
+  
+  export const declineGalleryInvite = async (req, res) => {
+    try {
+      const { galleryId } = req.params;
+      const userId = req.user._id;
+  
+      const gallery = await Gallery.findById(galleryId);
+      if (!gallery) return res.status(404).json({ error: "Gallery not found" });
+  
+      // 🔁 Fix: folosește .some() cu toString() pentru comparație corectă
+      const wasPending = gallery.pendingCollaborators.some(
+        (id) => id.toString() === userId.toString()
+      );
+  
+      if (!wasPending) return res.status(400).json({ error: "No invite found" });
+  
+      gallery.pendingCollaborators = gallery.pendingCollaborators.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+      await gallery.save();
+  
+      // ✅ Șterge notificarea aferentă
+      await Notification.deleteMany({
+        user: userId,
+        type: "invite",
+        "meta.galleryId": galleryId,
+      });
+  
+      res.status(200).json({ message: "Invite declined" });
+    } catch (err) {
+      console.error("Error declining invite:", err.message);
+      res.status(500).json({ error: "Failed to decline invite" });
+    }
+  };

@@ -6,6 +6,11 @@ const gallerySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    isPublic: {
+      type: Boolean,
+      default: true
+    },
+    
     category: {
       type: String,
       default: "General", // Categoria produsului (opțional)
@@ -39,7 +44,9 @@ const gallerySchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
       }
-    ],    
+    ],  
+    pendingCollaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  
   },
   {
     timestamps: true,

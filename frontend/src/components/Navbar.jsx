@@ -18,8 +18,7 @@ import { useRecoilValue } from "recoil";
 import useLogout from "../hooks/useLogout";
 import cartIcon from "../assets/cart.png";
 import { useCart } from "../components/CartContext"; 
-import { CartContext } from "../components/CartContext";
-import { useContext } from "react";
+import NotificationDrawer from "./NotificationDrawer"; // ✅ import drawerul
 
 const Navbar = () => {
   const user = useRecoilValue(userAtom); 
@@ -34,12 +33,13 @@ const Navbar = () => {
           Art Corner
         </Text>
 
-        <HStack fontSize="xl" spacing={20}>
+        <HStack fontSize="xl" spacing={6} align="center">
           <Link to="/home">Home</Link>
           <Link to="/orders">My orders</Link>
           <Link to="/galleries">Galleries</Link>
           <Link to="/products">Products</Link>
           <Link to="/events">Events</Link>
+
           <Link to="/cart">
             <Button variant="ghost" colorScheme="teal" display="flex" alignItems="center" gap={2}>
               <Image src={cartIcon} alt="Cart" boxSize="24px" />
@@ -47,6 +47,10 @@ const Navbar = () => {
             </Button>
           </Link>
 
+          {/* 🔔 NOTIFICATIONS */}
+          {user && <NotificationDrawer />}
+
+          {/* 👤 PROFILE */}
           {user ? (
             <Menu>
               <MenuButton

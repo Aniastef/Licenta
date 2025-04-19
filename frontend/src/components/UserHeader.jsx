@@ -4,20 +4,26 @@ import {
   Flex,
   Text,
   Avatar,
-  Image,
-  Grid,
   Heading,
 } from "@chakra-ui/react";
 import { useRecoilValue } from "recoil";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import userAtom from "../atoms/userAtom";
 import { useState } from "react";
 import EventsSection from "./RenderProfileSection";
-import FavoriteProductsPage from "../pages/FavoriteProductsPage";
 
 const UserHeader = ({ user }) => {
   const currentUser = useRecoilValue(userAtom);
   const [activeSection, setActiveSection] = useState(null);
+  const navigate = useNavigate();
+
+  const ownedGalleries = user.galleries
+    ?.filter((g) => g.owner?.toString() === user._id)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const collaboratedGalleries = user.galleries
+    ?.filter((g) => g.owner?.toString() !== user._id)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <Flex direction="column" p={4}>
@@ -72,7 +78,7 @@ const UserHeader = ({ user }) => {
         >
           See created events
         </Button>
-        <Button  
+        <Button
           bg={activeSection === "going" ? "purple.300" : "purple.100"}
           _hover={{ bg: "purple.500" }}
           borderRadius="full"
@@ -87,35 +93,119 @@ const UserHeader = ({ user }) => {
           _hover={{ bg: "red.500" }}
           borderRadius="full"
           onClick={() =>
-            setActiveSection(activeSection === "interested" ? null : "interested")
+            setActiveSection(
+              activeSection === "interested" ? null : "interested"
+            )
           }
         >
           See events marked interesting
         </Button>
       </Flex>
 
-     
-  <Flex mt={6} gap={4} wrap="wrap">
-      <RouterLink to={`/${user.username}/all-products`}>
-        <Button bg="teal.200" _hover={{ bg: "teal.400" }} borderRadius="full">
-          All Products
-        </Button>
-    </RouterLink>
+      <Flex mt={6} gap={4} wrap="wrap">
+        <RouterLink to={`/${user.username}/all-products`}>
+          <Button bg="teal.200" _hover={{ bg: "teal.400" }} borderRadius="full">
+            All Products
+          </Button>
+        </RouterLink>
 
-    <RouterLink to={`/${user.username}/favorites`}>
-      <Button bg="orange.300" _hover={{ bg: "orange.500" }} borderRadius="full">
-        Favorite Products
-      </Button>
-    </RouterLink>
+        <RouterLink to={`/${user.username}/favorites`}>
+          <Button
+            bg="orange.300"
+            _hover={{ bg: "orange.500" }}
+            borderRadius="full"
+          >
+            Favorite Products
+          </Button>
+        </RouterLink>
+      </Flex>
 
-    {user.galleries.map((gallery) => (
-      <RouterLink key={gallery.name} to={`/galleries/${user.username}/${gallery.name}`}>
-        <Button bg="blue.200" _hover={{ bg: "blue.400" }} borderRadius="full">
-          {gallery.name}
-        </Button>
-      </RouterLink>
-    ))}
-  </Flex>
+      {ownedGalleries?.length > 0 && (
+        <Box mt={6}>
+          <Heading size="md" mb={2}>🎨 Created Galleries</Heading>
+          <Flex gap={4} wrap="wrap">
+            {ownedGalleries.map((gallery) => (
+              <Box
+                key={gallery._id}
+                bg="gray.100"
+                p={4}
+                borderRadius="md"
+                cursor="pointer"
+                onClick={() =>
+                  navigate(`/galleries/${user.username}/${gallery.name}`)
+                }
+              >
+                <Flex justify="space-between" align="center">
+                  <Text fontWeight="bold">{gallery.name}</Text>
+                  {!gallery.isPublic && (
+                    <Text
+                      fontSize="xs"
+                      color="white"
+                      bg="gray.700"
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      fontWeight="bold"
+                    >
+                      🔒 Private
+                    </Text>
+                  )}
+                </Flex>
+              </Box>
+            ))}
+          </Flex>
+        </Box>
+      )}
+
+      {collaboratedGalleries?.length > 0 && (
+        <Box mt={6}>
+          <Heading size="md" mb={2}>🤝 Collaborations</Heading>
+          <Flex gap={4} wrap="wrap">
+            {collaboratedGalleries.map((gallery) => (
+              <Box
+                key={gallery._id}
+                bg="gray.100"
+                p={4}
+                borderRadius="md"
+                cursor="pointer"
+                onClick={() =>
+                  navigate(`/galleries/${user.username}/${gallery.name}`)
+                }
+              >
+                <Flex justify="space-between" align="center">
+                  <Text fontWeight="bold">{gallery.name}</Text>
+                  <Flex gap={2}>
+                    {!gallery.isPublic && (
+                      <Text
+                        fontSize="xs"
+                        color="white"
+                        bg="gray.700"
+                        px={2}
+                        py={1}
+                        borderRadius="md"
+                        fontWeight="bold"
+                      >
+                        🔒 Private
+                      </Text>
+                    )}
+                    <Text
+                      fontSize="xs"
+                      color="blue.800"
+                      bg="blue.100"
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      fontWeight="bold"
+                    >
+                      👥 Collaborator
+                    </Text>
+                  </Flex>
+                </Flex>
+              </Box>
+            ))}
+          </Flex>
+        </Box>
+      )}
 
       {activeSection === "interested" && (
         <EventsSection
@@ -132,13 +222,8 @@ const UserHeader = ({ user }) => {
       )}
 
       {activeSection === "created" && (
-        <EventsSection
-          title="Events Created by User"
-          events={user.events}
-        />
+        <EventsSection title="Events Created by User" events={user.events} />
       )}
-
-
     </Flex>
   );
 };

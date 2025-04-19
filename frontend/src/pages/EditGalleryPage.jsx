@@ -96,7 +96,7 @@ const EditGalleryPage = () => {
 			formData.append("category", galleryData.category);
 			formData.append("description", galleryData.description);
 			formData.append("tags", galleryData.tags);
-			formData.append("collaborators", collaborators.map((u) => u._id).join(","));
+			formData.append("collaborators", JSON.stringify(collaborators.map((u) => u._id)));
 			formData.append("isPublic", galleryData.isPublic);
 
 			if (coverPhoto) {
@@ -159,13 +159,13 @@ const EditGalleryPage = () => {
 							value={galleryData.tags}
 							onChange={(e) => setGalleryData({ ...galleryData, tags: e.target.value })}
 						/>
+<Checkbox
+	isChecked={galleryData.isPublic === false}
+	onChange={(e) => setGalleryData({ ...galleryData, isPublic: !e.target.checked })}
+>
+	Make gallery private
+</Checkbox>
 
-						<Checkbox
-							isChecked={galleryData.isPublic}
-							onChange={(e) => setGalleryData({ ...galleryData, isPublic: e.target.checked })}
-						>
-							Make gallery public
-						</Checkbox>
 
 						<Input
 							placeholder="Search collaborators by username"

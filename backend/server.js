@@ -16,7 +16,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import auditRoutes from "./routes/auditRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js"; // ✅ nou
-
+import notificationRoutes from "./routes/notificationRoutes.js"; // ✅ nou
 import upload from "./config/imgUpload.js";
 import { EventEmitter } from "events";
 
@@ -53,6 +53,9 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/audit", auditRoutes);
 app.use("/api/reviews", reviewRoutes); // ✅ nou
+app.use("/api/notifications", notificationRoutes);
+
+
 
 // Not Found fallback
 app.use((req, res) => {

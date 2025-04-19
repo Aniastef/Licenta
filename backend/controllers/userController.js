@@ -3,69 +3,76 @@ import generateTokenAndSetCookie from "../utils/generateTokenAndSetCookie.js";
 import bcrypt from "bcryptjs"
 import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
+import Gallery from "../models/galleryModel.js";
+import Product from "../models/productModel.js";
 
 export const getUserProfile = async (req, res) => {
-    try {
-        let user;
-
-        if (req.user) { // ✅ Dacă e autentificat, ia userul din token
-            user = await User.findById(req.user._id)
-                .select("-password -updatedAt")
-                .populate({
-                    path: "eventsMarkedInterested",
-                    select: "name date location coverImage",
-                    populate: { path: "user", select: "firstName lastName" },
-                })
-                .populate({
-                    path: "eventsMarkedGoing",
-                    select: "name date location coverImage",
-                    populate: { path: "user", select: "firstName lastName" },
-                })
-                .populate({
-                    path: "events",
-                    select: "name date location coverImage",
-                    populate: { path: "user", select: "firstName lastName" },
-                })
-                .populate({
-                    path: "galleries",
-                    select: "name",
-                });
-        } else if (req.params.username) { // ✅ Dacă e accesat prin username
-            user = await User.findOne({ username: req.params.username })
-                .select("-password -updatedAt")
-                .populate({
-                    path: "eventsMarkedInterested",
-                    select: "name date location coverImage",
-                    populate: { path: "user", select: "firstName lastName" },
-                })
-                .populate({
-                    path: "eventsMarkedGoing",
-                    select: "name date location coverImage",
-                    populate: { path: "user", select: "firstName lastName" },
-                })
-                .populate({
-                    path: "events",
-                    select: "name date location coverImage",
-                    populate: { path: "user", select: "firstName lastName" },
-                })
-                .populate({
-                    path: "galleries",
-                    select: "name",
-                });
-        } else {
-            return res.status(400).json({ error: "Invalid request" });
-        }
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        res.status(200).json(user);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-        console.log("Error in getUserProfile: ", err.message);
-    }
-};
+	try {
+	  const username = req.params.username;
+	  const currentUserId = req.user?._id?.toString();
+  
+	  const user = await User.findOne({ username }).select("-password -updatedAt");
+	  if (!user) return res.status(404).json({ message: "User not found" });
+  
+	  const isSelfProfile = currentUserId && user._id.toString() === currentUserId;
+  
+	  // 1. Galeriile create de acest user
+	  const ownedGalleries = await Gallery.find({ owner: user._id })
+		.select("name isPublic owner collaborators pendingCollaborators");
+  
+	  // 2. Galeriile unde acest user e colaborator (deținute de alții)
+	  const collaboratedGalleries = await Gallery.find({
+		collaborators: user._id,
+		owner: { $ne: user._id },
+	  }).select("name isPublic owner collaborators pendingCollaborators");
+  
+	  // Dacă profilul este al userului logat — returnează toate galeriile (și private)
+	  // Dacă e alt profil, returnează doar cele publice sau unde logatul e colaborator/owner
+	  const visibleGalleries = [...ownedGalleries, ...collaboratedGalleries].filter((gallery) => {
+		if (gallery.isPublic) return true;
+		if (!currentUserId) return false;
+  
+		const isOwner = gallery.owner.toString() === currentUserId;
+		const isCollaborator = gallery.collaborators.some(
+		  (c) => c.toString() === currentUserId
+		);
+		return isOwner || isCollaborator;
+	  });
+  
+	  user.galleries = visibleGalleries;
+  
+	  await user.populate([
+		{
+		  path: "eventsMarkedInterested",
+		  select: "name date location coverImage",
+		  populate: { path: "user", select: "firstName lastName" },
+		},
+		{
+		  path: "eventsMarkedGoing",
+		  select: "name date location coverImage",
+		  populate: { path: "user", select: "firstName lastName" },
+		},
+		{
+		  path: "events",
+		  select: "name date location coverImage",
+		  populate: { path: "user", select: "firstName lastName" },
+		},
+	  ]);
+  
+	  return res.status(200).json(user);
+	} catch (err) {
+	  console.error("Error in getUserProfile:", err.message);
+	  res.status(500).json({ error: err.message });
+	}
+  };
+  
+  
+  
+  
+  
+  
+  
+  
 
 
 

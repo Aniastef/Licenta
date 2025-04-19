@@ -31,6 +31,7 @@ import BlockedUsersPage from './pages/BlockedUsersPage';
 import useLoadGoogleMapsScript from './hooks/useLoadGoogleMapsScript';
 import EditEventPage from './pages/EditEventPage';
 import EditGalleryPage from './pages/EditGalleryPage';
+import NotificationsPage from './pages/NotificationPage';
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ function App() {
         <Route path="/create/gallery" element={<CreateGalleryPage/>}/>
         <Route path="/galleries/:username/:galleryName" element={<GalleryPage />} />
         <Route path="/messages" element={<MessagesPage />} /> {/* Pagină pentru mesaje */}
+        <Route path="/notifications" element={user ? <NotificationsPage /> : <Navigate to="/auth" />} />
         <Route path="/messages/:userId" element={<MessagesPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} /> {/* ✅ Adaugă ruta corectă */}

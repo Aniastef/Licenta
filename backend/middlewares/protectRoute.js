@@ -25,7 +25,7 @@ const protectRoute = async (req, res, next) => {
       return res.status(403).json({ error: "Your account has been blocked. You have been logged out." });
     }
 
-    console.log("Authenticated user:", user);
+    // console.log("Authenticated user:", user);
     req.user = user;
     next();
   } catch (err) {

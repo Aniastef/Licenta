@@ -13,15 +13,20 @@ import {
   addMultipleProductsToGallery,
   removeProductFromGallery,
   updateProductOrder,
+  acceptGalleryInvite,
+  declineGalleryInvite,
 } from "../controllers/galleryController.js";
 
 const router = express.Router();
 
+// routes/galleryRoutes.js
+router.post("/:galleryId/accept-invite", protectRoute, acceptGalleryInvite);
+router.post("/:galleryId/decline-invite", protectRoute, declineGalleryInvite);
 // 🔄 Obținere galerie după ID (folosită pentru editare)
 router.get("/:galleryId", protectRoute, getGalleryById); // trebuie să fie înainte de username/name
 
 // 👤 Obținere galerie după username + gallery name (pentru afișare publică)
-router.get("/:username/:galleryName", getGallery);
+router.get("/:username/:galleryName", protectRoute, getGallery); // ✅
 
 // ✅ Creare galerie
 router.post("/create", upload.single("coverPhoto"), protectRoute, createGallery);
@@ -41,5 +46,7 @@ router.post("/:galleryId/add-products", protectRoute, addMultipleProductsToGalle
 router.delete("/:galleryId/remove-product/:productId", protectRoute, removeProductFromGallery);
 router.put("/:galleryId/reorder-products", protectRoute, updateProductOrder);
 router.get("/not-in-gallery/:galleryId", protectRoute, getProductsNotInGallery);
+
+
 
 export default router;
