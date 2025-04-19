@@ -160,9 +160,18 @@ const ProductCard = ({ product }) => {
               <Text mt={5} fontWeight="bold">
                 Created by {product.user?.firstName || "Unknown"} {product.user?.lastName || "User"}
               </Text>
-              <Text fontSize="lg" color="gray.600" mt={4}>
-                {product.description || "No description available."}
-              </Text>
+              {product.description && (
+  <Box mt={4}>
+    <Text fontWeight="bold">Description:</Text>
+    <Box
+      mt={2}
+      fontSize="md"
+      color="gray.700"
+      dangerouslySetInnerHTML={{ __html: product.description }}
+    />
+  </Box>
+)}
+
             </Box>
 
             {/* Images */}
@@ -196,9 +205,13 @@ const ProductCard = ({ product }) => {
             {product.writing && (
   <Box mt={4}>
     <Text fontWeight="bold">Writing / Poem:</Text>
-    <Text whiteSpace="pre-line" fontSize="md" color="gray.700" mt={2}>
-      {product.writing}
-    </Text>
+    <Box
+  mt={2}
+  fontSize="md"
+  color="gray.700"
+  dangerouslySetInnerHTML={{ __html: product.writing }}
+/>
+
   </Box>
 )}
 

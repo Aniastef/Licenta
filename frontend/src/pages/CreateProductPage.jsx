@@ -13,12 +13,16 @@ import {
 	Switch,
 	FormControl,
 	FormLabel,
+	Text,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import useShowToast from "../hooks/useShowToast";
 import productAtom from "../atoms/productAtom";
 import { useSetRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+
 
 const CreateProductPage = () => {
 	const setProduct = useSetRecoilState(productAtom);
@@ -133,8 +137,15 @@ const CreateProductPage = () => {
 				<Box w="full" p={6} rounded="lg" shadow="md">
 					<VStack spacing={4}>
 						<Input placeholder="Product Name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
-						<Textarea placeholder="Product Description" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
-						<Input type="number" placeholder="Price" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
+						<Text fontWeight="bold" alignSelf="start">Product Description</Text>
+<ReactQuill
+  theme="snow"
+  value={newProduct.description}
+  onChange={(value) => setNewProduct({ ...newProduct, description: value })}
+  style={{ height: "200px", 
+ width: "700px", // înălțime fixă 
+  marginBottom: "20px", overflowY: "auto" }}
+/>						<Input type="number" placeholder="Price" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
 						<Input type="number" placeholder="Quantity" min="0" value={newProduct.quantity} onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })} />
 
 						<FormControl display="flex" alignItems="center">
@@ -157,11 +168,21 @@ const CreateProductPage = () => {
 						<Input type="file" accept="image/*" multiple onChange={(e) => setImageFiles([...e.target.files])} />
 						<Input type="file" accept="video/*" multiple onChange={(e) => setVideoFiles([...e.target.files])} />
 						<Input type="file" accept="audio/*" multiple onChange={(e) => setAudioFiles([...e.target.files])} />
-						<Textarea
-  placeholder="Writing / Poem / Lyrics (optional)"
+						<Text fontWeight="bold" alignSelf="start">Writing / Poem</Text>
+						<ReactQuill
+  theme="snow"
   value={newProduct.writing}
-  onChange={(e) => setNewProduct({ ...newProduct, writing: e.target.value })}
+  onChange={(value) => setNewProduct({ ...newProduct, writing: value })}
+  style={{
+    height: "200px",  
+	width: "700px",       // înălțime fixă
+    overflowY: "auto",       // scroll vertical
+    marginBottom: "20px"
+  }}
 />
+
+
+
 
 						<Button colorScheme="blue" onClick={handleAddProduct} w="full" isLoading={isLoading}>
 							Add Product
