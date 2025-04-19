@@ -30,8 +30,15 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const canEdit = isOwner || isCollaborator;
 
   useEffect(() => {
-    if (gallery?.products?.length && gallery.products.every(p => p?.product?._id)) {
-      setProducts(gallery.products);
+    if (!Array.isArray(gallery?.products)) return;
+
+    const ordered = [...gallery.products].sort((a, b) => a.order - b.order);
+    const isDifferent =
+      products.length !== ordered.length ||
+      products.some((p, i) => p.product._id !== ordered[i]?.product?._id);
+
+    if (isDifferent && ordered.every((p) => p?.product?._id)) {
+      setProducts(ordered);
     }
   }, [gallery.products]);
 
@@ -96,26 +103,41 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   };
 
   const handleSort = async (newList) => {
-    setProducts(newList);
+    const orderedIds = newList.map((item) => item.product?._id).filter(Boolean);
+  
+    if (orderedIds.length === 0) {
+      console.warn("⚠️ No product IDs to sort.");
+      return;
+    }
+  
     try {
-      const orderedIds = newList.map((item) => item.product._id);
-      await fetch(`/api/galleries/${gallery._id}/reorder-products`, {
+      const res = await fetch(`/api/galleries/${gallery._id}/reorder-products`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ orderedProductIds: orderedIds }),
       });
+  
+      if (!res.ok) {
+        const data = await res.json();
+        console.error("❌ Order update failed:", data.error);
+      } else {
+        await fetchGallery(); // actualizăm datele din server
+      }
     } catch (err) {
-      console.error("Failed to update order", err);
+      console.error("❌ Failed to update order", err);
     }
   };
+  
+  
+  
 
   return (
     <Box mt={8} px={4}>
       <Heading size="lg" mb={2}>{gallery.name}</Heading>
       <Text fontSize="md" mb={4}>{gallery.description}</Text>
       <Image
-        src={gallery.coverPhoto || "https://via.placeholder.com/800"}
+        src={gallery.coverPhoto || "https://i.pravatar.cc/150"}
         alt="Gallery Cover"
         w="full"
         h="300px"
@@ -140,22 +162,31 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         </Flex>
       )}
 
-      <ReactSortable
-        list={products}
-        setList={handleSort}
-        animation={200}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '1rem',
-        }}
-      >
+<ReactSortable
+  list={products}
+  setList={setProducts}
+  animation={200}
+  onEnd={({ newIndex, oldIndex }) => {
+    const newOrder = [...products];
+    const movedItem = newOrder.splice(oldIndex, 1)[0];
+    newOrder.splice(newIndex, 0, movedItem);
+    setProducts(newOrder);
+    handleSort(newOrder); // pasăm noua ordine
+  }}
+  style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '1rem',
+  }}
+>
+
+
         {products.map((item) => {
           const p = item.product;
           return (
             <Box key={p._id} bg="gray.100" p={4} borderRadius="md">
               <Image
-                src={p.images?.[0] || "https://via.placeholder.com/150"}
+                src={p.images?.[0] || "https://i.pravatar.cc/150"}
                 alt={p.name}
                 w="100%"
                 h="150px"
@@ -201,7 +232,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                 filteredProducts.map((product) => (
                   <Box key={product._id} bg="gray.200" p={4} borderRadius="md">
                     <Image
-                      src={product.images[0] || "https://via.placeholder.com/150"}
+                      src={product.images[0] || "https://i.pravatar.cc/150"}
                       alt={product.name}
                       w="100%"
                       h="150px"

@@ -128,7 +128,7 @@ const ProductCard = ({ product }) => {
 
 
             <Flex align="center" mt={4}>
-              {product.forSale && (
+            {product.forSale && product.price !== undefined && (
                 <Button
                   bg="green.200"
                   borderRadius="lg"
@@ -193,6 +193,15 @@ const ProductCard = ({ product }) => {
                 ))}
               </VStack>
             )}
+            {product.writing && (
+  <Box mt={4}>
+    <Text fontWeight="bold">Writing / Poem:</Text>
+    <Text whiteSpace="pre-line" fontSize="md" color="gray.700" mt={2}>
+      {product.writing}
+    </Text>
+  </Box>
+)}
+
 
             {/* Audios */}
             {product.audios?.length > 0 && (

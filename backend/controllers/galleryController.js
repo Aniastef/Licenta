@@ -87,18 +87,20 @@ export const createGallery = async (req, res) => {
 
   
 
-// ✅ MODIFICAT pentru a controla accesul corect în funcție de owner/collaborator/pending
-// ✅ MODIFICAT pentru a controla accesul corect în funcție de owner/collaborator/pending
 export const getGallery = async (req, res) => {
   try {
     const { username } = req.params;
     const galleryName = decodeURIComponent(req.params.galleryName);
     const currentUserId = req.user?._id?.toString();
 
+    // 🔍 Găsește userul după username
     const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      console.log("❌ User not found:", username);
+      return res.status(404).json({ error: "User not found" });
+    }
 
-    // 🔄 Caută galeria după nume și owner SAU colaborator
+    // 🔍 Găsește galeria asociată
     const gallery = await Gallery.findOne({
       name: galleryName,
       $or: [
@@ -111,31 +113,36 @@ export const getGallery = async (req, res) => {
       .populate("pendingCollaborators", "username firstName lastName _id")
       .populate({
         path: "products.product",
+        model: "Product", // ✅ Asigură modelul explicit
         select: "images name price quantity forSale description",
       });
 
-    if (!gallery) return res.status(404).json({ error: "Gallery not found" });
+    if (!gallery) {
+      console.log("❌ Gallery not found:", galleryName);
+      return res.status(404).json({ error: "Gallery not found" });
+    }
 
-    const ownerId =
-      typeof gallery.owner === "object" && gallery.owner._id
-        ? gallery.owner._id.toString()
-        : gallery.owner.toString();
-
-    const isOwner = currentUserId && ownerId === currentUserId;
-    const isCollaborator =
-      currentUserId &&
+    // 🔐 Verifică permisiunile
+    const isOwner = currentUserId && gallery.owner._id.toString() === currentUserId;
+    const isCollaborator = currentUserId &&
       gallery.collaborators.some((c) => c._id.toString() === currentUserId);
 
-    // 🔐 Verifică accesul
     if (!gallery.isPublic && !isOwner && !isCollaborator) {
       return res.status(403).json({ error: "This gallery is private." });
     }
 
+    // 🔀 Sortează produsele după `order`
     gallery.products.sort((a, b) => a.order - b.order);
+
+    console.log("📦 Returned product order:", gallery.products.map(p => ({
+      id: p.product?._id?.toString(),
+      order: p.order
+    })));
+
     return res.status(200).json(gallery);
   } catch (err) {
-    console.error("Error fetching gallery:", err.message);
-    res.status(500).json({ message: err.message });
+    console.error("💥 Error in getGallery:", err.message);
+    res.status(500).json({ error: "Failed to fetch gallery" });
   }
 };
 
@@ -144,26 +151,44 @@ export const getGallery = async (req, res) => {
 
 
 
+
+
+
+
   
 export const getProductsNotInGallery = async (req, res) => {
-    try {
-      const { galleryId } = req.params;
-  
-      if (!req.user) {
-        return res.status(403).json({ error: "User not authenticated" });
-      }
-  
-      const products = await Product.find({
-        user: req.user._id, // Doar produsele utilizatorului conectat
-        galleries: { $ne: galleryId }, // Nu sunt asociate galeriei curente
-      });
-  
-      res.status(200).json({ products });
-    } catch (err) {
-      console.error("Error fetching products not in gallery:", err.message);
-      res.status(500).json({ error: "Failed to fetch products not in gallery" });
+  try {
+    const { galleryId } = req.params;
+    const userId = req.user._id;
+
+    const gallery = await Gallery.findById(galleryId);
+    if (!gallery) {
+      return res.status(404).json({ error: "Gallery not found" });
     }
-  };
+
+    // 🔍 Ia doar produsele utilizatorului care NU sunt deja în gallery.products
+    const existingProductIds = gallery.products.map(p => p.product.toString());
+
+    const products = await Product.find({
+      user: userId,
+      _id: { $nin: existingProductIds },
+    });
+
+    console.log("🧾 Toate produsele tale:", products.map(p => ({
+      id: p._id.toString(),
+      name: p.name,
+    })));
+    console.log("🟢 Produse disponibile pt adăugare:", products.map(p => p._id.toString()));
+
+    res.status(200).json({ products });
+
+  } catch (err) {
+    console.error("Error fetching products not in gallery:", err.message);
+    res.status(500).json({ error: "Failed to fetch products not in gallery" });
+  }
+};
+
+
   
 
 
@@ -455,27 +480,68 @@ export const removeProductFromGallery = async (req, res) => {
 };
 
 
-  export const updateProductOrder = async (req, res) => {
-    const { galleryId } = req.params;
-    const { orderedProductIds } = req.body;
-  
-    try {
-      const gallery = await Gallery.findById(galleryId);
-      if (!gallery) return res.status(404).json({ error: "Gallery not found" });
-  
-      // Reordonează produsele după ID-urile primite
-      gallery.products = orderedProductIds.map((productId, index) => ({
-        product: productId,
+export const updateProductOrder = async (req, res) => {
+  const { galleryId } = req.params;
+  const { orderedProductIds } = req.body;
+
+  try {
+    const gallery = await Gallery.findById(galleryId);
+    if (!gallery) return res.status(404).json({ error: "Gallery not found" });
+
+    const isOwner = gallery.owner.toString() === req.user._id.toString();
+    const isCollaborator = gallery.collaborators
+      .map((id) => id.toString())
+      .includes(req.user._id.toString());
+
+    if (!isOwner && !isCollaborator) {
+      return res.status(403).json({ error: "Unauthorized action" });
+    }
+
+    if (!orderedProductIds || !Array.isArray(orderedProductIds) || orderedProductIds.length === 0) {
+      return res.status(400).json({ error: "No product IDs provided" });
+    }
+
+    const existingIds = gallery.products.map((p) => p.product.toString());
+    const allIdsValid = orderedProductIds.every((id) => existingIds.includes(id));
+
+    if (!allIdsValid) {
+      console.warn("⚠️ Invalid product IDs in new order", orderedProductIds);
+      return res.status(400).json({ error: "Invalid product IDs in order" });
+    }
+
+    gallery.products = gallery.products
+      .filter((p) => orderedProductIds.includes(p.product.toString()))
+      .sort(
+        (a, b) =>
+          orderedProductIds.indexOf(a.product.toString()) -
+          orderedProductIds.indexOf(b.product.toString())
+      )
+      .map((p, index) => ({
+        ...p.toObject(), // preserve subdocument _id
         order: index,
       }));
-  
-      await gallery.save();
-      res.status(200).json({ message: "Product order updated" });
-    } catch (err) {
-      console.error("Error updating product order:", err.message);
-      res.status(500).json({ error: "Failed to update product order" });
-    }
-  };
+
+    console.log(
+      "✅ Saved new product order:",
+      gallery.products.map((p) => ({
+        id: p.product.toString(),
+        order: p.order,
+      }))
+    );
+
+    await gallery.save();
+    return res.status(200).json({ message: "Product order updated" });
+  } catch (err) {
+    console.error("❌ Error updating product order:", err.message);
+    return res.status(500).json({ error: "Failed to update product order" });
+  }
+};
+
+
+
+
+
+
   
   
   export const acceptGalleryInvite = async (req, res) => {

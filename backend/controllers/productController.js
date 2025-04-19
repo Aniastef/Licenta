@@ -8,7 +8,7 @@ import User from "../models/userModel.js";
 
 export const createProduct = async (req, res) => {
 	try {
-	  const { name, description, price, quantity, forSale, galleries, images = [], videos = [], audios = [] } = req.body;
+		const { name, description, writing, price, quantity, forSale, galleries, images = [], videos = [], audios = [] } = req.body;
   
 	  if (!req.user) {
 		return res.status(403).json({ error: "User not authenticated" });
@@ -52,6 +52,7 @@ export const createProduct = async (req, res) => {
 		images: uploadedImages,
 		videos: uploadedVideos,
 		audios: uploadedAudios,
+		writing,
 		user: req.user._id,
 	  });
   
@@ -186,6 +187,8 @@ try {
 	product.images = uploadedImages;
 	product.videos = uploadedVideos;
 	product.audios = uploadedAudios;
+	product.writing = writing ?? product.writing;
+
 
 	await product.save();
 	res.status(200).json(product);

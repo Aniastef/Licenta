@@ -76,10 +76,11 @@ const CreateProductPage = () => {
 		});
 
 	const handleAddProduct = async () => {
-		if (!newProduct.name || !newProduct.price || newProduct.price <= 0 || newProduct.quantity < 0) {
-			showToast("Error", "Name, valid price, and quantity are required", "error");
+		if (!newProduct.name) {
+			showToast("Error", "Name is required", "error");
 			return;
-		}
+		  }
+		  
 
 		setIsLoading(true);
 
@@ -156,6 +157,11 @@ const CreateProductPage = () => {
 						<Input type="file" accept="image/*" multiple onChange={(e) => setImageFiles([...e.target.files])} />
 						<Input type="file" accept="video/*" multiple onChange={(e) => setVideoFiles([...e.target.files])} />
 						<Input type="file" accept="audio/*" multiple onChange={(e) => setAudioFiles([...e.target.files])} />
+						<Textarea
+  placeholder="Writing / Poem / Lyrics (optional)"
+  value={newProduct.writing}
+  onChange={(e) => setNewProduct({ ...newProduct, writing: e.target.value })}
+/>
 
 						<Button colorScheme="blue" onClick={handleAddProduct} w="full" isLoading={isLoading}>
 							Add Product
