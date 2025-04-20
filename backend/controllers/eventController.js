@@ -11,7 +11,7 @@ import axios from 'axios';  // To make an API request to the geocoding service
 export const createEvent = async (req, res) => {
   try {
     const {
-      name, description, date, tags, coverImage, location, coordinates: clientCoordinates,
+      name, description, date, time, tags, coverImage, location, coordinates: clientCoordinates,
       capacity, price, ticketType, language, collaborators, gallery, attachments,
       visibility, isDraft
     } = req.body;
@@ -58,6 +58,7 @@ export const createEvent = async (req, res) => {
       name,
       description,
       date,
+      time,
       coverImage: coverImageUrl,
       tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
       user: req.user._id,
@@ -254,7 +255,7 @@ export const updateEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const {
-      name, description, date, coverImage, tags, location, capacity, price,
+      name, description, date, time, coverImage, tags, location, capacity, price,
       ticketType, language, collaborators, gallery, attachments,
       visibility, isDraft, coordinates
     } = req.body;
@@ -301,6 +302,7 @@ export const updateEvent = async (req, res) => {
     event.name = name || event.name;
     event.description = description || event.description;
     event.date = date || event.date;
+    event.time = time || event.time;
     event.coverImage = coverImageUrl;
     event.tags = tags || event.tags;
     event.location = location || event.location;

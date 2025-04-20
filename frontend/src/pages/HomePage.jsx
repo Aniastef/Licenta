@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -31,6 +31,62 @@ const HomePage = () => {
   // State pentru video curent
 const [videoIndex, setVideoIndex] = React.useState(0);
 const videoList = [video1, video2, video3, video4, video5];
+const [topRated, setTopRated] = useState([]);
+const [upcomingEvents, setUpcomingEvents] = useState([]);
+const [randomUsers, setRandomUsers] = useState([]);
+
+useEffect(() => {
+  const fetchRandomUsers = async () => {
+    try {
+      const res = await fetch("/api/users/random-users");
+const data = await res.json();
+setRandomUsers(Array.isArray(data) ? data : []);
+
+    } catch (err) {
+      console.error("Error fetching random users:", err);
+    }
+  };
+
+  fetchRandomUsers();
+}, []);
+
+useEffect(() => {
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch("/api/events");
+      const data = await res.json();
+
+      const now = new Date();
+      const upcoming = data.events
+        .filter(e => e.date && new Date(e.date) > now)
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 2);
+
+      setUpcomingEvents(upcoming);
+    } catch (err) {
+      console.error("Error loading events:", err);
+    }
+  };
+
+  fetchEvents();
+}, []);
+
+useEffect(() => {
+  const fetchTopRated = async () => {
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      const sorted = data.products
+        .filter(p => p.images && p.images.length > 0)
+        .sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
+        .slice(0, 8);
+      setTopRated(sorted);
+    } catch (err) {
+      console.error("Error loading top-rated products:", err);
+    }
+  };
+  fetchTopRated();
+}, []);
 
 const circularPositions = [
   { top: "8%", left: "50%", transform: "translate(-50%, -50%)" },
@@ -146,16 +202,19 @@ const circularPositions = [
     </Text>
 
     <Button
-      bg="#2f5e56"
-      color="white"
-      px={8}
-      py={4}
-      borderRadius="20px"
-      _hover={{ bg: "#244b46" }}
-      alignSelf="center"
-    >
-      Explore our many galleries.
-    </Button>
+  as={Link}
+  to="/galleries"
+  bg="#2f5e56"
+  color="white"
+  px={8}
+  py={4}
+  borderRadius="20px"
+  _hover={{ bg: "#244b46" }}
+  alignSelf="center"
+>
+  Explore our many galleries.
+</Button>
+
   </VStack>
 </Flex>
 
@@ -165,68 +224,77 @@ const circularPositions = [
 
       {/* Gallery Preview */}
      {/* Gallery Section – ajustat ca în mockup */}
-<Box px={6} py={12} maxW="1100px" mx="auto">
-  <Flex justify="space-between" align="center" mb={6}>
-    <Text fontSize="2xl" fontWeight="semibold">
-      Explore different pieces of art
-    </Text>
-    <Button
-      size="sm"
-      bg="#8b7c3a"
-      color="white"
-      borderRadius="20px"
-      _hover={{ bg: "#766a31" }}
-    >
-      See all products
-    </Button>
-  </Flex>
+     <Box px={6} py={12} maxW="1100px" mx="auto">
+        <Flex justify="space-between" align="center" mb={6}>
+          <Text fontSize="2xl" fontWeight="semibold">
+            Explore different pieces of art
+          </Text>
+          <Button
+  as={Link}
+  to="/products"
+  size="sm"
+  bg="#8b7c3a"
+  color="white"
+  borderRadius="20px"
+  _hover={{ bg: "#766a31" }}
+>
+  See all products
+</Button>
 
-  <Grid
-    templateColumns={{
-      base: "repeat(auto-fill, minmax(140px, 1fr))",
-      sm: "repeat(2, 1fr)",
-      md: "repeat(4, 1fr)",
-    }}
-    gap={6}
-  >
-    {Array.from({ length: 8 }).map((_, i) => (
-     <Box
-     bg="gray.300" // <-- fundal gri aici
-     borderRadius="xl"
-     boxShadow="lg"
-     overflow="hidden"
-     transition="all 0.2s ease-in-out"
-     _hover={{
-       transform: "translateY(-6px)",
-       boxShadow: "2xl",
-     }}
-   >
-     <Image
-       src="/link/catre/poza.jpg"
-       alt="Product image"
-       w="full"
-       h="180px"
-       objectFit="cover"
-     />
-     <Box p={4} textAlign="center">
-       <Text fontSize="lg"  mb={2}>
-         product name
-       </Text>
-       <Button
-         variant="link"
-         color="green.600"
-         fontWeight="semibold"
-         rightIcon={<span>&rarr;</span>}
-       >
-         see more
-       </Button>
-     </Box>
-   </Box>
-   
-    
-    ))}
-  </Grid>
+        </Flex>
+
+        <Grid
+          templateColumns={{
+            base: "repeat(auto-fill, minmax(140px, 1fr))",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(4, 1fr)",
+          }}
+          gap={6}
+        >
+          {topRated.map((product) => (
+            <Box
+              key={product._id}
+              bg="gray.300"
+              borderRadius="xl"
+              boxShadow="lg"
+              overflow="hidden"
+              transition="all 0.2s ease-in-out"
+              _hover={{
+                transform: "translateY(-6px)",
+                boxShadow: "2xl",
+              }}
+            >
+             <Box position="relative" w="full" pt="100%" overflow="hidden">
+  <Image
+    src={product.images[0]}
+    alt={product.name}
+    position="absolute"
+    top="0"
+    left="0"
+    w="100%"
+    h="100%"
+    objectFit="cover"
+  />
 </Box>
+              <Box p={4} textAlign="center">
+                <Text fontSize="lg" mb={2} noOfLines={1}>
+                  {product.name}
+                </Text>
+                <Button
+                  as={Link}
+                  to={`/products/${product._id}`}
+                  variant="link"
+                  color="green.600"
+                  fontWeight="semibold"
+                  rightIcon={<span>&rarr;</span>}
+                >
+                  see more
+                </Button>
+              </Box>
+            </Box>
+          ))}
+        </Grid>
+      </Box>
 
 
       {/* Mood Section */}
@@ -253,96 +321,102 @@ const circularPositions = [
   </HStack>
 </Box>
 
-<Box mb={100} px={6} >
-      {/* Title */}
-      <Text textAlign="center" fontWeight="semibold" fontSize="2xl" mb={10}>
-        express your interest in various amazing events happening around you..
-      </Text>
+<Box mb={100} px={6}>
+  <Text textAlign="center" fontWeight="semibold" fontSize="2xl" mb={10}>
+    express your interest in various amazing events happening around you..
+  </Text>
 
-      {/* Event 1 - shape left */}
-      <Flex
-        justify="flex-start"
-        align="center"
-        mb={12}
-        ml={{ base: 0, md: "-10" }}
-      >
+  {upcomingEvents.map((event, index) => (
+    <Flex
+      key={event._id}
+      justify={index % 2 === 0 ? "flex-start" : "flex-end"}
+      align="center"
+      mb={12}
+      ml={index % 2 === 0 ? { base: 0, md: "-10" } : 0}
+      mr={index % 2 !== 0 ? { base: 0, md: "-10" } : 0}
+    >
+      {index % 2 === 0 && (
         <Box
           bg="gray.400"
           w="60%"
-          h="180px"
+          h="200px"
           borderTopRightRadius="100px"
           display="flex"
           alignItems="center"
           justifyContent="center"
           fontWeight="semibold"
+          overflow="hidden"
         >
-          poza eveniment
+          {event.coverImage ? (
+            <Image src={event.coverImage} objectFit="cover" w="100%" h="100%" />
+          ) : (
+            "poza eveniment"
+          )}
         </Box>
+      )}
 
-        <Box
-          bg="gray.300"
-          p={4}
-          ml={-4}
-          boxShadow="md"
-          zIndex={1}
-        >
-          <Text fontWeight="bold">Art & Expression</Text>
-          <Text fontSize="sm">May 12, 2025</Text>
-          <Text fontSize="sm">Timișoara</Text>
-        </Box>
-      </Flex>
-
-      {/* Event 2 - shape right */}
-      <Flex
-        justify="flex-end"
-        align="center"
-        mb={12}
-        mr={{ base: 0, md: "-10" }}
+      <Box
+        bg="gray.300"
+        p={4}
+        mx={-4}
+        boxShadow="md"
+        zIndex={1}
+        maxW="300px"
+        textAlign="left"
       >
-        <Box
-          bg="gray.300"
-          p={4}
-          mr={-4}
-          boxShadow="md"
-          zIndex={1}
-        >
-          <Text fontWeight="bold">Urban Symphony</Text>
-          <Text fontSize="sm">May 15, 2025</Text>
-          <Text fontSize="sm">Bucharest</Text>
-        </Box>
+        <Text fontWeight="bold">{event.name}</Text>
+        <Text fontSize="sm">
+  {new Date(event.date).toLocaleDateString()} {event.time && (
+    <><span style={{ marginLeft: 6 }}>🕒</span> {event.time}</>
+  )}
+</Text>
+        <Text fontSize="sm">{event.location}</Text>
+      </Box>
 
+      {index % 2 !== 0 && (
         <Box
           bg="gray.700"
           w="60%"
-          h="180px"
+          h="200px"
           borderTopLeftRadius="100px"
           color="white"
           display="flex"
           alignItems="center"
           justifyContent="center"
           fontWeight="semibold"
+          overflow="hidden"
         >
-          poza eveniment
+          {event.coverImage ? (
+            <Image src={event.coverImage} objectFit="cover" w="100%" h="100%" />
+          ) : (
+            "poza eveniment"
+          )}
         </Box>
-      </Flex>
+      )}
+    </Flex>
+  ))}
 
-      <Flex justify="space-between" align="center" mt={8}>
-        <Button
-          size="sm"
-          bg="#8b7c3a"
-          color="white"
-          borderRadius="20px"
-          _hover={{ bg: "#c35b4e" }}
-        >
-          Explore all the events
-        </Button>
+  <Flex justify="space-between" align="center" mt={8}>
+  <Button
+  as={Link}
+  to="/events"
+  size="sm"
+  bg="#8b7c3a"
+  color="white"
+  borderRadius="20px"
+  _hover={{ bg: "#c35b4e" }}
+>
+  Explore all the events
+</Button>
 
-        <HStack spacing={3}>
-          <Box w="20px" h="20px" bg="#b75c5c" borderRadius="full" />
-          <Box w="20px" h="20px" bg="#b48f33" borderRadius="full" />
-        </HStack>
-      </Flex>
-    </Box>
+
+    <HStack spacing={3}>
+      <Box w="20px" h="20px" bg="#b75c5c" borderRadius="full" />
+      <Box w="20px" h="20px" bg="#b48f33" borderRadius="full" />
+    </HStack>
+  </Flex>
+</Box>
+
 
 
 
@@ -364,22 +438,26 @@ const circularPositions = [
         </Box>
 
         {/* Circular Avatars */}
-        {circularPositions.map((pos, i) => (
-          <VStack
-            key={i}
-            spacing={0.5}
-            position="absolute"
-            top={pos.top}
-            left={pos.left}
-            transform={pos.transform}
-          >
-            <Avatar size="2xl" bg="gray.300">
-              user
-            </Avatar>
-            <Text fontSize="sm" mt={1}>Name</Text>
-            <Text fontSize="xs">occupation</Text>
-          </VStack>
-        ))}
+        {randomUsers.slice(0, circularPositions.length).map((user, i) => (
+  <VStack
+    key={i}
+    spacing={0.5}
+    position="absolute"
+    top={circularPositions[i]?.top}
+    left={circularPositions[i]?.left}
+    transform={circularPositions[i]?.transform}
+  >
+    <Avatar
+      size="2xl"
+      src={user.profilePicture || "https://i.pravatar.cc/150?img=" + (i + 10)}
+      name={`${user.firstName} ${user.lastName}`}
+    />
+    <Text fontSize="sm" mt={1}>{user.firstName} {user.lastName}</Text>
+    <Text fontSize="xs" color="gray.600">{user.profession || "Artist"}</Text>
+  </VStack>
+))}
+
+
       </Box>
 
      

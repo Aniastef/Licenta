@@ -38,6 +38,10 @@ const eventSchema = new mongoose.Schema(
       type: Date,
       required: false
     },
+    time: {
+      type: String,
+      required: false
+    },
     coverImage: {
       type: String,
       default: "",

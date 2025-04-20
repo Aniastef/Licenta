@@ -136,6 +136,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
       <Box overflow="hidden">
         <Image src={event.coverImage || "https://via.placeholder.com/800"} alt={event.name} w="100%" h="400px" objectFit="cover" />
       </Box>
+      
 
       <Flex justify="space-between" align="center">
         <RectangleShape bgColor="blue.300" title={`Created by: ${event.user?.firstName || "Unknown"} ${event.user?.lastName || "User"}`} minW="200px" maxW="300px" textAlign="center" />
@@ -157,7 +158,23 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         <Text><strong>Price:</strong> {event.price > 0 ? `${event.price} RON` : "Free"}</Text>
         <Text><strong>Language:</strong> {event.language?.toUpperCase() || "N/A"}</Text>
       </Flex>
+      <Box mt={4} mx={8}>
+  <Flex gap={4} align="center">
+  <Text fontWeight="semibold" fontSize="md">
+  📅 {new Date(event.date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  })}{" "}
+  {event.time && (
+    <>
+      <span>🕒 {event.time}</span>
+    </>
+  )}
+</Text>
 
+  </Flex>
+</Box>
       {Array.isArray(event.attachments) && event.attachments.length > 0 && (
         <Box mx={8} mt={6}>
           <Heading size="md" mb={2}>Attachments</Heading>

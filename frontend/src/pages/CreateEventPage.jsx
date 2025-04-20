@@ -11,7 +11,9 @@ import {
 	Text,
 	Flex,
 	IconButton,
-	CloseButton
+	CloseButton,
+	FormControl,
+	FormLabel
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
@@ -31,6 +33,7 @@ const [newEvent, setNewEvent] = useState({
   name: "",
   description: "",
   date: "",
+  time: "",
   tags: "",
   location: "",
   capacity: "",
@@ -159,6 +162,18 @@ useEffect(() => {
 						<Input placeholder="Event Name" value={newEvent.name} onChange={(e) => setNewEvent({ ...newEvent, name: e.target.value })} />
 						<Textarea placeholder="Event Description" value={newEvent.description} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
 						<Input type="date" value={newEvent.date} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} />
+						<FormControl id="time" mt={4}>
+  <FormLabel>Time</FormLabel>
+  <Input
+    type="time"
+    value={newEvent.time} // ✅ folosește `newEvent.time`
+    onChange={(e) =>
+      setNewEvent((prev) => ({ ...prev, time: e.target.value }))
+    }
+  />
+</FormControl>
+
+
 {/* Locație cu Google Places Autocomplete */}
 {/* Locație cu Google Places Autocomplete */}
 <Stack w="full">

@@ -416,4 +416,17 @@ export const moveToFavorites = async (req, res) => {
 	}
   };
   
+  export const getRandomUsers = async (req, res) => {
+	try {
+		const users = await User.aggregate([
+			{ $sample: { size: 6 } },
+			{ $project: { firstName: 1, lastName: 1, profilePicture: 1, profession: 1 } }
+		  ]);
+		  
+	  res.status(200).json(users);
+	} catch (err) {
+	  console.error("Error getting random users:", err.message);
+	  res.status(500).json({ error: "Failed to fetch users" });
+	}
+  };
   
