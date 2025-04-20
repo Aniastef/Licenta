@@ -32,6 +32,10 @@ import useLoadGoogleMapsScript from './hooks/useLoadGoogleMapsScript';
 import EditEventPage from './pages/EditEventPage';
 import EditGalleryPage from './pages/EditGalleryPage';
 import NotificationsPage from './pages/NotificationPage';
+import UserArticlesPage from './pages/UserArticlesPage';
+import ArticlePage from './pages/ArticlePage';
+import CalendarPage from './pages/CalendarPage';
+import UserArticleCalendarPage from './pages/UserArticleCalendarPage';
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -84,6 +88,11 @@ function App() {
         <Route path="/blocked-users" element={<BlockedUsersPage />} /> {/* Pagină pentru utilizatorii blocați */}
         <Route path="/events/:eventId/edit" element={<EditEventPage />} />
         <Route path="/edit-gallery/:galleryId" element={<EditGalleryPage />} />
+        <Route path="/:username/articles" element={<UserArticlesPage />} />
+        <Route path="/articles/:articleId" element={<ArticlePage />} />
+        <Route path="/calendar" element={<UserArticleCalendarPage />} />
+
+        <Route path="/:username/calendar" element={<CalendarPage />} />
 
 
       </Routes>

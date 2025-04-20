@@ -7,7 +7,7 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { useRecoilValue } from "recoil";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link, Link as RouterLink, useNavigate } from "react-router-dom";
 import userAtom from "../atoms/userAtom";
 import { useState } from "react";
 import EventsSection from "./RenderProfileSection";
@@ -53,6 +53,7 @@ const UserHeader = ({ user }) => {
           )}
         </Flex>
 
+
         <Flex direction="column" justifyContent="center" gap={4}>
           <Text fontSize="2xl" fontWeight="bold">
             {user?.firstName} {user?.lastName || "Unknown User"}
@@ -66,6 +67,12 @@ const UserHeader = ({ user }) => {
           </Text>
         </Flex>
       </Flex>
+
+      <RouterLink to={`/${user.username}/articles`}>
+  <Button bg="blue.100" _hover={{ bg: "blue.300" }} borderRadius="full">
+    ✍️ User Articles
+  </Button>
+</RouterLink>
 
       <Flex mt={6} gap={4}>
         <Button
@@ -157,6 +164,10 @@ const UserHeader = ({ user }) => {
         </Box>
       )}
 
+<Button as={Link} to="/calendar" colorScheme="teal" size="sm">
+    Calendar
+  </Button>
+
       {collaboratedGalleries?.length > 0 && (
         <Box mt={6}>
           <Heading size="md" mb={2}>🤝 Collaborations</Heading>
@@ -225,6 +236,7 @@ const UserHeader = ({ user }) => {
         <EventsSection title="Events Created by User" events={user.events} />
       )}
     </Flex>
+    
   );
 };
 
