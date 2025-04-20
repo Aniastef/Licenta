@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@fontsource/kufam": "^5.2.5",
     "@tiptap/react": "^2.11.7",
     "@tiptap/starter-kit": "^2.11.7",
     "react-calendar": "^5.1.0",
