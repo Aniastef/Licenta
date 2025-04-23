@@ -1,242 +1,459 @@
 import {
   Box,
-  Button,
   Flex,
   Text,
-  Avatar,
-  Heading,
+  Image,
+  Textarea,
+  IconButton,
+  useToast,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Button,
 } from "@chakra-ui/react";
 import { useRecoilValue } from "recoil";
-import { Link, Link as RouterLink, useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
 import userAtom from "../atoms/userAtom";
-import { useState } from "react";
-import EventsSection from "./RenderProfileSection";
-
+import sticky from "../assets/sticky.svg";
+import editIcon from "../assets/editIcon.svg";
+import soundcloudIcon from "../assets/soundcloud.svg";
+import spotifyIcon from "../assets/spotify.svg";
+import linkedinIcon from "../assets/linkedin.svg";
+import instagramIcon from "../assets/instagram.svg";
+import facebookIcon from "../assets/facebook.svg";
+import webpageIcon from "../assets/webpage.svg";
+import emailIcon from "../assets/email.svg";
+import phoneIcon from "../assets/phone.svg";
+import messageIcon from "../assets/message.svg";
+import heartIcon from "../assets/heart.svg";
+import ageIcon from "../assets/age.svg";
+import professionIcon from "../assets/profession.svg";
+import locationIcon from "../assets/location.svg";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+ const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = date.toLocaleDateString("en-US", { day: "2-digit" });
+    const month = date.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+    const year = date.toLocaleDateString("en-US", { year: "numeric" });
+    return { day, month, year };
+  };
 const UserHeader = ({ user }) => {
   const currentUser = useRecoilValue(userAtom);
-  const [activeSection, setActiveSection] = useState(null);
-  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [quote, setQuote] = useState(user.quote || "");
+  const textareaRef = useRef(null);
+  const CHAR_LIMIT = 400;
+  const LINE_LIMIT = 12;
+  const LINE_HEIGHT = 18;
+  const toast = useToast();
+  const latestProducts = user.products?.slice(0, 8);
+  const navigate = useNavigate(); // sus în componentă
 
-  const ownedGalleries = user.galleries
-    ?.filter((g) => g.owner?.toString() === user._id)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  
+  console.log("User products:", user.products);
+  const [activeGalleryFilter, setActiveGalleryFilter] = useState("owning");
 
-  const collaboratedGalleries = user.galleries
-    ?.filter((g) => g.owner?.toString() !== user._id)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const ownedGalleries = user.galleries?.filter(g => g.owner === user._id);
+  const collaboratedGalleries = user.galleries?.filter(g => g.owner !== user._id);
+  const favoriteGalleries = []; // aici pui logica ta dacă ai favorite
+  const createdEvents = user.events || [];
+  const goingEvents = user.eventsMarkedGoing || [];
+  const interestedEvents = user.eventsMarkedInterested || [];
+  console.log("Created events:", createdEvents);
+  console.log("Going events:", goingEvents);
+  console.log("Interested events:", interestedEvents);
+ 
+  
+  const [galleryFilter, setGalleryFilter] = useState("owning");
+  const [eventFilter, setEventFilter] = useState("created");
+  const filteredGalleries =
+    activeGalleryFilter === "owning"
+      ? ownedGalleries
+      : activeGalleryFilter === "collaborating"
+      ? collaboratedGalleries
+      : favoriteGalleries;
+  
+  const handleSave = () => {
+    setIsEditing(false);
+    toast({
+      title: "Quote saved.",
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+    });
+  };
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    if (value.length > CHAR_LIMIT) return;
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const lineCount = Math.round(textarea.scrollHeight / LINE_HEIGHT);
+      if (lineCount > LINE_LIMIT) return;
+    }
+    setQuote(value);
+  };
+
+  const contactItems = [
+    { icon: messageIcon, label: "Message me" },
+    { icon: phoneIcon, label: user.phone || "Phone number" },
+    { icon: emailIcon, label: user.email || "Email" },
+    { icon: facebookIcon, label: user.facebook },
+    { icon: instagramIcon, label: user.instagram },
+    { icon: linkedinIcon, label: user.linkedin },
+    { icon: webpageIcon, label: user.webpage },
+    { icon: spotifyIcon, label: user.spotify },
+    { icon: soundcloudIcon, label: user.soundcloud },
+  ];
+
+  const aboutMeItems = [
+    { icon: ageIcon, label: user.age ? `${user.age}` : "age" },
+    { icon: locationIcon, label: user.location || "location" },
+    { icon: professionIcon, label: user.profession || "profession" },
+    { icon: heartIcon, label: user.hobbies || "hobbies" },
+  ];
 
   return (
-    <Flex direction="column" p={4}>
-      <Flex alignItems="flex-start" direction="row" gap={10}>
-        <Flex direction="column" alignItems="center" gap={4}>
-          <Avatar
-            src={user?.profilePicture || ""}
-            size="2xl"
-            borderWidth={4}
-            borderColor="white"
-            borderRadius="full"
-          />
-          <Text fontSize="lg" fontWeight="bold">
-            {user?.username || "Unknown Username"}
-          </Text>
-          {currentUser?._id === user._id && (
-            <RouterLink to="/update">
-              <Button
-                mt={2}
-                bg="gray.300"
-                _hover={{ bg: "gray.500" }}
-                borderRadius="md"
-              >
-                Edit Profile
-              </Button>
-            </RouterLink>
-          )}
+    <Flex direction="column" px={6} py={12} maxW="1300px" mx="auto" >
+      {/* Header Section */}
+
+      <Flex justify="space-between" align="flex-start" gap={10}>
+        {/* Avatar & Contact */}
+        <Flex direction="column" align="center" gap={2}>
+          <Box borderRadius="full"  w="300px" h="300px" overflow="hidden" >
+            <Image
+              src={user.profilePicture}
+              alt={`${user.firstName} ${user.lastName}`}
+              w="100%"
+              h="100%"
+              objectFit="cover"
+            />
+          </Box>
+         
         </Flex>
 
-
-        <Flex direction="column" justifyContent="center" gap={4}>
-          <Text fontSize="2xl" fontWeight="bold">
-            {user?.firstName} {user?.lastName || "Unknown User"}
-          </Text>
-          <Text fontSize="md">{user?.bio || "No biography available."}</Text>
-          <Text fontSize="sm" color="gray.600">
-            {user?.age ? `${user.age} years old` : ""}
-          </Text>
-          <Text fontSize="sm" color="gray.600">
-            {user?.location || ""}
+        {/* Bio */}
+        <Flex direction="column" flex={1} maxW="450px">
+          <Flex align="center" gap={2}>
+            <Text fontWeight="bold" fontSize="2xl">
+              Hello! I’m <br />
+              <Text fontSize="3xl" as="span" fontWeight="bold">
+                {user.firstName} {user.lastName}
+              </Text>
+            </Text>
+          </Flex>
+          <Text fontSize="sm" lineHeight="1.7" whiteSpace="pre-wrap">
+            {user.bio || "No biography provided."}
           </Text>
         </Flex>
+
+        <Box
+  position="relative"
+  
+  w="390px"
+  h="310px"  // Important!
+
+  textAlign="left"
+  display="flex"
+  flexDirection="column"
+  alignItems="center"
+>
+  {/* Sticky note image */}
+  <Image mt={1} src={sticky} w="100%" h="auto" />
+
+  {/* Textarea poziționată absolut peste sticky */}
+  <Box position="absolute" top="45px" px={9} w="100%">
+    <Textarea
+      ref={textareaRef}
+      value={quote}
+      onChange={handleChange}
+      fontStyle="italic"
+      fontSize="sm"
+      resize="none"
+      rows={12}
+      maxW="305px"
+      bg="transparent"
+      border="none"
+      lineHeight="1.2"
+      overflow="hidden"
+      _focus={{ outline: "none", boxShadow: "none" }}
+    />
+    <Text
+      fontSize="xs"
+      
+      color={
+        quote.length >= CHAR_LIMIT - 20 ||
+        quote.split("\n").length >= LINE_LIMIT
+          ? "red.500"
+          : "gray.500"
+      }
+      textAlign="right"
+    >
+      {quote.length}/{CHAR_LIMIT} characters · {quote.split("\n").length}/{LINE_LIMIT} lines
+    </Text>
+  </Box>
+
+  {/* Edit button */}
+  <IconButton
+    icon={
+      isEditing ? (
+        <Text fontSize="xs" fontWeight="semibold">
+          Save
+        </Text>
+      ) : (
+        <Image src={editIcon} w="16px" h="16px" />
+      )
+    }
+    position="absolute"
+    bottom="20px"
+    left="50px"
+    size="xs"
+    bg="whiteAlpha.700"
+    _hover={{ bg: "whiteAlpha.900" }}
+    borderRadius="full"
+    onClick={() => {
+      if (isEditing) handleSave();
+      else setIsEditing(true);
+    }}
+    aria-label={isEditing ? "Save quote" : "Edit quote"}
+    zIndex={2}
+  />
+</Box>
+
       </Flex>
 
-      <RouterLink to={`/${user.username}/articles`}>
-  <Button bg="blue.100" _hover={{ bg: "blue.300" }} borderRadius="full">
-    ✍️ User Articles
-  </Button>
-</RouterLink>
+      {/* /////////////////////////////////////       */}
 
-      <Flex mt={6} gap={4}>
-        <Button
-          bg={activeSection === "created" ? "green.300" : "green.100"}
-          _hover={{ bg: "green.500" }}
-          borderRadius="full"
-          onClick={() =>
-            setActiveSection(activeSection === "created" ? null : "created")
-          }
-        >
-          See created events
-        </Button>
-        <Button
-          bg={activeSection === "going" ? "purple.300" : "purple.100"}
-          _hover={{ bg: "purple.500" }}
-          borderRadius="full"
-          onClick={() =>
-            setActiveSection(activeSection === "going" ? null : "going")
-          }
-        >
-          See events marked going
-        </Button>
-        <Button
-          bg={activeSection === "interested" ? "red.300" : "red.100"}
-          _hover={{ bg: "red.500" }}
-          borderRadius="full"
-          onClick={() =>
-            setActiveSection(
-              activeSection === "interested" ? null : "interested"
-            )
-          }
-        >
-          See events marked interesting
-        </Button>
-      </Flex>
+<Flex   align="flex-start" gap={10} >
 
-      <Flex mt={6} gap={4} wrap="wrap">
-        <RouterLink to={`/${user.username}/all-products`}>
-          <Button bg="teal.200" _hover={{ bg: "teal.400" }} borderRadius="full">
-            All Products
-          </Button>
-        </RouterLink>
-
-        <RouterLink to={`/${user.username}/favorites`}>
-          <Button
-            bg="orange.300"
-            _hover={{ bg: "orange.500" }}
-            borderRadius="full"
-          >
-            Favorite Products
-          </Button>
-        </RouterLink>
-      </Flex>
-
-      {ownedGalleries?.length > 0 && (
-        <Box mt={6}>
-          <Heading size="md" mb={2}>🎨 Created Galleries</Heading>
-          <Flex gap={4} wrap="wrap">
-            {ownedGalleries.map((gallery) => (
-              <Box
-                key={gallery._id}
-                bg="gray.100"
-                p={4}
-                borderRadius="md"
-                cursor="pointer"
-                onClick={() =>
-                  navigate(`/galleries/${user.username}/${gallery.name}`)
-                }
-              >
-                <Flex justify="space-between" align="center">
-                  <Text fontWeight="bold">{gallery.name}</Text>
-                  {!gallery.isPublic && (
-                    <Text
-                      fontSize="xs"
-                      color="white"
-                      bg="gray.700"
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                      fontWeight="bold"
-                    >
-                      🔒 Private
-                    </Text>
-                  )}
+      <Flex   ml={20} direction="column" align="start" gap={3} >
+      <Text fontWeight="bold" fontSize="2xl">@{user.username}</Text>
+            {contactItems.map((item, idx) => (
+              item.label && (
+                <Flex key={idx} align="center" gap={3}>
+                  <Image src={item.icon} w="18px" h="18px" />
+                  <Text fontSize="sm">{item.label}</Text>
                 </Flex>
-              </Box>
+              )
             ))}
-          </Flex>
+        </Flex>
+
+      {/* About Me */}
+      <Flex  direction={"column"}  ml={20} textAlign="center">
+
+      <Text textAlign="left" fontWeight="bold" fontSize="lg" mb={2}>About me</Text>
+
+       {/* icons and details  */}
+      <Flex ml={2} gap={200} direction={"row"} textAlign="center"> 
+      {/* age and profession */}
+      <Flex gap={2} direction={"column"} textAlign="center">
+      <Flex gap={2} direction={"row"} textAlign="center">
+      <Image src={ageIcon} w="16px" h="16px"/>
+      <Text textAlign="left" >{user.age}</Text>
+      </Flex>
+      <Flex gap={2} direction={"row"} textAlign="center">
+      <Image src={professionIcon} w="16px" h="16px"/>
+      <Text  textAlign="left" >{user.profession}</Text>
+      </Flex>
+      </Flex>
+       {/* location and hobbies */}
+      <Flex  gap={2} direction={"column"} textAlign="center">
+      <Flex gap={2} direction={"row"} textAlign="center">
+      <Image src={locationIcon} w="16px" h="16px"/>
+      <Text textAlign="left" >{user.location}</Text>
+      </Flex>
+      <Flex gap={2} direction={"row"} textAlign="center">
+      <Image src={heartIcon} w="16px" h="16px"/>
+      <Text textAlign="left" >{user.hobbies}</Text>
+      </Flex>
+      </Flex>
+      </Flex>    
+      
+      <Flex mt={23} gap={20} direction={"column"} textAlign="center">
+
+      <Tabs variantariant="unstyled"  align="center">
+        <TabList justifyContent="left" gap={40} flexWrap="wrap">
+          <Tab _selected={{ bg: "blue.300", color: "white" }}>Products</Tab>
+          <Tab _selected={{ bg: "green.300", color: "white" }}>Galleries</Tab>
+          <Tab _selected={{ bg: "orange.300", color: "white" }}>Events</Tab>
+          <Tab _selected={{ bg: "orange.300", color: "white" }}>Articles</Tab>
+        </TabList>
+        <TabPanels>
+        <TabPanel>
+  {/* Grila de produse */}
+  <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="left">
+    {latestProducts && latestProducts.length > 0 ? (
+      latestProducts.map((product) => (
+        <Box    _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+        transition="all 0.2s" cursor="pointer"
+        onClick={() => navigate(`/products/${product._id}`)} key={product._id} w="200px" borderWidth="1px" borderRadius="md" overflow="hidden">
+          <Box h="200px" bg="purple.200">
+            {product.images && product.images[0] && (
+              <Image src={product.images[0]} alt={product.name} w="100%" h="100%" objectFit="cover" />
+            )}
+          </Box>
+          <Box p={4}>
+            <Text fontWeight="bold" mb={1}>{product.name}</Text>
+            <Text fontSize="sm">{product.price ? `${product.price} $` : "Not for sale"}</Text>
+            <Text fontSize="xs" mt={2}>{product.tags?.join(", ")}</Text>
+          </Box>
         </Box>
-      )}
+      ))
+    ) : (
+      <Text>No products found.</Text>
+    )}
+  </Flex>
 
-<Button as={Link} to="/calendar" colorScheme="teal" size="sm">
-    Calendar
-  </Button>
+  {/* Butonul separat sub produse */}
+  <Box mt={6} textAlign="center">
+    <Link to={`/${user.username}/all-products`}>
+      <Text
+        fontWeight="bold"
+        color="blue.500"
+        _hover={{ textDecoration: "underline" }}
+        cursor="pointer"
+      >
+        See all user's products
+      </Text>
+    </Link>
+  </Box>
+</TabPanel>
 
-      {collaboratedGalleries?.length > 0 && (
-        <Box mt={6}>
-          <Heading size="md" mb={2}>🤝 Collaborations</Heading>
-          <Flex gap={4} wrap="wrap">
-            {collaboratedGalleries.map((gallery) => (
-              <Box
-                key={gallery._id}
-                bg="gray.100"
-                p={4}
-                borderRadius="md"
-                cursor="pointer"
-                onClick={() =>
-                  navigate(`/galleries/${user.username}/${gallery.name}`)
-                }
-              >
-                <Flex justify="space-between" align="center">
-                  <Text fontWeight="bold">{gallery.name}</Text>
-                  <Flex gap={2}>
-                    {!gallery.isPublic && (
-                      <Text
-                        fontSize="xs"
-                        color="white"
-                        bg="gray.700"
-                        px={2}
-                        py={1}
-                        borderRadius="md"
-                        fontWeight="bold"
-                      >
-                        🔒 Private
-                      </Text>
-                    )}
-                    <Text
-                      fontSize="xs"
-                      color="blue.800"
-                      bg="blue.100"
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                      fontWeight="bold"
-                    >
-                      👥 Collaborator
-                    </Text>
-                  </Flex>
-                </Flex>
-              </Box>
-            ))}
-          </Flex>
-        </Box>
-      )}
 
-      {activeSection === "interested" && (
-        <EventsSection
-          title="Events Marked Interesting"
-          events={user.eventsMarkedInterested}
-        />
-      )}
+ {/* Logica Galleries */}
+<TabPanel>
+ 
+  <Flex direction="column" align="center" gap={4} maxW="800px" mx="auto">
+    {/* Filtre */}
+    <Flex gap={4}>
+      <Button
+        bg={activeGalleryFilter === "owning" ? "yellow.400" : "yellow.200"}
+        onClick={() => setActiveGalleryFilter("owning")}
+        borderRadius="full"
+      >
+        Owning
+      </Button>
+      <Button
+        bg={activeGalleryFilter === "collaborating" ? "yellow.400" : "yellow.200"}
+        onClick={() => setActiveGalleryFilter("collaborating")}
+        borderRadius="full"
+      >
+        Collaborating
+      </Button>
+      <Button
+        bg={activeGalleryFilter === "favorites" ? "yellow.400" : "yellow.200"}
+        onClick={() => setActiveGalleryFilter("favorites")}
+        borderRadius="full"
+      >
+        Favorites
+      </Button>
+    </Flex>
 
-      {activeSection === "going" && (
-        <EventsSection
-          title="Events Marked Going"
-          events={user.eventsMarkedGoing}
-        />
-      )}
-
-      {activeSection === "created" && (
-        <EventsSection title="Events Created by User" events={user.events} />
+    {/* Galerii */}
+    <Flex direction="column" gap={4} w="100%">
+      {filteredGalleries.length > 0 ? (
+        filteredGalleries.map((gallery) => (
+          <Box    _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+          transition="all 0.2s" cursor="pointer"
+          onClick={() => navigate(`/galleries/${user.username}/${gallery.name}`)} key={gallery._id} borderWidth="1px" borderRadius="md" overflow="hidden">
+            <Box h="150px" bg="purple.200" />
+            <Box p={4}>
+              <Text fontWeight="bold">{gallery.name}</Text>
+              <Text fontSize="sm">Tip</Text>
+              <Text fontSize="xs">Tags</Text>
+            </Box>
+          </Box>
+        ))
+      ) : (
+        <Text>No galleries found.</Text>
       )}
     </Flex>
-    
+
+    {/* Butonul "See all galleries" */}
+    <Box mt={4}>
+      <Link to={`/${user.username}/all-galleries`}>
+        <Text fontWeight="bold" color="blue.500" _hover={{ textDecoration: "underline" }}>
+          See all galleries →
+        </Text>
+      </Link>
+    </Box>
+  </Flex>
+</TabPanel>
+
+<TabPanel>
+              <Flex justifyContent="center" gap={5} mb={5} wrap="wrap">
+                <Button onClick={() => setEventFilter("created")} bg={eventFilter === "created" ? "yellow.400" : "yellow.200"}>Created events</Button>
+                <Button onClick={() => setEventFilter("going")} bg={eventFilter === "going" ? "yellow.400" : "yellow.200"}>Events marked going</Button>
+                <Button onClick={() => setEventFilter("interested")} bg={eventFilter === "interested" ? "yellow.400" : "yellow.200"}>Events marked interested</Button>
+              </Flex>
+              <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="center">
+  {(eventFilter === "created" ? createdEvents : eventFilter === "going" ? goingEvents : interestedEvents)
+    ?.slice(0, 6) // Limitează la 6 evenimente
+    .map((event) => {
+      const { day, month, year } = formatDate(event.date);
+      return (
+        <Link to={`/events/${event._id}`} key={event._id}>
+  <Box
+    w="250px"
+    borderWidth="1px"
+    borderRadius="md"
+    overflow="hidden"
+    _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+    transition="all 0.2s"
+  >
+
+<Box h="150px" overflow="hidden">
+  {event.coverImage ? (
+    <Image 
+      src={event.coverImage} 
+      alt={event.name} 
+      w="100%" 
+      h="100%" 
+      objectFit="cover"
+    />
+  ) : (
+    <Box bg="purple.200" w="100%" h="100%" />
+  )}
+</Box>
+          <Flex p={4} gap={3} align="center">
+            {/* Data pe stânga */}
+            <Flex direction="column" align="center" minW="50px">
+              <Text fontWeight="bold" fontSize="lg">{day}</Text>
+              <Text fontWeight="bold" fontSize="sm">{month}</Text>
+              <Text fontWeight="bold" fontSize="sm">{year}</Text>
+            </Flex>
+
+            {/* Detalii eveniment */}
+            <Box textAlign="left">
+              <Text fontSize="md" fontWeight="bold" isTruncated>{event.name || "Nume eveniment"}</Text>
+              <Text fontSize="sm" isTruncated>{event.location || "TBA"}</Text>
+              <Text fontSize="xs">{event.time || "TBA"}</Text>
+            </Box>
+          </Flex>
+          </Box></Link>
+      );
+    })}
+</Flex>
+
+
+              <Box mt={6} textAlign="center">
+                <Link to={`/${user.username}/all-events`}>
+                  <Text fontWeight="bold" color="blue.500" _hover={{ textDecoration: "underline" }} cursor="pointer">
+                    See all the events
+                  </Text>
+                </Link>
+              </Box>
+            </TabPanel>
+        </TabPanels>
+      </Tabs>
+
+      </Flex>
+      </Flex>
+      </Flex>
+      </Flex>
   );
 };
 

@@ -58,6 +58,26 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    soundcloud: {
+      type: String,
+      default: "",
+    },
+    spotify: {
+      type: String,
+      default: "",
+    },
+    linkedin: {
+      type: String,
+      default: "",
+    },
+    phone: {
+      type: String,
+      default: "",
+    },
+    hobbies: {
+      type: String,
+      default: "",
+    },
     cart: [
       {
         product: {

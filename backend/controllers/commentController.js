@@ -118,7 +118,7 @@ export const getComments = async (req, res) => {
 
     // 1️⃣ Obținem toate comentariile pentru resursa respectivă
     const allComments = await Comment.find({ resourceId, resourceType })
-      .populate("userId", "username profilePicture")
+      .populate("userId", "username firstName lastName profilePicture")
       .populate("replies", "content userId createdAt updatedAt")
       .lean(); // Convertim documentele în obiecte JSON manipulabile
 

@@ -36,6 +36,7 @@ import UserArticlesPage from './pages/UserArticlesPage';
 import ArticlePage from './pages/ArticlePage';
 import CalendarPage from './pages/CalendarPage';
 import UserArticleCalendarPage from './pages/UserArticleCalendarPage';
+import Test from './components/test';
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -93,6 +94,8 @@ function App() {
         <Route path="/calendar" element={<UserArticleCalendarPage />} />
 
         <Route path="/:username/calendar" element={<CalendarPage />} />
+        <Route path="/test" element={<Test />} />
+
 
 
       </Routes>

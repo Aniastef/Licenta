@@ -76,6 +76,13 @@ export const createEvent = async (req, res) => {
     });
 
     await newEvent.save();
+
+    // Adaugă evenimentul la utilizator
+await User.findByIdAndUpdate(
+  req.user._id,
+  { $push: { events: newEvent._id } }
+);
+
     res.status(201).json(newEvent);
   } catch (err) {
     console.error("Error while creating event:", err.message);

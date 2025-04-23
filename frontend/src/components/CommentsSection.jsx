@@ -2,31 +2,37 @@ import {
   Box,
   Button,
   Flex,
-  Stack,
+  HStack,
   Text,
   Textarea,
-  useColorModeValue,
-  HStack,
+  Image,
   Avatar,
+  Collapse,
+  Link as ChakraLink,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useRecoilState } from "recoil";
 import userAtom from "../atoms/userAtom";
 import useShowToast from "../hooks/useShowToast";
-import RectangleShape from "../assets/rectangleShape";
-import { Link } from "react-router-dom";
+import likeIcon from "../assets/like.svg";
+import dislikeIcon from "../assets/dislike.svg";
 
+
+
+// ... importurile tale rămân la fel
 
 export default function CommentsSection({ resourceId, resourceType }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [replyContent, setReplyContent] = useState({});
-  const [user] = useRecoilState(userAtom); // Obține utilizatorul logat
+  const [user] = useRecoilState(userAtom);
   const showToast = useShowToast();
+  const [expandedComments, setExpandedComments] = useState({});
+  const [showReplies, setShowReplies] = useState({});
+  const [activeReplyBox, setActiveReplyBox] = useState(null);
+  const charCount = (text) => text.length;
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch comments
   const fetchComments = async () => {
     setIsLoading(true);
     try {
@@ -45,12 +51,10 @@ export default function CommentsSection({ resourceId, resourceType }) {
       setIsLoading(false);
     }
   };
-  
-  
+
   useEffect(() => {
     if (resourceId && resourceType) fetchComments();
   }, [resourceId, resourceType]);
-  
 
   const handleDislikeAndUndislike = async (commentId) => {
     if (!user) {
@@ -78,19 +82,24 @@ export default function CommentsSection({ resourceId, resourceType }) {
           comment._id === commentId
             ? {
                 ...comment,
-                likes: Array.isArray(comment.likes) ? data.likes : comment.likes,
-                dislikes: Array.isArray(comment.dislikes) ? data.dislikes : comment.dislikes,
+                likes: data.likes,
+                dislikes: data.dislikes,
+
               }
             : comment
         )
       );
   
       showToast("Success", data.message, "success");
+
+      await fetchComments();
+
     } catch (err) {
       console.error("Error in dislike/undislike:", err.message);
       showToast("Error", "Failed to process your request", "error");
     }
   };
+
   const handleLikeAndUnlike = async (commentId) => {
     if (!user) {
       showToast("Error", "You must be logged in to like or unlike a comment", "error");
@@ -125,6 +134,9 @@ export default function CommentsSection({ resourceId, resourceType }) {
       );
   
       showToast("Success", data.message, "success");
+
+      await fetchComments();
+
     } catch (err) {
       console.error("Error in like/unlike:", err.message);
       showToast("Error", "Failed to process your request", "error");
@@ -132,8 +144,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
   };
   
 
-  // Add comment
-  const handleAddComment = async () => {
+   const handleAddComment = async () => {
     if (!newComment.trim() || !user) return;
   
     try {
@@ -162,8 +173,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
       console.error("Error adding comment:", err.message);
     }
   };
-  
-  // Add reply
+
   const handleAddReply = async (parentId) => {
     if (!replyContent[parentId]?.trim() || !user) return;
 
@@ -198,151 +208,123 @@ export default function CommentsSection({ resourceId, resourceType }) {
     }
   };
 
+
+
   useEffect(() => {
     if (resourceId) fetchComments();
   }, [resourceId]);
+  
+  const toggleExpand = (commentId) => { setExpandedComments((prev) => ({ ...prev, [commentId]: !prev[commentId] })); };
+  const toggleReplies = (commentId) => { setShowReplies((prev) => ({ ...prev, [commentId]: !prev[commentId] })); };
 
   return (
-    <Flex direction="column" mt={8}>
-      <RectangleShape
-        bgColor="blue.300" // Culoare galbenă
-        title="Comments"
-        minW="500px"
-        maxW="500px"
-        textAlign="left"
-        zIndex="1" // Apare sub galben
+    <Flex direction="column" ml={100} gap={6}>
+      {/* Header-ul tău cu buline */}
+      <Flex direction="row" align="center" justifyContent="space-between">
+        <Text fontWeight="bold" width="100px" borderBottom="2px solid gray" pb={1}>Comments</Text>
+        <Flex gap={2}>
+          <Box boxSize={6} bg="green.600" borderRadius="full" />
+          <Box boxSize={6} bg="gray.800" borderRadius="full" />
+        </Flex>
+      </Flex>
 
-      />
-      <Flex direction="column" spacing={4}>
-        {isLoading ? (
-          <Text>Loading comments...</Text>
-        ) : error ? (
-          <Text color="red.500">{error}</Text>
-        ) : comments.length > 0 ? (
-          comments.map((comment) => (
-            <Box
-              key={comment._id}
-              p={4}
-              borderWidth={1}
-              borderRadius="md"
-              bg={useColorModeValue("gray.50", "gray.800")}
-            >
-              {/* Profil utilizator */}
-              <Flex align="center" mb={3}>
-                <Link to={`/profile/${comment.userId?.username}`}>
-                  <Avatar src={comment.userId?.profilePicture} size="sm" cursor="pointer" />
-                </Link>
-                <Link to={`/profile/${comment.userId?.username}`}>
-                  <Text ml={2} fontWeight="bold" cursor="pointer">
-                    {comment.userId?.username || "Unknown User"}
-                  </Text>
-                </Link>
-                <Text ml="auto" fontSize="sm" color="gray.500">
-                  {comment.createdAtFormatted || "N/A"}
+      {comments.map((comment) => (
+        <Box maxW="1300px" p={3} borderWidth="1px" borderRadius="md" key={comment._id}>
+          <Flex align="flex-start" gap={3}>
+            {/* Avatar și user info */}
+            <Flex gap={2} direction="column" align="center" justify="center" mr={5}>
+              <Avatar src={comment.userId?.profilePicture} size="lg" />
+              <Text fontSize="sm" color="gray.600">@{comment.userId?.username}</Text>
+            </Flex>
+            {/* Content */}
+            <Box w="100%">
+              <Text fontWeight="bold">{comment.userId?.firstName} {comment.userId?.lastName}</Text>
+              {charCount(comment.content) > 400 ? (
+                <>
+                  <Collapse startingHeight={50} in={expandedComments[comment._id]}>
+                    <Text lineHeight="1.7" whiteSpace="pre-wrap" wordBreak="break-word" overflowWrap="anywhere" mt={1}>
+                      {comment.content}
+                    </Text>
+                  </Collapse>
+                  <ChakraLink fontSize="sm" color="blue.500" onClick={() => toggleExpand(comment._id)}>
+                    {expandedComments[comment._id] ? "see less" : "see more"}
+                  </ChakraLink>
+                </>
+              ) : (
+                <Text lineHeight="1.7" whiteSpace="pre-wrap" wordBreak="break-word" overflowWrap="anywhere" mt={1}>
+                  {comment.content}
                 </Text>
-              </Flex>
+              )}
 
-
-
-              {/* Conținut comentariu */}
-              <Text>{comment.content}</Text>
-
-              {/* Likes și dislikes */}
+              {/* Likes/Dislikes */}
               <HStack mt={2}>
-                <Button
-                  size="sm"
-                  colorScheme="green"
-                  onClick={() => handleLikeAndUnlike(comment._id)}
-                >
-                  👍 {Array.isArray(comment.likes) ? comment.likes.length : 0}
-                </Button>
-                <Button
-                  size="sm"
-                  colorScheme="red"
-                  onClick={() => handleDislikeAndUndislike(comment._id)}
-                >
-                  👎 {Array.isArray(comment.dislikes) ? comment.dislikes.length : 0}
-                </Button>
-              </HStack>
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={() => handleLikeAndUnlike(comment._id)}
+    leftIcon={<Image src={likeIcon} w="16px" h="16px" />}
+  >
+    {comment.likes?.length || 0}
 
-              {/* Răspunsuri */}
-              <Stack mt={4} spacing={3}>
-                {comment.replies?.map((reply) => (
-                  <Box
-                    key={reply._id}
-                    p={3}
-                    borderWidth={1}
-                    borderRadius="md"
-                    bg={useColorModeValue("gray.100", "gray.700")}
-                  >
-                    <Flex align="center" mb={2}>
-                      <Link to={`/profile/${reply.userId?.username}`}>
-                        <Avatar src={reply.userId?.profilePicture} size="xs" cursor="pointer" />
-                      </Link>
-                      <Link to={`/profile/${reply.userId?.username}`}>
-                        <Text ml={2} fontWeight="bold" cursor="pointer">
-                          {reply.userId?.username || "Unknown User"}
+  </Button>
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={() => handleDislikeAndUndislike(comment._id)}
+    leftIcon={<Image src={dislikeIcon} w="16px" h="16px" />}
+  >
+    {Array.isArray(comment.dislikes) ? comment.dislikes.length : 0}
+  </Button>
+</HStack>
+
+
+
+              {/* Replies */}
+              {showReplies[comment._id] && (
+                <Flex direction="column" mt={3} pl={10} gap={3}>
+                  {comment.replies?.map((reply) => (
+                    <Flex key={reply._id} align="flex-start" gap={3}>
+                      <Avatar src={reply.userId?.profilePicture} size="sm" />
+                      <Box>
+                        <Text fontWeight="bold">{reply.userId?.firstName} {reply.userId?.lastName}</Text>
+                        <Text fontSize="sm" color="gray.600">@{reply.userId?.username}</Text>
+                        <Text lineHeight="1.7" whiteSpace="pre-wrap" wordBreak="break-word" overflowWrap="anywhere" mt={1}>
+                          {reply.content}
                         </Text>
-                      </Link>
-                      <Text ml="auto" fontSize="sm" color="gray.500">
-                        {reply.createdAtFormatted || "N/A"}
-                      </Text>
+                      </Box>
                     </Flex>
-
-                    <Text>{reply.content}</Text>
-                  </Box>
-                ))}
-                {user && (
-                  <>
+                  ))}
+                </Flex>
+              )}
+              {/* Reply box */}
+              {user && activeReplyBox === comment._id && (
+                <Collapse in={activeReplyBox === comment._id} animateOpacity>
+                  <Flex direction="column" mt={3} pl={10} gap={2}>
                     <Textarea
                       placeholder="Write a reply..."
                       value={replyContent[comment._id] || ""}
-                      onChange={(e) =>
-                        setReplyContent((prev) => ({
-                          ...prev,
-                          [comment._id]: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setReplyContent((prev) => ({ ...prev, [comment._id]: e.target.value }))}
                       rows={2}
-                    />
-                    <Button
                       size="sm"
-                      mt={2}
-                      colorScheme="blue"
-                      onClick={() => handleAddReply(comment._id)}
-                      isDisabled={!replyContent[comment._id]?.trim()}
-                    >
-                      Reply
+                    />
+                    <Button size="xs" onClick={() => { handleAddReply(comment._id); setActiveReplyBox(null); }}>
+                      Send
                     </Button>
-                  </>
-                )}
-              </Stack>
+                  </Flex>
+                </Collapse>
+              )}
             </Box>
-          ))
-        ) : (
-          <Text color="gray.500">No comments yet.</Text>
-        )}
-      </Flex>
-
-      {user ? (
+          </Flex>
+        </Box>
+      ))}
+      {/* Add comment */}
+      {user && (
         <Box mt={4}>
-          <Textarea
-            placeholder="Add a comment..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            rows={3}
-          />
-          <Button
-            mt={2}
-            colorScheme="purple"
-            onClick={handleAddComment}
-            isDisabled={!newComment.trim()}
-          >
+          <Textarea placeholder="Add a comment..." value={newComment} onChange={(e) => setNewComment(e.target.value)} rows={3} />
+          <Button mt={2} colorScheme="gray" onClick={handleAddComment} isDisabled={!newComment.trim()}>
             Add Comment
           </Button>
         </Box>
-      ) : (
-        <Text color="gray.500">You must be logged in to add a comment.</Text>
       )}
     </Flex>
   );

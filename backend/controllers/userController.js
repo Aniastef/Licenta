@@ -26,8 +26,7 @@ export const getUserProfile = async (req, res) => {
 		owner: { $ne: user._id },
 	  }).select("name isPublic owner collaborators pendingCollaborators");
   
-	  // Dacă profilul este al userului logat — returnează toate galeriile (și private)
-	  // Dacă e alt profil, returnează doar cele publice sau unde logatul e colaborator/owner
+	  // Vizibilitatea galeriilor
 	  const visibleGalleries = [...ownedGalleries, ...collaboratedGalleries].filter((gallery) => {
 		if (gallery.isPublic) return true;
 		if (!currentUserId) return false;
@@ -41,30 +40,42 @@ export const getUserProfile = async (req, res) => {
   
 	  user.galleries = visibleGalleries;
   
+	  // Populare pentru events
 	  await user.populate([
 		{
 		  path: "eventsMarkedInterested",
-		  select: "name date location coverImage",
+		  select: "name date time location coverImage",
 		  populate: { path: "user", select: "firstName lastName" },
 		},
 		{
 		  path: "eventsMarkedGoing",
-		  select: "name date location coverImage",
+		  select: "name date time location coverImage",
 		  populate: { path: "user", select: "firstName lastName" },
 		},
 		{
 		  path: "events",
-		  select: "name date location coverImage",
+		  select: "name date time location coverImage",
 		  populate: { path: "user", select: "firstName lastName" },
 		},
 	  ]);
   
-	  return res.status(200).json(user);
+
+	  // ⚠️ QUERY SEPARAT PENTRU PRODUSE (NU populate pe `products[]`)
+	  const products = await Product.find({ user: user._id })
+		.select("name price images tags createdAt")
+		.sort({ createdAt: -1 }); // Cele mai noi
+  
+	  // Atașez produsele separat
+	  const userObject = user.toObject(); // Convertesc din Mongoose Document în obiect simplu
+	  userObject.products = products;
+  
+	  return res.status(200).json(userObject);
 	} catch (err) {
 	  console.error("Error in getUserProfile:", err.message);
 	  res.status(500).json({ error: err.message });
 	}
   };
+  
   
   
   
@@ -214,20 +225,26 @@ export const updateUser = async (req, res) => {
 	  instagram,
 	  facebook,
 	  webpage,
+	  soundcloud,
+	  spotify,
+	  linkedin,
+	  phone,
+	  hobbies,
+	  message,
+	  heart,
 	} = req.body;
   
-	const userId = req.user._id; // Utilizatorul care face cererea
+	const userId = req.user._id;
   
 	try {
 	  let user = await User.findById(userId);
 	  if (!user) return res.status(404).json({ error: "User not found" });
   
-	  // ✅ Utilizatorii nu pot modifica alți useri
 	  if (req.params.id !== userId.toString()) {
 		return res.status(403).json({ error: "You cannot update another user's profile" });
 	  }
   
-	  // ✅ Actualizare doar a propriilor informații
+	  // Actualizare câmpuri generale
 	  user.firstName = firstName || user.firstName;
 	  user.lastName = lastName || user.lastName;
 	  user.email = email || user.email;
@@ -237,11 +254,20 @@ export const updateUser = async (req, res) => {
 	  user.location = location || user.location;
 	  user.profession = profession || user.profession;
 	  user.age = age || user.age;
-	  user.facebook = facebook || user.facebook;
-	  user.instagram = instagram || user.instagram;
-	  user.webpage = webpage || user.webpage;
   
-	  // ✅ Utilizatorii își pot schimba parola doar dacă furnizează `oldPassword`
+	  // Actualizare rețele și info personale
+	  user.instagram = instagram || user.instagram;
+	  user.facebook = facebook || user.facebook;
+	  user.webpage = webpage || user.webpage;
+	  user.soundcloud = soundcloud || user.soundcloud;
+	  user.spotify = spotify || user.spotify;
+	  user.linkedin = linkedin || user.linkedin;
+	  user.phone = phone || user.phone;
+	  user.hobbies = hobbies || user.hobbies;
+	  user.message = message || user.message;
+	  user.heart = heart || user.heart;
+  
+	  // Parolă
 	  if (password) {
 		if (!oldPassword) {
 		  return res.status(400).json({ error: "Old password required" });
@@ -260,6 +286,7 @@ export const updateUser = async (req, res) => {
 	  console.log("Error in updateUser:", err.message);
 	}
   };
+  
   
   
 export const getUserWithGalleries = async (req, res) => {

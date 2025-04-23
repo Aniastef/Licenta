@@ -5,16 +5,12 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Heading,
   Input,
-  Stack,
-  useColorModeValue,
   Avatar,
-  Image,
-  Center,
   Box,
+  Text,
 } from '@chakra-ui/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import usePreviewImg from '../hooks/usePreviewImg';
 import useShowToast from '../hooks/useShowToast';
@@ -22,45 +18,62 @@ import { useNavigate } from 'react-router-dom';
 import userAtom from '../atoms/userAtom';
 import RectangleShape from '../assets/rectangleShape'
 
-
 export default function UpdateProfilePage() {
   const [user, setUser] = useRecoilState(userAtom);
   const showToast = useShowToast();
-  const [inputs, setInputs] = useState({
-    firstName: user.firstName || '',
-    lastName: user.lastName || '',
-    username: user.username || '',
-    email: user.email || '',
-    bio: user.bio || '',
+  const navigate = useNavigate();
+  const fileRef = useRef(null);
+  const BIO_LIMIT = 440; // poți ajusta dacă vrei
+
+  const [inputs, setInputs] = useState(() => ({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    username: user?.username || '',
+    email: user?.email || '',
+    bio: user?.bio || '',
     oldPassword: '',
     password: '',
-    location: '',
-    profession: '',
-    age: '',
-  });
-  const [coverPhoto, setCoverPhoto] = useState(user.coverPhoto || '');
+    location: user?.location || '',
+    profession: user?.profession || '',
+    age: user?.age || '',
+    instagram: user?.instagram || '',
+    facebook: user?.facebook || '',
+    webpage: user?.webpage || ''
+  }));
+
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-
-  const fileRef = useRef(null);
-  const coverPhotoRef = useRef(null);
-  const navigate = useNavigate();
-
-  const handleCancel = () => {
-    navigate(`/${user.username}`);
-  };
-
   const { handleImageChange, imgUrl } = usePreviewImg();
 
-  const handleCoverPhotoChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverPhoto(reader.result);
-      };
-      reader.readAsDataURL(file);
+  // 🧠 Sync inputs when user updates (e.g. after fetch('/me'))
+  useEffect(() => {
+    if (user) {
+      setInputs({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        username: user.username || '',
+        email: user.email || '',
+        bio: user.bio || '',
+        oldPassword: '',
+        password: '',
+        location: user.location || '',
+        profession: user.profession || '',
+        age: user.age || '',
+        instagram: user.instagram || '',
+        facebook: user.facebook || '',
+        webpage: user.webpage || '',
+        soundcloud: user?.soundcloud || '',
+        spotify: user?.spotify || '',
+        linkedin: user?.linkedin || '',
+        phone: user?.phone || '',
+        hobbies: user?.hobbies || '',
+
+      });
     }
+  }, [user]);
+
+  const handleCancel = () => {
+    navigate(`/${user?.username}`);
   };
 
   const handleSubmit = async (e) => {
@@ -80,221 +93,252 @@ export default function UpdateProfilePage() {
     try {
       const res = await fetch(`/api/users/update/${user._id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // 🔐 Adaugă asta dacă backend-ul se bazează pe cookie-uri
-        body: JSON.stringify({ ...inputs, profilePicture: imgUrl}),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ...inputs, profilePicture: imgUrl }),
       });
       const data = await res.json();
 
       if (data.error) {
-        showToast('Error', data.error.message, 'error');
+        showToast('Error', data.error.message || data.error, 'error');
         return;
       }
 
-      showToast('Success', 'Profile updated successfully', 'success');
-      setUser(data);
-      localStorage.setItem('licenta', JSON.stringify(data));
-      navigate(`/${user.username}`);
+      showToast('Success', data.message || 'Profile updated', 'success');
+
+      // 🔁 Refetch user
+      const meRes = await fetch("/api/users/me", { credentials: "include" });
+      const updatedUser = await meRes.json();
+
+      if (!updatedUser || updatedUser.error) {
+        showToast('Error', 'Failed to fetch updated user data', 'error');
+        return;
+      }
+
+      setUser(updatedUser);
+      localStorage.setItem("licenta", JSON.stringify(updatedUser));
+
+      setInputs({
+        firstName: updatedUser.firstName || '',
+        lastName: updatedUser.lastName || '',
+        username: updatedUser.username || '',
+        email: updatedUser.email || '',
+        bio: updatedUser.bio || '',
+        oldPassword: '',
+        password: '',
+        location: updatedUser.location || '',
+        profession: updatedUser.profession || '',
+        age: updatedUser.age || '',
+        instagram: updatedUser.instagram || '',
+        facebook: updatedUser.facebook || '',
+        webpage: updatedUser.webpage || ''
+      });
+      if (inputs.bio.length > BIO_LIMIT) {
+        showToast('Error', `Biography must be at most ${BIO_LIMIT} characters`, 'error');
+        return;
+      }
+      
+
+      navigate(`/${updatedUser.username}`);
     } catch (error) {
       showToast('Error', error.message, 'error');
     }
   };
+
   return (
     <Box p={4}>
       <RectangleShape
-      bgColor="#62cbe0" // Culoare albastră
-      title="Update your profile"
-      maxW="600px"
-      minW="600px"
-      position="relative" // Poziție relativă pentru a fi deasupra portocaliului
-      textAlign="left"
-      py={4}
-      left="-2"
-    />
-    <Flex gap={5} direction="column">
-    {/* Dreptunghi albastru */}
+        bgColor="#62cbe0"
+        title="Update your profile"
+        maxW="600px"
+        minW="600px"
+        position="relative"
+        textAlign="left"
+        py={4}
+        left="-2"
+      />
+      <Flex gap={5} direction="column">
+        <Flex ml={20} gap={20} direction="row">
+          <Flex gap={4} direction="column">
+            <Avatar src={user?.profilePicture || ""} size="2xl" />
+            <Button onClick={() => fileRef.current.click()}>Change avatar</Button>
+            <Input type="file" hidden ref={fileRef} onChange={handleImageChange} />
 
-    <Flex ml={20} gap={20} direction="row">
-      <Flex gap={4} direction="column">
-        <Avatar src={user?.profilePicture || ""}
-            size="2xl"
-            borderWidth={4}
-            borderColor="white"
-            borderRadius={"10"}
-        />
-        <Button w="120px"
-                bg="purple.200"
-                _hover={{ bg: '#6f00ff' }}
-                onClick={() => fileRef.current.click()} 
-                 >Change avatar</Button>
-          <Input type="file" hidden ref={fileRef} onChange={handleImageChange} />
-          <FormControl>
-            <FormLabel>Facebook</FormLabel>
-            <Input
-              placeholder="Add your Facebook profile"
-              value={inputs.facebook}
-              onChange={(e) => setInputs({ ...inputs, facebook: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-              type="url"
-            />
-          </FormControl>
+            {/* Example input */}
+            <FormControl>
+              <FormLabel>First Name</FormLabel>
+              <Input
+                value={inputs.firstName}
+                onChange={(e) => setInputs({ ...inputs, firstName: e.target.value })}
+              />
+            </FormControl>
 
-          <FormControl>
-            <FormLabel>Instagram</FormLabel>
-            <Input
-              placeholder="Add your Instagram profile"
-              value={inputs.instagram}
-              onChange={(e) => setInputs({ ...inputs, instagram: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-              type="url"
-            />
-          </FormControl>
+            <FormControl>
+              <FormLabel>Last Name</FormLabel>
+              <Input
+                value={inputs.lastName}
+                onChange={(e) => setInputs({ ...inputs, lastName: e.target.value })}
+              />
+            </FormControl>
 
-          <FormControl>
-            <FormLabel>Webpage</FormLabel>
-            <Input
-              placeholder="Add your personal webpage"
-              value={inputs.webpage}
-              onChange={(e) => setInputs({ ...inputs, webpage: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-              type="url"
-            />
-          </FormControl>
-        <Flex direction="row">
-    
+            <FormControl>
+              <FormLabel>Email</FormLabel>
+              <Input
+                type="email"
+                value={inputs.email}
+                onChange={(e) => setInputs({ ...inputs, email: e.target.value })}
+              />
+            </FormControl>
+            <FormControl>
+  <FormLabel>Username</FormLabel>
+  <Input
+    value={inputs.username}
+    onChange={(e) => setInputs({ ...inputs, username: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Biography</FormLabel>
+  <Input
+    value={inputs.bio}
+    maxLength={BIO_LIMIT}
+    onChange={(e) => setInputs({ ...inputs, bio: e.target.value })}
+  />
+  <Text fontSize="xs" textAlign="right" color={inputs.bio.length >= BIO_LIMIT ? 'red.500' : 'gray.500'}>
+    {inputs.bio.length}/{BIO_LIMIT}
+  </Text>
+</FormControl>
+
+<FormControl>
+  <FormLabel>Location</FormLabel>
+  <Input
+    value={inputs.location}
+    onChange={(e) => setInputs({ ...inputs, location: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Profession</FormLabel>
+  <Input
+    value={inputs.profession}
+    onChange={(e) => setInputs({ ...inputs, profession: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Age</FormLabel>
+  <Input
+    type="number"
+    value={inputs.age}
+    onChange={(e) => setInputs({ ...inputs, age: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Facebook</FormLabel>
+  <Input
+    type="url"
+    value={inputs.facebook}
+    onChange={(e) => setInputs({ ...inputs, facebook: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Instagram</FormLabel>
+  <Input
+    type="url"
+    value={inputs.instagram}
+    onChange={(e) => setInputs({ ...inputs, instagram: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Webpage</FormLabel>
+  <Input
+    type="url"
+    value={inputs.webpage}
+    onChange={(e) => setInputs({ ...inputs, webpage: e.target.value })}
+  />
+</FormControl>
+<FormControl>
+  <FormLabel>SoundCloud</FormLabel>
+  <Input
+    type="url"
+    value={inputs.soundcloud || ''}
+    onChange={(e) => setInputs({ ...inputs, soundcloud: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Spotify</FormLabel>
+  <Input
+    type="url"
+    value={inputs.spotify || ''}
+    onChange={(e) => setInputs({ ...inputs, spotify: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>LinkedIn</FormLabel>
+  <Input
+    type="url"
+    value={inputs.linkedin || ''}
+    onChange={(e) => setInputs({ ...inputs, linkedin: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Phone</FormLabel>
+  <Input
+    type="tel"
+    value={inputs.phone || ''}
+    onChange={(e) => setInputs({ ...inputs, phone: e.target.value })}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Hobbies</FormLabel>
+  <Input
+    value={inputs.hobbies || ''}
+    onChange={(e) => setInputs({ ...inputs, hobbies: e.target.value })}
+  />
+</FormControl>
+
+
+<FormControl>
+  <FormLabel>Old Password</FormLabel>
+  <Input
+    type={showOldPassword ? "text" : "password"}
+    value={inputs.oldPassword}
+    onChange={(e) => setInputs({ ...inputs, oldPassword: e.target.value })}
+  />
+  <Button mt={2} size="sm" onClick={() => setShowOldPassword(!showOldPassword)}>
+    {showOldPassword ? 'Hide' : 'Show'} Password
+  </Button>
+</FormControl>
+
+<FormControl>
+  <FormLabel>New Password</FormLabel>
+  <Input
+    type={showNewPassword ? "text" : "password"}
+    value={inputs.password}
+    onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
+  />
+  <Button mt={2} size="sm" onClick={() => setShowNewPassword(!showNewPassword)}>
+    {showNewPassword ? 'Hide' : 'Show'} Password
+  </Button>
+</FormControl>
+
+
+            {/* Adaugă și celelalte câmpuri după același model... */}
+          </Flex>
         </Flex>
-        </Flex>
 
-        
-        <Flex direction="column">
-        <FormControl>
-            <FormLabel>First Name</FormLabel>
-            <Input
-              placeholder={user.firstName}
-              value={inputs.firstName}
-              onChange={(e) => setInputs({ ...inputs, firstName: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-              type="text"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Last Name</FormLabel>
-            <Input
-              placeholder={user.lastName}
-              value={inputs.lastName}
-              onChange={(e) => setInputs({ ...inputs, lastName: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-              type="text"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Email Address</FormLabel>
-            <Input
-              placeholder={user.email}
-              value={inputs.email}
-              onChange={(e) => setInputs({ ...inputs, email: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-              type="email"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Old Password</FormLabel>
-            <Input
-              placeholder="Enter your old password"
-              value={inputs.oldPassword}
-              onChange={(e) => setInputs({ ...inputs, oldPassword: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-              type={showOldPassword ? 'text' : 'password'}
-            />
-            <Button mt={2} size="sm" onClick={() => setShowOldPassword(!showOldPassword)}>
-              {showOldPassword ? 'Hide' : 'Show'} Password
-            </Button>
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>New Password</FormLabel>
-            <Input
-              placeholder="Enter a new password"
-              value={inputs.password}
-              onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-              type={showNewPassword ? 'text' : 'password'}
-            />
-            <Button mt={2} size="sm" onClick={() => setShowNewPassword(!showNewPassword)}>
-              {showNewPassword ? 'Hide' : 'Show'} Password
-            </Button>
-          </FormControl>
-          <FormControl>
-            <FormLabel>Location</FormLabel>
-            <Input
-              placeholder="Write your biography"
-              value={inputs.location}
-              onChange={(e) => setInputs({ ...inputs, location: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Age</FormLabel>
-            <Input
-              placeholder="Write your biography"
-              value={inputs.age}
-              onChange={(e) => setInputs({ ...inputs, age: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Profession</FormLabel>
-            <Input
-              placeholder="Write your biography"
-              value={inputs.profession}
-              onChange={(e) => setInputs({ ...inputs, profession: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-            />
-          </FormControl>
-        </Flex>
-
-        </Flex>
-        <FormControl>
-            <FormLabel>Biography</FormLabel>
-            <Input
-              placeholder="Write your biography"
-              value={inputs.bio}
-              onChange={(e) => setInputs({ ...inputs, bio: e.target.value })}
-              _placeholder={{ color: 'gray.500' }}
-            />
-          </FormControl>
-          <Button
-              bg={'red.400'}
-              color={'white'}
-              w="full"
-              _hover={{
-                bg: 'red.500',
-              }}
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-            <Button
-              bg={'purple.500'}
-              color={'white'}
-              w="full"
-              _hover={{
-                bg: 'purple.600',
-              }}
-              type="submit"
-              onClick={handleSubmit} // Adaugă funcția handleSubmit aici
-
-            >
-              Submit
-            </Button>
+        <Button onClick={handleCancel}>Cancel</Button>
+        <Button colorScheme="purple" onClick={handleSubmit}>
+          Submit
+        </Button>
       </Flex>
-      </Box>
-
-  )
+    </Box>
+  );
 }
-
