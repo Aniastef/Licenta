@@ -98,9 +98,9 @@ const UserHeader = ({ user }) => {
   };
 
   const contactItems = [
-    { icon: messageIcon, label: "Message me" },
-    { icon: phoneIcon, label: user.phone || "Phone number" },
-    { icon: emailIcon, label: user.email || "Email" },
+    { icon: messageIcon, label: "Message me", alwaysVisible: true },
+    { icon: phoneIcon, label: user.phone },
+    { icon: emailIcon, label: user.email },
     { icon: facebookIcon, label: user.facebook },
     { icon: instagramIcon, label: user.instagram },
     { icon: linkedinIcon, label: user.linkedin },
@@ -108,13 +108,19 @@ const UserHeader = ({ user }) => {
     { icon: spotifyIcon, label: user.spotify },
     { icon: soundcloudIcon, label: user.soundcloud },
   ];
+  
 
-  const aboutMeItems = [
-    { icon: ageIcon, label: user.age ? `${user.age}` : "age" },
-    { icon: locationIcon, label: user.location || "location" },
-    { icon: professionIcon, label: user.profession || "profession" },
-    { icon: heartIcon, label: user.hobbies || "hobbies" },
+  const aboutMeItemsLeft = [
+    { icon: ageIcon, label: user.age && `${user.age}` },
+    { icon: professionIcon, label: user.profession },
   ];
+  
+  const aboutMeItemsRight = [
+    { icon: locationIcon, label: user.location },
+    { icon: heartIcon, label: user.hobbies },
+  ];
+  
+  
 
   return (
     <Flex direction="column" px={6} py={12} maxW="1300px" mx="auto" >
@@ -231,14 +237,30 @@ const UserHeader = ({ user }) => {
 
       <Flex   ml={20} direction="column" align="start" gap={3} >
       <Text fontWeight="bold" fontSize="2xl">@{user.username}</Text>
-            {contactItems.map((item, idx) => (
-              item.label && (
-                <Flex key={idx} align="center" gap={3}>
-                  <Image src={item.icon} w="18px" h="18px" />
-                  <Text fontSize="sm">{item.label}</Text>
-                </Flex>
-              )
-            ))}
+      {contactItems.map((item, idx) => {
+  // Dacă e "Message me", arată mereu butonul
+  if (item.label === "Message me") {
+    return (
+      <Flex key={idx} align="center" gap={3}>
+        <Image src={item.icon} w="18px" h="18px" />
+        <Link to={`/messages/${user._id}`}>
+          <Text fontSize="sm" color="blue.500" _hover={{ textDecoration: "underline" }}>
+            {item.label}
+          </Text>
+        </Link>
+      </Flex>
+    );
+  }
+
+  // Pentru celelalte, arată doar dacă user-ul a completat acel câmp
+  return item.label && item.label !== "Phone number" && item.label !== "Email" ? (
+    <Flex key={idx} align="center" gap={3}>
+      <Image src={item.icon} w="18px" h="18px" />
+      <Text fontSize="sm">{item.label}</Text>
+    </Flex>
+  ) : null;
+})}
+
         </Flex>
 
       {/* About Me */}
@@ -246,31 +268,32 @@ const UserHeader = ({ user }) => {
 
       <Text textAlign="left" fontWeight="bold" fontSize="lg" mb={2}>About me</Text>
 
-       {/* icons and details  */}
-      <Flex ml={2} gap={200} direction={"row"} textAlign="center"> 
-      {/* age and profession */}
-      <Flex gap={2} direction={"column"} textAlign="center">
-      <Flex gap={2} direction={"row"} textAlign="center">
-      <Image src={ageIcon} w="16px" h="16px"/>
-      <Text textAlign="left" >{user.age}</Text>
-      </Flex>
-      <Flex gap={2} direction={"row"} textAlign="center">
-      <Image src={professionIcon} w="16px" h="16px"/>
-      <Text  textAlign="left" >{user.profession}</Text>
-      </Flex>
-      </Flex>
-       {/* location and hobbies */}
-      <Flex  gap={2} direction={"column"} textAlign="center">
-      <Flex gap={2} direction={"row"} textAlign="center">
-      <Image src={locationIcon} w="16px" h="16px"/>
-      <Text textAlign="left" >{user.location}</Text>
-      </Flex>
-      <Flex gap={2} direction={"row"} textAlign="center">
-      <Image src={heartIcon} w="16px" h="16px"/>
-      <Text textAlign="left" >{user.hobbies}</Text>
-      </Flex>
-      </Flex>
-      </Flex>    
+      <Flex ml={2} gap={200} direction={"row"} textAlign="center">
+  {/* Coloană stânga: age și profession */}
+  <Flex gap={2} direction={"column"} textAlign="center">
+    {aboutMeItemsLeft.map((item, idx) =>
+      item.label ? (
+        <Flex key={idx} gap={2} direction={"row"} textAlign="center">
+          <Image src={item.icon} w="16px" h="16px" />
+          <Text textAlign="left">{item.label}</Text>
+        </Flex>
+      ) : null
+    )}
+  </Flex>
+
+  {/* Coloană dreapta: location și hobbies */}
+  <Flex gap={2} direction={"column"} textAlign="center">
+    {aboutMeItemsRight.map((item, idx) =>
+      item.label ? (
+        <Flex key={idx} gap={2} direction={"row"} textAlign="center">
+          <Image src={item.icon} w="16px" h="16px" />
+          <Text textAlign="left">{item.label}</Text>
+        </Flex>
+      ) : null
+    )}
+  </Flex>
+</Flex>
+   
       
       <Flex mt={23} gap={20} direction={"column"} textAlign="center">
 
@@ -354,23 +377,52 @@ const UserHeader = ({ user }) => {
 
     {/* Galerii */}
     <Flex direction="column" gap={4} w="100%">
-      {filteredGalleries.length > 0 ? (
-        filteredGalleries.map((gallery) => (
-          <Box    _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-          transition="all 0.2s" cursor="pointer"
-          onClick={() => navigate(`/galleries/${user.username}/${gallery.name}`)} key={gallery._id} borderWidth="1px" borderRadius="md" overflow="hidden">
-            <Box h="150px" bg="purple.200" />
-            <Box p={4}>
-              <Text fontWeight="bold">{gallery.name}</Text>
-              <Text fontSize="sm">Tip</Text>
-              <Text fontSize="xs">Tags</Text>
-            </Box>
-          </Box>
-        ))
-      ) : (
-        <Text>No galleries found.</Text>
-      )}
-    </Flex>
+  {filteredGalleries.length > 0 ? (
+    filteredGalleries.map((gallery) => (
+      <Box
+        key={gallery._id}
+        borderWidth="1px"
+        borderRadius="md"
+        overflow="hidden"
+        _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+        transition="all 0.2s"
+        cursor="pointer"
+        onClick={() => navigate(`/galleries/${user.username}/${gallery.name}`)}
+      >
+        {/* Cover Photo */}
+        <Box h="150px" overflow="hidden">
+          {gallery.coverPhoto ? (
+            <Image
+              src={gallery.coverPhoto}
+              alt={gallery.name}
+              w="100%"
+              h="100%"
+              objectFit="cover"
+            />
+          ) : (
+            <Box bg="purple.200" w="100%" h="100%" />
+          )}
+        </Box>
+
+        {/* Gallery details */}
+        <Box p={4}>
+          <Text fontWeight="bold" fontSize="md" mb={1}>
+            {gallery.name}
+          </Text>
+          <Text fontSize="sm" color="gray.600" mb={1}>
+            {gallery.type || "No type specified"}
+          </Text>
+          <Text fontSize="xs" color="gray.500">
+            {gallery.tags?.length > 0 ? gallery.tags.join(", ") : "No tags"}
+          </Text>
+        </Box>
+      </Box>
+    ))
+  ) : (
+    <Text>No galleries found.</Text>
+  )}
+</Flex>
+
 
     {/* Butonul "See all galleries" */}
     <Box mt={4}>

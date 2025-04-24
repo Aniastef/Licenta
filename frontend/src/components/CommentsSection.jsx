@@ -264,8 +264,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
     onClick={() => handleLikeAndUnlike(comment._id)}
     leftIcon={<Image src={likeIcon} w="16px" h="16px" />}
   >
-    {comment.likes?.length || 0}
-
+    {Array.isArray(comment.likes) ? comment.likes.length : 0}
   </Button>
   <Button
     size="sm"
@@ -275,7 +274,32 @@ export default function CommentsSection({ resourceId, resourceType }) {
   >
     {Array.isArray(comment.dislikes) ? comment.dislikes.length : 0}
   </Button>
+
+  {/* 🔥 Aici adaugi butonul de Reply */}
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={() =>
+      activeReplyBox === comment._id
+        ? setActiveReplyBox(null)
+        : setActiveReplyBox(comment._id)
+    }
+  >
+    Reply
+  </Button>
+
+  {/* 🔥 Aici adaugi butonul de Show/Hide Replies */}
+  {comment.replies?.length > 0 && (
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={() => toggleReplies(comment._id)}
+    >
+      {showReplies[comment._id] ? "Hide replies" : `Show replies (${comment.replies.length})`}
+    </Button>
+  )}
 </HStack>
+
 
 
 

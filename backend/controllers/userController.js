@@ -16,15 +16,16 @@ export const getUserProfile = async (req, res) => {
   
 	  const isSelfProfile = currentUserId && user._id.toString() === currentUserId;
   
-	  // 1. Galeriile create de acest user
-	  const ownedGalleries = await Gallery.find({ owner: user._id })
-		.select("name isPublic owner collaborators pendingCollaborators");
-  
-	  // 2. Galeriile unde acest user e colaborator (deținute de alții)
-	  const collaboratedGalleries = await Gallery.find({
-		collaborators: user._id,
-		owner: { $ne: user._id },
-	  }).select("name isPublic owner collaborators pendingCollaborators");
+	 // 1. Galeriile create de acest user
+const ownedGalleries = await Gallery.find({ owner: user._id })
+.select("name isPublic owner collaborators pendingCollaborators coverPhoto type tags");
+
+// 2. Galeriile unde acest user e colaborator (deținute de alții)
+const collaboratedGalleries = await Gallery.find({
+collaborators: user._id,
+owner: { $ne: user._id },
+}).select("name isPublic owner collaborators pendingCollaborators coverPhoto type tags");
+
   
 	  // Vizibilitatea galeriilor
 	  const visibleGalleries = [...ownedGalleries, ...collaboratedGalleries].filter((gallery) => {
