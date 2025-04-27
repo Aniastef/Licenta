@@ -10,7 +10,8 @@ import {
   HStack,
   Avatar,
   Spinner,
-  useToast
+  useToast,
+  Spacer
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -33,19 +34,31 @@ const MessagesPage = () => {
   const [isBlocked, setIsBlocked] = useState(false);
 
 
-  const currentUserId = localStorage.getItem("userId");
+  const currentUserId = currentUser?._id;
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+
   const toast = useToast();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      setTimeout(() => { // 🔥 Așteaptă puțin
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }, 100); // 100ms e de obicei suficient
+    }
   };
+  
+  
+  
 
   
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!loading) {
+      scrollToBottom();
+    }
+  }, [messages, loading]);
+  
 
   useEffect(() => {
     fetchConversations();
@@ -226,10 +239,15 @@ const MessagesPage = () => {
       }
   
       if (response.ok) {
-        setMessages([...messages, data.data]);
+        const completeMessage = {
+          ...data.data,
+          sender: currentUser, // 🔥 Populatează manual sender-ul cu currentUser
+        };
+        setMessages([...messages, completeMessage]); // 🔥 Adaugă-l direct cu date complete
         setNewMessage("");
         fetchConversations();
       }
+      
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -257,226 +275,257 @@ const MessagesPage = () => {
   return (
     <Flex height="100vh">
       {/* Sidebar */}
-      <Box width="30%" p={4} borderRight="1px solid #ddd">
-        <Heading size="md">Chats</Heading>
-        <Flex mt={3} align="center">
-          <Input
-            placeholder="Search users..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            flex="1"
-          />
-          <Button ml={2} onClick={handleSearch} bg="transparent" _hover={{ bg: "gray.200" }}>
-            <img src={searchIcon} alt="Search" width="20px" height="20px" />
-          </Button>
-        </Flex>
+      <Box  width="25%" p={4} borderRight="1px solid #ddd">
+      <Heading size="md" mb={3}>Chats</Heading>
 
-        {searchResults.length > 0 && (
-          <VStack mt={2} align="start" spacing={1} bg="gray.100" p={2} borderRadius="md">
-            {searchResults.map((user) => (
-              <HStack
-                key={user._id}
-                p={2}
-                borderRadius="md"
-                width="100%"
-                _hover={{ backgroundColor: "gray.200" }}
-                onClick={() => handleSelectUser(user)}
-                cursor="pointer"
-              >
-                <Avatar size="sm" name={user.firstName} />
-                <Text>{user.firstName} {user.lastName}</Text>
-              </HStack>
-            ))}
-          </VStack>
-        )}
+<Flex mb={3} align="center">
+  <Input
+    placeholder="Search users..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+    flex="1"
+    borderRadius="full"
+  />
+  <Button ml={2} onClick={handleSearch} bg="transparent" _hover={{ bg: "gray.200" }}>
+    <img src={searchIcon} alt="Search" width="20px" height="20px" />
+  </Button>
+</Flex>
 
-        <VStack mt={4} align="start" spacing={2}>
-          {conversations.map((conv) => (
-            <HStack
-              key={conv.user._id}
-              p={3}
-              borderRadius="md"
-              width="100%"
-              _hover={{ backgroundColor: "gray.100" }}
-              onClick={() => handleSelectUser(conv.user)}
-              cursor="pointer"
-              justify="space-between"
-            >
-              <HStack>
-                <Avatar
-                  size="sm"
-                  name={conv.user.firstName}
-                  src={conv.user.profilePicture || "https://i.pravatar.cc/150"}
-                />
-                <Text>{conv.user.firstName} {conv.user.lastName}</Text>
-              </HStack>
-              {conv.isUnread && (
-                <Box w="10px" h="10px" borderRadius="full" bg="red.400" />
-              )}
-            </HStack>
-          ))}
-        </VStack>
+{searchResults.length > 0 ? (
+  <VStack mt={2} align="start" spacing={1} bg="gray.100" p={2} borderRadius="md">
+    {searchResults.map((user) => (
+      <HStack
+        key={user._id}
+        p={2}
+        borderRadius="md"
+        width="100%"
+        _hover={{ backgroundColor: "gray.200" }}
+        onClick={() => handleSelectUser(user)}
+        cursor="pointer"
+      >
+        <Avatar size="sm" name={user.firstName} />
+        <Text>{user.firstName} {user.lastName}</Text>
+      </HStack>
+    ))}
+  </VStack>
+) : (
+<Box mt={4} maxHeight="calc(100vh - 180px)" overflowY="auto">
+<VStack align="start" spacing={2}>
+      {conversations.map((conv) => (
+        <HStack
+          key={conv.user._id}
+          p={3}
+          borderRadius="md"
+          width="100%"
+          _hover={{ backgroundColor: "gray.100" }}
+          onClick={() => handleSelectUser(conv.user)}
+          cursor="pointer"
+          justify="space-between"
+          align="flex-start"
+        >
+          <HStack align="flex-start">
+            <Avatar
+              size="sm"
+              name={conv.user.firstName}
+              src={conv.user.profilePicture || "https://i.pravatar.cc/150"}
+            />
+            <Box>
+              <Text fontWeight="bold">
+                {conv.user.firstName} {conv.user.lastName}
+              </Text>
+              <Text fontSize="sm" color="gray.500" noOfLines={1} maxW="150px">
+                {conv.lastMessage?.content || "No messages yet."}
+              </Text>
+            </Box>
+          </HStack>
+          {conv.isUnread && (
+            <Box w="10px" h="10px" borderRadius="full" bg="red.400" mt={1} />
+          )}
+        </HStack>
+      ))}
+    </VStack>
+  </Box>
+)}
+
+
       </Box>
-
+  
       {/* Chat Window */}
       <Box width="70%" p={5}>
         {selectedUser ? (
-          <VStack mb={4} align="start" spacing={3}>
-            <HStack spacing={4} align="center">
-              <Avatar
-                name={selectedUser.firstName}
-                src={selectedUser.profilePicture || "https://i.pravatar.cc/150"}
-                size="md"
-              />
-              <Heading size="lg">
-                Chat with {selectedUser.firstName} {selectedUser.lastName}
-              </Heading>
-            </HStack>
-            {selectedUser && currentUser && (
-          <Button
-          colorScheme={isBlocked ? "green" : "red"}
-          onClick={handleToggleBlock}
-        >
-          {isBlocked ? "Unblock User" : "Block User"}
-        </Button>
-        
-        
-        )}
+          <>
+            <VStack mb={4} align="start" spacing={3}>
+            <HStack spacing={4} align="center" width="100%">
+  <Avatar
+    name={selectedUser.firstName}
+    src={selectedUser.profilePicture || "https://i.pravatar.cc/150"}
+    size="lg"
+  />
+  <Heading size="lg">
+    {selectedUser.firstName} {selectedUser.lastName}
+  </Heading>
+  <Spacer /> {/* 🔥 Mută butoanele în dreapta */}
+  {selectedUser && currentUser && (
+    <HStack spacing={2}>
+      <Button
+        colorScheme="red"
+        variant="outline"
+        onClick={() => console.log("Report user")} // 🔥 Aici adaugi logica de report
+      >
+        Report User
+      </Button>
+      <Button
+        colorScheme={isBlocked ? "green" : "red"}
+        onClick={handleToggleBlock}
+      >
+        {isBlocked ? "Unblock User" : "Block User"}
+      </Button>
+    </HStack>
+  )}
+</HStack>
 
-
-
-          </VStack>
-        ) : (
-          <Heading size="lg" mb={2}>Messages</Heading>
-        )}
-
-<Box width="70%" p={5}>
-        {selectedUser ? (
-          <HStack mb={4} spacing={4} align="center">
-            <Avatar
-              name={selectedUser.firstName}
-              src={selectedUser.profilePicture || "https://i.pravatar.cc/150"}
-              size="md"
-            />
-            <Heading size="lg">
-              Chat with {selectedUser.firstName} {selectedUser.lastName}
-            </Heading>
-          </HStack>
-        ) : (
-          <Heading size="lg" mb={2}>Messages</Heading>
-        )}
-
-        <Box
-          border="1px solid #ddd"
-          borderRadius="md"
-          p={4}
-          mt={2}
-          height="65vh"
-          overflowY="auto"
-          backgroundColor="gray.50"
-        >
-          {loading ? (
-            <Flex justify="center" align="center" height="100%">
-              <Spinner size="lg" />
-            </Flex>
-          ) : messages.length === 0 ? (
-            <Text>No messages yet.</Text>
-          ) : (
-            <VStack spacing={5} align="stretch">
-              {messages.map((msg, index) => {
-                const isCurrentUser = String(msg.sender?._id) === String(currentUserId);
-                const lastSeen = getLastSeenMessage();
-                const isLastSeen = lastSeen && lastSeen._id === msg._id;
-
-                return (
-                  <Flex
-                    key={index}
-                    direction="column"
-                    align={isCurrentUser ? "flex-end" : "flex-start"}
-                  >
-                    <MotionBox
-                      bg={isCurrentUser ? "blue.100" : "gray.200"}
-                      px={6}
-                      py={4}
-                      fontSize="lg"
-                      borderRadius="2xl"
-                      maxWidth="80%"
-                      wordBreak="break-word"
-                      boxShadow="md"
-                      alignSelf={isCurrentUser ? "flex-end" : "flex-start"}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {!isCurrentUser && (
-                        <Flex align="center" mb={2}>
-                          <Avatar
-                            size="sm"
-                            name={msg.sender?.firstName}
-                            src={msg.sender?.profilePicture || "https://i.pravatar.cc/150"}
-                            mr={3}
-                          />
-                          <Text fontWeight="bold" fontSize="md">
-                            {msg.sender?.firstName}
+            </VStack>
+  
+            <Box
+                ref={messagesContainerRef} // 👈 aici
+              border="1px solid #ddd"
+              borderRadius="md"
+              p={4}
+              mt={2}
+              height="65vh"
+              overflowY="auto"
+              backgroundColor="gray.50"
+            >
+              {loading ? (
+                <Flex justify="center" align="center" height="100%">
+                  <Spinner size="lg" />
+                </Flex>
+              ) : messages.length === 0 ? (
+                <Text>No messages yet.</Text>
+              ) : (
+                <VStack spacing={5} align="stretch">
+                {messages.map((msg, index) => {
+                  const isCurrentUser = String(msg.sender?._id) === String(currentUser?._id);
+              
+                  // 🔥 Determină dacă e prima dată când apare această zi
+                  const currentDate = new Date(msg.timestamp).toDateString();
+                  const prevDate = index > 0 ? new Date(messages[index - 1].timestamp).toDateString() : null;
+                  const showDate = currentDate !== prevDate;
+              
+                  const lastSeen = getLastSeenMessage();
+                  const isLastSeen = lastSeen && lastSeen._id === msg._id;
+              
+                  return (
+                    <React.Fragment key={index}>
+                      {showDate && (
+                        <Flex justify="center" my={2}>
+                          <Text fontSize="sm" color="gray.500">
+                            {currentDate}
                           </Text>
                         </Flex>
                       )}
-                      <Text fontSize="md" whiteSpace="pre-wrap">{msg.content}</Text>
-                      <Text fontSize="sm" color="gray.500" textAlign="right" mt={2}>
-                        {new Date(msg.timestamp).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </Text>
-                      {isCurrentUser && isLastSeen && (
-                        <Text fontSize="sm" color="gray.500" mt={1}>
-                          Seen at {new Date(msg.readAt).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </Text>
-                      )}
-                    </MotionBox>
-                  </Flex>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </VStack>
-          )}
-        </Box>
+             <Flex
+  direction="column"
+  align={isCurrentUser ? "flex-end" : "flex-start"}
+  mb={2}
+>
+  <Flex align="flex-end" gap={2}>
+    {!isCurrentUser && ( // Avatar pentru alt user
+      <Avatar
+        size="sm"
+        name={msg.sender?.firstName}
+        src={msg.sender?.profilePicture || "https://i.pravatar.cc/150"}
+      />
+    )}
+    {isCurrentUser && ( // 🔥 Ora în stânga pentru mesajele portocalii
+      <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
+        {new Date(msg.timestamp).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </Text>
+    )}
+    <MotionBox
+      bg={isCurrentUser ? "orange.200" : "green.200"}
+      px={6}
+      py={4}
+      fontSize="lg"
+      borderRadius="2xl"
+      maxWidth="80%"
+      wordBreak="break-word"
+      boxShadow="md"
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {!isCurrentUser && (
+        <Text fontWeight="bold" fontSize="md" mb={1}>
+          {msg.sender?.firstName}
+        </Text>
+      )}
+      <Text fontSize="md" whiteSpace="pre-wrap">{msg.content}</Text>
+    </MotionBox>
+    {!isCurrentUser && ( // 🔥 Ora în dreapta pentru mesajele verzi
+      <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
+        {new Date(msg.timestamp).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </Text>
+    )}
+  </Flex>
 
+  {/* 🔥 Seen sub mesaj, aliniat cu bubble-ul */}
+  {isCurrentUser && isLastSeen && (
+    <Flex justify="flex-start" mt={1} pr={6}>
+      <Text fontSize="xs" color="gray.500">
+        Seen at {new Date(msg.readAt).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </Text>
+    </Flex>
+  )}
+</Flex>
 
-        <Flex mt={4}>
-          <Input
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            flex={1}
-            fontSize="lg"
-            py={3}
-          />
-          <Button ml={2} colorScheme="blue" onClick={handleSendMessage} px={6} fontSize="lg">
-            Send
-          </Button>
-        </Flex>
-    
-      {!isBlocked && (
-  <Flex mt={4}> ... </Flex>
-)}
-{isBlocked && (
-  <Text mt={4} fontSize="md" color="red.500">
-    You have blocked this user. Unblock them to continue the conversation.
-  </Text>
-)}
-
-
-      </Box>
-
+                    </React.Fragment>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </VStack>
+              
+              )}
+            </Box>
+  
+            {!isBlocked ? (
+              <Flex mt={4}>
+                <Input
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  flex={1}
+                  fontSize="lg"
+                  py={3}
+                />
+                <Button ml={2} colorScheme="blue" onClick={handleSendMessage} px={6} fontSize="lg">
+                  Send
+                </Button>
+              </Flex>
+            ) : (
+              <Text mt={4} fontSize="md" color="red.500">
+                You have blocked this user. Unblock them to continue the conversation.
+              </Text>
+            )}
+          </>
+        ) : (
+          <Heading size="lg" mb={2}>Messages</Heading>
+        )}
       </Box>
     </Flex>
   );
-};
+}
+  
 
 export default MessagesPage;

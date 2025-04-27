@@ -29,9 +29,16 @@ const protectRoute = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
+    if (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError") {
+      console.warn("Invalid or expired token:", err.message);
+      res.clearCookie("jwt"); // Șterge cookie-ul ca să forțezi reconectarea
+      return res.status(401).json({ error: "Session expired. Please log in again." });
+    }
+  
     console.error("Error in protectRoute:", err.stack || err.message);
     res.status(500).json({ error: "Internal server error" });
   }
+  
 };
 
 export default protectRoute;

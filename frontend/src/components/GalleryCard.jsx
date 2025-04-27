@@ -11,6 +11,8 @@ import {
   ModalContent,
   ModalBody,
   Input,
+  Circle,
+  Collapse,
   Tag,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -23,6 +25,10 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const [filterText, setFilterText] = useState("");
   const [products, setProducts] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(20);
+  const [expanded, setExpanded] = useState(false);
+
   const navigate = useNavigate();
 
   const isOwner = gallery?.owner?._id === currentUserId;
@@ -133,35 +139,97 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   
 
   return (
-    <Box mt={8} px={4}>
-      <Heading size="lg" mb={2}>{gallery.name}</Heading>
-      <Text fontSize="md" mb={4}>{gallery.description}</Text>
+    <Flex  direction={"column"} >
+
+<Flex justifyContent="space-between" px={4} pt={4} position="relative">
+  <Text fontWeight="bold" fontSize="2xl" textAlign="center">
+    {gallery.name || "Gallery Name"}
+  </Text>
+  
+  <Flex alignItems="center" gap={4}>
+    {canEdit && (
+      <>
+        <Button colorScheme="gray" variant="outline" onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
+          Edit Gallery
+        </Button>
+      </>
+    )}
+    <Flex gap={2}>
+      <Circle size="30px" bg="yellow.400" />
+      <Circle size="30px" bg="green.400" />
+    </Flex>
+  </Flex>
+</Flex>
+
+
+<Box  mt={2} borderRadius="md" overflow="hidden" display="flex" justifyContent="center">
       <Image
-        src={gallery.coverPhoto || "https://i.pravatar.cc/150"}
-        alt="Gallery Cover"
-        w="full"
-        h="300px"
-        objectFit="cover"
-      />
+          src={gallery.coverPhoto || "https://via.placeholder.com/800"}
+          alt="Event Cover"
+          objectFit="cover"
+          borderRadius="md"
+          w="98%"
+          h="400px"
+        />
+      </Box>
 
-      {gallery.collaborators?.length > 0 && (
-        <Box mt={4}>
-          <Heading size="sm">Collaborators:</Heading>
-          {gallery.collaborators.map((user) => (
-            <Text key={user._id}>• {user.username}</Text>
-          ))}
-        </Box>
-      )}
-
+      <Flex justifyContent="space-between" mt={3}  px={10}>
+      <Text fontSize="lg" fontWeight="bold">
+       Created by: {`${gallery.owner?.firstName} ${gallery.owner?.lastName}`}
+      </Text>
       {canEdit && (
-        <Flex justify="space-between" my={4} gap={4} wrap="wrap">
           <Button colorScheme="blue" onClick={onOpen}>Add Existing Product</Button>
-          <Button colorScheme="gray" variant="outline" onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
-            Edit Gallery
-          </Button>
+         
+      )}
+      <Flex right={0} gap={2}>
+    <Circle size="30px" bg="yellow.400" />
+    <Circle size="30px" bg="green.400" />
+  </Flex>
+{/* aici chestii in paralel */}
+      </Flex>
+
+      <Flex justifyContent="space-between" px={10}>
+      <Flex width={"100%"} direction="column" gap={2}>
+      {gallery.collaborators?.length > 0 && (
+        <Flex direction="row" gap={2}>
+          <Text color="gray" ontWeight="bold" >Collaborators:</Text>
+          {gallery.collaborators.map((user) => (
+            <Text color="gray" key={user._id}>{`${user.firstName} ${user.lastName}`}</Text>
+          ))}
         </Flex>
       )}
+        {gallery.tags?.length > 0 && (
+      <Flex direction="row" gap={2}>
+        {gallery.tags.map((tag, idx) => (
+          <Text key={idx} borderRadius="md" bg="gray.100" color="gray" px={2}>
+            {tag}
+          </Text>
+        ))}
+      </Flex>
+    )}
+     {gallery.description && (
+  <>
+    {gallery.description.length > 300 ? (
+      <>
+        <Collapse startingHeight={100} in={isDescriptionExpanded}>
+          <Text whiteSpace="pre-wrap">{gallery.description}</Text>
+        </Collapse>
+        <Button
+          variant="link"
+          colorScheme="blue"
 
+          onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+        >
+          {isDescriptionExpanded ? "see less" : "see more"}
+        </Button>
+      </>
+    ) : (
+      <Text whiteSpace="pre-wrap">{gallery.description}</Text>
+    )}
+  </>
+)}
+<Flex direction={"row"} gap={2} mt={gallery.description?.length > 900 ? 4 : 2}>
+</Flex>
 <ReactSortable
   list={products}
   setList={setProducts}
@@ -175,48 +243,112 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   }}
   style={{
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '1rem',
+    gridTemplateColumns: 'repeat(5, 1fr)',
+    gap: '2rem',
+    padding: '2rem',
+
   }}
 >
 
 
-        {products.map((item) => {
-          const p = item.product;
-          return (
-            <Box key={p._id} bg="gray.100" p={4} borderRadius="md">
-              <Image
-                src={p.images?.[0] || "https://i.pravatar.cc/150"}
-                alt={p.name}
-                w="100%"
-                h="150px"
-                objectFit="cover"
-              />
-              <Heading size="sm" mt={2}>{p.name}</Heading>
-              <Text>{p.price} RON</Text>
-              <Tag
-                colorScheme={p.forSale ? (p.quantity > 0 ? "green" : "red") : "gray"}
-                mt={1}
-              >
-                {!p.forSale ? "Not for Sale" : p.quantity > 0 ? `Stock: ${p.quantity} left` : "Out of Stock"}
-              </Tag>
-              <Text mt={2}>{p.description}</Text>
-              {canEdit && (
-                <Button
+{(expanded ? products : products.slice(0, visibleCount)).map((item) => {  const p = item.product;
+  return (
+    <Box
+      key={p._id}
+      border="2px solid"
+      borderColor="gray.300"
+      borderRadius="md"
+      overflow="hidden"
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
+      boxShadow="md"
+      _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+        transition="all 0.2s" cursor="pointer"
+    onClick={() => navigate(`/products/${p._id}`)} 
+    >
+      {p.images?.[0] ? (
+  <Image
+    src={p.images[0]}
+    alt={p.name}
+    w="100%"
+    h="250px"
+    objectFit="cover"
+  />
+) : (
+  <Flex
+    w="100%"
+    h="250px"
+    alignItems="center"
+    justifyContent="center"
+    bg="gray.200"
+  >
+    <Text color="gray.500">No picture</Text>
+  </Flex>
+)}
+
+     <Box display="flex" flexDirection="column" alignItems="center" p={3}>
+      {/* Afișăm prețul doar dacă e de vânzare */}
+        <Text fontWeight="semibold" textAlign="center">
+    {p.name}
+  </Text>
+  <Text fontSize="sm" color="gray.600" textAlign="center">
+  {p.forSale && p.price != null ? `Price: ${p.price} RON` : "Not for sale"}
+</Text>
+
+
+        {/* Afișăm tag-urile */}
+        {p.tags?.length > 0 && (
+  <Flex justifyContent="center" gap={1} mt={2}>
+    {p.tags.slice(0, 3).map((tag, idx) => (
+      <Tag size="sm" key={idx} colorScheme="gray">
+        {tag}
+      </Tag>
+    ))}
+    {p.tags.length > 3 && (
+      <Tag size="sm" colorScheme="gray">
+        +{p.tags.length - 3} more
+      </Tag>
+    )}
+  </Flex>
+)}
+
+   {canEdit && (
+                <Button   alignSelf="center"
+
                   colorScheme="red"
                   size="sm"
                   mt={2}
-                  onClick={() => removeProductFromGallery(p._id)}
+                  onClick={(e) => {
+                    e.stopPropagation(); // 👉 previne propagarea click-ului
+                    removeProductFromGallery(p._id);
+                  }}
                 >
                   Remove from Gallery
                 </Button>
               )}
-            </Box>
-          );
-        })}
-      </ReactSortable>
+      </Box>
+    </Box>
+  );
+})}
 
-      <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
+      </ReactSortable>
+      {products.length > visibleCount && (
+  <Flex justify="center" mt={4}>
+    {!expanded ? (
+      <Button onClick={() => setExpanded(true)} colorScheme="blue" variant="link">
+        See more
+      </Button>
+    ) : (
+      <Button onClick={() => setExpanded(false)} colorScheme="blue" variant="link">
+        See less
+      </Button>
+    )}
+  </Flex>
+)}
+
+
+      <Modal isOpen={isOpen} onClose={onClose} size="4xl" isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalBody p={5}>
@@ -227,43 +359,73 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               onChange={handleFilterChange}
               mb={4}
             />
-            <Flex wrap="wrap" gap={4}>
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
-                  <Box key={product._id} bg="gray.200" p={4} borderRadius="md">
-                    <Image
-                      src={product.images[0] || "https://i.pravatar.cc/150"}
-                      alt={product.name}
-                      w="100%"
-                      h="150px"
-                      objectFit="cover"
-                    />
-                    <Heading size="sm">{product.name}</Heading>
-                    <Text>{product.price} RON</Text>
-                    <Tag
-                      colorScheme={product.forSale ? (product.quantity > 0 ? "green" : "red") : "gray"}
-                      mt={2}
-                    >
-                      {!product.forSale ? "Not for Sale" : product.quantity > 0 ? `Stock: ${product.quantity} left` : "Out of Stock"}
-                    </Tag>
-                    <Button
-                      colorScheme="green"
-                      size="sm"
-                      mt={2}
-                      onClick={() => addProductToGallery(product._id)}
-                    >
-                      Add
-                    </Button>
-                  </Box>
-                ))
-              ) : (
-                <Text>No products match your search.</Text>
-              )}
-            </Flex>
+            <Flex
+  wrap="wrap"
+  gap={4}
+  justify="center"
+>
+  {filteredProducts.length > 0 ? (
+    filteredProducts.map((product) => (
+      <Box
+        key={product._id}
+        bg="gray.200"
+        p={4}
+        borderRadius="md"
+        width="calc(25% - 1rem)" // 4 pe rând
+        minW="200px"
+        maxW="250px"
+        display="flex"
+        flexDirection="column"
+        justifyContent="space-between"
+      >
+        <Image
+          src={product.images[0] || "https://i.pravatar.cc/150"}
+          alt={product.name}
+          w="100%"
+          h="150px"
+          objectFit="cover"
+          borderRadius="md"
+        />
+        <Heading size="sm" mt={2} textAlign="center">{product.name}</Heading>
+        <Text fontSize="sm" color="gray.600" textAlign="center">
+          {product.forSale && product.price != null ? `${product.price} RON` : "Not for Sale"}
+        </Text>
+        <Tag
+          colorScheme={product.forSale ? (product.quantity > 0 ? "green" : "red") : "gray"}
+          mt={2}
+          alignSelf="center"
+        >
+          {!product.forSale ? "Not for Sale" : product.quantity > 0 ? `Stock: ${product.quantity} left` : "Out of Stock"}
+        </Tag>
+        <Button
+          colorScheme="green"
+          size="sm"
+          mt={2}
+          onClick={() => addProductToGallery(product._id)}
+        >
+          Add
+        </Button>
+      </Box>
+    ))
+  ) : (
+    <Text>No products match your search.</Text>
+  )}
+</Flex>
+
           </ModalBody>
         </ModalContent>
       </Modal>
-    </Box>
+      <Flex maxW="800px" direction="column" gap={2}>
+    
+
+      </Flex>
+
+      </Flex>
+      </Flex>
+
+      </Flex>
+
+  
   );
 };
 

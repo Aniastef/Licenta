@@ -17,15 +17,13 @@ export const getConversations = async (req, res) => {
           $or: [{ sender: req.user._id }, { receiver: req.user._id }],
         },
       },
-      {
-        $sort: { timestamp: -1 }
-      },
+      { $sort: { timestamp: -1 } },
       {
         $group: {
           _id: {
             $cond: [{ $eq: ["$sender", req.user._id] }, "$receiver", "$sender"],
           },
-          lastMessage: { $first: "$content" },
+          lastMessage: { $first: { content: "$content", timestamp: "$timestamp", sender: "$sender" } },
           isUnread: {
             $first: {
               $cond: [
@@ -52,11 +50,15 @@ export const getConversations = async (req, res) => {
           "user.firstName": 1,
           "user.lastName": 1,
           "user.profilePicture": 1,
-          "lastMessage": 1,
+          "lastMessage.content": 1,
+          "lastMessage.timestamp": 1,
+          "lastMessage.sender": 1,
           "isUnread": 1,
         },
       },
+      { $sort: { "lastMessage.timestamp": -1 } }, // Sortare conversații
     ]);
+    
     
 
     console.log("✅ Conversations found:", conversations);

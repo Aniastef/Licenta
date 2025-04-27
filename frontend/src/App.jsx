@@ -37,6 +37,7 @@ import ArticlePage from './pages/ArticlePage';
 import CalendarPage from './pages/CalendarPage';
 import UserArticleCalendarPage from './pages/UserArticleCalendarPage';
 import Test from './components/test';
+import ContactBar from './components/ContactBar';
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -99,6 +100,8 @@ function App() {
 
 
       </Routes>
+            <ContactBar />
+      
     </Box>
     </CartProvider>
    

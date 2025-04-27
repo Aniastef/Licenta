@@ -18,10 +18,13 @@ import {
   MenuItem,
   ModalCloseButton,
   SimpleGrid,
+  Circle,
+  Collapse,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import RectangleShape from "../assets/rectangleShape";
 import useLoadGoogleMapsScript from "../hooks/useLoadGoogleMapsScript";
+import { Carousel } from "react-responsive-carousel";
 
 const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const mapRef = useRef(null);
@@ -30,6 +33,8 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const [selectedImage, setSelectedImage] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [showGallery, setShowGallery] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const isInterested = event?.interestedParticipants?.some((user) => user._id === currentUserId);
   const isGoing = event?.goingParticipants?.some((user) => user._id === currentUserId);
@@ -48,7 +53,20 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         title: event.location,
       });
     }
-  }, [isLoaded, event]);
+  }, [isLoaded, event]);const galleryRef = useRef(null);
+
+  const scrollLeft = () => {
+    if (galleryRef.current) {
+      galleryRef.current.scrollLeft -= 200;
+    }
+  };
+  
+  const scrollRight = () => {
+    if (galleryRef.current) {
+      galleryRef.current.scrollLeft += 200;
+    }
+  };
+  
 
   // const handleDownload = (fileName, base64Data) => {
   //   if (!base64Data || typeof base64Data !== "string" || !base64Data.includes(",")) {
@@ -127,93 +145,79 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   };
 
   return (
-    <Box mt={8}>
-      <Flex justifyContent="space-between" alignItems="center">
-        <Text mx={5} fontSize="lg" color="gray.500">{event.status || "Upcoming Event"}</Text>
-        <RectangleShape bgColor="yellow.300" title={event.name} minW="500px" maxW="500px" textAlign="center" />
-      </Flex>
-
-      <Box overflow="hidden">
-        <Image src={event.coverImage || "https://via.placeholder.com/800"} alt={event.name} w="100%" h="400px" objectFit="cover" />
-      </Box>
-      
-
-      <Flex justify="space-between" align="center">
-        <RectangleShape bgColor="blue.300" title={`Created by: ${event.user?.firstName || "Unknown"} ${event.user?.lastName || "User"}`} minW="200px" maxW="300px" textAlign="center" />
-        <RectangleShape bgColor="yellow.300" title={`Location: ${event.location || "Not specified"}`} minW="200px" maxW="300px" textAlign="center" />
-      </Flex>
-
-      {event.coordinates?.lat && event.coordinates?.lng && (
-        <Box mt={4} mx={8}>
-          <Heading size="md" mb={2}>Map</Heading>
-          <div ref={mapRef} style={{ width: "100%", height: "300px", borderRadius: "12px" }}></div>
-          <Button mt={4} colorScheme="blue" onClick={openGoogleMaps}>Open in Google Maps</Button>
-        </Box>
-      )}
-
-      <Flex mx={8} mt={6} direction="column" gap={2}>
-        <Heading size="md">Ticket & Info</Heading>
-        <Text><strong>Capacity:</strong> {event.capacity || "Unlimited"}</Text>
-        <Text><strong>Ticket Type:</strong> {event.ticketType}</Text>
-        <Text><strong>Price:</strong> {event.price > 0 ? `${event.price} RON` : "Free"}</Text>
-        <Text><strong>Language:</strong> {event.language?.toUpperCase() || "N/A"}</Text>
-      </Flex>
-      <Box mt={4} mx={8}>
-  <Flex gap={4} align="center">
-  <Text fontWeight="semibold" fontSize="md">
-  📅 {new Date(event.date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric"
-  })}{" "}
-  {event.time && (
-    <>
-      <span>🕒 {event.time}</span>
-    </>
-  )}
-</Text>
-
+    <Flex  direction={"column"} >
+      <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
+  <Text fontWeight="bold" fontSize="2xl" textAlign="center">
+    {event.name || "Event name"}
+  </Text>
+  <Flex position="absolute" right={4} gap={2}>
+    <Circle size="30px" bg="yellow.400" />
+    <Circle size="30px" bg="green.400" />
   </Flex>
-</Box>
-      {Array.isArray(event.attachments) && event.attachments.length > 0 && (
-        <Box mx={8} mt={6}>
-          <Heading size="md" mb={2}>Attachments</Heading>
-          {event.attachments.map((att, index) => (
-            <Text key={index}>
-              <Button
-                variant="link"
-                color="blue.500"
-                onClick={() => window.open(att.fileUrl, "_blank")}
-                >
-                {att.fileName}
-              </Button>
-            </Text>
-          ))}
-        </Box>
-      )}
+</Flex>
 
-      {event.gallery?.length > 0 && (
-        <Flex mt={4} mx={8}>
-          <Button onClick={() => setShowGallery(!showGallery)}>
-            {showGallery ? "Hide Gallery" : "Show Gallery"}
-          </Button>
-        </Flex>
-      )}
 
-      {!isEventOwner && (
-        <Flex mt={4} gap={4}>
+
+      <Box  mt={2} borderRadius="md" overflow="hidden" display="flex" justifyContent="center">
+      <Image
+          src={event.coverImage || "https://via.placeholder.com/800"}
+          alt="Event Cover"
+          objectFit="cover"
+          borderRadius="md"
+          w="80%"
+          h="450px"
+        />
+      </Box>
+
+      <Flex justifyContent="space-between" mt={3}  px={4}>
+      <Box bg="goldenrod" color="black" borderRadius="full" px={6} py={1} fontWeight="bold">
+      {new Date(event.date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })}   
+  </Box>
+  {isEventOwner && (
+        <Flex gap={4}>
           <Button bg={isGoing ? "gray.400" : "green.300"} onClick={markGoing}>{isGoing ? "Unmark Going" : "Mark if Going"}</Button>
           <Button bg={isInterested ? "gray.400" : "yellow.300"} onClick={markInterested}>{isInterested ? "Unmark Interested" : "Mark if Interested"}</Button>
         </Flex>
       )}
+  <Box bg="goldenrod" color="black" borderRadius="full" px={6} py={1} fontWeight="bold">
+    {event.location || "Location unknown yet"}
+        </Box>
+      </Flex>
 
-      {isEventOwner && (
-        <Flex mt={4} mx={8}>
-          <Button colorScheme="blue" onClick={() => navigate(`/events/${event._id}/edit`)}>Edit Event</Button>
-        </Flex>
-      )}
+      <Flex mt={3} justifyContent="space-between" px={4}>
+      <Flex maxW="800px" mx={8} direction="column" gap={2}>
+        <Text><strong>Info</strong></Text>
+        <Text><strong>Capacity:</strong> {event.capacity || "Unlimited"}</Text>
+        <Text><strong>Ticket Type:</strong> {event.ticketType}</Text>
+        <Text><strong>Price:</strong> {event.price > 0 ? `${event.price} RON` : "Free"}</Text>
+        <Text><strong>Language:</strong> {event.language?.toUpperCase() || "N/A"}</Text>
+        {event.description && (
+  <>
+    {event.description.length > 300 ? (
+      <>
+        <Collapse startingHeight={100} in={isDescriptionExpanded}>
+          <Text whiteSpace="pre-wrap">{event.description}</Text>
+        </Collapse>
+        <Button
+          variant="link"
+          colorScheme="blue"
+          mt={2}
+          onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+        >
+          {isDescriptionExpanded ? "see less" : "see more"}
+        </Button>
+      </>
+    ) : (
+      <Text whiteSpace="pre-wrap">{event.description}</Text>
+    )}
+  </>
+)}
+<Flex direction={"row"} gap={2} mt={event.description?.length > 300 ? 4 : 2}>
 
-      <Flex mt={4} gap={4}>
         <Menu>
           <MenuButton as={Button}>{`Going (${event.goingParticipants?.length || 0})`}</MenuButton>
           <MenuList>
@@ -247,22 +251,65 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
             ) : (
               <MenuItem>No participants</MenuItem>
             )}
-          </MenuList>
-        </Menu>
-
-        <Modal isOpen={isOpen} onClose={onClose} size="3xl" isCentered>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalCloseButton />
-            <ModalBody p={0}>
-              <Image src={selectedImage} alt="Selected" w="100%" h="auto" />
-            </ModalBody>
-          </ModalContent>
-        </Modal>
+    </MenuList>
+    </Menu>
+  </Flex>
       </Flex>
 
+      <Flex direction={"column"} alignItems="center" gap={2}>
+
+  {event.coordinates?.lat && event.coordinates?.lng ? (
+    <Box align="center" mt={4} mx={8}>
+      <div ref={mapRef} style={{ width: "400px", height: "300px", borderRadius: "12px" }}></div>
+      <Button mt={4} colorScheme="green" onClick={openGoogleMaps}>Open in Google Maps</Button>
+    </Box>
+  ) : null}
+</Flex>
+
+        
+
+      </Flex>
+
+      {event.gallery?.length > 0 && (
+        <Box mx={8} position="relative">
+<Flex justifyContent="center" alignItems="center" position="relative" mt={8} mb={2}>
+<Flex position="absolute" left={0} gap={2}>
+    <Circle size="30px" bg="yellow.400" />
+    <Circle size="30px" bg="green.400" />
+  </Flex>
+<Box bg="goldenrod" color="black" borderRadius="full" px={6} py={1} fontWeight="bold">
+        Event Gallery
+      </Box>
+      <Flex position="absolute" right={0} gap={2}>
+    <Circle size="30px" bg="yellow.400" />
+    <Circle size="30px" bg="green.400" />
+  </Flex>
+</Flex>
+
+
+          <Button onClick={scrollLeft} position="absolute" left="0" top="50%" transform="translateY(-50%)" zIndex="1" bg="white" boxShadow="md">{"<"}</Button>
+          <Flex id="gallery-carousel" overflowX="scroll" scrollBehavior="smooth" gap={4} py={4} css={{ '&::-webkit-scrollbar': { display: 'none' }, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+            {event.gallery.map((imgUrl, idx) => (
+              <Image key={idx} src={imgUrl} alt={`Gallery image ${idx + 1}`} borderRadius="md" objectFit="cover" h="300px" minW="300px" cursor="pointer" onClick={() => handleImageClick(imgUrl)} />
+            ))}
+          </Flex>
+          <Button onClick={scrollRight} position="absolute" right="0" top="50%" transform="translateY(-50%)" zIndex="1" bg="white" boxShadow="md">{">"}</Button>
+        </Box>
+      )}
+
+      <Modal isOpen={isOpen} onClose={onClose} size="3xl" isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+          <ModalBody p={0}>
+            <Image src={selectedImage} alt="Selected" w="100%" h="auto" />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+      
+
       {showGallery && (
-        <Box mt={4} mx={8}>
+        <Box  mx={8}>
           <SimpleGrid columns={[1, 2, 3]} spacing={4}>
             {event.gallery.map((imgUrl, idx) => (
               <Image
@@ -280,7 +327,10 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
           </SimpleGrid>
         </Box>
       )}
-    </Box>
+
+      
+      
+      </Flex>
   );
 };
 

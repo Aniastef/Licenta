@@ -33,6 +33,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
   const charCount = (text) => text.length;
   const [isLoading, setIsLoading] = useState(true);
 
+
   const fetchComments = async () => {
     setIsLoading(true);
     try {

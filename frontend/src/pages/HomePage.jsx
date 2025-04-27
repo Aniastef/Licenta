@@ -510,7 +510,6 @@ const circularPositions = [
       </Box>
 
   
-      <ContactBar />
     </Box>
   );
 };
