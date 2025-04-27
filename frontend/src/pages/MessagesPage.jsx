@@ -11,12 +11,13 @@ import {
   Avatar,
   Spinner,
   useToast,
-  Spacer
+  Spacer,
+  Image
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import searchIcon from "../assets/searchIcon.png";
-
+import attachIcon from "../assets/attach.png";
 const MotionBox = motion(Box);
 
 const MessagesPage = () => {
@@ -30,13 +31,15 @@ const MessagesPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-  
+  const fileInputRef = useRef();
+
   const [isBlocked, setIsBlocked] = useState(false);
 
 
   const currentUserId = currentUser?._id;
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const toast = useToast();
 
@@ -49,8 +52,13 @@ const MessagesPage = () => {
   };
   
   
-  
-
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   
 
   useEffect(() => {
@@ -211,10 +219,30 @@ const MessagesPage = () => {
   };
 
   const handleSendMessage = async () => {
-  
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() && selectedFiles.length === 0) return;
   
     try {
+      let attachmentsData = [];
+if (selectedFiles.length > 0) {
+  attachmentsData = await Promise.all(
+    selectedFiles.map(async (file) => {
+      let type;
+      if (file.type.startsWith("image")) type = "image";
+      else if (file.type.startsWith("video")) type = "video";
+      else if (file.type.startsWith("audio")) type = "audio";
+      else if (file.type === "application/pdf") type = "application";
+      else type = "other";
+
+      return {
+        url: await toBase64(file),
+        type,
+      };
+    })
+  );
+}
+
+      
+  
       const response = await fetch("/api/messages/send", {
         method: "POST",
         headers: {
@@ -222,7 +250,11 @@ const MessagesPage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         credentials: "include",
-        body: JSON.stringify({ receiverId: userId, content: newMessage }),
+        body: JSON.stringify({
+          receiverId: userId,
+          content: newMessage,
+          attachments: attachmentsData,
+        }),
       });
   
       const data = await response.json();
@@ -241,17 +273,19 @@ const MessagesPage = () => {
       if (response.ok) {
         const completeMessage = {
           ...data.data,
-          sender: currentUser, // 🔥 Populatează manual sender-ul cu currentUser
+          sender: currentUser,
         };
-        setMessages([...messages, completeMessage]); // 🔥 Adaugă-l direct cu date complete
+        setMessages([...messages, completeMessage]);
         setNewMessage("");
+        setSelectedFiles([]);
         fetchConversations();
       }
-      
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
+  
+  
   
   
   const getLastSeenMessage = () => {
@@ -335,8 +369,18 @@ const MessagesPage = () => {
                 {conv.user.firstName} {conv.user.lastName}
               </Text>
               <Text fontSize="sm" color="gray.500" noOfLines={1} maxW="150px">
-                {conv.lastMessage?.content || "No messages yet."}
-              </Text>
+  {
+    conv.lastMessage
+      ? conv.lastMessage.content?.trim()
+        ? conv.lastMessage.content
+        : (conv.lastMessage.attachments && conv.lastMessage.attachments.length > 0 
+          ? "Attachment sent."
+          : "No messages yet.")
+      : "No messages yet."
+  }
+</Text>
+
+
             </Box>
           </HStack>
           {conv.isUnread && (
@@ -464,7 +508,28 @@ const MessagesPage = () => {
           {msg.sender?.firstName}
         </Text>
       )}
-      <Text fontSize="md" whiteSpace="pre-wrap">{msg.content}</Text>
+{msg.content && (
+  <Text fontSize="md" whiteSpace="pre-wrap">{msg.content}</Text>
+)}
+
+{msg.attachments && msg.attachments.map((att, idx) => {
+ if (att.type === "image") return (
+  <Image 
+    key={idx} 
+    src={att.url} 
+    maxW="300px" 
+    maxH="300px" 
+    minW="150px"
+    minH="150px"
+    borderRadius="md" 
+    objectFit="contain" 
+  />
+);
+
+  if (att.type === "video") return <video key={idx} src={att.url} controls style={{ maxWidth: "300px" }} />;
+  if (att.type === "audio") return <audio key={idx} src={att.url} controls />;
+  return <a key={idx} href={att.url} target="_blank" rel="noopener noreferrer">Download File</a>;
+})}
     </MotionBox>
     {!isCurrentUser && ( // 🔥 Ora în dreapta pentru mesajele verzi
       <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
@@ -497,7 +562,7 @@ const MessagesPage = () => {
               
               )}
             </Box>
-  
+
             {!isBlocked ? (
               <Flex mt={4}>
                 <Input
@@ -509,6 +574,24 @@ const MessagesPage = () => {
                   fontSize="lg"
                   py={3}
                 />
+                <Flex align="center" gap={2} >
+                <Button 
+  variant="ghost" 
+  onClick={() => fileInputRef.current.click()}
+>
+  <Image src={attachIcon} alt="Attach" boxSize="25px" />
+</Button>
+<Input
+  type="file"
+  ref={fileInputRef}
+  multiple
+  display="none"
+  onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
+/>
+
+</Flex>
+
+
                 <Button ml={2} colorScheme="blue" onClick={handleSendMessage} px={6} fontSize="lg">
                   Send
                 </Button>

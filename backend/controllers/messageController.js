@@ -23,8 +23,16 @@ export const getConversations = async (req, res) => {
           _id: {
             $cond: [{ $eq: ["$sender", req.user._id] }, "$receiver", "$sender"],
           },
-          lastMessage: { $first: { content: "$content", timestamp: "$timestamp", sender: "$sender" } },
-          isUnread: {
+          lastMessage: { 
+            $first: { 
+              content: "$content", 
+              timestamp: "$timestamp", 
+              sender: "$sender", 
+              attachments: { $ifNull: ["$attachments", []] } // 👈 aici setezi mereu attachments ca array gol dacă nu există
+            } 
+          },
+          
+                    isUnread: {
             $first: {
               $cond: [
                 { $and: [{ $eq: ["$receiver", req.user._id] }, { $eq: ["$isRead", false] }] },
@@ -53,6 +61,7 @@ export const getConversations = async (req, res) => {
           "lastMessage.content": 1,
           "lastMessage.timestamp": 1,
           "lastMessage.sender": 1,
+          "lastMessage.attachments": 1, // 👈 Asta lipsește!
           "isUnread": 1,
         },
       },
@@ -100,32 +109,53 @@ export const getMessages = async (req, res) => {
 };
 
 
+import { v2 as cloudinary } from "cloudinary";
+
 export const sendMessage = async (req, res) => {
   try {
-    const { receiverId, content } = req.body;
+    const { receiverId, content, attachments } = req.body;
     const senderId = req.user._id;
 
-    if (!receiverId || !content) {
+    if (!receiverId || (!content && (!attachments || attachments.length === 0))) {
       return res.status(400).json({ error: "Missing fields." });
     }
 
     const receiver = await User.findById(receiverId);
     const sender = await User.findById(senderId);
 
-    // ✅ Dacă expeditorul l-a blocat pe destinatar
     if (sender.blockedUsers.includes(receiverId)) {
       return res.status(403).json({ error: "You blocked this user." });
     }
-
-    // ✅ Dacă destinatarul l-a blocat pe expeditor
     if (receiver.blockedUsers.includes(senderId)) {
       return res.status(403).json({ error: "You are blocked by this user." });
+    }
+
+    // 🔥 Urcă fișierele la Cloudinary
+    let uploadedAttachments = [];
+    if (attachments?.length > 0) {
+      for (let att of attachments) {
+        if (att.url?.startsWith("data:")) {  // Dacă trimitem base64
+          const uploadOptions = { 
+            resource_type: att.type === "image" ? "image" 
+                          : att.type === "video" ? "video" 
+                          : att.type === "audio" ? "audio" 
+                          : "raw"  // ✅ raw pentru application și other
+          };
+                    const uploaded = await cloudinary.uploader.upload(att.url, uploadOptions);
+                    uploadedAttachments.push({ 
+                      url: uploaded.secure_url, 
+                      type: att.type,
+                      originalName: att.name // 🔥 păstrează numele original!
+                    });
+                            }
+      }
     }
 
     const newMessage = new Message({
       sender: senderId,
       receiver: receiverId,
       content,
+      attachments: uploadedAttachments
     });
 
     await newMessage.save();
@@ -135,6 +165,7 @@ export const sendMessage = async (req, res) => {
     res.status(500).json({ error: "Failed to send message." });
   }
 };
+
 
 
 
@@ -163,3 +194,4 @@ export const markMessagesAsRead = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
