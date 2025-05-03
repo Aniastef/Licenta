@@ -22,6 +22,22 @@ import { useSetRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
+import imageCompression from "browser-image-compression";
+
+const compressImage = async (file) => {
+	try {
+		const options = {
+			maxSizeMB: 0.5,           // max 500 KB
+			maxWidthOrHeight: 1080,   // resize dacă e prea mare
+			useWebWorker: true,
+		};
+		const compressedFile = await imageCompression(file, options);
+		return compressedFile;
+	} catch (error) {
+		console.error("Compression failed:", error);
+		return file; // fallback la original
+	}
+};
 
 
 const CreateProductPage = () => {
@@ -79,47 +95,55 @@ const CreateProductPage = () => {
 			reader.readAsDataURL(file);
 		});
 
-	const handleAddProduct = async () => {
-		if (!newProduct.name) {
-			showToast("Error", "Name is required", "error");
-			return;
-		  }
-		  
-
-		setIsLoading(true);
-
-		try {
-			const imagesBase64 = await Promise.all(imageFiles.map(fileToBase64));
-			const videosBase64 = await Promise.all(videoFiles.map(fileToBase64));
-			const audiosBase64 = await Promise.all(audioFiles.map(fileToBase64));
-
-			const res = await fetch("/api/products/create", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				credentials: "include",
-				body: JSON.stringify({
-					...newProduct,
-					images: imagesBase64,
-					videos: videosBase64,
-					audios: audiosBase64,
-				}),
-			});
-
-			const data = await res.json();
-
-			if (data.error) {
-				showToast("Error creating product", data.error, "error");
-			} else {
-				setProduct(data);
-				showToast("Product created successfully", "", "success");
-				navigate(`/products/${data._id}`);
+		const handleAddProduct = async () => {
+			if (!newProduct.name) {
+				showToast("Error", "Name is required", "error");
+				return;
 			}
-		} catch (error) {
-			showToast("Error", error.message, "error");
-		} finally {
-			setIsLoading(false);
-		}
-	};
+		
+			setIsLoading(true);
+		
+			try {
+				// 🔽 Comprimă imaginile înainte de conversie
+				const compressedImages = await Promise.all(
+					imageFiles.map((file) => compressImage(file))
+				);
+				const imagesBase64 = await Promise.all(
+					compressedImages.map(fileToBase64)
+				);
+		
+				// 🔼 Videourile și audio nu se comprimă
+				const videosBase64 = await Promise.all(videoFiles.map(fileToBase64));
+				const audiosBase64 = await Promise.all(audioFiles.map(fileToBase64));
+		
+				const res = await fetch("/api/products/create", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					credentials: "include",
+					body: JSON.stringify({
+						...newProduct,
+						images: imagesBase64,
+						videos: videosBase64,
+						audios: audiosBase64,
+					}),
+				});
+		
+				const data = await res.json();
+		
+				if (data.error) {
+					showToast("Error creating product", data.error, "error");
+				} else {
+					setProduct(data);
+					showToast("Product created successfully", "", "success");
+					navigate(`/products/${data._id}`);
+				}
+			} catch (error) {
+				showToast("Error", error.message, "error");
+			} finally {
+				setIsLoading(false);
+			}
+		};
+		
 
 	const handleFileChange = (e) => {
 		const selectedFiles = [...e.target.files];

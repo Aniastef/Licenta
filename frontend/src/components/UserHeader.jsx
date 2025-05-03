@@ -33,6 +33,7 @@ import professionIcon from "../assets/profession.svg";
 import locationIcon from "../assets/location.svg";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
  const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const day = date.toLocaleDateString("en-US", { day: "2-digit" });

@@ -38,6 +38,7 @@ import CalendarPage from './pages/CalendarPage';
 import UserArticleCalendarPage from './pages/UserArticleCalendarPage';
 import Test from './components/test';
 import ContactBar from './components/ContactBar';
+import LoginCard from './components/LoginCard';
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -96,6 +97,7 @@ function App() {
 
         <Route path="/:username/calendar" element={<CalendarPage />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/login" element={<LoginCard />} />
 
 
 

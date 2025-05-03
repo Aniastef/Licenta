@@ -158,16 +158,21 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
 
 
 
-      <Box  mt={2} borderRadius="md" overflow="hidden" display="flex" justifyContent="center">
-      <Image
-          src={event.coverImage || "https://via.placeholder.com/800"}
-          alt="Event Cover"
-          objectFit="cover"
-          borderRadius="md"
-          w="80%"
-          h="450px"
-        />
-      </Box>
+<Box mt={2} borderRadius="md" overflow="hidden" w="100%" maxW="1200px" mx="auto">
+  <Box position="relative" paddingTop="33.125%"> {/* 16:9 aspect ratio */}
+    <Image
+      src={event.coverImage || "https://via.placeholder.com/800"}
+      alt="Event Cover"
+      objectFit="cover"
+      position="absolute"
+      top="0"
+      left="0"
+      width="100%"
+      height="100%"
+      borderRadius="md"
+    />
+  </Box>
+</Box>
 
       <Flex justifyContent="space-between" mt={3}  px={4}>
       <Box bg="goldenrod" color="black" borderRadius="full" px={6} py={1} fontWeight="bold">

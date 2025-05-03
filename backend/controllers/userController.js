@@ -78,66 +78,110 @@ owner: { $ne: user._id },
   };
   
   
+  export const signupUser = async (req, res) => {
+	try {
+	  const {
+		firstName,
+		lastName,
+		email,
+		username,
+		password,
+		confirmPassword,
+		gender,
+		pronouns,
+		address,
+		city,
+		country,
+		phone,
+		bio,
+		profilePicture,
+	  } = req.body;
   
-  
-  
-  
-  
-  
-  
+	  if (password !== confirmPassword) {
+		return res.status(400).json({ error: "Passwords do not match" });
+	  }
+	  
+	  const userExists = await User.findOne({ $or: [{ email }, { username }] });
+	  if (userExists) {
+		return res.status(400).json({ error: "User already exists" });
+	  }
+	  
+	  const salt = await bcrypt.genSalt(10);
+	  const hashedPassword = await bcrypt.hash(password, salt);
+	  
+	  let profilePictureUrl = null;
 
-
-
-export const signupUser = async (req, res) => {
-  try {
-    const { firstName,lastName, email, username, password, confirmPassword } = req.body;
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ error: "Passwords do not match" });
-    }
-
-    const user = await User.findOne({ $or: [{ email }, { username }] });
-    if (user) {
-      return res.status(400).json({ error: "User already exists" });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-	const isFirstUser = (await User.countDocuments()) === 0;
-
-	const newUser = new User({
-	firstName,
-	lastName,
-	email,
-	username,
-	password: hashedPassword,
-	role: isFirstUser ? "superadmin" : "user", // ✅ Primul user devine superadmin
-	});
-
-	
-
-    await newUser.save();
-
-    if (newUser) {
-      console.log("New user created");
-      generateTokenAndSetCookie(newUser._id, res); 
-
-      res.status(201).json({
-        _id: newUser._id,
-        firstName: newUser.firstName,
+	  if (profilePicture) {
+		// Dacă este deja un URL Cloudinary (probabil începe cu "http" sau "https"), nu face upload
+		if (profilePicture.startsWith("http")) {
+		  profilePictureUrl = profilePicture;
+		} else {
+		  // Altfel, presupune că este base64 sau data URL și urcă pe Cloudinary
+		  const uploadedResponse = await cloudinary.uploader.upload(profilePicture, {
+			folder: "profiles",
+			resource_type: "auto",
+		  });
+		  profilePictureUrl = uploadedResponse.secure_url;
+		}
+	  }
+	  
+	  
+	  const isFirstUser = (await User.countDocuments()) === 0;
+	  
+	  const newUser = new User({
+		firstName,
+		lastName,
+		email,
+		username,
+		password: hashedPassword,
+		gender,
+		pronouns,
+		address,
+		city,
+		country,
+		phone,
+		bio,
+		profilePicture: profilePictureUrl, // 🔥
+		role: isFirstUser ? "superadmin" : "user",
+	  });
+	  
+	  await newUser.save();
+	  generateTokenAndSetCookie(newUser._id, res);
+	  
+	  res.status(201).json({
+		_id: newUser._id,
+		firstName: newUser.firstName,
 		lastName: newUser.lastName,
-        email: newUser.email,
-        username: newUser.username,
-      });
-    } else {
-      res.status(400).json({ message: "Invalid user data" });
-    }
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-    console.log("Error while signing user up: ", err.message);
-  }
-};
+		email: newUser.email,
+		username: newUser.username,
+		bio: newUser.bio,
+		profilePicture: newUser.profilePicture,
+		location: newUser.location,
+		profession: newUser.profession,
+		age: newUser.age,
+		instagram: newUser.instagram,
+		facebook: newUser.facebook,
+		webpage: newUser.webpage,
+		soundcloud: newUser.soundcloud,
+		spotify: newUser.spotify,
+		linkedin: newUser.linkedin,
+		phone: newUser.phone,
+		hobbies: newUser.hobbies,
+		gender: newUser.gender,
+		pronouns: newUser.pronouns,
+		address: newUser.address,
+		city: newUser.city,
+		country: newUser.country,
+	  });
+	  
+	  
+	  
+	} catch (err) {
+	  res.status(500).json({ message: err.message });
+	  console.log("Error while signing user up: ", err.message);
+	}
+  };
+  
 
 
 
@@ -169,7 +213,19 @@ export const loginUser = async (req, res) => {
 		username: user.username,
 		bio: user.bio,
 		profilePicture: user.profilePicture,
+		location: user.location,
+		profession: user.profession,
+		age: user.age,
+		instagram: user.instagram,
+		facebook: user.facebook,
+		webpage: user.webpage,
+		soundcloud: user.soundcloud,
+		spotify: user.spotify,
+		linkedin: user.linkedin,
+		phone: user.phone,
+		hobbies: user.hobbies,
 	  });
+	  
   
 	} catch (error) {
 	  res.status(500).json({ error: error.message });
@@ -179,7 +235,7 @@ export const loginUser = async (req, res) => {
   
   
 
-export const searchUsers = async (req, res) => {
+  export const searchUsers = async (req, res) => {
 	try {
 	  const { query } = req.query;
 	  if (!query) return res.status(400).json({ error: "Query is required" });
@@ -190,7 +246,7 @@ export const searchUsers = async (req, res) => {
 		  { lastName: new RegExp(query, "i") },
 		  { username: new RegExp(query, "i") },
 		],
-	  }).select("_id firstName lastName username");
+	  }).select("_id firstName lastName username profilePicture"); // 👈 Aici lipsește profilePicture
   
 	  res.status(200).json({ users });
 	} catch (err) {
@@ -198,6 +254,7 @@ export const searchUsers = async (req, res) => {
 	  res.status(500).json({ error: "Server error" });
 	}
   };
+  
   
 export const logoutUser = (req, res) => {
 
@@ -233,6 +290,7 @@ export const updateUser = async (req, res) => {
 	  hobbies,
 	  message,
 	  heart,
+	  profilePicture
 	} = req.body;
   
 	const userId = req.user._id;
@@ -245,18 +303,32 @@ export const updateUser = async (req, res) => {
 		return res.status(403).json({ error: "You cannot update another user's profile" });
 	  }
   
-	  // Actualizare câmpuri generale
+	  // 🔁 Upload imagine dacă este în base64
+	  if (profilePicture) {
+		const isBase64 = profilePicture.startsWith("data:image");
+  
+		if (isBase64) {
+		  const uploadedResponse = await cloudinary.uploader.upload(profilePicture, {
+			folder: "profiles",
+			resource_type: "auto",
+		  });
+		  user.profilePicture = uploadedResponse.secure_url;
+		} else {
+		  user.profilePicture = profilePicture; // Dacă este deja un URL valid
+		}
+	  }
+  
+	  // 🔧 Actualizare câmpuri generale
 	  user.firstName = firstName || user.firstName;
 	  user.lastName = lastName || user.lastName;
 	  user.email = email || user.email;
 	  user.username = username || user.username;
-	  user.profilePicture = req.body.profilePicture || user.profilePicture;
 	  user.bio = bio || user.bio;
 	  user.location = location || user.location;
 	  user.profession = profession || user.profession;
 	  user.age = age || user.age;
   
-	  // Actualizare rețele și info personale
+	  // 🔧 Rețele sociale și date personale
 	  user.instagram = instagram || user.instagram;
 	  user.facebook = facebook || user.facebook;
 	  user.webpage = webpage || user.webpage;
@@ -268,7 +340,7 @@ export const updateUser = async (req, res) => {
 	  user.message = message || user.message;
 	  user.heart = heart || user.heart;
   
-	  // Parolă
+	  // 🔐 Parolă
 	  if (password) {
 		if (!oldPassword) {
 		  return res.status(400).json({ error: "Old password required" });
@@ -281,12 +353,40 @@ export const updateUser = async (req, res) => {
 	  }
   
 	  await user.save();
-	  res.status(200).json({ message: "Profile updated successfully" });
+  
+	  // ✅ Trimite user-ul actualizat înapoi
+	  res.status(200).json({
+		message: "Profile updated successfully",
+		user: {
+		  _id: user._id,
+		  firstName: user.firstName,
+		  lastName: user.lastName,
+		  email: user.email,
+		  username: user.username,
+		  bio: user.bio,
+		  profilePicture: user.profilePicture,
+		  location: user.location,
+		  profession: user.profession,
+		  age: user.age,
+		  instagram: user.instagram,
+		  facebook: user.facebook,
+		  webpage: user.webpage,
+		  soundcloud: user.soundcloud,
+		  spotify: user.spotify,
+		  linkedin: user.linkedin,
+		  phone: user.phone,
+		  hobbies: user.hobbies,
+		  message: user.message,
+		  heart: user.heart,
+		}
+	  });
+  
 	} catch (err) {
 	  res.status(500).json({ error: err.message });
 	  console.log("Error in updateUser:", err.message);
 	}
   };
+  
   
   
   
@@ -437,8 +537,33 @@ export const moveToFavorites = async (req, res) => {
 	try {
 	  const user = await User.findById(req.user._id).populate("blockedUsers", "_id");
 	  if (!user) return res.status(404).json({ error: "User not found" });
-	  res.status(200).json(user);
-	} catch (error) {
+	  res.status(200).json({
+		_id: user._id,
+		firstName: user.firstName,
+		lastName: user.lastName,
+		email: user.email,
+		username: user.username,
+		bio: user.bio,
+		profilePicture: user.profilePicture,
+		location: user.location,
+		profession: user.profession,
+		age: user.age,
+		instagram: user.instagram,
+		facebook: user.facebook,
+		webpage: user.webpage,
+		soundcloud: user.soundcloud,
+		spotify: user.spotify,
+		linkedin: user.linkedin,
+		phone: user.phone,
+		hobbies: user.hobbies,
+		gender: user.gender,
+		pronouns: user.pronouns,
+		address: user.address,
+		city: user.city,
+		country: user.country,
+	  });
+	  
+		  } catch (error) {
 	  console.error("getMe error:", error);
 	  res.status(500).json({ error: "Internal server error" });
 	}

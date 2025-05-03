@@ -43,7 +43,9 @@ export default function UpdateProfilePage() {
 
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const { handleImageChange, imgUrl } = usePreviewImg();
+  const { handleImageChange, imgUrl, setImgUrl } = usePreviewImg();
+console.log("Payload sent to backend:", { ...inputs, profilePicture: imgUrl });
+
 
   // 🧠 Sync inputs when user updates (e.g. after fetch('/me'))
   useEffect(() => {
@@ -67,10 +69,16 @@ export default function UpdateProfilePage() {
         linkedin: user?.linkedin || '',
         phone: user?.phone || '',
         hobbies: user?.hobbies || '',
-
       });
+      
+      setImgUrl(user?.profilePicture || null); // ✅ fallback clar
+
     }
   }, [user]);
+  // 🔍 Pune imediat după useEffect:
+console.log("imgUrl", imgUrl);
+console.log("user.profilePicture", user?.profilePicture);
+  
 
   const handleCancel = () => {
     navigate(`/${user?.username}`);
@@ -78,7 +86,7 @@ export default function UpdateProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (inputs.oldPassword || inputs.password) {
       if (!inputs.oldPassword || !inputs.password) {
         showToast('Error', 'Both old and new passwords are required', 'error');
@@ -89,7 +97,12 @@ export default function UpdateProfilePage() {
         return;
       }
     }
-
+  
+    if (inputs.bio.length > BIO_LIMIT) {
+      showToast('Error', `Biography must be at most ${BIO_LIMIT} characters`, 'error');
+      return;
+    }
+  
     try {
       const res = await fetch(`/api/users/update/${user._id}`, {
         method: 'PUT',
@@ -97,53 +110,51 @@ export default function UpdateProfilePage() {
         credentials: 'include',
         body: JSON.stringify({ ...inputs, profilePicture: imgUrl }),
       });
+  
       const data = await res.json();
-
+  
       if (data.error) {
         showToast('Error', data.error.message || data.error, 'error');
         return;
       }
-
+  
       showToast('Success', data.message || 'Profile updated', 'success');
+  
+      if (data.user) {
+        setUser(data.user);
+        localStorage.setItem("licenta", JSON.stringify(data.user));
+        setUser(JSON.parse(localStorage.getItem("licenta")));
 
-      // 🔁 Refetch user
-      const meRes = await fetch("/api/users/me", { credentials: "include" });
-      const updatedUser = await meRes.json();
-
-      if (!updatedUser || updatedUser.error) {
-        showToast('Error', 'Failed to fetch updated user data', 'error');
-        return;
+        setInputs({
+          firstName: data.user.firstName || '',
+          lastName: data.user.lastName || '',
+          username: data.user.username || '',
+          email: data.user.email || '',
+          bio: data.user.bio || '',
+          oldPassword: '',
+          password: '',
+          location: data.user.location || '',
+          profession: data.user.profession || '',
+          age: data.user.age || '',
+          instagram: data.user.instagram || '',
+          facebook: data.user.facebook || '',
+          webpage: data.user.webpage || '',
+          soundcloud: data.user.soundcloud || '',
+          spotify: data.user.spotify || '',
+          linkedin: data.user.linkedin || '',
+          phone: data.user.phone || '',
+          hobbies: data.user.hobbies || '',
+        });
+  
+        setImgUrl(data.user.profilePicture || null);
+        navigate(`/${data.user.username}`);
       }
-
-      setUser(updatedUser);
-      localStorage.setItem("licenta", JSON.stringify(updatedUser));
-
-      setInputs({
-        firstName: updatedUser.firstName || '',
-        lastName: updatedUser.lastName || '',
-        username: updatedUser.username || '',
-        email: updatedUser.email || '',
-        bio: updatedUser.bio || '',
-        oldPassword: '',
-        password: '',
-        location: updatedUser.location || '',
-        profession: updatedUser.profession || '',
-        age: updatedUser.age || '',
-        instagram: updatedUser.instagram || '',
-        facebook: updatedUser.facebook || '',
-        webpage: updatedUser.webpage || ''
-      });
-      if (inputs.bio.length > BIO_LIMIT) {
-        showToast('Error', `Biography must be at most ${BIO_LIMIT} characters`, 'error');
-        return;
-      }
-      
-
-      navigate(`/${updatedUser.username}`);
+  
     } catch (error) {
       showToast('Error', error.message, 'error');
     }
   };
+  
 
   return (
     <Box p={4}>
@@ -160,8 +171,8 @@ export default function UpdateProfilePage() {
       <Flex gap={5} direction="column">
         <Flex ml={20} gap={20} direction="row">
           <Flex gap={4} direction="column">
-            <Avatar src={user?.profilePicture || ""} size="2xl" />
-            <Button onClick={() => fileRef.current.click()}>Change avatar</Button>
+          <Avatar src={imgUrl || user?.profilePicture || ""} size="2xl" />          <Button onClick={() => fileRef.current.click()}>Change avatar</Button>
+           
             <Input type="file" hidden ref={fileRef} onChange={handleImageChange} />
 
             {/* Example input */}

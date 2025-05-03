@@ -421,10 +421,6 @@ const circularPositions = [
   </Flex>
 </Box>
 
-
-
-
-
       {/* People Section */}
       <Box mt={20} mb={20} px={10} position="relative" h="500px">
         {/* Central Text */}

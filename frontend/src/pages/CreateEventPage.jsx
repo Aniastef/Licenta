@@ -23,6 +23,26 @@ import { useNavigate } from "react-router-dom";
 import { AddIcon } from "@chakra-ui/icons";
 import useLoadGoogleMapsScript from "../hooks/useLoadGoogleMapsScript";
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
+import imageCompression from "browser-image-compression";
+import EventImageCropModal from "../components/EventImageCropModal";
+
+
+const compressImage = async (file) => {
+	try {
+		const options = {
+			maxSizeMB: 0.5, // 500 KB max
+			maxWidthOrHeight: 1080,
+			useWebWorker: true,
+		};
+		const compressed = await imageCompression(file, options);
+		return compressed;
+	} catch (err) {
+		console.error("Compression failed:", err);
+		return file;
+	}
+};
+
+
 const CreateEventPage = () => {
 
 const setEvent = useSetRecoilState(eventAtom);
@@ -45,6 +65,9 @@ const [newEvent, setNewEvent] = useState({
   attachments: [],
   coordinates: { lat: null, lng: null },
 });
+const [rawCoverImage, setRawCoverImage] = useState(null);
+const [croppedCoverImage, setCroppedCoverImage] = useState(null);
+const [cropModalOpen, setCropModalOpen] = useState(false);
 
 const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs'; // Înlocuiește cu cheia ta reală
 const { isLoaded, error } = useLoadGoogleMapsScript(apiKey); // Încărcare script
@@ -112,18 +135,33 @@ useEffect(() => {
 		if (!newEvent.name) {
 			showToast("Error", "Name is required", "error");
 			return;
-		  }
-		  
-
+		}
+	
 		setIsLoading(true);
 		try {
-			let base64Image = coverImage ? await fileToBase64(coverImage) : null;
-			let galleryBase64 = await Promise.all(newGalleryFiles.map(fileToBase64));
-			let attachmentsData = await Promise.all(newAttachments.map(async (file) => ({
-				fileName: file.name,
-				fileData: await fileToBase64(file)
-			})));
-
+			// 🔽 Compresie imagine cover (dacă există)
+			let base64Image = croppedCoverImage || null;
+			if (coverImage) {
+				const compressedCover = await compressImage(coverImage);
+				base64Image = await fileToBase64(compressedCover);
+			}
+	
+			// 🔽 Compresie imagini galerie
+			const compressedGallery = await Promise.all(
+				newGalleryFiles.map((file) => compressImage(file))
+			);
+			const galleryBase64 = await Promise.all(
+				compressedGallery.map(fileToBase64)
+			);
+	
+			// 🔼 Fisierele atașate (PDF, etc.) nu se comprimă
+			const attachmentsData = await Promise.all(
+				newAttachments.map(async (file) => ({
+					fileName: file.name,
+					fileData: await fileToBase64(file),
+				}))
+			);
+	
 			const res = await fetch("/api/events/create", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -132,12 +170,12 @@ useEffect(() => {
 					...newEvent,
 					coverImage: base64Image,
 					gallery: galleryBase64,
-					attachments: attachmentsData
-				})
+					attachments: attachmentsData,
+				}),
 			});
-
+	
 			const data = await res.json();
-
+	
 			if (data.error) {
 				showToast("Error", data.error, "error");
 			} else {
@@ -151,7 +189,7 @@ useEffect(() => {
 			setIsLoading(false);
 		}
 	};
-
+	
 	return (
 		<Container maxW="container.md" py={8}>
 			<VStack spacing={8}>
@@ -194,7 +232,22 @@ useEffect(() => {
 						<Input placeholder="Language (e.g., en, ro)" value={newEvent.language} onChange={(e) => setNewEvent({ ...newEvent, language: e.target.value })} />
 						<Stack w="full">
 							<Heading as="h4" size="sm">Cover Image</Heading>
-							<Input type="file" accept="image/*" onChange={(e) => setCoverImage(e.target.files[0])} />
+							<Input
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setRawCoverImage(reader.result); // base64 brut
+        setCropModalOpen(true); // deschide popup crop
+      };
+      reader.readAsDataURL(file);
+    }
+  }}
+/>
+
 						</Stack>
 
 						<Stack w="full">
@@ -213,6 +266,16 @@ useEffect(() => {
 					</VStack>
 				</Box>
 			</VStack>
+			<EventImageCropModal
+  isOpen={cropModalOpen}
+  onClose={() => setCropModalOpen(false)}
+  imageSrc={rawCoverImage}
+  onCropComplete={(croppedBase64) => {
+    setCroppedCoverImage(croppedBase64);
+  }}
+/>
+
+
 		</Container>
 	);
 };

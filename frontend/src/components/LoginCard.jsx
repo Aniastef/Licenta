@@ -15,6 +15,7 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
+import sticky from "../assets/sticky.svg";
 
 import loginImage from '../assets/login.jpg';
 import { useState } from 'react';
@@ -85,7 +86,7 @@ const LoginCard= () => {
   
 
   return (
-    <Flex minH="100vh" bg="gray.100" align="center" justify="center">
+    <Flex minH="80vh" align="center" justify="center">
       <Box
         bg="white"
         boxShadow="xl"
@@ -157,13 +158,39 @@ const LoginCard= () => {
           </VStack>
         </Box>
 
-        <Box flex="1" >
-        
-          <Image
-            src={loginImage}
-            alt="Welcome Illustration"
-          />
-        </Box>
+        <Box flex="1" display="flex" alignItems="center" justifyContent="center" bg="yellow.50" flexDirection="column">
+  {/* Sticky Note mărit */}
+  <Box position="relative" w="380px" h="380px" > {/* Sticky mai mare și mai mult spațiu jos */}
+    <Image src={sticky} alt="Sticky Note" w="100%" h="100%" />
+
+    {/* Text peste sticky */}
+    <Box position="absolute" top="50px" left="50px" right="50px">
+      <Text   textAlign="center" 
+ fontWeight="bold" fontSize="md" >Daily insight:</Text>
+      <Text overflowY="hidden" 
+          _hover={{ overflowY: "auto" }} // 👈 apare doar la hover
+
+    maxHeight="190px" // 🧠 Ajustează cât spațiu are textul
+    pr={1} // puțin padding să nu taie scrollbar-ul 
+    fontSize="sm" color="gray.600" whiteSpace="pre-wrap">
+        Ai înțel            Ai înțeles ideea adjpasjdajlakhjdslakhpoaujwpdapoajdjoajdpiowajdpoadjpoaw
+        Ai înțeles iAi înțel            Ai înțeles ideea adjpasjdajlakhjdslakhpoaujwpdapoajdjoajdpiowajdpoadjpoaw
+        Ai înțeles iAi înțel            Ai înțeles ideea adjpasjdajlakhjdslakhpoaujwpdapoajdjoajdpiowajdpoadjpoaw
+        Ai înțeles iAi înțel            Ai înțeles ideea adjpasjdajlakhjdslakhpoaujwpdapoajdjoajdpiowajdpoadjpoaw
+        Ai înțeles i
+      </Text>
+    </Box>
+  </Box>
+
+  {/* Continue as Guest mai jos */}
+  <Button   mt={-10} // 👉 Ridică butonul mai aproape
+ variant="link" color="gray.700" fontWeight="bold" fontSize="md">
+    Continue as Guest
+  </Button>
+</Box>
+
+
+
       </Box>
     </Flex>
   );

@@ -338,7 +338,12 @@ if (selectedFiles.length > 0) {
         onClick={() => handleSelectUser(user)}
         cursor="pointer"
       >
-        <Avatar size="sm" name={user.firstName} />
+<Avatar
+  size="sm"
+  name={`${user.firstName} ${user.lastName}`}
+  src={user.profilePicture || undefined}
+/>
+
         <Text>{user.firstName} {user.lastName}</Text>
       </HStack>
     ))}
@@ -359,11 +364,12 @@ if (selectedFiles.length > 0) {
           align="flex-start"
         >
           <HStack align="flex-start">
-            <Avatar
-              size="sm"
-              name={conv.user.firstName}
-              src={conv.user.profilePicture || "https://i.pravatar.cc/150"}
-            />
+          <Avatar
+  size="sm"
+  name={`${conv.user.firstName} ${conv.user.lastName}`}
+  src={conv.user.profilePicture || undefined}
+/>
+
             <Box>
               <Text fontWeight="bold">
                 {conv.user.firstName} {conv.user.lastName}
@@ -401,11 +407,12 @@ if (selectedFiles.length > 0) {
           <>
             <VStack mb={4} align="start" spacing={3}>
             <HStack spacing={4} align="center" width="100%">
-  <Avatar
-    name={selectedUser.firstName}
-    src={selectedUser.profilePicture || "https://i.pravatar.cc/150"}
-    size="lg"
-  />
+            <Avatar
+  name={`${selectedUser.firstName} ${selectedUser.lastName}`}
+  src={selectedUser.profilePicture || undefined}
+  size="lg"
+/>
+
   <Heading size="lg">
     {selectedUser.firstName} {selectedUser.lastName}
   </Heading>
@@ -476,11 +483,12 @@ if (selectedFiles.length > 0) {
 >
   <Flex align="flex-end" gap={2}>
     {!isCurrentUser && ( // Avatar pentru alt user
-      <Avatar
-        size="sm"
-        name={msg.sender?.firstName}
-        src={msg.sender?.profilePicture || "https://i.pravatar.cc/150"}
-      />
+     <Avatar
+     size="sm"
+     name={`${msg.sender?.firstName || ""} ${msg.sender?.lastName || ""}`}
+     src={msg.sender?.profilePicture || undefined}
+   />
+   
     )}
     {isCurrentUser && ( // 🔥 Ora în stânga pentru mesajele portocalii
       <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
