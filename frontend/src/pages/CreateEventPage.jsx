@@ -26,7 +26,6 @@ import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocom
 import imageCompression from "browser-image-compression";
 import EventImageCropModal from "../components/EventImageCropModal";
 
-
 const compressImage = async (file) => {
 	try {
 		const options = {
@@ -41,7 +40,6 @@ const compressImage = async (file) => {
 		return file;
 	}
 };
-
 
 const CreateEventPage = () => {
 
@@ -68,6 +66,9 @@ const [newEvent, setNewEvent] = useState({
 const [rawCoverImage, setRawCoverImage] = useState(null);
 const [croppedCoverImage, setCroppedCoverImage] = useState(null);
 const [cropModalOpen, setCropModalOpen] = useState(false);
+const [coverImage, setCoverImage] = useState(null);
+const [newGalleryFiles, setNewGalleryFiles] = useState([]);
+const [newAttachments, setNewAttachments] = useState([]);
 
 const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs'; // Înlocuiește cu cheia ta reală
 const { isLoaded, error } = useLoadGoogleMapsScript(apiKey); // Încărcare script
@@ -115,12 +116,6 @@ useEffect(() => {
 	  setIsLoading(false);
 	}
   };
-  
-
-	
-	const [coverImage, setCoverImage] = useState(null);
-	const [newGalleryFiles, setNewGalleryFiles] = useState([]);
-	const [newAttachments, setNewAttachments] = useState([]);
 
 	const fileToBase64 = (file) => {
 		return new Promise((resolve, reject) => {

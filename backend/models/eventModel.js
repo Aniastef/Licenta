@@ -74,7 +74,7 @@ const eventSchema = new mongoose.Schema(
       },
       language: {
         type: String,
-        default: "ro",
+        default: "english",
       },
       collaborators: [
         {

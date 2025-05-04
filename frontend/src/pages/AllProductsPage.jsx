@@ -154,6 +154,15 @@ const ProductsPage = () => {
 
   return (
     <Box p={4}>
+       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
+             <Text fontWeight="bold" fontSize="2xl" textAlign="center">
+                All Products
+             </Text>
+             <Flex position="absolute" right={4} gap={2}>
+               <Circle size="30px" bg="yellow.400" />
+               <Circle size="30px" bg="green.400" />
+             </Flex>
+           </Flex>
       <Flex justify="space-between" align="center" mb={4} wrap="wrap">
         <HStack spacing={4} mb={2}>
           <Text>Search by:</Text>
@@ -168,10 +177,10 @@ const ProductsPage = () => {
             w="250px"
           />
         </HStack>
-        <Flex right={0} gap={2}>
-            <Circle size="30px" bg="yellow.400" />
-            <Circle size="30px" bg="green.400" />
-          </Flex>
+       
+
+          <HStack spacing={2}>
+          <Text>Sort by:</Text>  
         <Select
           placeholder="Sort by"
           value={sortOption}
@@ -183,6 +192,8 @@ const ProductsPage = () => {
           <option value="price">Price</option>
           <option value="rating">Rating</option>
         </Select>
+      </HStack>
+
       </Flex>
 
       <Flex direction={{ base: "column", md: "row" }} gap={6}>

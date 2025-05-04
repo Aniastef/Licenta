@@ -273,8 +273,10 @@ export const getAllUserProducts = async (req, res) => {
 	  console.log("User found:", user);
   
 	  // Găsește toate produsele utilizatorului
-	  const products = await Product.find({ user: user._id });
-	  console.log("Products found:", products);
+	  const products = await Product.find({ user: user._id })
+	  .populate("galleries", "name") // ✅ populează doar câmpul `name` din galerie
+	  .select("name price quantity forSale images galleries createdAt");
+		  console.log("Products found:", products);
   
 	  res.status(200).json({ products });
 	} catch (err) {

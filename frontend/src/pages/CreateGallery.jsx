@@ -18,11 +18,43 @@ import {
   import { useNavigate } from "react-router-dom";
   import { useRecoilValue } from "recoil";
   import userAtom from "../atoms/userAtom"; // ✅ import currentUser
+  import imageCompression from "browser-image-compression";
+import GalleryImageCropModal from "../components/GalleryImageCropModal";
+  
+const compressImage = async (file) => {
+	try {
+		const options = {
+			maxSizeMB: 0.5, // 500 KB max
+			maxWidthOrHeight: 1080,
+			useWebWorker: true,
+		};
+		const compressed = await imageCompression(file, options);
+		return compressed;
+	} catch (err) {
+		console.error("Compression failed:", err);
+		return file;
+	}
+};
+
+const dataURLtoFile = (dataUrl, filename) => {
+	const arr = dataUrl.split(",");
+	const mime = arr[0].match(/:(.*?);/)[1];
+	const bstr = atob(arr[1]);
+	let n = bstr.length;
+	const u8arr = new Uint8Array(n);
+	while (n--) {
+	  u8arr[n] = bstr.charCodeAt(n);
+	}
+	return new File([u8arr], filename, { type: mime });
+  };
   
   const CreateGalleryPage = () => {
 	const navigate = useNavigate();
 	const currentUser = useRecoilValue(userAtom); // ✅ acces utilizator
-  
+	const [rawCoverImage, setRawCoverImage] = useState(null);
+	const [croppedCoverImage, setCroppedCoverImage] = useState(null);
+	const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+	
 	const [newGallery, setNewGallery] = useState({
 		name: "",
 		category: "General",
@@ -81,9 +113,11 @@ import {
 		formData.append("collaborators", JSON.stringify(collaborators.map((u) => u._id)));
 		formData.append("isPublic", newGallery.isPublic);
   
-		if (coverPhoto) {
-		  formData.append("coverPhoto", coverPhoto);
-		}
+		if (croppedCoverImage) {
+			const compressed = await compressImage(dataURLtoFile(croppedCoverImage, "cover.jpg"));
+			formData.append("coverPhoto", compressed);
+		  }
+		  
   
 		const res = await fetch("/api/galleries/create", {
 		  method: "POST",
@@ -114,8 +148,17 @@ import {
 	};
   
 	const handleFileChange = (e) => {
-	  setCoverPhoto(e.target.files[0]);
-	};
+		const file = e.target.files[0];
+		if (file) {
+		  const reader = new FileReader();
+		  reader.onloadend = () => {
+			setRawCoverImage(reader.result);
+			setIsCropModalOpen(true);
+		  };
+		  reader.readAsDataURL(file);
+		}
+	  };
+	  
   
 	return (
 	  <Container maxW="container.md" py={8}>
@@ -233,6 +276,13 @@ import {
 			</VStack>
 		  </Box>
 		</VStack>
+		<GalleryImageCropModal
+  isOpen={isCropModalOpen}
+  onClose={() => setIsCropModalOpen(false)}
+  imageSrc={rawCoverImage}
+  onCropComplete={(cropped) => setCroppedCoverImage(cropped)}
+/>
+
 	  </Container>
 	);
   };

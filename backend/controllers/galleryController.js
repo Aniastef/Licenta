@@ -313,13 +313,17 @@ export const updateGallery = async (req, res) => {
 
 export const getAllGalleries = async (req, res) => {
   try {
-    const galleries = await Gallery.find()
-      .populate("owner", "firstName lastName profilePicture")
-      .populate({
-        path: "products",
-        select: "images", // ✅ Populează doar imaginile produselor
-      })
-      .sort({ createdAt: -1 });
+   // getAllGalleries
+const galleries = await Gallery.find()
+.populate("owner", "firstName lastName profilePicture")
+.populate("collaborators", "firstName lastName")
+.populate({
+  path: "products",
+  select: "images",
+})
+.select("name tags products owner coverPhoto collaborators") // 👈 adaugă coverPhoto
+.sort({ createdAt: -1 });
+
 
     res.status(200).json({ galleries });
   } catch (err) {

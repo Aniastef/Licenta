@@ -162,16 +162,22 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
 </Flex>
 
 
-<Box  mt={2} borderRadius="md" overflow="hidden" display="flex" justifyContent="center">
-      <Image
-          src={gallery.coverPhoto || "https://via.placeholder.com/800"}
-          alt="Event Cover"
-          objectFit="cover"
-          borderRadius="md"
-          w="98%"
-          h="400px"
-        />
-      </Box>
+<Box mt={2} borderRadius="md" overflow="hidden" w="100%" maxW="95%" mx="auto">
+  <Box position="relative" paddingTop="30.125%"> {/* Aspect ratio 1200 / 398 */}
+    <Image
+      src={gallery.coverPhoto || "https://via.placeholder.com/800"}
+      alt="Gallery Cover"
+      objectFit="cover"
+      position="absolute"
+      top="0"
+      left="0"
+      width="100%"
+      height="100%"
+      borderRadius="md"
+    />
+  </Box>
+</Box>
+
 
       <Flex justifyContent="space-between" mt={3}  px={10}>
       <Text fontSize="lg" fontWeight="bold">

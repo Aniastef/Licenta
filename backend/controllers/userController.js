@@ -318,27 +318,28 @@ export const updateUser = async (req, res) => {
 		}
 	  }
   
-	  // 🔧 Actualizare câmpuri generale
-	  user.firstName = firstName || user.firstName;
-	  user.lastName = lastName || user.lastName;
-	  user.email = email || user.email;
-	  user.username = username || user.username;
-	  user.bio = bio || user.bio;
-	  user.location = location || user.location;
-	  user.profession = profession || user.profession;
-	  user.age = age || user.age;
-  
-	  // 🔧 Rețele sociale și date personale
-	  user.instagram = instagram || user.instagram;
-	  user.facebook = facebook || user.facebook;
-	  user.webpage = webpage || user.webpage;
-	  user.soundcloud = soundcloud || user.soundcloud;
-	  user.spotify = spotify || user.spotify;
-	  user.linkedin = linkedin || user.linkedin;
-	  user.phone = phone || user.phone;
-	  user.hobbies = hobbies || user.hobbies;
-	  user.message = message || user.message;
-	  user.heart = heart || user.heart;
+// 🔧 Actualizare câmpuri generale
+if (firstName !== undefined) user.firstName = firstName;
+if (lastName !== undefined) user.lastName = lastName;
+if (email !== undefined) user.email = email;
+if (username !== undefined) user.username = username;
+if (bio !== undefined) user.bio = bio;
+if (location !== undefined) user.location = location;
+if (profession !== undefined) user.profession = profession;
+if (age !== undefined) user.age = age;
+
+// 🔧 Rețele sociale și date personale
+if (instagram !== undefined) user.instagram = instagram;
+if (facebook !== undefined) user.facebook = facebook;
+if (webpage !== undefined) user.webpage = webpage;
+if (soundcloud !== undefined) user.soundcloud = soundcloud;
+if (spotify !== undefined) user.spotify = spotify;
+if (linkedin !== undefined) user.linkedin = linkedin;
+if (phone !== undefined) user.phone = phone;
+if (hobbies !== undefined) user.hobbies = hobbies;
+if (message !== undefined) user.message = message;
+if (heart !== undefined) user.heart = heart;
+
   
 	  // 🔐 Parolă
 	  if (password) {

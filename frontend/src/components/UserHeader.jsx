@@ -130,17 +130,33 @@ const UserHeader = ({ user }) => {
       <Flex justify="space-between" align="flex-start" gap={10}>
         {/* Avatar & Contact */}
         <Flex direction="column" align="center" gap={2}>
-          <Box borderRadius="full"  w="300px" h="300px" overflow="hidden" >
-            <Image
-              src={user.profilePicture}
-              alt={`${user.firstName} ${user.lastName}`}
-              w="100%"
-              h="100%"
-              objectFit="cover"
-            />
-          </Box>
-         
-        </Flex>
+  <Box
+    borderRadius="full"
+    w="300px"
+    h="300px"
+    overflow="hidden"
+    bg="gray.100"
+    display="flex"
+    alignItems="center"
+    justifyContent="center"
+    fontSize="5xl"
+    fontWeight="bold"
+    color="gray.600"
+  >
+    {user.profilePicture ? (
+      <Image
+        src={user.profilePicture}
+        alt={`${user.firstName} ${user.lastName}`}
+        w="100%"
+        h="100%"
+        objectFit="cover"
+      />
+    ) : (
+      `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase()
+    )}
+  </Box>
+</Flex>
+
 
         {/* Bio */}
         <Flex direction="column" flex={1} maxW="450px">
@@ -239,28 +255,62 @@ const UserHeader = ({ user }) => {
       <Flex   ml={20} direction="column" align="start" gap={3} >
       <Text fontWeight="bold" fontSize="2xl">@{user.username}</Text>
       {contactItems.map((item, idx) => {
-  // Dacă e "Message me", arată mereu butonul
-  if (item.label === "Message me") {
-    return (
-      <Flex key={idx} align="center" gap={3}>
-        <Image src={item.icon} w="18px" h="18px" />
-        <Link to={`/messages/${user._id}`}>
+  const isMessage = item.label === "Message me";
+  const isUrl = typeof item.label === "string" && item.label.startsWith("http");
+  const isEmail = typeof item.label === "string" && item.label.includes("@");
+  const isWeb = item.icon === webpageIcon;
+
+  const extractUsername = (url) => {
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname.replace(/^www\./, ''); // ← doar domeniul
+    } catch {
+      return url;
+    }
+  };
+  
+
+  const displayLabel = isUrl
+    ? extractUsername(item.label)
+    : item.label;
+
+  return isMessage ? (
+    <Flex key={idx} align="center" gap={3}>
+      <Image src={item.icon} w="18px" h="18px" />
+      <Text
+  fontSize="sm"
+  color="blue.500"
+  cursor="pointer"
+  _hover={{ textDecoration: "underline" }}
+  onClick={() => navigate(`/messages/${user._id}`)}
+>
+  {item.label}
+</Text>
+
+    </Flex>
+  ) : item.label ? (
+    <Flex key={idx} align="center" gap={3}>
+      <Image src={item.icon} w="18px" h="18px" />
+      {isEmail ? (
+        <a href={`mailto:${item.label}`}>
           <Text fontSize="sm" color="blue.500" _hover={{ textDecoration: "underline" }}>
             {item.label}
           </Text>
-        </Link>
-      </Flex>
-    );
-  }
-
-  // Pentru celelalte, arată doar dacă user-ul a completat acel câmp
-  return item.label && item.label !== "Phone number" && item.label !== "Email" ? (
-    <Flex key={idx} align="center" gap={3}>
-      <Image src={item.icon} w="18px" h="18px" />
-      <Text fontSize="sm">{item.label}</Text>
+        </a>
+      ) : isUrl ? (
+        <a href={item.label} target="_blank" rel="noopener noreferrer">
+          <Text fontSize="sm" color="blue.500" _hover={{ textDecoration: "underline" }}>
+            {displayLabel}
+          </Text>
+        </a>
+      ) : (
+        <Text fontSize="sm">{item.label}</Text>
+      )}
     </Flex>
   ) : null;
 })}
+
+
 
         </Flex>
 
