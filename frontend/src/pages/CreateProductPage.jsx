@@ -169,8 +169,18 @@ const CreateProductPage = () => {
   style={{ height: "200px", 
  width: "700px", // înălțime fixă 
   marginBottom: "20px", overflowY: "auto" }}
-/>						<Input type="number" placeholder="Price" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
-						<Input type="number" placeholder="Quantity" min="0" value={newProduct.quantity} onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })} />
+/>		
+{newProduct.forSale && (
+  <Input
+    type="number"
+    placeholder="Price"
+    value={newProduct.price}
+    onChange={(e) =>
+      setNewProduct({ ...newProduct, price: parseFloat(e.target.value) || 0 })
+    }
+  />
+)}
+<Input type="number" placeholder="Quantity" min="0" value={newProduct.quantity} onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })} />
 
 						<FormControl display="flex" alignItems="center">
 							<FormLabel mb="0">For Sale</FormLabel>

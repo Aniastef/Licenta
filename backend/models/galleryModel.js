@@ -13,7 +13,7 @@ const gallerySchema = new mongoose.Schema(
     
     category: {
       type: String,
-      default: "General", // Categoria produsului (opțional)
+      default: "General", 
     },
     description: {
       type: String,

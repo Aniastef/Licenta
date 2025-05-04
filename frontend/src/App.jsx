@@ -39,6 +39,8 @@ import UserArticleCalendarPage from './pages/UserArticleCalendarPage';
 import Test from './components/test';
 import ContactBar from './components/ContactBar';
 import LoginCard from './components/LoginCard';
+import UserAllGalleriesPage from './pages/UserAllGalleriesPage';
+import UserAllEventsPage from './pages/UserAllEventsPage';
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -87,6 +89,8 @@ function App() {
         <Route path='/admin-panel' element={<AdminPanel/>}/>
         <Route path="/:username/favorites" element={<FavoriteProductsPage />} />
         <Route path="/:username/all-products" element={<UserAllProductsPage />} />
+        <Route path="/:username/all-galleries" element={<UserAllGalleriesPage />} />
+        <Route path="/:username/all-events" element={<UserAllEventsPage />} />
         <Route path="/update/product/:id" element={<UpdateProductPage />} />
         <Route path="/blocked-users" element={<BlockedUsersPage />} /> {/* Pagină pentru utilizatorii blocați */}
         <Route path="/events/:eventId/edit" element={<EditEventPage />} />

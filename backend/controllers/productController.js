@@ -208,6 +208,7 @@ try {
 // };
   
   
+  
 export const getAllProducts = async (req, res) => {
 	try {
 	  // Găsește toate produsele și populează informațiile despre utilizator
@@ -261,29 +262,24 @@ export const getProductsNotInGallery = async (req, res) => {
 export const getAllUserProducts = async (req, res) => {
 	try {
 	  const { username } = req.params;
-	  console.log("Fetching products for user:", username);
   
-	  // Găsește utilizatorul după username
-	  const user = await User.findOne({ username });
+	  const user = await User.findOne({ username }).select("firstName lastName username");
 	  if (!user) {
-		console.error("User not found:", username);
 		return res.status(404).json({ error: "User not found" });
 	  }
   
-	  console.log("User found:", user);
-  
-	  // Găsește toate produsele utilizatorului
 	  const products = await Product.find({ user: user._id })
-	  .populate("galleries", "name") // ✅ populează doar câmpul `name` din galerie
-	  .select("name price quantity forSale images galleries createdAt");
-		  console.log("Products found:", products);
+		.populate("galleries", "name")
+		.select("name price quantity forSale images videos audios writing galleries createdAt");
   
-	  res.status(200).json({ products });
+	  res.status(200).json({ user, products }); // ✅ trimite și user
 	} catch (err) {
 	  console.error("Error fetching user's products:", err.message);
 	  res.status(500).json({ error: "Failed to fetch products" });
 	}
   };
+  
+  
   
 
   export const getAvailableProducts = async (req, res) => {

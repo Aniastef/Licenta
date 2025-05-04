@@ -613,3 +613,32 @@ console.log("👤 Current:", userId.toString());
       res.status(500).json({ error: "Failed to decline invite" });
     }
   };
+
+  export const getAllUserGalleries = async (req, res) => {
+    try {
+      const { username } = req.params;
+  
+      // Caută utilizatorul după username
+      const user = await User.findOne({ username });
+      if (!user) return res.status(404).json({ error: "User not found" });
+  
+      // Caută galeriile unde userul e owner sau colaborator
+      const galleries = await Gallery.find({
+        $or: [{ owner: user._id }, { collaborators: user._id }],
+      })
+        .populate("owner", "firstName lastName username")
+        .populate("collaborators", "firstName lastName")
+        .populate({
+          path: "products",
+          select: "images",
+        })
+        .select("name tags products owner coverPhoto collaborators isPublic")
+        .sort({ createdAt: -1 });
+  
+      res.status(200).json({ galleries, user });
+    } catch (err) {
+      console.error("Error fetching user galleries:", err.message);
+      res.status(500).json({ error: "Failed to fetch user galleries" });
+    }
+  };
+  

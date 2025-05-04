@@ -347,3 +347,27 @@ export const getAllEvents = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch events" });
   }
 };
+
+export const getAllUserEvents = async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const events = await Event.find({
+      $or: [
+        { user: user._id },
+        { collaborators: user._id },
+      ],
+    })
+      .populate("user", "firstName lastName username")
+      .populate("collaborators", "firstName lastName username")
+      .sort({ date: 1 });
+
+    res.status(200).json({ events, user });
+  } catch (err) {
+    console.error("Error fetching user events:", err.message);
+    res.status(500).json({ error: "Failed to fetch user events" });
+  }
+};
