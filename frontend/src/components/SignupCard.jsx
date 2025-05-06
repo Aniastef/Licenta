@@ -148,7 +148,7 @@ const SignupCard = () => {
   
 
   return (
-    <Flex minH="80vh" align="center" justify="center">
+    <Flex mb={10} minH="80vh" align="center" justify="center">
       <Box mt={8} bg="white" p={8} borderRadius="lg" boxShadow="xl" maxW="1200px" w="full">
         <Text fontSize="2xl" fontWeight="bold" mb={4}>Sign up to Art Corner</Text>
         <Flex gap={10}>
@@ -328,6 +328,17 @@ const SignupCard = () => {
         <Button colorScheme="green" mt={6} w="full" onClick={handleSignup}>
           Sign up
         </Button>
+        <Text mt={4} align="center">
+          Already have an account?{" "}
+          <Button
+            variant="link"
+            color="blue.500"
+            onClick={() => setAuthScreen("login")}
+          >
+            Login
+          </Button>
+        </Text>
+
       </Box>
     </Flex>
   );

@@ -429,8 +429,8 @@ const UserHeader = ({ user }) => {
     {/* Galerii */}
     <Flex direction="column" gap={4} w="100%">
   {filteredGalleries.length > 0 ? (
-    filteredGalleries.map((gallery) => (
-      <Box
+filteredGalleries.slice(0, 2).map((gallery) => (
+  <Box
         key={gallery._id}
         borderWidth="1px"
         borderRadius="md"

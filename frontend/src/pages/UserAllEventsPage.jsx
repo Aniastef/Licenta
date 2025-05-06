@@ -12,6 +12,18 @@ import {
   Button,
   Wrap,
   WrapItem,
+  CheckboxGroup,
+  Stack,
+  Checkbox,
+  Slider, 
+  SliderTrack, 
+  SliderFilledTrack,
+  SliderThumb, 
+  SliderMark,
+  RangeSlider,
+  RangeSliderTrack,
+  RangeSliderFilledTrack,
+  RangeSliderThumb,
 } from "@chakra-ui/react";
 import { useParams, Link } from "react-router-dom";
 
@@ -25,6 +37,20 @@ const UserAllEventsPage = () => {
   const [tagOptions, setTagOptions] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
   const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [ticketTypeFilter, setTicketTypeFilter] = useState("");
+  const [languageFilter, setLanguageFilter] = useState("");
+  const [upcomingOnly, setUpcomingOnly] = useState(false);
+  const [locationSearch, setLocationSearch] = useState("");
+  const [statusFilters, setStatusFilters] = useState([]);
+  const [ticketTypeFilters, setTicketTypeFilters] = useState([]);
+  const [maxPrice, setMaxPrice] = useState(100); // maximum allowed price
+  const [selectedPrice, setSelectedPrice] = useState(100);
+  const [priceRange, setPriceRange] = useState([0, 1000]); // [min, max]
+  const [customMin, setCustomMin] = useState(0);
+  const [customMax, setCustomMax] = useState(1000);
+  const [enablePriceFilter, setEnablePriceFilter] = useState(false);
+  
 
   useEffect(() => {
     fetchUserEvents();
@@ -35,10 +61,16 @@ const UserAllEventsPage = () => {
       const res = await fetch(`/api/events/user/${username}`, {
         credentials: "include",
       });
-      const data = await res.json();
-      setEvents(data.events || []);
-      setFilteredEvents(data.events || []);
-      if (data.user) setUser(data.user);
+
+    const data = await res.json();
+    setEvents(data.events || []);
+    const prices = (data.events || []).map(e => e.price).filter(p => typeof p === "number");
+    const highestPrice = prices.length ? Math.max(...prices) : 10000;
+    setMaxPrice(highestPrice);
+    setSelectedPrice(highestPrice);
+    setFilteredEvents(data.events || []);
+
+    if (data.user) setUser(data.user);
     } catch (err) {
       console.error("Error fetching events:", err);
     } finally {
@@ -78,16 +110,62 @@ const UserAllEventsPage = () => {
         e.coHosts?.some((c) => c._id === user?._id)
       );
     }
+    if (statusFilter) {
+        filtered = filtered.filter((e) => e.status === statusFilter);
+      }
+      
+      if (ticketTypeFilter) {
+        filtered = filtered.filter((e) => e.ticketType === ticketTypeFilter);
+      }
+      
+      if (languageFilter) {
+        filtered = filtered.filter((e) => e.language === languageFilter);
+      }
+      
+      if (upcomingOnly) {
+        const today = new Date();
+        filtered = filtered.filter((e) => new Date(e.date) > today);
+      }
+      
 
     if (selectedTags.length > 0) {
       filtered = filtered.filter((e) =>
         selectedTags.every((tag) => e.tags?.includes(tag))
       );
     }
+    
+    if (locationSearch.trim()) {
+        filtered = filtered.filter((e) =>
+          e.location?.toLowerCase().includes(locationSearch.toLowerCase())
+        );
+      }
 
+      if (enablePriceFilter) {
+        filtered = filtered.filter((e) =>
+          typeof e.price === "number" &&
+          e.price >= priceRange[0] &&
+          e.price <= priceRange[1]
+        );
+      }
+      
+      
+      
+      if (statusFilters.length > 0) {
+        filtered = filtered.filter((e) => statusFilters.includes(e.status));
+      }
+      
+      if (ticketTypeFilters.length > 0) {
+        filtered = filtered.filter((e) => ticketTypeFilters.includes(e.ticketType));
+      }
+    
     setFilteredEvents(filtered);
   }, [searchTerm, events, roleFilter, selectedTags, user]);
 
+  const toggleFilter = (value, setFunc) => {
+    setFunc((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  };
   return (
     <Box p={4} maxW="1200px" mx="auto">
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
@@ -100,23 +178,142 @@ const UserAllEventsPage = () => {
         </Flex>
       </Flex>
 
-      <Flex mt={4} mb={6} gap={4} wrap="wrap" justify="center">
-        <Input
-          placeholder="Search by name, tags, or co-hosts..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          maxW="350px"
-        />
-        <Select
-          placeholder="Filter by role"
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          maxW="200px"
-        >
-          <option value="organizer">Organizer</option>
-          <option value="cohost">Co-Host</option>
-        </Select>
-      </Flex>
+      <Flex gap={4} wrap="wrap" justify="center">
+  {/* Search by name, tags, co-hosts */}
+  <Input
+    placeholder="Search by name, tags, or co-hosts..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    maxW="310px"
+  />
+
+  {/* Search by location */}
+  <Input
+    placeholder="Search by location..."
+    value={locationSearch}
+    onChange={(e) => setLocationSearch(e.target.value)}
+    maxW="250px"
+  />
+
+  {/* Role filter */}
+  <Select
+    placeholder="Filter by role"
+    value={roleFilter}
+    onChange={(e) => setRoleFilter(e.target.value)}
+    maxW="200px"
+  >
+    <option value="organizer">Organizer</option>
+    <option value="cohost">Co-Host</option>
+  </Select>
+</Flex>
+
+<Flex wrap="wrap" justify="space-between" align="flex-start" mt={4}>
+  {/* Stânga: Status + Ticket Type */}
+  <Box>
+    {/* Status */}
+    <Flex align="center" gap={3} mb={2}>
+      <Text fontWeight="bold" minW="70px">Status</Text>
+      <CheckboxGroup value={statusFilters} onChange={setStatusFilters}>
+        <Flex gap={3}>
+          <Checkbox value="upcoming">Upcoming</Checkbox>
+          <Checkbox value="ongoing">Ongoing</Checkbox>
+          <Checkbox value="completed">Completed</Checkbox>
+        </Flex>
+      </CheckboxGroup>
+    </Flex>
+
+    {/* Ticket Type */}
+    <Flex align="center" gap={3}>
+      <Text fontWeight="bold" minW="70px">Ticket Type</Text>
+      <CheckboxGroup value={ticketTypeFilters} onChange={setTicketTypeFilters}>
+        <Flex gap={3}>
+          <Checkbox value="free">Free</Checkbox>
+          <Checkbox value="paid">Paid</Checkbox>
+          <Checkbox value="donation">Donation</Checkbox>
+        </Flex>
+      </CheckboxGroup>
+    </Flex>
+  </Box>
+
+  {/* Dreapta: Interval preț */}
+  {/* Dreapta: Interval preț */ }
+<Box maxW="500px" ml={[0, 4]} flex="1">
+  <Flex align="center" mb={2}>
+    <Checkbox
+      isChecked={enablePriceFilter}
+      onChange={(e) => setEnablePriceFilter(e.target.checked)}
+    >
+      Interval preț
+    </Checkbox>
+  </Flex>
+
+  <Flex direction="row" align="center" gap={4}>
+    {/* Slider ocupa tot spațiul rămas */ }
+    <Box flex="1" w="100%">
+      <RangeSlider
+        isDisabled={!enablePriceFilter}
+        min={0}
+        max={maxPrice}
+        step={50}
+        value={priceRange}
+        onChange={(val) => {
+          setPriceRange(val);
+          setCustomMin(val[0]);
+          setCustomMax(val[1]);
+        }}
+        w="100%"
+      >
+        <RangeSliderTrack>
+          <RangeSliderFilledTrack />
+        </RangeSliderTrack>
+        <RangeSliderThumb index={0} />
+        <RangeSliderThumb index={1} />
+      </RangeSlider>
+    </Box>
+
+    {/* Inputuri min-max */ }
+    <Flex gap={2} align="center">
+    <Input
+  size="sm"
+  type="text"
+  w="80px"
+  value={customMin}
+  onChange={(e) => {
+    const val = e.target.value;
+    // Permite doar numere sau șir gol temporar
+    if (/^\d*$/.test(val)) {
+      setCustomMin(val);
+      const parsed = parseInt(val || "0", 10);
+      setPriceRange([parsed, priceRange[1]]);
+    }
+  }}
+/>
+<Text>-</Text>
+<Input
+  size="sm"
+  type="text"
+  w="80px"
+  value={customMax}
+  onChange={(e) => {
+    const val = e.target.value;
+    if (/^\d*$/.test(val)) {
+      setCustomMax(val);
+      const parsed = parseInt(val || "0", 10);
+      setPriceRange([priceRange[0], parsed]);
+    }
+  }}
+/>
+
+    </Flex>
+  </Flex>
+</Box>
+
+
+
+</Flex>
+
+
+
 
       {tagOptions.length > 0 && (
         <Wrap spacing={2} mb={4} justify="center">
@@ -148,7 +345,7 @@ const UserAllEventsPage = () => {
         <Text>No events found.</Text>
       ) : (
         <>
-<Flex wrap="wrap" justify="center" gap={5}>
+<Flex mt={4} wrap="wrap" justify="center" gap={5}>
   {filteredEvents.map((event) => (
     <Link to={`/events/${event._id}`} key={event._id}>
       <Box

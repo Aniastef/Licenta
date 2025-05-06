@@ -102,7 +102,7 @@ export const getEvent = async (req, res) => {
     }
 
     const event = await Event.findById(eventId)
-      .populate("user", "firstName lastName")
+      .populate("user", "username firstName lastName")
       .populate("interestedParticipants", "firstName lastName profilePicture")
       .populate("goingParticipants", "firstName lastName profilePicture");
 

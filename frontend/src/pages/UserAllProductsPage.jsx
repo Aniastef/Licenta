@@ -118,6 +118,7 @@ const UserAllProductsPage = () => {
           <option value="latest">Newest</option>
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
+        
         </Select>
         <CheckboxGroup value={saleStatuses} onChange={setSaleStatuses}>
   <Stack direction="row" spacing={4}>

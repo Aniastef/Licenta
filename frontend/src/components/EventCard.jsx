@@ -200,6 +200,23 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         <Text><strong>Ticket Type:</strong> {event.ticketType}</Text>
         <Text><strong>Price:</strong> {event.price > 0 ? `${event.price} RON` : "Free"}</Text>
         <Text><strong>Language:</strong> {event.language?.toUpperCase() || "N/A"}</Text>
+        <Text>
+  <strong>Created by:</strong>{" "}
+  {event.user ? (
+    <Text
+      as="span"
+      color="blue.500"
+      cursor="pointer"
+      onClick={() => navigate(`/profile/${event.user.username}`)}
+      _hover={{ textDecoration: "underline" }}
+    >
+      {event.user.firstName} {event.user.lastName}
+    </Text>
+  ) : (
+    "N/A"
+  )}
+</Text>
+
         {event.description && (
   <>
     {event.description.length > 300 ? (

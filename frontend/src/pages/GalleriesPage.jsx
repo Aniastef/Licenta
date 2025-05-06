@@ -27,6 +27,7 @@ const ExploreGalleries = () => {
   const [sortOption, setSortOption] = useState("name");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [sortDirection, setSortDirection] = useState("asc");
 
   useEffect(() => {
     fetchGalleries();
@@ -65,15 +66,24 @@ const ExploreGalleries = () => {
       return matchSearch && matchTags;
     });
 
-    if (sortOption === "name") {
-      updated.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-    } else if (sortOption === "products") {
-      updated.sort((a, b) => (b.products?.length || 0) - (a.products?.length || 0));
-    }
+    updated.sort((a, b) => {
+      if (sortOption === "name") {
+        return sortDirection === "asc"
+          ? (a.name || "").localeCompare(b.name || "")
+          : (b.name || "").localeCompare(a.name || "");
+      } else if (sortOption === "products") {
+        return sortDirection === "asc"
+          ? (a.products?.length || 0) - (b.products?.length || 0)
+          : (b.products?.length || 0) - (a.products?.length || 0);
+      } else {
+        return 0;
+      }
+    });
+    
 
     setFilteredGalleries(updated);
     setCurrentPage(1);
-  }, [galleries, filterText, searchBy, sortOption, filterTags]);
+  }, [galleries, filterText, searchBy, sortOption, sortDirection, filterTags]);
 
   const paginated = filteredGalleries.slice(
     (currentPage - 1) * GALLERIES_PER_PAGE,
@@ -121,6 +131,11 @@ const ExploreGalleries = () => {
             <option value="name">Name</option>
             <option value="products">Number of Products</option>
           </Select>
+
+          <Button onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}>
+          {sortDirection === "asc" ? "↑" : "↓"}
+        </Button>
+
         </HStack>
       </Flex>
 

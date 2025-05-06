@@ -49,7 +49,12 @@ const EventsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [filterTicketTypes, setFilterTicketTypes] = useState([]);
-
+  const [statusFilters, setStatusFilters] = useState([]);
+  const [customMin, setCustomMin] = useState(0);
+  const [customMax, setCustomMax] = useState(10000);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sortDirection, setSortDirection] = useState("desc"); // "asc" | "desc"
 
   useEffect(() => {
     fetchEvents();
@@ -117,7 +122,19 @@ if (filterText) {
         const matchPriceSlider = price >= priceRange[0] && price <= priceRange[1];
         const matchPriceFilters =
           priceFilters.length === 0 || priceFilters.some((range) => price >= range.min && price <= range.max);
-        
+          const matchStatus = 
+          statusFilters.length === 0 || statusFilters.includes(event.status);
+
+          if (dateFrom) {
+  const from = new Date(dateFrom);
+  updated = updated.filter((e) => new Date(e.date) >= from);
+}
+if (dateTo) {
+  const to = new Date(dateTo);
+  updated = updated.filter((e) => new Date(e.date) <= to);
+}
+
+          
 
           return (
             matchSearch &&
@@ -125,19 +142,60 @@ if (filterText) {
             matchTicketType &&
             matchLanguage &&
             matchPriceSlider &&
-            matchPriceFilters
+            matchPriceFilters &&
+            matchStatus
           );
+          
               });
 
-    if (sortOption === "name") updated.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-    else if (sortOption === "interested") updated.sort((a, b) => (b.interestedParticipants?.length || 0) - (a.interestedParticipants?.length || 0));
-    else if (sortOption === "going") updated.sort((a, b) => (b.goingParticipants?.length || 0) - (a.goingParticipants?.length || 0));
-    else updated.sort((a, b) => new Date(b.date) - new Date(a.date));
+              updated.sort((a, b) => {
+                if (sortOption === "price") {
+                  return sortDirection === "asc"
+                    ? (a.price || 0) - (b.price || 0)
+                    : (b.price || 0) - (a.price || 0);
+                } else if (sortOption === "name") {
+                  return sortDirection === "asc"
+                    ? (a.name || "").localeCompare(b.name || "")
+                    : (b.name || "").localeCompare(a.name || "");
+                } else if (sortOption === "interested") {
+                  return sortDirection === "asc"
+                    ? (a.interestedParticipants?.length || 0) - (b.interestedParticipants?.length || 0)
+                    : (b.interestedParticipants?.length || 0) - (a.interestedParticipants?.length || 0);
+                } else if (sortOption === "going") {
+                  return sortDirection === "asc"
+                    ? (a.goingParticipants?.length || 0) - (b.goingParticipants?.length || 0)
+                    : (b.goingParticipants?.length || 0) - (a.goingParticipants?.length || 0);
+                } else if (sortOption === "location") {
+                  return sortDirection === "asc"
+                    ? (a.location || "").localeCompare(b.location || "")
+                    : (b.location || "").localeCompare(a.location || "");
+                } else {
+                  return sortDirection === "asc"
+                    ? new Date(a.date) - new Date(b.date)
+                    : new Date(b.date) - new Date(a.date);
+                }
+              });
+              
 
     setFilteredEvents(updated);
     setCurrentPage(1);
-  }, [events, sortOption, filterText, searchBy, filterTags, filterTicketTypes, filterLanguage, priceRange, priceFilters]);
-
+  }, [
+    events,
+    sortOption,
+    sortDirection,
+    filterText,
+    searchBy,
+    filterTags,
+    filterTicketTypes,
+    filterLanguage,
+    priceRange,
+    priceFilters,
+    dateFrom,
+    dateTo,
+    statusFilters,
+    currentPage, // <== ADĂUGĂ AICI
+  ]);
+  
   const paginatedEvents = filteredEvents.slice(
     (currentPage - 1) * EVENTS_PER_PAGE,
     currentPage * EVENTS_PER_PAGE
@@ -186,8 +244,14 @@ if (filterText) {
     <option value="interested">Interested Users</option>
     <option value="going">Going Users</option>
     <option value="location">Location</option>
+    <option value="price">Price</option>
   </Select>
+
+  <Button onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}>
+    {sortDirection === "asc" ? "↑" : "↓"}
+  </Button>
 </HStack>
+
 
     </Flex>
 
@@ -209,24 +273,83 @@ if (filterText) {
 
         <Divider my={3} />
         <Text fontWeight="bold">Price Range</Text>
-        <RangeSlider defaultValue={[0, 10000]} min={0} max={10000} onChangeEnd={(val) => setPriceRange(val)}>
-          <RangeSliderTrack><RangeSliderFilledTrack /></RangeSliderTrack>
-          <RangeSliderThumb index={0} /><RangeSliderThumb index={1} />
-        </RangeSlider>
-        <Text fontSize="sm">{priceRange[0]} - {priceRange[1]} RON</Text>
+<RangeSlider
+  value={priceRange}
+  min={0}
+  max={10000}
+  step={100}
+  onChange={(val) => {
+    setPriceRange(val);
+    setCustomMin(val[0]);
+    setCustomMax(val[1]);
+  }}
+>
+  <RangeSliderTrack>
+    <RangeSliderFilledTrack />
+  </RangeSliderTrack>
+  <RangeSliderThumb index={0} />
+  <RangeSliderThumb index={1} />
+</RangeSlider>
+
+<Flex mt={2} gap={2} align="center">
+<Input
+  size="sm"
+  type="text"
+  w="80px"
+  value={customMin}
+  onChange={(e) => {
+    const val = e.target.value;
+    // Permite doar numere sau șir gol temporar
+    if (/^\d*$/.test(val)) {
+      setCustomMin(val);
+      const parsed = parseInt(val || "0", 10);
+      setPriceRange([parsed, priceRange[1]]);
+    }
+  }}
+/>
+<Text>-</Text>
+<Input
+  size="sm"
+  type="text"
+  w="80px"
+  value={customMax}
+  onChange={(e) => {
+    const val = e.target.value;
+    if (/^\d*$/.test(val)) {
+      setCustomMax(val);
+      const parsed = parseInt(val || "0", 10);
+      setPriceRange([priceRange[0], parsed]);
+    }
+  }}
+/>
+
+</Flex>
+
 
         <Divider my={3} />
         <Text fontWeight="bold">Ticket Type</Text>
-<CheckboxGroup value={filterTicketTypes} onChange={setFilterTicketTypes}>
+        <CheckboxGroup value={filterTicketTypes} onChange={setFilterTicketTypes}>
   <Stack spacing={1}>
     {TICKET_TYPES.map((type) => (
       <Checkbox key={type} value={type}>
-        {type}
+        {type.charAt(0).toUpperCase() + type.slice(1)}
       </Checkbox>
     ))}
   </Stack>
 </CheckboxGroup>
 
+
+<Divider my={3} />
+<Text fontWeight="bold">Status</Text>
+<CheckboxGroup value={statusFilters} onChange={setStatusFilters}>
+  <Stack spacing={1}>
+    {["upcoming", "ongoing", "completed"].map((status) => (
+      <Checkbox key={status} value={status}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Checkbox>
+    ))}
+  </Stack>
+</CheckboxGroup>
 
         <Divider my={3} />
         <Text fontWeight="bold">Language</Text>
@@ -236,6 +359,25 @@ if (filterText) {
             <option key={lang} value={lang}>{lang}</option>
           ))}
         </Select>
+
+        <Divider my={3} />
+<Text fontWeight="bold">Date Range</Text>
+<Stack direction="row" spacing={2} mt={1}>
+  <Input
+    size="sm"
+    type="date"
+    value={dateFrom}
+    onChange={(e) => setDateFrom(e.target.value)}
+  />
+  <Text>to</Text>
+  <Input
+    size="sm"
+    type="date"
+    value={dateTo}
+    onChange={(e) => setDateTo(e.target.value)}
+  />
+</Stack>
+
 
         <Divider my={3} />
         <Text fontWeight="bold">Tags</Text>

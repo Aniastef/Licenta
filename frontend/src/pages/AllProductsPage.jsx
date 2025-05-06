@@ -45,7 +45,7 @@ const ProductsPage = () => {
   const [filterText, setFilterText] = useState("");
   const [searchBy, setSearchBy] = useState("name");
   const [filterForSale, setFilterForSale] = useState("");
-  const [sortOption, setSortOption] = useState("createdAt-desc");
+  const [sortOption, setSortOption] = useState("createdAt");
   const [availability, setAvailability] = useState([]);
   const [mediaTypes, setMediaTypes] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 10000]);
@@ -54,7 +54,10 @@ const ProductsPage = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [sortDirection, setSortDirection] = useState("desc"); // "asc" | "desc"
+  const [customMin, setCustomMin] = useState(0);
+  const [customMax, setCustomMax] = useState(10000);
+  
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -128,14 +131,49 @@ const ProductsPage = () => {
         
     });
 
-    if (sortOption === "name") updated.sort((a, b) => a.name.localeCompare(b.name));
-    else if (sortOption === "price") updated.sort((a, b) => (a.price || 0) - (b.price || 0));
-    else if (sortOption === "rating") updated.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
-    else updated.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    if (sortOption === "price") {
+      updated.sort((a, b) =>
+        sortDirection === "asc"
+          ? (a.price || 0) - (b.price || 0)
+          : (b.price || 0) - (a.price || 0)
+      );
+    } else if (sortOption === "rating") {
+      updated.sort((a, b) =>
+        sortDirection === "asc"
+          ? (a.averageRating || 0) - (b.averageRating || 0)
+          : (b.averageRating || 0) - (a.averageRating || 0)
+      );
+    } else if (sortOption === "stock") {
+      updated.sort((a, b) =>
+        sortDirection === "asc"
+          ? (a.quantity || 0) - (b.quantity || 0)
+          : (b.quantity || 0) - (a.quantity || 0)
+      );
+    } else if (sortOption === "likes") {
+      updated.sort((a, b) =>
+        sortDirection === "asc"
+          ? (a.favoritedBy?.length || 0) - (b.favoritedBy?.length || 0)
+          : (b.favoritedBy?.length || 0) - (a.favoritedBy?.length || 0)
+      );
+    } else if (sortOption === "name") {
+      updated.sort((a, b) =>
+        sortDirection === "asc"
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name)
+      );
+    } else {
+      updated.sort((a, b) =>
+        sortDirection === "asc"
+          ? new Date(a.createdAt) - new Date(b.createdAt)
+          : new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    }
+    
+    
 
     setFilteredProducts(updated);
     setCurrentPage(1);
-  }, [products, filterText, searchBy, filterForSale, sortOption, availability, mediaTypes, priceRange, priceFilters, selectedRatings, selectedTags]);
+  }, [products, filterText, searchBy, filterForSale, sortOption, sortDirection, availability, mediaTypes, priceRange, priceFilters, selectedRatings, selectedTags]);
 
   const togglePriceFilter = (range) => {
     setPriceFilters((prev) =>
@@ -179,20 +217,27 @@ const ProductsPage = () => {
         </HStack>
        
 
-          <HStack spacing={2}>
-          <Text>Sort by:</Text>  
-        <Select
-          placeholder="Sort by"
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-          w="200px"
-        >
-          <option value="createdAt-desc">Newest</option>
-          <option value="name">Name</option>
-          <option value="price">Price</option>
-          <option value="rating">Rating</option>
-        </Select>
-      </HStack>
+        <HStack spacing={2}>
+  <Text>Sort by:</Text>
+  <Select
+  value={sortOption}
+  onChange={(e) => setSortOption(e.target.value)}
+  w="180px"
+>
+  <option value="createdAt">Created</option>
+  <option value="name">Name</option>
+  <option value="price">Price</option>
+  <option value="rating">Rating</option>
+  <option value="stock">Stock</option>
+  <option value="likes">Likes</option>
+</Select>
+
+
+  <Button onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}>
+    {sortDirection === "asc" ? "↑" : "↓"}
+  </Button>
+</HStack>
+
 
       </Flex>
 
@@ -212,11 +257,55 @@ const ProductsPage = () => {
           </Stack>
           <Divider my={4} />
           <Text fontWeight="bold">Price Range</Text>
-          <RangeSlider defaultValue={[0, 10000]} min={0} max={10000} onChangeEnd={(val) => setPriceRange(val)}>
-            <RangeSliderTrack><RangeSliderFilledTrack /></RangeSliderTrack>
-            <RangeSliderThumb index={0} /><RangeSliderThumb index={1} />
-          </RangeSlider>
-          <Text fontSize="sm">{priceRange[0]} - {priceRange[1]} RON</Text>
+          <RangeSlider
+  value={priceRange}
+  min={0}
+  max={10000}
+  step={100}
+  onChange={(val) => {
+    setPriceRange(val);
+    setCustomMin(val[0]);
+    setCustomMax(val[1]);
+  }}
+>
+  <RangeSliderTrack>
+    <RangeSliderFilledTrack />
+  </RangeSliderTrack>
+  <RangeSliderThumb index={0} />
+  <RangeSliderThumb index={1} />
+</RangeSlider>
+
+<Flex mt={2} gap={2} align="center">
+  <Input
+    size="sm"
+    type="text"
+    w="80px"
+    value={customMin}
+    onChange={(e) => {
+      const val = e.target.value;
+      if (/^\d*$/.test(val)) {
+        setCustomMin(val);
+        const parsed = parseInt(val || "0", 10);
+        setPriceRange([parsed, priceRange[1]]);
+      }
+    }}
+  />
+  <Text>-</Text>
+  <Input
+    size="sm"
+    type="text"
+    w="80px"
+    value={customMax}
+    onChange={(e) => {
+      const val = e.target.value;
+      if (/^\d*$/.test(val)) {
+        setCustomMax(val);
+        const parsed = parseInt(val || "0", 10);
+        setPriceRange([priceRange[0], parsed]);
+      }
+    }}
+  />
+</Flex>
          
 
           <Divider my={4} />
@@ -387,6 +476,13 @@ const ProductsPage = () => {
                        <strong>Stock:</strong> {product.quantity} left
                       </Text>
                       )}
+                    
+                      {product.favoritedBy?.length > 0 && (
+                        <Text fontSize="sm" color="red.500">
+                          Likes: {product.favoritedBy.length}
+                        </Text>
+                      )}
+
                     </Box>
                   </Box>
                 </Link>

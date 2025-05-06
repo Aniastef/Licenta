@@ -96,7 +96,7 @@ const UserAllGalleriesPage = () => {
   }, [searchTerm, galleries, roleFilter, selectedTags, user]);
 
   return (
-    <Box p={4} maxW="1200px" mx="auto">
+    <Box bg={"gray.100"} p={4} maxW="100%" mx="auto">
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
         <Text fontWeight="bold" fontSize="2xl" textAlign="center">
           {user
@@ -155,81 +155,83 @@ placeholder="Search by name, tags, or collaborators..."          value={searchTe
       ) : filteredGalleries.length === 0 ? (
         <Text>No galleries found.</Text>
       ) : (
-        <SimpleGrid minChildWidth="550px" spacing={6}>
-          {filteredGalleries.map((gallery) => (
-            <Link
-              to={`/galleries/${gallery.owner.username}/${encodeURIComponent(
-                gallery.name
-              )}`}
-              key={gallery._id}
-            >
-              <Box
-                bg="gray.100"
-                borderRadius="md"
-                boxShadow="md"
-                overflow="hidden"
-                border="1px solid #ccc"
-                _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-                transition="all 0.2s"
-                cursor="pointer"
-                display="flex"
-                flexDirection="column"
-              >
-                <Box h="100%" bg="gray.300">
-  {gallery.coverPhoto ? (
-    <Image
-      src={gallery.coverPhoto}
-      alt={gallery.name}
-      objectFit="cover"
-      w="100%"
-      h="100%"
-    />
-  ) : gallery.products?.[0]?.images?.[0] ? (
-    <Image
-      src={gallery.products[0].images[0]}
-      alt={gallery.name}
-      objectFit="cover"
-      w="100%"
-      h="100%"
-    />
-  ) : (
-    <Flex align="center" justify="center" h="200px" bg="gray.400">
-      <Text fontSize="md" fontWeight="bold">
-        No cover photo
-      </Text>
-    </Flex>
-  )}
-</Box>
+<Flex wrap="wrap" justify="center" gap={8}>
+
+  {filteredGalleries.map((gallery) => (
+    <Link
+      to={`/galleries/${gallery.owner.username}/${encodeURIComponent(gallery.name)}`}
+      key={gallery._id}
+    >
+<Box
+  w="700px"
+  bg="gray.100"
+  borderRadius="md"
+  boxShadow="md"
+  overflow="hidden"
+  border="1px solid #ccc"
+  _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+  transition="all 0.2s"
+  cursor="pointer"
+  display="flex"
+  flexDirection="column"
+>
 
 
-                <Box textAlign="center" py={3} px={2}>
-                  <Text fontWeight="bold">{gallery.name}</Text>
-                  <Text fontSize="sm" color="gray.600">
-                    {gallery.products?.length || 0} products
-                  </Text>
-                  <Text fontSize="sm" mt={1}>
-                    <strong>Creator:</strong> {gallery.owner?.firstName} {gallery.owner?.lastName}
-                  </Text>
 
-                  {gallery.collaborators?.length > 0 && (
-                    <Text fontSize="sm" color="blue.500">
-                      <strong>Collaborators:</strong>{" "}
-                      {gallery.collaborators
-                        .map((c) => `${c.firstName} ${c.lastName}`)
-                        .join(", ")}
-                    </Text>
-                  )}
+<Box h="200px" bg="gray.300" mb={3}>
+    {gallery.coverPhoto ? (
+      <Image
+        src={gallery.coverPhoto}
+        alt={gallery.name}
+        objectFit="cover"
+        w="100%"
+        h="100%"
+      />
+    ) : gallery.products?.[0]?.images?.[0] ? (
+      <Image
+        src={gallery.products[0].images[0]}
+        alt={gallery.name}
+        objectFit="cover"
+        w="100%"
+        h="100%"
+      />
+    ) : (
+      <Flex align="center" justify="center" h="100%" bg="gray.400">
+        <Text>No cover photo</Text>
+      </Flex>
+    )}
+  </Box>
 
-                  {gallery.tags?.length > 0 && (
-                    <Text fontSize="sm" color="purple.600">
-                      <strong>Tags:</strong> {gallery.tags.join(", ")}
-                    </Text>
-                  )}
-                </Box>
-              </Box>
-            </Link>
-          ))}
-        </SimpleGrid>
+
+
+
+
+
+<Box textAlign="center" py={3} px={2} display="flex" flexDir="column" justifyContent="space-between" flex="1">
+          <Text fontWeight="bold">{gallery.name}</Text>
+          <Text fontSize="sm" color="gray.600">
+            {gallery.products?.length || 0} products
+          </Text>
+          <Text fontSize="sm" mt={1}>
+            <strong>Creator:</strong> {gallery.owner?.firstName} {gallery.owner?.lastName}
+          </Text>
+          {gallery.collaborators?.length > 0 && (
+            <Text fontSize="sm" color="blue.500">
+              <strong>Collaborators:</strong>{" "}
+              {gallery.collaborators.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}
+            </Text>
+          )}
+          {gallery.tags?.length > 0 && (
+            <Text fontSize="sm" color="purple.600">
+              <strong>Tags:</strong> {gallery.tags.join(", ")}
+            </Text>
+          )}
+        </Box>
+      </Box>
+    </Link>
+  ))}
+</Flex>
+
       )}
     </Box>
   );

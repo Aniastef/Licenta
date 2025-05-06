@@ -23,13 +23,40 @@ import { useRecoilState, useSetRecoilState } from 'recoil';
 import authScreenAtom from '../atoms/authAtom';
 import userAtom from '../atoms/userAtom';
 import useShowToast from '../hooks/useShowToast';
+import p1 from '../assets/p1.jpg';
+import p2 from '../assets/p2.jpg';
+import p3 from '../assets/p3.jpg';
+import p4 from '../assets/p4.jpg';
+import p5 from '../assets/p5.jpg';
+import p6 from '../assets/p6.jpg';
+import p7 from '../assets/p7.jpg';
+import p8 from '../assets/p8.jpg';
 
 const LoginCard= () => {
   const [showPassword, setShowPassword] = useState(false);
   const setAuthScreen = useSetRecoilState(authScreenAtom);
   const showToast = useShowToast();
   const setUser = useSetRecoilState(userAtom)
-    
+  const slideshowImages = [p1, p2, p3, p4, p5, p6, p7, p8];
+  const getRandomIndex = () => Math.floor(Math.random() * slideshowImages.length);
+  const [currentSlide, setCurrentSlide] = useState(getRandomIndex());
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => {
+        let next;
+        do {
+          next = getRandomIndex();
+        } while (next === prev); // evită aceeași imagine consecutiv
+        return next;
+      });
+    }, 2000);
+  
+    return () => clearInterval(interval);
+  }, []);
+  
+
   const [inputs, setInputs] = useState({
     username: "",
     password: "",
@@ -154,39 +181,28 @@ const LoginCard= () => {
               >
                 Sign up
               </Button>
+              
             </Text>
+            <Button // 👉 Ridică butonul mai aproape
+                variant="link" color="gray.700" fontWeight="bold" fontSize="md">
+                  Continue as Guest
+              </Button>
           </VStack>
         </Box>
 
-        <Box flex="1" display="flex" alignItems="center" justifyContent="center" bg="yellow.50" flexDirection="column">
-  {/* Sticky Note mărit */}
-  <Box position="relative" w="380px" h="380px" > {/* Sticky mai mare și mai mult spațiu jos */}
-    <Image src={sticky} alt="Sticky Note" w="100%" h="100%" />
+        <Box flex="1" display="flex" alignItems="center" justifyContent="center" flexDirection="column">
+        <Box position="relative" w="380px" h="380px">
+  <Image
+    src={slideshowImages[currentSlide]}
+    alt={`Slide ${currentSlide + 1}`}
+    w="100%"
+    h="100%"
+    objectFit="cover"
+    borderRadius="lg"
+  />
 
-    {/* Text peste sticky */}
-    <Box position="absolute" top="50px" left="50px" right="50px">
-      <Text   textAlign="center" 
- fontWeight="bold" fontSize="md" >Daily insight:</Text>
-      <Text overflowY="hidden" 
-          _hover={{ overflowY: "auto" }} // 👈 apare doar la hover
+</Box>
 
-    maxHeight="190px" // 🧠 Ajustează cât spațiu are textul
-    pr={1} // puțin padding să nu taie scrollbar-ul 
-    fontSize="sm" color="gray.600" whiteSpace="pre-wrap">
-        Ai înțel            Ai înțeles ideea adjpasjdajlakhjdslakhpoaujwpdapoajdjoajdpiowajdpoadjpoaw
-        Ai înțeles iAi înțel            Ai înțeles ideea adjpasjdajlakhjdslakhpoaujwpdapoajdjoajdpiowajdpoadjpoaw
-        Ai înțeles iAi înțel            Ai înțeles ideea adjpasjdajlakhjdslakhpoaujwpdapoajdjoajdpiowajdpoadjpoaw
-        Ai înțeles iAi înțel            Ai înțeles ideea adjpasjdajlakhjdslakhpoaujwpdapoajdjoajdpiowajdpoadjpoaw
-        Ai înțeles i
-      </Text>
-    </Box>
-  </Box>
-
-  {/* Continue as Guest mai jos */}
-  <Button   mt={-10} // 👉 Ridică butonul mai aproape
- variant="link" color="gray.700" fontWeight="bold" fontSize="md">
-    Continue as Guest
-  </Button>
 </Box>
 
 
