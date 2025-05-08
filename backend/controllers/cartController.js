@@ -20,9 +20,9 @@ export const addToCart = async (req, res) => {
     );
 
     if (existingItem) {
-      existingItem.quantity += quantity || 1;
+      existingItem.quantity += quantity; // Actualizează cantitatea
     } else {
-      user.cart.push({ product: productId, quantity: quantity || 1 });
+      user.cart.push({ product: productId, quantity });
     }
 
     await user.save();
@@ -33,7 +33,7 @@ export const addToCart = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
-  
+
   
   
 
@@ -79,7 +79,10 @@ export const updateCartItem = async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const item = user.cart.find((i) => i.product.equals(productId));
-    if (item) item.quantity = quantity;
+    if (item) {
+      // Actualizează cantitatea produsului
+      item.quantity = quantity;
+    }
 
     await user.save();
 
@@ -90,4 +93,5 @@ export const updateCartItem = async (req, res) => {
     res.status(500).json({ error: "Failed to update item" });
   }
 };
+
 

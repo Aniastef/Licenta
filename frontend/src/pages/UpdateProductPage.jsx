@@ -102,7 +102,9 @@ const EditProductPage = () => {
 				images: [...(product.images || []), ...imagesBase64],
 				videos: [...(product.videos || []), ...videosBase64],
 				audios: [...(product.audios || []), ...audiosBase64],
-			};
+				writing: product.writing, // ✅ Adaugă aici explicit
+			  };
+			  
 
 			const res = await fetch(`/api/products/update/${product._id}`, {
 				method: "PUT",
@@ -196,11 +198,19 @@ const EditProductPage = () => {
 						<Input type="file" accept="audio/*" multiple onChange={(e) => setAudioFiles([...e.target.files])} />
 
 						<Text fontWeight="bold" alignSelf="start">Writing / Poem</Text>
-						<TiptapEditor
+						<Text fontWeight="bold" alignSelf="start">Writing / Poem</Text>
+<ReactQuill
+  theme="snow"
   value={product.writing ?? ""}
   onChange={(value) => setProduct({ ...product, writing: value })}
-  placeholder="Poem or writing..."
+  style={{
+    height: "200px",
+    width: "700px",
+    overflowY: "auto",
+    marginBottom: "20px"
+  }}
 />
+
 
 
 						<Button colorScheme="blue" onClick={handleUpdate} isLoading={updating} w="full">

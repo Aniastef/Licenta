@@ -133,13 +133,28 @@ export const getProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
 try {
 	const { productId } = req.params;
-	const { name, description, price, quantity, forSale, galleries, images = [], videos = [], audios = [] } = req.body;
-
+	const {
+		name,
+		description,
+		price,
+		quantity,
+		forSale,
+		galleries,
+		images = [],
+		videos = [],
+		audios = [],
+		writing // ✅ adaugă aici!
+	  } = req.body;
+	  
 	const product = await Product.findById(productId);
 	if (!product) {
 	return res.status(404).json({ error: "Product not found" });
 	}
 
+	if (!product.user) {
+		return res.status(403).json({ error: "Product owner is missing" });
+	  }
+	  
 	if (product.user.toString() !== req.user._id.toString()) {
 	return res.status(403).json({ error: "Unauthorized action" });
 	}

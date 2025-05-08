@@ -6,14 +6,21 @@ import {
   Flex,
   Button,
   useToast,
-  Grid,
   VStack,
+  HStack,
+  Input,
+  useDisclosure, IconButton, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton,
+  Circle
 } from "@chakra-ui/react";
-import RectangleShape from "../assets/rectangleShape";
 import { useCart } from "./CartContext";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { Link as RouterLink } from "react-router-dom";
+import WaveSurfer from "wavesurfer.js";
+import WaveformPlayer from "./WaveformPlayer";
+import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { useRef } from "react";
+
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
@@ -21,8 +28,26 @@ const ProductCard = ({ product }) => {
   const toast = useToast();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  const imagesPerPage = 4;
+  const [visibleImages, setVisibleImages] = useState([0, 1, 2]);
+  const [quantity, setQuantity] = useState(1);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const isLongDescription = product?.description?.length > 300;
+  const {
+    isOpen: isImageOpen,
+    onOpen: openImage,
+    onClose: closeImage,
+  } = useDisclosure();
+  const [selectedImage, setSelectedImage] = useState(null);
+  
+  const imagesPerPage = 5; // Only show 3 images at a time
+  const scrollRef = useRef();
 
+  const scrollByAmount = (amount) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
+    }
+  };
+  
   useEffect(() => {
     if (!user?.username || !product?._id) return;
 
@@ -48,17 +73,18 @@ const ProductCard = ({ product }) => {
   const handleAddToCart = () => {
     addToCart({
       product,
-      quantity: 1,
+      quantity, // folosește cantitatea aleasă de utilizator
     });
     toast({
       title: "Product added!",
-      description: `${product.name} was added to your cart.`,
+      description: `${product.name} (x${quantity}) was added to your cart.`,
       status: "success",
       duration: 2000,
       isClosable: true,
       position: "top-right",
     });
   };
+  
 
   const handleAddToFavorites = async () => {
     if (!user) {
@@ -105,171 +131,154 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  const handleThumbnailChange = (direction) => {
+    const newIndex = direction === "up" ? Math.max(currentIndex - 1, 0) : Math.min(currentIndex + 1, product.images.length - imagesPerPage);
+    setCurrentIndex(newIndex);
+
+    const newVisibleImages = [];
+    for (let i = newIndex; i < newIndex + imagesPerPage; i++) {
+      if (product.images[i]) newVisibleImages.push(i);
+    }
+    setVisibleImages(newVisibleImages);
+  };
+
+  if (!product) {
+    return <Text>Loading product...</Text>;
+  }
+  
   return (
-    <Box mt={8} position="relative">
-      {!product ? (
+<Flex align="center" mt={8} position="relative" maxW="1800px" mx="auto">
+{!product ? (
         <Text>Loading product details...</Text>
       ) : (
-        <Flex direction="row" justify="space-between">
-          <Flex direction="column" position="relative" height="auto" width="600px">
-            <RectangleShape
-              bgColor="blue.300"
-              title={product.name}
-              position="relative"
-              minW="600px"
-              maxW="600px"
-            />
-            {product.averageRating > 0 && (
-            <Text fontSize="lg" fontWeight="semibold" color="yellow.500" ml={2} mt={2}>
-              {"★".repeat(Math.round(product.averageRating)) + "☆".repeat(5 - Math.round(product.averageRating))}{" "}
-              ({product.averageRating} / 5)
-            </Text>
-          )}
+      <Flex align="flex-start" direction={"column"}>
+        <Flex position="absolute" right={4} gap={2}>
+            <Circle size="30px" bg="red.500" />
+            <Circle size="30px" bg="blue.500" />
+          </Flex>
+      <Flex  direction="row" align="center" gap={4}>
+      <Flex direction="column" align="center" gap={4}>
+         <HStack spacing={4} mb={4} align="center" justify="center">
+            <Button colorScheme="green" size="md" onClick={() => {/* Handle Switch to Writing */}}>
+              Switch to writing
+            </Button>
+            <Button colorScheme="yellow" size="md" onClick={() => {/* Handle Switch to Video */}}>
+              Switch to video
+            </Button>
+          </HStack>
+          <Flex direction="row" align="flex-start" gap={10} pl={4}>
+          {/* Left Section - Image Thumbnails */}
+          <VStack  height="600px" align="start" spacing={3}>
+            {/* Scrollable Thumbnails */}
+            <Button
+              onClick={() => handleThumbnailChange("up")}
+              isDisabled={currentIndex === 0}
+              mb={2}
+            >
+              ↑
+            </Button>
+            {visibleImages.map((index) => (
+              <Image
+                key={index}
+                src={product.images[index]}
+                alt={`Thumbnail Image ${index + 1}`}
+                borderRadius="md"
+                objectFit="cover"
+                maxW="100px"
+                maxH="100%px"
+                w="100%px"
+                h="auto"
+                onClick={() => setCurrentIndex(index)} // Update the main image when a thumbnail is clicked
+                cursor="pointer"
+                border={currentIndex === index ? "2px solid green" : "none"} // Highlight the selected thumbnail
+              />
+            ))}
+            <Button
+              onClick={() => handleThumbnailChange("down")}
+              isDisabled={currentIndex + imagesPerPage >= product.images.length}
+              mt={2}
+            >
+              ↓
+            </Button>
+          </VStack>
 
+          {/* Right Section - Main Image */}
+          <Flex justify="center" mt={10}>
+          <Image
+            src={product.images[currentIndex]}
+            alt={`Main Product Image`}
+            borderRadius="md"
+            objectFit="cover"
+            maxW="500px"
+            maxH="500px"
+            w="100%"
+            h="auto"
+            loading="lazy"
+            cursor="pointer"
+            onClick={() => {
+              setSelectedImage(product.images[currentIndex]);
+              openImage();
+            }}
+          />
 
-            <Flex align="center" mt={4}>
-            {product.forSale && product.price !== undefined && (
-                <Button
-                  bg="green.200"
-                  borderRadius="lg"
-                  width={190}
-                  height="50px"
-                  position="absolute"
-                  right="-20"
-                  top="10"
-                >
-                  Price: {product.price} RON
-                </Button>
-              )}
+     
+          </Flex>
+        </Flex>
+        </Flex>
 
-              <Text
-                fontSize="lg"
-                fontWeight="bold"
-                color={product.forSale ? (product.quantity > 0 ? "green.500" : "red.500") : "gray.500"}
-                ml={5}
-              >
+        {/* partea cu detalii */}
+        <Flex direction="column" align="flex-start" justify="flex-start"  ml={10}>
+        <HStack justify="space-between" align="center" w="100%">
+        <Text
+  fontWeight="bold"
+  fontSize="2xl"
+  maxW="800px"
+  whiteSpace="normal"
+  wordBreak="break-word"
+>
+  {product.name}
+</Text>
+      <Button
+        variant="ghost"
+        colorScheme={isFavorite ? "red" : "gray"}
+        onClick={handleAddToFavorites}
+        fontSize="sm"
+        leftIcon={<span>{isFavorite ? "❤️" : "🤍"}</span>}
+        _hover={{ bg: "transparent", textDecoration: "underline" }}
+      >
+        {isFavorite ? "remove from favorites" : "add to favorites"}
+      </Button>
+    </HStack>
+
+        <Text mt={7}>
+          Created by {product.user?.firstName || "Unknown"} {product.user?.lastName || "User"}
+        </Text>
+        <Text mt={2}
+          color={product.forSale ? (product.quantity > 0 ? "green.500" : "red.500") : "gray.500"}>
                 {!product.forSale
                   ? "Not for sale"
                   : product.quantity > 0
                   ? `Stock: ${product.quantity} left`
                   : "Out of stock"}
-              </Text>
-            </Flex>
-
-            <Box ml={5} mt={5} maxW="450px">
-              <Text mt={5} fontWeight="bold">
-                Created by {product.user?.firstName || "Unknown"} {product.user?.lastName || "User"}
-              </Text>
-              {product.description && (
-  <Box mt={4}>
-    <Text fontWeight="bold">Description:</Text>
-    <Box
-      mt={2}
-      fontSize="md"
-      color="gray.700"
-      dangerouslySetInnerHTML={{ __html: product.description }}
-    />
-  </Box>
-)}
-
-            </Box>
-
-            {/* Images */}
-            {product.images?.length > 0 && (
-              <Grid templateColumns="repeat(2, 1fr)" gap={4} maxW="400px" mt={5}>
-                {product.images.slice(currentIndex, currentIndex + imagesPerPage).map((image, index) => (
-                  <Image
-                    key={index}
-                    src={image}
-                    alt={`Product Image ${index + 1}`}
-                    borderRadius="md"
-                    objectFit="cover"
-                    maxW="150px"
-                    maxH="150px"
-                    w="100%"
-                    h="auto"
-                  />
-                ))}
-              </Grid>
-            )}
-
-            {/* Videos */}
-            {product.videos?.length > 0 && (
-              <VStack align="start" mt={6}>
-                <Text fontWeight="bold">Videos:</Text>
-                {product.videos.map((url, idx) => (
-                  <video key={idx} src={url} controls width="300" style={{ borderRadius: "8px" }} />
-                ))}
-              </VStack>
-            )}
-            {product.writing && (
-  <Box mt={4}>
-    <Text fontWeight="bold">Writing / Poem:</Text>
-    <Box
-  mt={2}
-  fontSize="md"
-  color="gray.700"
-  dangerouslySetInnerHTML={{ __html: product.writing }}
-/>
-
-  </Box>
-)}
-
-
-            {/* Audios */}
-            {product.audios?.length > 0 && (
-              <VStack align="start" mt={6}>
-                <Text fontWeight="bold">Audio Recordings:</Text>
-                {product.audios.map((url, idx) => (
-                  <audio key={idx} src={url} controls style={{ width: "300px" }} />
-                ))}
-              </VStack>
-            )}
-
-            {/* Navigation for images */}
-            {product.images?.length > imagesPerPage && (
-              <Flex justify="space-between" mt={4}>
-                <Button
-                  onClick={() => setCurrentIndex((prev) => Math.max(prev - imagesPerPage, 0))}
-                  disabled={currentIndex === 0}
-                  bg="orange.300"
-                >
-                  Previous
-                </Button>
-                <Button
-                  onClick={() =>
-                    setCurrentIndex((prev) =>
-                      Math.min(prev + imagesPerPage, product.images.length - imagesPerPage)
-                    )
-                  }
-                  disabled={currentIndex >= product.images.length - imagesPerPage}
-                  bg="orange.300"
-                >
-                  Next
-                </Button>
-              </Flex>
-            )}
-          </Flex>
-
-          {/* Action buttons */}
-          <Flex mt={50} mr={100} direction="column" gap={4}>
-            {product.user._id === user._id ? (
-              <Button
+        </Text>
+        {product.user._id === user._id ? (
+              <Button mt={2}
                 as={RouterLink}
                 to={`/update/product/${product._id}`}
-                bg="blue.400"
+                bg="red.400"
                 borderRadius="lg"
-                width={190}
+                width={300}
                 height="50px"
-                _hover={{ bg: "blue.500" }}
+                _hover={{ bg: "red.500" }}
               >
                 Edit Product
               </Button>
             ) : (
+              <Flex direction="row">
               <Button
-                bg="yellow.300"
-                borderRadius="lg"
-                width={190}
+                bg="gray.300"
+                borderRadius="2xl"
+                width={300}
                 height="50px"
                 onClick={handleAddToCart}
                 isDisabled={!product.forSale || product.quantity === 0}
@@ -280,21 +289,157 @@ const ProductCard = ({ product }) => {
                   ? "Add to Cart"
                   : "Out of Stock"}
               </Button>
-            )}
+              <Button
+                size="sm"
+                onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}
+                isDisabled={quantity <= 1}
+              >
+                -
+              </Button>
+              <Input
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value)))}
+                size="sm"
+                width="50px"
+                textAlign="center"
+                isDisabled={!product.forSale || product.quantity === 0}
+              />
+              <Button
+                size="sm"
+                onClick={() => setQuantity((prev) => Math.min(prev + 1, product.quantity))}
+                isDisabled={quantity >= product.quantity}
+              >
+                +
+              </Button>
 
-            <Button
-              bg={isFavorite ? "red.400" : "pink.300"}
-              borderRadius="lg"
-              width={190}
-              height="50px"
-              onClick={handleAddToFavorites}
-            >
-              {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
-            </Button>
+              </Flex>
+            )}
+            
+            <Box mt={7}>
+  <Text fontWeight="bold">Description:</Text>
+  <Box mt={2} fontSize="md" color="gray.700">
+  <Box
+    maxW="500px"
+    maxH="500px"
+    overflow="hidden"
+    textOverflow="ellipsis"
+    whiteSpace="pre-wrap"
+    wordBreak="break-word"
+    dangerouslySetInnerHTML={{ __html: isLongDescription ? product.description.slice(0, 600) + "..." : product.description }}
+  />
+  {isLongDescription && (
+    <Button mt={2} size="sm" colorScheme="blue" variant="link" onClick={onOpen}>
+      See full description
+    </Button>
+  )}
+</Box>
+
+</Box>
+
           </Flex>
+      
+</Flex>
+{product.audios?.length > 0 && (
+  <Box maxW="1300px" mx="auto">
+
+    <Flex align="center" gap={2} position="relative">
+      {/* Scroll Left */}
+      <IconButton
+        icon={<ChevronLeftIcon boxSize={6} />}
+        onClick={() => scrollByAmount(-400)}
+        aria-label="Scroll left"
+        bg="white"
+        boxShadow="md"
+        borderRadius="full"
+        _hover={{ bg: "gray.100" }}
+      />
+
+      {/* Carusel */}
+      <Box
+        ref={scrollRef}
+        overflowX="auto"
+        overflowY="hidden"
+        whiteSpace="nowrap"
+        flex="1"
+        px={4}
+        css={{
+          "&::-webkit-scrollbar": { height: "6px" },
+          "&::-webkit-scrollbar-thumb": { background: "#ccc", borderRadius: "8px" },
+        }}
+      >
+        <HStack spacing={4}>
+          {product.audios.map((url, i) => (
+            <Box
+              key={i}
+              minW="300px"
+              maxW="300px"
+              borderRadius="md"
+              p={2}
+              flexShrink={0}
+            >
+              <WaveformPlayer url={url} />
+            </Box>
+          ))}
+        </HStack>
+      </Box>
+
+      {/* Scroll Right */}
+      <IconButton
+        icon={<ChevronRightIcon boxSize={6} />}
+        onClick={() => scrollByAmount(400)}
+        aria-label="Scroll right"
+        bg="white"
+        boxShadow="md"
+        borderRadius="full"
+        _hover={{ bg: "gray.100" }}
+      />
+    </Flex>
+  </Box>
+)}
+
+
+
+
+
         </Flex>
       )}
-    </Box>
+      
+      <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+  <ModalOverlay />
+  <ModalContent>
+    <ModalHeader>Description</ModalHeader>
+    <ModalCloseButton />
+    <ModalBody>
+      <Box
+        fontSize="md"
+        color="gray.700"
+        whiteSpace="pre-wrap"
+        wordBreak="break-word"
+        dangerouslySetInnerHTML={{ __html: product?.description || ""}}
+      />
+    </ModalBody>
+  </ModalContent>
+</Modal>
+<Modal isOpen={isImageOpen} onClose={closeImage} size="4xl" isCentered>
+  <ModalOverlay />
+  <ModalContent bg="transparent" boxShadow="none">
+    <ModalCloseButton color="white" />
+    <ModalBody p={0}>
+      <Image
+        src={selectedImage}
+        alt="Zoomed Image"
+        w="100%"
+        h="auto"
+        borderRadius="lg"
+        maxH="90vh"
+        objectFit="contain"
+      />
+    </ModalBody>
+  </ModalContent>
+</Modal>
+
+
+    </Flex>
   );
 };
 
