@@ -41,8 +41,11 @@ export const addToCart = async (req, res) => {
 export const getCart = async (req, res) => {
   try {
     const { userId } = req.params;
-    const user = await User.findById(userId).populate("cart.product");
-
+    const user = await User.findById(userId).populate({
+      path: "cart.product",
+      populate: { path: "user", model: "User" }
+    });
+    
     if (!user) return res.status(404).json({ error: "User not found" });
 
     res.json(user.cart);
@@ -75,8 +78,11 @@ export const updateCartItem = async (req, res) => {
   try {
     const { userId, productId, quantity } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    const user = await User.findById(userId).populate({
+      path: "cart.product",
+      populate: { path: "user", model: "User" }
+    });
+        if (!user) return res.status(404).json({ error: "User not found" });
 
     const item = user.cart.find((i) => i.product.equals(productId));
     if (item) {

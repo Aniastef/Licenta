@@ -20,6 +20,10 @@ import WaveSurfer from "wavesurfer.js";
 import WaveformPlayer from "./WaveformPlayer";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { useRef } from "react";
+import Zoom from 'react-medium-image-zoom'
+import 'react-medium-image-zoom/dist/styles.css'
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import writingBackground from "../assets/writing.svg";
 
 
 const ProductCard = ({ product }) => {
@@ -41,7 +45,32 @@ const ProductCard = ({ product }) => {
   
   const imagesPerPage = 5; // Only show 3 images at a time
   const scrollRef = useRef();
+  const thumbnailContainerRef = useRef();
+  const [thumbnailsToShow, setThumbnailsToShow] = useState([]);
+  const [viewMode, setViewMode] = useState("image"); // "image" sau "video"
+const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+const modes = ["image", "video", "writing"];
+const otherModes = modes.filter((mode) => mode !== viewMode);
 
+  useEffect(() => {
+    if (!product || !product.images) return;
+  
+    const maxHeight = 500;
+    const singleThumbnailHeight = 100;
+  
+    let totalHeight = 0;
+    const visible = [];
+  
+    for (let i = currentIndex; i < product.images.length; i++) {
+      totalHeight += singleThumbnailHeight;
+      if (totalHeight > maxHeight) break;
+      visible.push(i);
+    }
+  
+    setVisibleImages(visible); // sau setThumbnailsToShow(visible)
+  }, [product, currentIndex]);
+  
+  
   const scrollByAmount = (amount) => {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
@@ -69,6 +98,24 @@ const ProductCard = ({ product }) => {
 
     checkIfFavorite();
   }, [user?.username, product?._id]);
+
+  useEffect(() => {
+    if (!product) return;
+  
+    if (Array.isArray(product.writing) && product.writing.length > 0 && typeof product.writing[0] === "string") {
+      setViewMode("writing");
+    } else if (product.videos?.length > 0) {
+      setViewMode("video");
+    } else if (product.images?.length > 0) {
+      setViewMode("image");
+    }
+  }, [product]);
+  
+  console.log("writing:", product?.writing);
+
+  
+  
+  
 
   const handleAddToCart = () => {
     addToCart({
@@ -152,82 +199,227 @@ const ProductCard = ({ product }) => {
         <Text>Loading product details...</Text>
       ) : (
       <Flex align="flex-start" direction={"column"}>
-        <Flex position="absolute" right={4} gap={2}>
-            <Circle size="30px" bg="red.500" />
-            <Circle size="30px" bg="blue.500" />
-          </Flex>
-      <Flex  direction="row" align="center" gap={4}>
+       
+       <Flex direction="row" align="flex-start" gap={4}>
+        
       <Flex direction="column" align="center" gap={4}>
-         <HStack spacing={4} mb={4} align="center" justify="center">
-            <Button colorScheme="green" size="md" onClick={() => {/* Handle Switch to Writing */}}>
-              Switch to writing
-            </Button>
-            <Button colorScheme="yellow" size="md" onClick={() => {/* Handle Switch to Video */}}>
-              Switch to video
-            </Button>
-          </HStack>
+        
+      <HStack spacing={4} ml={100}>
+  {product.videos?.length > 0 && viewMode !== "video" && (
+    <Button
+      colorScheme="yellow"
+      size="md"
+      onClick={() => setViewMode("video")}
+    >
+      Switch to video
+    </Button>
+  )}
+  {typeof product.writing === "string" && product.writing.trim() && viewMode !== "writing" && (
+  <Button
+    colorScheme="purple"
+    size="md"
+    onClick={() => setViewMode("writing")}
+  >
+    Switch to writing
+  </Button>
+)}
+
+  {product.images?.length > 0 && viewMode !== "image" && (
+    <Button
+      colorScheme="green"
+      size="md"
+      onClick={() => setViewMode("image")}
+    >
+      Switch to image
+    </Button>
+  )}
+</HStack>
+
+
           <Flex direction="row" align="flex-start" gap={10} pl={4}>
           {/* Left Section - Image Thumbnails */}
-          <VStack  height="600px" align="start" spacing={3}>
-            {/* Scrollable Thumbnails */}
-            <Button
-              onClick={() => handleThumbnailChange("up")}
-              isDisabled={currentIndex === 0}
-              mb={2}
-            >
-              ↑
-            </Button>
-            {visibleImages.map((index) => (
-              <Image
-                key={index}
-                src={product.images[index]}
-                alt={`Thumbnail Image ${index + 1}`}
-                borderRadius="md"
-                objectFit="cover"
-                maxW="100px"
-                maxH="100%px"
-                w="100%px"
-                h="auto"
-                onClick={() => setCurrentIndex(index)} // Update the main image when a thumbnail is clicked
-                cursor="pointer"
-                border={currentIndex === index ? "2px solid green" : "none"} // Highlight the selected thumbnail
-              />
-            ))}
-            <Button
-              onClick={() => handleThumbnailChange("down")}
-              isDisabled={currentIndex + imagesPerPage >= product.images.length}
-              mt={2}
-            >
-              ↓
-            </Button>
-          </VStack>
+          <VStack align="center" spacing={2}>
+          {(viewMode === "image" && product.images?.length > 1) ||
+ (viewMode === "video" && product.videos?.length > 1) ? (
+  <>
+    <Button
+      onClick={() => handleThumbnailChange("up")}
+      isDisabled={currentIndex === 0}
+      size="sm"
+    >
+      ↑
+    </Button>
+
+    <Box
+      maxH="500px"
+      overflow="hidden"
+      display="flex"
+      flexDir="column"
+      justifyContent="flex-start"
+      alignItems="center"
+      gap={2}
+    >
+      {viewMode === "image"
+        ? visibleImages.map((index) => (
+            <Image
+              key={index}
+              src={product.images[index]}
+              alt={`Thumbnail ${index + 1}`}
+              borderRadius="md"
+              objectFit="cover"
+              w="100px"
+              h="100px"
+              cursor="pointer"
+              onClick={() => setCurrentIndex(index)}
+              border={currentIndex === index ? "2px solid green" : "none"}
+            />
+          ))
+        : product.videos?.map((url, i) => (
+            <Box
+              key={i}
+              as="video"
+              src={url}
+              onClick={() => setCurrentVideoIndex(i)}
+              muted
+              playsInline
+              preload="metadata"
+              controls={false}
+              cursor="pointer"
+              w="100px"
+              h="100px"
+              borderRadius="md"
+              objectFit="cover"
+              border={currentVideoIndex === i ? "2px solid green" : "none"}
+            />
+          ))}
+    </Box>
+
+    <Button
+      onClick={() => handleThumbnailChange("down")}
+      isDisabled={
+        currentIndex + visibleImages.length >= product.images.length
+      }
+      size="sm"
+    >
+      ↓
+    </Button>
+  </>
+) : null}
+
+</VStack>
+
+
 
           {/* Right Section - Main Image */}
-          <Flex justify="center" mt={10}>
-          <Image
-            src={product.images[currentIndex]}
-            alt={`Main Product Image`}
-            borderRadius="md"
-            objectFit="cover"
-            maxW="500px"
-            maxH="500px"
-            w="100%"
-            h="auto"
-            loading="lazy"
-            cursor="pointer"
-            onClick={() => {
-              setSelectedImage(product.images[currentIndex]);
-              openImage();
-            }}
-          />
+          <Flex justify="center">
+  {viewMode === "writing" ? (
+    <Box
+  w="1000px"
+  h="800px"
+  position="relative"
+>
+  {/* Foaia statică pe fundal */}
+  <Image
+    src={writingBackground}
+    alt="writing paper"
+    position="absolute"
+    top="0"
+    left="0"
+    width="100%"
+    height="100%"
+    objectFit="cover"
+    zIndex={0}
+    pointerEvents="none"
+  />
 
-     
-          </Flex>
+  {/* Text scrollabil deasupra foii */}
+  <Box
+    position="absolute"
+    top="110"
+    left="0"
+    right="0"
+    bottom="10"
+    overflowY="auto"
+    px={50}
+    pt={10} // spațiu față de banda de sus
+    zIndex={1}
+  >
+    <Box
+      fontFamily="serif"
+      fontSize="lg"
+      color="black"
+      whiteSpace="pre-wrap"
+      lineHeight="1.8"
+      dangerouslySetInnerHTML={{
+        __html:
+          Array.isArray(product.writing) && product.writing.length > 0
+            ? product.writing[0]
+            : typeof product.writing === "string"
+            ? product.writing
+            : "",
+      }}
+    />
+  </Box>
+</Box>
+
+
+
+  
+  ) : viewMode === "image" ? (
+    <Box
+      w="800px"
+      h="600px"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      borderRadius="md"
+      overflow="hidden"
+    >
+      <Image
+        src={product.images[currentIndex]}
+        alt="Main Product Image"
+        maxW="100%"
+        maxH="100%"
+        objectFit="contain"
+        cursor="zoom-in"
+        onClick={() => {
+          setSelectedImage(product.images[currentIndex]);
+          openImage();
+        }}
+      />
+    </Box>
+  ) : (
+    <Box
+      w="800px"
+      h="600px"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      borderRadius="md"
+      overflow="hidden"
+    >
+      <Box
+        as="video"
+        src={product.videos?.[currentVideoIndex]}
+        controls
+        autoPlay
+        loop
+        muted
+        playsInline
+        maxW="100%"
+        maxH="100%"
+        objectFit="contain"
+        borderRadius="md"
+      />
+    </Box>
+  )}
+</Flex>
+
         </Flex>
         </Flex>
 
         {/* partea cu detalii */}
-        <Flex direction="column" align="flex-start" justify="flex-start"  ml={10}>
+        <Flex mt={20} direction="column" align="flex-start" justify="flex-start"  ml={10}>
         <HStack justify="space-between" align="center" w="100%">
         <Text
   fontWeight="bold"
@@ -250,9 +442,28 @@ const ProductCard = ({ product }) => {
       </Button>
     </HStack>
 
-        <Text mt={7}>
+        <Text mt={2}>
           Created by {product.user?.firstName || "Unknown"} {product.user?.lastName || "User"}
         </Text>
+        {product.galleries?.length > 0 && (
+  <Box mt={2}>
+    <Text fontWeight="bold">Part of galleries:</Text>
+    <HStack spacing={2} wrap="wrap">
+      {product.galleries.map((gallery) => (
+        <RouterLink
+          key={gallery._id}
+          to={`/galleries/${product.user?.username}/${gallery.name}`}
+          style={{ color: "#3182ce", textDecoration: "underline" }}
+        >
+          {gallery.name}
+        </RouterLink>
+      ))}
+    </HStack>
+  </Box>
+)}
+
+
+
         <Text mt={2}
           color={product.forSale ? (product.quantity > 0 ? "green.500" : "red.500") : "gray.500"}>
                 {!product.forSale
@@ -315,26 +526,35 @@ const ProductCard = ({ product }) => {
               </Flex>
             )}
             
-            <Box mt={7}>
-  <Text fontWeight="bold">Description:</Text>
-  <Box mt={2} fontSize="md" color="gray.700">
-  <Box
-    maxW="500px"
-    maxH="500px"
-    overflow="hidden"
-    textOverflow="ellipsis"
-    whiteSpace="pre-wrap"
-    wordBreak="break-word"
-    dangerouslySetInnerHTML={{ __html: isLongDescription ? product.description.slice(0, 600) + "..." : product.description }}
-  />
-  {isLongDescription && (
-    <Button mt={2} size="sm" colorScheme="blue" variant="link" onClick={onOpen}>
-      See full description
-    </Button>
-  )}
-</Box>
+            {typeof product.description === "string" && product.description.trim() ? (
+  <Box mt={7}>
+    <Text fontWeight="bold">Description:</Text>
+    <Box mt={2} fontSize="md" color="gray.700">
+      <Box
+        maxW="700px"
+        maxH="500px"
+        overflow="hidden"
+        textOverflow="ellipsis"
+        whiteSpace="pre-wrap"
+        wordBreak="break-word"
+        dangerouslySetInnerHTML={{
+          __html: isLongDescription
+            ? product.description.slice(0, 800) + "..."
+            : product.description,
+        }}
+      />
+      {isLongDescription && (
+        <Button mt={2} size="sm" colorScheme="blue" variant="link" onClick={onOpen}>
+          See full description
+        </Button>
+      )}
+    </Box>
+  </Box>
+) : null}
 
-</Box>
+
+
+
 
           </Flex>
       
@@ -420,23 +640,36 @@ const ProductCard = ({ product }) => {
     </ModalBody>
   </ModalContent>
 </Modal>
-<Modal isOpen={isImageOpen} onClose={closeImage} size="4xl" isCentered>
+<Modal isOpen={isImageOpen} onClose={closeImage} size="5xl" isCentered>
   <ModalOverlay />
   <ModalContent bg="transparent" boxShadow="none">
     <ModalCloseButton color="white" />
-    <ModalBody p={0}>
-      <Image
-        src={selectedImage}
-        alt="Zoomed Image"
-        w="100%"
-        h="auto"
-        borderRadius="lg"
-        maxH="90vh"
-        objectFit="contain"
-      />
+    <ModalBody p={0} display="flex" justifyContent="center" alignItems="center">
+      <TransformWrapper
+        initialScale={1}
+        minScale={0.5}
+        maxScale={5}
+        wheel={{ step: 0.1 }}
+        doubleClick={{ disabled: false }}
+      >
+        <TransformComponent>
+          <Image
+            src={selectedImage}
+            alt="Zoomed Image"
+            borderRadius="lg"
+            maxH="90vh"
+            objectFit="contain"
+            cursor="grab"
+          />
+        </TransformComponent>
+      </TransformWrapper>
     </ModalBody>
   </ModalContent>
 </Modal>
+
+
+
+
 
 
     </Flex>

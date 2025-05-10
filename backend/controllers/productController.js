@@ -82,7 +82,7 @@ export const getProduct = async (req, res) => {
 	  }
   
 	  const product = await Product.findById(id)
-		.populate("user", "firstName lastName email")
+		.populate("user", "firstName lastName email username")
 		.populate("galleries", "name type");
   
 	  if (!product) {

@@ -19,15 +19,25 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  Circle,
+  Flex,
 } from "@chakra-ui/react";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 const OrdersPage = () => {
   const user = useRecoilValue(userAtom);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState("Pending");
 
+  const tabOptions = [
+    { label: "Pending", color: "yellow", value: "Pending" },
+    { label: "Delivered", color: "green", value: "Delivered" },
+    { label: "Cancelled", color: "red", value: "Cancelled" },
+  ];
+  
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -70,6 +80,57 @@ const OrdersPage = () => {
       console.error("Error cancelling order:", err.message);
     }
   };
+  const generateInvoice = (order) => {
+    const doc = new jsPDF();
+  
+    doc.setFontSize(18);
+    doc.text("Factura", 14, 20);
+  
+    doc.setFontSize(12);
+    doc.text(`Comanda #${order._id}`, 14, 30);
+    doc.text(`Data: ${new Date(order.date).toLocaleDateString()}`, 14, 36);
+  
+    doc.text(`Livrare la: ${order.address}, ${order.city}`, 14, 44);
+    doc.text(`Telefon: ${order.phone}`, 14, 50);
+    doc.text(
+      `Plata: ${
+        order.paymentMethod === "cash"
+          ? "Cash"
+          : order.paymentMethod === "online"
+          ? "Card online"
+          : "Card la livrare"
+      }`,
+      14,
+      56
+    );
+    doc.text(
+      `Livrare: ${order.deliveryMethod === "easybox" ? "EasyBox" : "Courier"}`,
+      14,
+      62
+    );
+  
+    const products = Array.isArray(order.products)
+      ? order.products
+      : [{ product: order.product, quantity: order.quantity, price: order.price }];
+  
+    const rows = products.map((item) => [
+      item.product?.name || "Produs",
+      item.quantity,
+      `${item.price} RON`,
+      `${(item.quantity * item.price).toFixed(2)} RON`,
+    ]);
+  
+    autoTable(doc, {
+      startY: 70,
+      head: [["Produs", "Cantitate", "Pret unitar", "Total"]],
+      body: rows,
+    });
+  
+    const total = rows.reduce((acc, row) => acc + parseFloat(row[3]), 0);
+    doc.text(`Total: ${total.toFixed(2)} RON`, 14, doc.lastAutoTable.finalY + 10);
+  
+    doc.save(`Factura_Comanda_${order._id.slice(-6)}.pdf`);
+  };
 
   const OrderAccordion = ({ orders }) => (
     <Accordion allowToggle>
@@ -81,7 +142,7 @@ const OrdersPage = () => {
         return (
           <AccordionItem key={order._id}>
             <h2>
-              <AccordionButton _expanded={{ bg: "teal.100" }}>
+              <AccordionButton _expanded={{ bg: "gray.100" }}>
                 <Box flex="1" textAlign="left">
                   <Text fontWeight="bold">Comanda #{order._id.slice(-6)}</Text>
                   <Text fontSize="sm">
@@ -168,6 +229,16 @@ const OrdersPage = () => {
                     Anulează Comanda
                   </Button>
                 )}
+                <Button
+  colorScheme="teal"
+  variant="outline"
+  size="sm"
+  mt={2}
+  onClick={() => generateInvoice(order)}
+>
+  Descarcă Factura
+</Button>
+
               </VStack>
             </AccordionPanel>
           </AccordionItem>
@@ -178,34 +249,49 @@ const OrdersPage = () => {
 
   return (
     <Box p={5}>
-      <Text fontSize="3xl" fontWeight="bold" mb={6}>
-        My Orders
-      </Text>
+      <Flex justify="space-between" align="center" >
+            <Text fontSize="3xl" fontWeight="bold" mb={2}>
+              My Orders
+            </Text>
+             <Flex right={4} gap={2}>
+             
+                <Circle size="30px" bg="yellow.400" />
+                <Circle size="30px" bg="green.400" />
+               
+              </Flex>
+            </Flex>
 
       {loading ? (
         <Spinner size="xl" />
       ) : orders.length === 0 ? (
         <Text>No orders found.</Text>
       ) : (
-        <Tabs variant="enclosed" colorScheme="teal" isFitted>
-          <TabList>
-            <Tab>Pending</Tab>
-            <Tab>Delivered</Tab>
-            <Tab>Cancelled</Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel>
-              <OrderAccordion orders={filterOrdersByStatus("Pending")} />
-            </TabPanel>
-            <TabPanel>
-              <OrderAccordion orders={filterOrdersByStatus("Delivered")} />
-            </TabPanel>
-            <TabPanel>
-              <OrderAccordion orders={filterOrdersByStatus("Cancelled")} />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+        <>
+        <Box mb={4}>
+        <HStack justify="center" spacing={4}>
+          {tabOptions.map((tab) => (
+            <Button
+              key={tab.value}
+              onClick={() => setSelectedTab(tab.value)}
+              bg={selectedTab === tab.value ? tab.color + ".400" : "gray.100"}
+              color={selectedTab === tab.value ? "white" : "gray.600"}
+              fontWeight="bold"
+              borderRadius="full"
+              px={6}
+              py={4}
+              _hover={{ bg: tab.color + ".500", color: "white" }}
+              boxShadow={selectedTab === tab.value ? "md" : "none"}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </HStack>
+      </Box>
+      
+      <Box mt={6}>
+        <OrderAccordion orders={filterOrdersByStatus(selectedTab)} />
+      </Box>
+      </>
       )}
     </Box>
   );

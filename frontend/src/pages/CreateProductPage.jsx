@@ -14,7 +14,6 @@ import {
 	FormControl,
 	FormLabel,
 	Text,
-	HStack,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import useShowToast from "../hooks/useShowToast";
@@ -24,14 +23,12 @@ import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import imageCompression from "browser-image-compression";
-import ProductImageCropModal from "../components/ProductImageCropModal";
-
 
 const compressImage = async (file) => {
 	try {
 		const options = {
-			maxSizeMB: 0.5,           // max 500 KB
-			maxWidthOrHeight: 1080,   // resize dacă e prea mare
+			maxSizeMB: 5.5,           // max 500 KB
+			maxWidthOrHeight: 1280,   // resize dacă e prea mare
 			useWebWorker: true,
 		};
 		const compressedFile = await imageCompression(file, options);
@@ -63,13 +60,6 @@ const CreateProductPage = () => {
 	const showToast = useShowToast();
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
-	const [rawImage, setRawImage] = useState(null);
-const [croppedImage, setCroppedImage] = useState(null);
-const [isCropOpen, setIsCropOpen] = useState(false);
-const [rawImages, setRawImages] = useState([]);
-const [cropIndex, setCropIndex] = useState(0);
-
-
 
 	// ✅ Preluare galerii ale utilizatorului
 	useEffect(() => {
@@ -115,8 +105,12 @@ const [cropIndex, setCropIndex] = useState(0);
 		
 			try {
 				// 🔽 Comprimă imaginile înainte de conversie
-				const imagesBase64 = imageFiles;
-
+				const compressedImages = await Promise.all(
+					imageFiles.map((file) => compressImage(file))
+				);
+				const imagesBase64 = await Promise.all(
+					compressedImages.map(fileToBase64)
+				);
 		
 				// 🔼 Videourile și audio nu se comprimă
 				const videosBase64 = await Promise.all(videoFiles.map(fileToBase64));
@@ -151,17 +145,14 @@ const [cropIndex, setCropIndex] = useState(0);
 		};
 		
 
-		const handleFileChange = (e) => {
-			const files = Array.from(e.target.files);
-			if (imageFiles.length + files.length > 5) {
-			  showToast("Error", "You can upload a maximum of 5 images", "error");
-			  return;
-			}
-			setRawImages(files.map(file => URL.createObjectURL(file)));
-			setCropIndex(0);
-			setIsCropOpen(true);
-		  };
-		  
+	const handleFileChange = (e) => {
+		const selectedFiles = [...e.target.files];
+		if (imageFiles.length + selectedFiles.length > 5) {
+			showToast("Error", "You can upload a maximum of 5 images", "error");
+			return;
+		}
+		setImageFiles([...imageFiles, ...selectedFiles]);
+	};
 
 	return (
 		<Container maxW="container.md" py={8}>
@@ -208,51 +199,7 @@ const [cropIndex, setCropIndex] = useState(0);
 						</Select>
 
 						{/* 🔽 Upload fields */}
-						<Stack w="full">
-  <Stack w="full">
-  <Heading as="h4" size="sm">Product Images</Heading>
-  <Input
-    type="file"
-    accept="image/*"
-    multiple
-    onChange={(e) => {
-      const files = Array.from(e.target.files);
-      if (imageFiles.length + files.length > 5) {
-        showToast("Error", "You can upload a maximum of 5 images", "error");
-        return;
-      }
-      const urls = files.map(file => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
-      setRawImages(urls);
-      setCropIndex(0);
-      setIsCropOpen(true);
-    }}
-  />
-  <HStack wrap="wrap" spacing={2}>
-    {imageFiles.map((src, idx) => (
-      <Image
-        key={idx}
-        src={src}
-        boxSize="100px"
-        objectFit="cover"
-        borderRadius="md"
-        border="2px solid"
-        borderColor="gray.300"
-      />
-    ))}
-  </HStack>
-</Stack>
-
-
-  <HStack wrap="wrap" spacing={2}>
-  {imageFiles.map((src, idx) => (
-    <Image key={idx} src={src} boxSize="100px" objectFit="cover" borderRadius="md" />
-  ))}
-</HStack>
-
-</Stack>
+						<Input type="file" accept="image/*" multiple onChange={(e) => setImageFiles([...e.target.files])} />
 						<Input type="file" accept="video/*" multiple onChange={(e) => setVideoFiles([...e.target.files])} />
 						<Input type="file" accept="audio/*" multiple onChange={(e) => setAudioFiles([...e.target.files])} />
 						<Text fontWeight="bold" alignSelf="start">Writing / Poem</Text>
@@ -277,22 +224,6 @@ const [cropIndex, setCropIndex] = useState(0);
 					</VStack>
 				</Box>
 			</VStack>
-			<ProductImageCropModal
-  isOpen={isCropOpen}
-  onClose={() => setIsCropOpen(false)}
-  imageSrc={rawImages[cropIndex]?.url}
-  onCropComplete={(croppedBase64) => {
-    setImageFiles((prev) => [...prev, croppedBase64]);
-    if (cropIndex + 1 < rawImages.length) {
-      setCropIndex((prev) => prev + 1);
-    } else {
-      setIsCropOpen(false);
-      setRawImages([]);
-    }
-  }}
-/>
-
-
 		</Container>
 	);
 };

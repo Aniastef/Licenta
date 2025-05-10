@@ -38,18 +38,18 @@ export default function ProductPage() {
     <Flex direction="column">
     <ProductCard product={product} />
 
-    <Flex gap={4} mt={6} px={4}>
+    <Flex gap={4} ml={20} mt={6} mb={6} px={4}>
       <Button
         bg={activeSection === "reviews" ? "yellow.300" : "gray.200"}
         onClick={() => setActiveSection("reviews")}
       >
-        Reviews
+        See reviews
       </Button>
       <Button
         bg={activeSection === "comments" ? "blue.300" : "gray.200"}
         onClick={() => setActiveSection("comments")}
       >
-        Comments
+        See comments
       </Button>
     </Flex>
 
