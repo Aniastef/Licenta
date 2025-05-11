@@ -105,8 +105,8 @@ const Navbar = () => {
             </Button>
           </Link>
 
-          {user && <NotificationDrawer />}
-        </HStack>
+          {user && <NotificationDrawer showBadge={true} />}
+          </HStack>
       </Flex>
     </Box>
   );

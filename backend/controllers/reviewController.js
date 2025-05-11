@@ -1,6 +1,8 @@
 // controllers/reviewController.js
 import Review from "../models/reviewModel.js";
 import Product from "../models/productModel.js";
+import Notification from "../models/notificationModel.js";
+import User from "../models/userModel.js";
 
 // 🔁 Recalculare medie rating după modificări
 const updateProductRating = async (productId) => {
@@ -36,6 +38,18 @@ export const addOrUpdateReview = async (req, res) => {
     }
 
     await updateProductRating(productId);
+    const product = await Product.findById(productId).populate("user", "username");
+if (product && product.user && product.user._id.toString() !== userId.toString()) {
+  await Notification.create({
+    user: product.user._id,
+    fromUser: userId,
+    type: "review_product",
+    resourceType: "Product",
+    resourceId: productId,
+    message: `${req.user.username} left a review on your product "${product.name}"`,
+  });
+}
+
 
     res.status(200).json({ message: "Review saved successfully" });
   } catch (err) {

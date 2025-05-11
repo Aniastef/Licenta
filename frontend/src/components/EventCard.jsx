@@ -182,7 +182,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
             year: "numeric",
           })}   
   </Box>
-  {isEventOwner && (
+  {!isEventOwner && (
         <Flex gap={4}>
           <Button bg={isGoing ? "gray.400" : "green.300"} onClick={markGoing}>{isGoing ? "Unmark Going" : "Mark if Going"}</Button>
           <Button bg={isInterested ? "gray.400" : "yellow.300"} onClick={markInterested}>{isInterested ? "Unmark Interested" : "Mark if Interested"}</Button>

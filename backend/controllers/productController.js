@@ -5,6 +5,8 @@ import {uploadToCloudinary} from "../config/imgUpload.js";
 import Comment from "../models/commentModel.js";
 import Gallery from "../models/galleryModel.js";
 import User from "../models/userModel.js";
+import Notification from "../models/notificationModel.js";
+
 
 export const createProduct = async (req, res) => {
 	try {
@@ -329,7 +331,11 @@ export const addToFavorites = async (req, res) => {
 	  const userId = req.user.id;
   
 	  const user = await User.findById(userId);
-	  if (!user) return res.status(404).json({ message: "User not found" });
+	  const product = await Product.findById(productId).populate("user", "username");
+  
+	  if (!user || !product) {
+		return res.status(404).json({ message: "User or product not found" });
+	  }
   
 	  if (!Array.isArray(user.favorites)) {
 		user.favorites = [];
@@ -338,6 +344,19 @@ export const addToFavorites = async (req, res) => {
 	  if (!user.favorites.includes(productId)) {
 		user.favorites.push(productId);
 		await user.save();
+  
+		// ✅ Trimite notificare dacă utilizatorul NU e proprietarul produsului
+		if (product.user._id.toString() !== userId.toString()) {
+		  await Notification.create({
+			user: product.user._id, // destinatar: creatorul produsului
+			fromUser: user._id,     // cine a dat favorite
+			resourceType: "Product",
+			resourceId: product._id,
+			type: "favorite_product",
+			message: `${user.username} added your product "${product.name}" to favorites.`,
+		  });
+		}
+  
 		return res.json({ message: "Product added to favorites", favorites: user.favorites });
 	  }
   
@@ -347,6 +366,7 @@ export const addToFavorites = async (req, res) => {
 	  return res.status(500).json({ message: "Server error", error });
 	}
   };
+  
 
 
   

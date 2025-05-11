@@ -21,6 +21,7 @@ import { EditIcon } from "@chakra-ui/icons";
 import { Select } from "@chakra-ui/react";
 import userAtom from "../atoms/userAtom";
 import { useRecoilValue } from "recoil";
+import CommentsSection from "../components/CommentsSection";
 
 const ArticlePage = () => {
   const { articleId } = useParams();
@@ -36,6 +37,8 @@ const ArticlePage = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const currentUser = useRecoilValue(userAtom);
   const [isOwner, setIsOwner] = useState(false);
+  const [activeSection, setActiveSection] = useState("comments");
+
 
   const quillModules = {
     toolbar: [
@@ -360,6 +363,13 @@ const ArticlePage = () => {
     dangerouslySetInnerHTML={{ __html: article.content }}
   />
 )}
+
+{article && (
+  <Box mt={10}>
+    <CommentsSection resourceId={article._id} resourceType="Article" />
+  </Box>
+)}
+
 
       </VStack>
     </Box>

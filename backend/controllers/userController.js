@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import Gallery from "../models/galleryModel.js";
 import Product from "../models/productModel.js";
 import Article from "../models/articleModel.js"; // Asigură-te că e importat
+import Notification from "../models/notificationModel.js"; // asigură-te că e importat
 
 export const getUserProfile = async (req, res) => {
 	try {
@@ -113,10 +114,24 @@ owner: { $ne: user._id },
 	  if (!user.favoriteArticles.includes(articleId)) {
 		user.favoriteArticles.push(articleId);
 		await user.save();
+  
+		// Trimite notificare autorului dacă nu e chiar utilizatorul curent
+		const article = await Article.findById(articleId).populate("user", "username");
+		if (article && article.user._id.toString() !== req.user._id.toString()) {
+		  await Notification.create({
+			user: article.user._id, // destinatar
+			fromUser: req.user._id, // cel care a dat favorite
+			resourceType: "Article",
+			resourceId: article._id,
+			type: "favorite_article",
+			message: `${user.username} added your article "${article.title}" to favorites.`,
+		  });
+		}
 	  }
   
 	  res.status(200).json({ message: "Article added to favorites" });
 	} catch (err) {
+	  console.error("Error adding article to favorites:", err.message);
 	  res.status(500).json({ error: err.message });
 	}
   };
@@ -458,7 +473,7 @@ export const saveQuote = async (req, res) => {
   export const addGalleryToFavorites = async (req, res) => {
 	try {
 	  const { galleryId } = req.body;
-	  const userId = req.user._id; // ✅ folosește ID-ul din token
+	  const userId = req.user._id;
   
 	  const user = await User.findById(userId);
 	  if (!user) return res.status(404).json({ error: "User not found" });
@@ -466,6 +481,19 @@ export const saveQuote = async (req, res) => {
 	  if (!user.favoriteGalleries.includes(galleryId)) {
 		user.favoriteGalleries.push(galleryId);
 		await user.save();
+  
+		const gallery = await Gallery.findById(galleryId).populate("owner", "username");
+  
+		if (gallery && gallery.owner._id.toString() !== userId.toString()) {
+		  await Notification.create({
+			user: gallery.owner._id,     // destinatarul
+			fromUser: userId,            // cine a dat favorite
+			resourceType: "Gallery",
+			resourceId: gallery._id,
+			type: "favorite_gallery",
+			message: `${user.username} added your gallery "${gallery.name}" to favorites.`,
+		  });
+		}
 	  }
   
 	  res.status(200).json({ message: "Gallery added to favorites", favoriteGalleries: user.favoriteGalleries });

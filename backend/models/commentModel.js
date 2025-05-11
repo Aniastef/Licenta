@@ -8,8 +8,9 @@ const commentSchema = new mongoose.Schema(
     resourceType: {
       type: String,
       required: true,
-      enum: ["User", "Product", "Event", "Gallery"],
+      enum: ["User", "Product", "Event", "Gallery", "Article"], // ✅ adăugat "Article"
     },
+    
     parentId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment", default: null },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],
     dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],

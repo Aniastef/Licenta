@@ -3,6 +3,7 @@ import User from "../models/userModel.js";
 import Product from "../models/productModel.js";
 import Event from "../models/eventModel.js";
 import mongoose from "mongoose";
+import Notification from "../models/notificationModel.js";
 
 export const addComment = async (req, res) => {
   try {
@@ -12,7 +13,7 @@ export const addComment = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const validResourceTypes = ["Product", "User", "Event","Gallery"];
+    const validResourceTypes = ["Product", "User", "Event", "Gallery", "Article"];
     if (!validResourceTypes.includes(resourceType)) {
       return res.status(400).json({ error: "Invalid resourceType" });
     }
@@ -25,6 +26,33 @@ export const addComment = async (req, res) => {
     });
 
     await newComment.save();
+
+    // ✅ Trimite notificare către owner-ul resursei
+    let ownerId = null;
+    if (resourceType === "Product") {
+      const product = await Product.findById(resourceId);
+      ownerId = product?.user?.toString();
+    } else if (resourceType === "Event") {
+      const event = await Event.findById(resourceId);
+      ownerId = event?.user?.toString();
+    } else if (resourceType === "Gallery") {
+      const gallery = await Gallery.findById(resourceId);
+      ownerId = gallery?.owner?.toString();
+    } else if (resourceType === "Article") {
+      const articleOwner = await User.findOne({ articles: resourceId });
+      ownerId = articleOwner?._id?.toString();
+    }
+
+    if (ownerId && ownerId !== userId) {
+      await Notification.create({
+        user: ownerId,
+        fromUser: userId,
+        resourceType,
+        resourceId,
+        type: "new_comment",
+        message: `Someone commented on your ${resourceType.toLowerCase()}.`,
+      });
+    }
 
     res.status(201).json({
       message: "Comment added successfully",
@@ -44,6 +72,7 @@ export const addComment = async (req, res) => {
     res.status(500).json({ message: "Failed to add comment" });
   }
 };
+
 
 
 
@@ -72,6 +101,18 @@ export const addReply = async (req, res) => {
 
     parentComment.replies.push(reply._id);
     await parentComment.save();
+
+    // ✅ Notificare pentru autorul comentariului părinte
+    if (parentComment.userId.toString() !== req.user._id.toString()) {
+      await Notification.create({
+        user: parentComment.userId,
+        fromUser: req.user._id,
+        resourceType: parentComment.resourceType,
+        resourceId: parentComment.resourceId,
+        type: "new_reply",
+        message: `Someone replied to your comment.`,
+      });
+    }
 
     const populatedReply = await reply.populate("userId", "username profilePicture");
 
@@ -103,6 +144,7 @@ export const addReply = async (req, res) => {
 
 
 
+
 export const getComments = async (req, res) => {
   try {
     const { resourceId, resourceType } = req.query;
@@ -111,7 +153,7 @@ export const getComments = async (req, res) => {
       return res.status(400).json({ error: "resourceId and resourceType are required" });
     }
 
-    const validResourceTypes = ["Product", "User", "Event", "Gallery"];
+    const validResourceTypes = ["Product", "User", "Event", "Gallery", "Article"];
     if (!validResourceTypes.includes(resourceType)) {
       return res.status(400).json({ error: "Invalid resourceType" });
     }

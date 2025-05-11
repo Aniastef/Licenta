@@ -22,6 +22,7 @@ const NotificationDrawer = () => {
   const [unseenCount, setUnseenCount] = useState(0);
   const navigate = useNavigate();
 
+  
   const fetchNotifications = async () => {
     try {
       const res = await fetch("/api/notifications", { credentials: "include" });
@@ -38,6 +39,18 @@ const NotificationDrawer = () => {
     fetchNotifications();
   };
 
+  useEffect(() => {
+    fetchNotifications(); // la montare
+  }, []);
+  
+  useEffect(() => {
+    const interval = setInterval(fetchNotifications, 10000); // mai frecvent
+    return () => clearInterval(interval);
+  }, []);
+  
+  
+
+
   const markAsSeenAndNavigate = async (notification) => {
     try {
       await fetch(`/api/notifications/${notification._id}/mark-seen`, {
@@ -51,6 +64,19 @@ const NotificationDrawer = () => {
       navigate(notification.link || "/");
     }
   };
+
+  const markAllAsSeen = async () => {
+    try {
+      await fetch("/api/notifications/mark-all-seen", {
+        method: "POST",
+        credentials: "include",
+      });
+      fetchNotifications(); // actualizează lista după
+    } catch (err) {
+      console.error("Failed to mark all as seen", err);
+    }
+  };
+  
 
   const acceptInvite = async (galleryId) => {
     try {
@@ -78,72 +104,90 @@ const NotificationDrawer = () => {
 
   return (
     <>
-      <IconButton
-        icon={<BellIcon />}
-        onClick={handleOpen}
-        position="relative"
-        aria-label="Notifications"
-        variant="ghost"
-      >
-        {unseenCount > 0 && (
-          <Badge colorScheme="red" position="absolute" top="-1" right="-1">
-            {unseenCount}
-          </Badge>
-        )}
-      </IconButton>
+      <Box position="relative">
+  <IconButton
+    icon={<BellIcon />}
+    onClick={handleOpen}
+    aria-label="Notifications"
+    variant="ghost"
+  />
+  {unseenCount > 0 && (
+    <Badge
+      colorScheme="red"
+      position="absolute"
+      top="0"
+      right="0"
+      borderRadius="full"
+      fontSize="0.7em"
+      px={2}
+    >
+      {unseenCount}
+    </Badge>
+  )}
+</Box>
+
 
       <Drawer isOpen={isOpen} placement="right" onClose={() => setIsOpen(false)}>
         <DrawerOverlay />
         <DrawerContent>
-          <DrawerHeader>Notifications</DrawerHeader>
+        <DrawerHeader display="flex" justifyContent="space-between" alignItems="center">
+  <Text fontSize="lg" fontWeight="bold">Notifications</Text>
+  <Button size="sm" variant="outline" onClick={markAllAsSeen}>
+    Mark all as seen
+  </Button>
+</DrawerHeader>
+
           <DrawerBody>
-            <VStack align="start" spacing={4}>
-              {notifications.length === 0 ? (
-                <Text>No notifications</Text>
-              ) : (
-                notifications.slice(0, 10).map((n) => (
-                  <Box
-                    key={n._id}
-                    p={3}
-                    bg={n.seen ? "gray.100" : "blue.50"}
-                    rounded="md"
-                    w="100%"
-                  >
-                    <Text mb={2}>{n.message}</Text>
+          <VStack align="start" spacing={4}>
+  {notifications.length === 0 ? (
+    <Text>No notifications</Text>
+  ) : (
+    notifications.slice(0, 5).map((n) => (
+      <Box
+        key={n._id}
+        p={3}
+        bg={n.seen ? "gray.100" : "blue.50"}
+        rounded="md"
+        w="100%"
+      >
+        <Text mb={2}>{n.message}</Text>
+        {n.type === "invite" && n.meta?.galleryId ? (
+          <GalleryInviteActions
+            galleryId={n.meta.galleryId}
+            onAccept={() => acceptInvite(n.meta.galleryId)}
+            onDecline={() => declineInvite(n.meta.galleryId)}
+          />
+        ) : (
+          <Box
+            mt={2}
+            cursor="pointer"
+            onClick={() => markAsSeenAndNavigate(n)}
+          >
+            <Text color="blue.600" fontSize="sm">
+              View
+            </Text>
+          </Box>
+        )}
+      </Box>
+    ))
+  )}
+</VStack>
 
-                    {n.type === "invite" && n.meta?.galleryId ? (
-                      <GalleryInviteActions
-                        galleryId={n.meta.galleryId}
-                        onAccept={() => acceptInvite(n.meta.galleryId)}
-                        onDecline={() => declineInvite(n.meta.galleryId)}
-                      />
-                    ) : (
-                      <Box
-                        mt={2}
-                        cursor="pointer"
-                        onClick={() => markAsSeenAndNavigate(n)}
-                      >
-                        <Text color="blue.600" fontSize="sm">
-                          View
-                        </Text>
-                      </Box>
-                    )}
-                  </Box>
-                ))
-              )}
-            </VStack>
+{/* 🔘 New Buttons */}
+<HStack justify="space-between" mt={4} w="100%">
 
-            <Button
-              mt={4}
-              variant="link"
-              colorScheme="blue"
-              onClick={() => {
-                setIsOpen(false);
-                navigate("/notifications");
-              }}
-            >
-              See all notifications
-            </Button>
+  <Button
+    variant="link"
+    colorScheme="blue"
+    onClick={() => {
+      setIsOpen(false);
+      navigate("/notifications");
+    }}
+  >
+    See all notifications
+  </Button>
+</HStack>
+
           </DrawerBody>
         </DrawerContent>
       </Drawer>

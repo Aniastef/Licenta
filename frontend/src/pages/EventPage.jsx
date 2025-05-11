@@ -34,8 +34,8 @@ export default function EventPage() {
 
   return (
     <Flex direction="column">
-      <EventCard event={event}  currentUserId={currentUser._id} fetchEvent={fetchEvent} />
-      <CommentsSection resourceId={id} resourceType="Event"/>
+<EventCard event={event} currentUserId={currentUser?._id} fetchEvent={fetchEvent} />
+<CommentsSection resourceId={id} resourceType="Event"/>
     </Flex>
       
   );

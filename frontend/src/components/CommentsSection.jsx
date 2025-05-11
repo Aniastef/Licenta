@@ -47,7 +47,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
       // ✅ Asigură-te că preluăm doar comentariile principale
       setComments(data);
     } catch (err) {
-      setError(err.message);
+      console.error("Failed to fetch comments", err);
     } finally {
       setIsLoading(false);
     }

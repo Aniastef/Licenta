@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import Comment from "../models/commentModel.js";
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
-
+import Notification from "../models/notificationModel.js"
 import axios from 'axios';  // To make an API request to the geocoding service
 
 
@@ -144,8 +144,6 @@ export const markGoing = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // No need to check coordinates here
-    // Toggle the going status
     if (event.goingParticipants.includes(req.user._id)) {
       event.goingParticipants = event.goingParticipants.filter(
         (id) => id.toString() !== req.user._id.toString()
@@ -162,6 +160,17 @@ export const markGoing = async (req, res) => {
         (id) => id.toString() !== eventId
       );
       user.eventsMarkedGoing.push(eventId);
+
+      if (event.user.toString() !== req.user._id.toString()) {
+        await Notification.create({
+          user: event.user,
+          fromUser: req.user._id,
+          resourceType: "Event",
+          resourceId: event._id,
+          type: "event_going",
+          message: `${user.username} is going to your event "${event.name}"`,
+        });
+      }
     }
 
     await event.save();
@@ -178,7 +187,8 @@ export const markGoing = async (req, res) => {
   }
 };
 
-// Update the markInterested function similarly
+
+// Updated markInterested with notification
 export const markInterested = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -201,8 +211,6 @@ export const markInterested = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // No need to check coordinates here
-    // Toggle the interested status
     if (event.interestedParticipants.includes(req.user._id)) {
       event.interestedParticipants = event.interestedParticipants.filter(
         (id) => id.toString() !== req.user._id.toString()
@@ -219,6 +227,17 @@ export const markInterested = async (req, res) => {
         (id) => id.toString() !== eventId
       );
       user.eventsMarkedInterested.push(eventId);
+
+      if (event.user.toString() !== req.user._id.toString()) {
+        await Notification.create({
+          user: event.user,
+          fromUser: req.user._id,
+          resourceType: "Event",
+          resourceId: event._id,
+          type: "event_interested",
+          message: `${user.username} is interested in your event "${event.name}"`,
+        });
+      }
     }
 
     await event.save();
@@ -234,6 +253,7 @@ export const markInterested = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 
 
