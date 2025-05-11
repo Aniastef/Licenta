@@ -147,12 +147,27 @@ import imageCompression from "browser-image-compression";
 )}
 
 
-          <ReactQuill
-            theme="snow"
-            value={content}
-            onChange={setContent}
-            style={{ height: "200px", overflowY: "auto", marginBottom: "20px" }}
-          />
+<ReactQuill
+  value={content}
+  onChange={setContent}
+  modules={{
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ align: [] }],
+      [{ color: [] }, { background: [] }],
+      ["link", "image"],
+      ["clean"],
+    ],
+  }}
+  formats={[
+    "header", "bold", "italic", "underline", "strike",
+    "list", "bullet", "align", "color", "background", "link", "image"
+  ]}
+  style={{ height: "200px", overflowY: "auto", marginBottom: "20px" }}
+/>
+
           <Box display="flex" justifyContent="flex-end" gap={4}>
             <Button
               onClick={() => handleSubmit(true)}

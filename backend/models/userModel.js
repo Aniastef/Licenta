@@ -180,7 +180,7 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
-    favoritesArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
+    favoriteArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
 
     eventsMarkedInterested: [
       {

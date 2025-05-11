@@ -1,5 +1,5 @@
 import express from "express";
-import { signupUser,loginUser,logoutUser,updateUser, getUserProfile, getUserWithGalleries, searchUsers, getFavoriteProducts, blockUser, unblockUser, getBlockedUsers,getMe, moveToFavorites, getRandomUsers, saveQuote, addGalleryToFavorites, removeGalleryFromFavorites, getUserFavorites, addArticleToFavorites, removeArticleFromFavorites} from "../controllers/userController.js";
+import { signupUser,loginUser,logoutUser,updateUser, getUserProfile, getUserWithGalleries, searchUsers, getFavoriteProducts, blockUser, unblockUser, getBlockedUsers,getMe, moveToFavorites, getRandomUsers, saveQuote, addGalleryToFavorites, removeGalleryFromFavorites, getUserFavorites, addArticleToFavorites, removeArticleFromFavorites, getUserFavoriteArticles} from "../controllers/userController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 
 const router=express.Router();
@@ -25,7 +25,8 @@ router.post("/favorites/gallery", protectRoute, addGalleryToFavorites);
 router.post("/favorites/gallery/remove", protectRoute, removeGalleryFromFavorites);
 router.get("/:username/favorites-all", getUserFavorites);
 router.post("/favorites/articles", protectRoute, addArticleToFavorites);
-
 router.delete("/favorites/articles/remove", protectRoute, removeArticleFromFavorites);
+router.get("/favorites", protectRoute, getUserFavoriteArticles); // ✅ adaugă
+
 
 export default router;

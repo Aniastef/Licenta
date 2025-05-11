@@ -161,8 +161,16 @@ const AllArticlesPage = () => {
                 {new Date(article.createdAt).toLocaleString()}
               </Text>
               <Text fontSize="xs" color="blue.600" mt={1}>
-                Written by: <strong>@{article.user?.username}</strong>
-            </Text>
+  Written by:{" "}
+  {article.user?.username ? (
+    <Link to={`/profile/${article.user.username}`} style={{ textDecoration: "underline" }}>
+      @{article.user.username}
+    </Link>
+  ) : (
+    <span>Unknown</span>
+  )}
+</Text>
+
             </Box>
           </Link>
         ))}

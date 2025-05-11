@@ -44,7 +44,7 @@ export const createProduct = async (req, res) => {
   
 	  const newProduct = new Product({
 		name,
-		description,
+		description: description?.trim() || "No description", // ✅ fallback
 		price,
 		quantity: quantity || 0,
 		forSale: forSale !== undefined ? forSale : true,
@@ -194,7 +194,7 @@ try {
 
 	// Update fields
 	product.name = name || product.name;
-	product.description = description || product.description;
+	product.description = description?.trim() || product.description || "No description";
 	product.price = price ?? product.price;
 	product.quantity = quantity ?? product.quantity;
 	product.forSale = forSale !== undefined ? forSale : product.forSale;

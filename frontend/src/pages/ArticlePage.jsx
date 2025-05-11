@@ -19,6 +19,8 @@ import "react-quill-new/dist/quill.snow.css";
 import useShowToast from "../hooks/useShowToast";
 import { EditIcon } from "@chakra-ui/icons";
 import { Select } from "@chakra-ui/react";
+import userAtom from "../atoms/userAtom";
+import { useRecoilValue } from "recoil";
 
 const ArticlePage = () => {
   const { articleId } = useParams();
@@ -32,6 +34,8 @@ const ArticlePage = () => {
   const [columnCount, setColumnCount] = useState(1);
   const [coverImage, setCoverImage] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const currentUser = useRecoilValue(userAtom);
+  const [isOwner, setIsOwner] = useState(false);
 
   const quillModules = {
     toolbar: [
@@ -69,6 +73,8 @@ const ArticlePage = () => {
         const data = await res.json();
         if (res.ok) {
           setArticle(data);
+          setIsOwner(data.user?._id === currentUser?._id);
+
           setEditedTitle(data.title);
           setEditedSubtitle(data.subtitle || "");
           setEditedContent(data.content);
@@ -151,6 +157,28 @@ const ArticlePage = () => {
     }
   };
   
+  const handleRemoveFromFavorites = async () => {
+    try {
+      const res = await fetch("/api/users/favorites/articles/remove", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ articleId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setIsFavorite(false);
+        showToast("Success", "Removed from favorites", "success");
+      } else {
+        showToast("Error", data.error || "Failed to remove", "error");
+      }
+    } catch (err) {
+      showToast("Error", err.message, "error");
+    }
+  };
+  
   const handleCancel = () => {
     if (article) {
       setEditedTitle(article.title);
@@ -168,17 +196,18 @@ const ArticlePage = () => {
       <VStack spacing={4} align="stretch">
         {/* HEADER + EDIT BUTTON */}
         <Box position="relative" textAlign="center">
-          {!editMode && (
-            <IconButton
-              icon={<EditIcon />}
-              onClick={() => setEditMode(true)}
-              aria-label="Edit"
-              size="sm"
-              position="absolute"
-              top={0}
-              right={0}
-            />
-          )}
+        {!editMode && isOwner && (
+  <IconButton
+    icon={<EditIcon />}
+    onClick={() => setEditMode(true)}
+    aria-label="Edit"
+    size="sm"
+    position="absolute"
+    top={0}
+    right={0}
+  />
+)}
+
 <Text fontSize="sm" color="gray.400">
   Published on{" "}
   {new Date(article.createdAt).toLocaleDateString("en-GB", {
@@ -187,18 +216,8 @@ const ArticlePage = () => {
     year: "numeric",
   })}
 </Text>
-{!editMode && (
-  <Button
-    size="sm"
-    mt={2}
-    variant="outline"
-    colorScheme={isFavorite ? "green" : "blue"}
-    onClick={handleAddToFavorites}
-    isDisabled={isFavorite}
-  >
-    {isFavorite ? "Favorited" : "Add to Favorites"}
-  </Button>
-)}
+
+
 
 
 
@@ -220,6 +239,7 @@ const ArticlePage = () => {
                 textAlign="center"
                 mb={2}
               />
+              
               <Input
   type="file"
   accept="image/*"
@@ -243,6 +263,22 @@ const ArticlePage = () => {
                   {article.subtitle}
                 </Text>
               )}
+{!editMode && !isOwner && (
+  <IconButton
+    aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+    icon={<Text fontSize="2xl">{isFavorite ? "❤️" : "🤍"}</Text>}
+    variant="ghost"
+    color={isFavorite ? "red.400" : "gray.400"}
+    _hover={{ transform: "scale(1.2)" }}
+    onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites}
+    size="sm"
+    position="absolute"
+    top={0}
+    right="40px" // puțin distanțat de edit
+  />
+)}
+
+
               {coverImage && (
     <Box mt={4}>
       <img
@@ -260,9 +296,20 @@ const ArticlePage = () => {
             </>
           )}
 
-          <Text fontSize="sm" color="gray.500" mt={2}>
-            by {article.user?.username || "Unknown"}
-          </Text>
+<Text fontSize="sm" color="gray.500" mt={2}>
+  by{" "}
+  {article.user?.username ? (
+    <a
+      href={`/profile/${article.user.username}`}
+      style={{ color: "#3182CE", textDecoration: "underline" }}
+    >
+      {article.user.username}
+    </a>
+  ) : (
+    "Unknown"
+  )}
+</Text>
+
           
            <Flex mt={7} align="center" justify="center" gap={2}>
               <Circle size="30px" bg="yellow.400" />

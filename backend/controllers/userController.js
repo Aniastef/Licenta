@@ -479,25 +479,21 @@ export const saveQuote = async (req, res) => {
 	try {
 	  const user = await User.findOne({ username: req.params.username })
 		.populate("favorites")
+		.populate("favoriteArticles", "title subtitle createdAt")
 		.populate({
-			path: "favoriteGalleries",
-			populate: {
-			  path: "owner",
-			  select: "username firstName lastName",
-			  options: { strictPopulate: false },
-			},
-		  })
-		  
-		console.log("🟢 User favorites:", {
-			favorites: user.favorites,
-			favoriteGalleries: user.favoriteGalleries,
-		  });
-		  
+		  path: "favoriteGalleries",
+		  populate: {
+			path: "owner",
+			select: "username firstName lastName",
+		  },
+		});
+  
 	  if (!user) return res.status(404).json({ message: "User not found" });
   
 	  res.status(200).json({
 		favoriteProducts: user.favorites || [],
 		favoriteGalleries: user.favoriteGalleries || [],
+		favoriteArticles: user.favoriteArticles || [],
 	  });
 	} catch (err) {
 	  console.error("Error fetching favorites:", err);
@@ -721,6 +717,18 @@ export const moveToFavorites = async (req, res) => {
 	} catch (err) {
 	  console.error("Error getting random users:", err.message);
 	  res.status(500).json({ error: "Failed to fetch users" });
+	}
+  };
+
+  export const getUserFavoriteArticles = async (req, res) => {
+	try {
+	  const user = await User.findById(req.user._id).populate("favoriteArticles", "title _id");
+	  if (!user) return res.status(404).json({ error: "User not found" });
+  
+	  res.status(200).json({ favoriteArticles: user.favoriteArticles });
+	} catch (err) {
+	  console.error("Error fetching favorite articles:", err.message);
+	  res.status(500).json({ error: "Failed to get favorites" });
 	}
   };
   

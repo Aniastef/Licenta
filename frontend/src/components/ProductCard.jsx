@@ -36,6 +36,7 @@ const ProductCard = ({ product }) => {
   const [quantity, setQuantity] = useState(1);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isLongDescription = product?.description?.length > 300;
+
   const {
     isOpen: isImageOpen,
     onOpen: openImage,
@@ -419,7 +420,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
         </Flex>
 
         {/* partea cu detalii */}
-        <Flex mt={20} direction="column" align="flex-start" justify="flex-start"  ml={10}>
+        <Flex mt={5} direction="column" align="flex-start" justify="flex-start"  ml={5}>
         <HStack justify="space-between" align="center" w="100%">
         <Text
   fontWeight="bold"
@@ -526,31 +527,38 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
               </Flex>
             )}
             
-            {typeof product.description === "string" && product.description.trim() ? (
-  <Box mt={7}>
-    <Text fontWeight="bold">Description:</Text>
-    <Box mt={2} fontSize="md" color="gray.700">
-      <Box
-        maxW="700px"
-        maxH="500px"
-        overflow="hidden"
-        textOverflow="ellipsis"
-        whiteSpace="pre-wrap"
-        wordBreak="break-word"
-        dangerouslySetInnerHTML={{
-          __html: isLongDescription
-            ? product.description.slice(0, 800) + "..."
-            : product.description,
-        }}
-      />
-      {isLongDescription && (
-        <Button mt={2} size="sm" colorScheme="blue" variant="link" onClick={onOpen}>
-          See full description
-        </Button>
-      )}
-    </Box>
+            <Box mt={7}>
+  <Text fontWeight="bold">Description:</Text>
+  <Box mt={2} fontSize="md" color="gray.700">
+  {product.description && product.description.replace(/<[^>]*>/g, "").trim() ? (
+      <>
+        <Box
+          maxW="400px"
+          maxH="500px"
+          overflow="hidden"
+          textOverflow="ellipsis"
+          whiteSpace="pre-wrap"
+          wordBreak="break-word"
+          dangerouslySetInnerHTML={{
+            __html: isLongDescription
+              ? product.description.slice(0, 600) + "..."
+              : product.description,
+          }}
+        />
+        {isLongDescription && (
+          <Button mt={2} size="sm" colorScheme="blue" variant="link" onClick={onOpen}>
+            See full description
+          </Button>
+        )}
+      </>
+    ) : (
+      <Text color="gray.500">No description</Text>
+    )}
   </Box>
-) : null}
+</Box>
+
+
+
 
 
 
