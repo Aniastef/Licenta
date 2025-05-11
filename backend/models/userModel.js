@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    favoriteGalleries: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Gallery", // Referință către galerii
+      },
+    ],    
     bio: {
       type: String,
       default: "",
@@ -58,6 +64,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    quote: {
+      type: String,
+      default: "", 
+    },
+    
     country: {
       type: String,
       default: "",
@@ -169,6 +180,8 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    favoritesArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
+
     eventsMarkedInterested: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -179,12 +192,6 @@ const userSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Event", // Evenimente marcate ca "going"
-      },
-    ],
-    productsMarkedFavorites: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product", // Produse marcate ca "favorites"
       },
     ],
     resetPasswordToken: {

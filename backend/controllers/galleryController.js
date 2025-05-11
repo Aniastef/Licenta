@@ -315,13 +315,13 @@ export const getAllGalleries = async (req, res) => {
   try {
    // getAllGalleries
 const galleries = await Gallery.find()
-.populate("owner", "firstName lastName profilePicture")
+.populate("owner", "username firstName lastName profilePicture")
 .populate("collaborators", "firstName lastName")
 .populate({
   path: "products",
   select: "images",
 })
-.select("name tags products owner coverPhoto collaborators") // 👈 adaugă coverPhoto
+.select("name tags products owner coverPhoto collaborators createdAt")
 .sort({ createdAt: -1 });
 
 

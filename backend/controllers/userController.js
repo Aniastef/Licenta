@@ -5,6 +5,7 @@ import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
 import Gallery from "../models/galleryModel.js";
 import Product from "../models/productModel.js";
+import Article from "../models/articleModel.js"; // Asigură-te că e importat
 
 export const getUserProfile = async (req, res) => {
 	try {
@@ -65,11 +66,19 @@ owner: { $ne: user._id },
 	  const products = await Product.find({ user: user._id })
 		.select("name price images tags createdAt")
 		.sort({ createdAt: -1 }); // Cele mai noi
-  
+
+		const articles = await Article.find({ user: user._id })
+  .select("title subtitle createdAt content")
+  .sort({ createdAt: -1 })
+  .limit(3);
+
+
+
 	  // Atașez produsele separat
 	  const userObject = user.toObject(); // Convertesc din Mongoose Document în obiect simplu
 	  userObject.products = products;
-  
+  userObject.articles = articles;
+
 	  return res.status(200).json(userObject);
 	} catch (err) {
 	  console.error("Error in getUserProfile:", err.message);
@@ -77,6 +86,40 @@ owner: { $ne: user._id },
 	}
   };
   
+  export const removeArticleFromFavorites = async (req, res) => {
+	try {
+	  const { articleId } = req.body;
+	  const user = await User.findById(req.user._id);
+	  if (!user) return res.status(404).json({ error: "User not found" });
+  
+	  user.favoriteArticles = user.favoriteArticles.filter(
+		(id) => id.toString() !== articleId
+	  );
+	  await user.save();
+  
+	  res.status(200).json({ message: "Removed from favorites" });
+	} catch (err) {
+	  res.status(500).json({ error: err.message });
+	}
+  };
+
+  
+  export const addArticleToFavorites = async (req, res) => {
+	try {
+	  const { articleId } = req.body;
+	  const user = await User.findById(req.user._id);
+	  if (!user) return res.status(404).json({ error: "User not found" });
+  
+	  if (!user.favoriteArticles.includes(articleId)) {
+		user.favoriteArticles.push(articleId);
+		await user.save();
+	  }
+  
+	  res.status(200).json({ message: "Article added to favorites" });
+	} catch (err) {
+	  res.status(500).json({ error: err.message });
+	}
+  };
   
   export const signupUser = async (req, res) => {
 	try {
@@ -388,6 +431,84 @@ if (heart !== undefined) user.heart = heart;
 	}
   };
   
+// În userController.js (sau controllerul corespunzător)
+export const saveQuote = async (req, res) => {
+	try {
+	  const { quote } = req.body; // Citatul din request body
+	  const userId = req.user._id; // ID-ul utilizatorului logat
+  
+	  // Verifică dacă utilizatorul există
+	  const user = await User.findById(userId);
+	  if (!user) {
+		return res.status(404).json({ message: "User not found" });
+	  }
+  
+	  // Actualizează citatul utilizatorului
+	  user.quote = quote;
+	  await user.save();
+  
+	  res.status(200).json({ message: "Quote saved successfully" });
+	} catch (error) {
+	  console.error("Error saving quote:", error);
+	  res.status(500).json({ message: "Failed to save quote" });
+	}
+  };
+  
+  
+  export const addGalleryToFavorites = async (req, res) => {
+	try {
+	  const { galleryId } = req.body;
+	  const userId = req.user._id; // ✅ folosește ID-ul din token
+  
+	  const user = await User.findById(userId);
+	  if (!user) return res.status(404).json({ error: "User not found" });
+  
+	  if (!user.favoriteGalleries.includes(galleryId)) {
+		user.favoriteGalleries.push(galleryId);
+		await user.save();
+	  }
+  
+	  res.status(200).json({ message: "Gallery added to favorites", favoriteGalleries: user.favoriteGalleries });
+	} catch (err) {
+	  console.error("Error adding gallery to favorites:", err.message);
+	  res.status(500).json({ error: "Failed to add gallery to favorites" });
+	}
+  };
+  
+  export const getUserFavorites = async (req, res) => {
+	try {
+	  const user = await User.findOne({ username: req.params.username })
+		.populate("favorites")
+		.populate({
+			path: "favoriteGalleries",
+			populate: {
+			  path: "owner",
+			  select: "username firstName lastName",
+			  options: { strictPopulate: false },
+			},
+		  })
+		  
+		console.log("🟢 User favorites:", {
+			favorites: user.favorites,
+			favoriteGalleries: user.favoriteGalleries,
+		  });
+		  
+	  if (!user) return res.status(404).json({ message: "User not found" });
+  
+	  res.status(200).json({
+		favoriteProducts: user.favorites || [],
+		favoriteGalleries: user.favoriteGalleries || [],
+	  });
+	} catch (err) {
+	  console.error("Error fetching favorites:", err);
+	  return res.status(500).json({ error: "Failed to fetch favorites" });
+	}
+  };
+  
+  
+  
+  
+  
   
   
   
@@ -407,20 +528,38 @@ export const getUserWithGalleries = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch user galleries" });
     }
 };
+export const removeGalleryFromFavorites = async (req, res) => {
+  try {
+    const { userId, galleryId } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.favoriteGalleries = user.favoriteGalleries.filter(
+      (id) => id.toString() !== galleryId
+    );
+
+    await user.save();
+
+    res.status(200).json({ message: "Gallery removed from favorites", favoriteGalleries: user.favoriteGalleries });
+  } catch (err) {
+    console.error("Error removing gallery from favorites:", err.message);
+    res.status(500).json({ error: "Failed to remove gallery from favorites" });
+  }
+};
 
 export const moveToFavorites = async (req, res) => {
 	try {
-	  const { userId, productId } = req.body;
+	  const userId = req.user._id; // ← ia userId din token
+	  const { productId } = req.body;
   
 	  const user = await User.findById(userId);
 	  if (!user) return res.status(404).json({ error: "User not found" });
   
-	  // Nu adăuga duplicat
 	  if (!user.favorites.includes(productId)) {
 		user.favorites.push(productId);
 	  }
   
-	  // 🔁 Opțional: șterge produsul din coș
 	  user.cart = user.cart.filter((item) => !item.product.equals(productId));
   
 	  await user.save();
@@ -430,6 +569,7 @@ export const moveToFavorites = async (req, res) => {
 	  res.status(500).json({ error: "Failed to move to favorites" });
 	}
   };
+  
   
 
 

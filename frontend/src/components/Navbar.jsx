@@ -53,8 +53,15 @@ const Navbar = () => {
           <Link to="/galleries">Galleries</Link>
           <Link to="/products">Products</Link>
           <Link to="/events">Events</Link>
+          <Link to="/articles">ARTicless</Link>
           <Link to="/messages">Messages</Link>
-
+ {/* ❤️ Favorites */}
+ {user && (
+    <Link to={`/favorites/${user.username}`}>
+      <Text _hover={{ textDecoration: "underline" }}>Favorites</Text>
+    </Link>
+    
+  )}
           {/* 👤 PROFILE */}
           {user ? (
             <Menu>

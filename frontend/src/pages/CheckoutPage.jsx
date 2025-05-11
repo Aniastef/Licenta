@@ -169,7 +169,23 @@ const CheckoutPage = () => {
       });
       return;
     }
-
+    console.log({
+      userId: user._id,
+      products: cart.map((item) => ({
+        _id: item.product._id,
+        price: item.product.price,
+        quantity: item.quantity,
+      })),
+      paymentMethod,
+      deliveryMethod,
+      firstName,
+      lastName,
+      address,
+      postalCode,
+      city,
+      phone,
+    });
+    
     try {
       const response = await fetch(`/api/orders/${user._id}`, {
         method: "POST",
@@ -190,6 +206,7 @@ const CheckoutPage = () => {
           city,
           phone,
         }),
+        
       });
 
       if (response.ok) {
@@ -230,18 +247,45 @@ const CheckoutPage = () => {
         <option value="easybox">EasyBox locker</option>
       </Select>
 
-      {paymentMethod !== "online" && (
-        <VStack spacing={3} w="100%" maxW="500px">
-          <Input placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-          <Input placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-          <Input placeholder="Full Address" value={address} onChange={(e) => setAddress(e.target.value)} />
-          <HStack w="100%">
-            <Input placeholder="Postal Code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
-            <Input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-          </HStack>
-          <Input placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </VStack>
-      )}
+      <VStack spacing={3} w="100%" maxW="500px">
+  <Input
+    placeholder="First Name"
+    value={firstName}
+    onChange={(e) => setFirstName(e.target.value)}
+  />
+  <Input
+    placeholder="Last Name"
+    value={lastName}
+    onChange={(e) => setLastName(e.target.value)}
+  />
+  <Input
+    placeholder={
+      deliveryMethod === "easybox"
+        ? "EasyBox Locker Address"
+        : "Full Home Address"
+    }
+    value={address}
+    onChange={(e) => setAddress(e.target.value)}
+  />
+  <HStack w="100%">
+    <Input
+      placeholder="Postal Code"
+      value={postalCode}
+      onChange={(e) => setPostalCode(e.target.value)}
+    />
+    <Input
+      placeholder="City"
+      value={city}
+      onChange={(e) => setCity(e.target.value)}
+    />
+  </HStack>
+  <Input
+    placeholder="Phone Number"
+    value={phone}
+    onChange={(e) => setPhone(e.target.value)}
+  />
+</VStack>
+
 
       <Button colorScheme="green" onClick={handlePayment}>
         {paymentMethod === "online" ? "Pay with Stripe" : "Place Order"}

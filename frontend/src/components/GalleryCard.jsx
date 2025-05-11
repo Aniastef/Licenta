@@ -18,6 +18,8 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { ReactSortable } from "react-sortablejs";
+import { useToast } from "@chakra-ui/react";
+
 
 const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const [availableProducts, setAvailableProducts] = useState([]);
@@ -28,6 +30,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState(20);
   const [expanded, setExpanded] = useState(false);
+  const toast = useToast();
 
   const navigate = useNavigate();
 
@@ -74,6 +77,44 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     setFilteredProducts(filtered);
   };
 
+  const addGalleryToFavorites = async () => {
+    try {
+      const res = await fetch("/api/users/favorites/gallery", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ galleryId: gallery._id }),
+      });
+  
+      if (!res.ok) throw new Error("Failed to add gallery to favorites");
+  
+      toast({
+        title: "Gallery added to favorites!",
+        description: `${gallery.name} has been added.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top",
+      });
+  
+      console.log("✅ Gallery added to favorites:", gallery._id);
+    } catch (err) {
+      console.error("Error adding gallery to favorites:", err);
+  
+      toast({
+        title: "Error",
+        description: "Could not add gallery to favorites.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  };
+  
+  
   const addProductToGallery = async (productId) => {
     try {
       const res = await fetch(`/api/galleries/${gallery._id}/add-product/${productId}`, {
@@ -107,6 +148,26 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       console.error("Error removing product:", err);
     }
   };
+
+  const addToFavorites = async (productId) => {
+    try {
+      const res = await fetch(`/api/users/favorites/move`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ productId }),
+      });
+  
+      if (!res.ok) throw new Error("Failed to add to favorites");
+  
+      console.log("✅ Added to favorites:", productId);
+    } catch (err) {
+      console.error("Error adding to favorites:", err);
+    }
+  };
+  
 
   const handleSort = async (newList) => {
     const orderedIds = newList.map((item) => item.product?._id).filter(Boolean);
@@ -147,6 +208,11 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   </Text>
   
   <Flex alignItems="center" gap={4}>
+  {!isOwner && (
+      <Button colorScheme="yellow" onClick={addGalleryToFavorites}>
+        Add Gallery to Favorites
+      </Button>
+    )}
     {canEdit && (
       <>
         <Button colorScheme="gray" variant="outline" onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
@@ -333,6 +399,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                   Remove from Gallery
                 </Button>
               )}
+    
       </Box>
     </Box>
   );

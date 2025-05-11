@@ -86,7 +86,45 @@ const UserHeader = ({ user }) => {
       isClosable: true,
     });
   };
-
+  
+  const saveQuote = async () => {
+    try {
+      const response = await fetch("/api/users/quote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // ⬅️ super important pentru cookie JWT
+        body: JSON.stringify({ quote }), // trimitem citatul
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to save quote");
+      }
+  
+      const data = await response.json();
+      toast({
+        title: data.message || "Quote saved successfully",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error saving quote:", error);
+      toast({
+        title: "Error saving quote",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    } finally {
+      setIsEditing(false); // ieși din modul edit
+    }
+  };
+  
+  
+  
+  
   const handleChange = (e) => {
     const value = e.target.value;
     if (value.length > CHAR_LIMIT) return;
@@ -97,6 +135,7 @@ const UserHeader = ({ user }) => {
     }
     setQuote(value);
   };
+  
 
   const contactItems = [
     { icon: messageIcon, label: "Message me", alwaysVisible: true },
@@ -173,21 +212,11 @@ const UserHeader = ({ user }) => {
           </Text>
         </Flex>
 
-        <Box
-  position="relative"
-  
-  w="390px"
-  h="310px"  // Important!
-
-  textAlign="left"
-  display="flex"
-  flexDirection="column"
-  alignItems="center"
->
+        <Box position="relative" w="390px" h="310px" textAlign="left" display="flex" flexDirection="column" alignItems="center">
   {/* Sticky note image */}
   <Image mt={1} src={sticky} w="100%" h="auto" />
 
-  {/* Textarea poziționată absolut peste sticky */}
+  {/* Textarea absolută deasupra sticky note-ului */}
   <Box position="absolute" top="45px" px={9} w="100%">
     <Textarea
       ref={textareaRef}
@@ -206,7 +235,6 @@ const UserHeader = ({ user }) => {
     />
     <Text
       fontSize="xs"
-      
       color={
         quote.length >= CHAR_LIMIT - 20 ||
         quote.split("\n").length >= LINE_LIMIT
@@ -219,32 +247,26 @@ const UserHeader = ({ user }) => {
     </Text>
   </Box>
 
-  {/* Edit button */}
+  {/* Butonul de editare */}
   <IconButton
-    icon={
-      isEditing ? (
-        <Text fontSize="xs" fontWeight="semibold">
-          Save
-        </Text>
-      ) : (
-        <Image src={editIcon} w="16px" h="16px" />
-      )
-    }
-    position="absolute"
-    bottom="20px"
-    left="50px"
-    size="xs"
-    bg="whiteAlpha.700"
-    _hover={{ bg: "whiteAlpha.900" }}
-    borderRadius="full"
-    onClick={() => {
-      if (isEditing) handleSave();
-      else setIsEditing(true);
-    }}
-    aria-label={isEditing ? "Save quote" : "Edit quote"}
-    zIndex={2}
-  />
+  icon={isEditing ? <Text fontSize="xs" fontWeight="semibold">Save</Text> : <Image src={editIcon} w="16px" h="16px" />}
+  position="absolute"
+  bottom="20px"
+  left="50px"
+  size="xs"
+  bg="whiteAlpha.700"
+  _hover={{ bg: "whiteAlpha.900" }}
+  borderRadius="full"
+  onClick={() => {
+    if (isEditing) saveQuote();
+    else setIsEditing(true);
+  }}
+  aria-label={isEditing ? "Save quote" : "Edit quote"}
+  zIndex={2}
+/>
+
 </Box>
+
 
       </Flex>
 
@@ -355,6 +377,8 @@ const UserHeader = ({ user }) => {
           <Tab _selected={{ bg: "orange.300", color: "white" }}>Events</Tab>
           <Tab _selected={{ bg: "orange.300", color: "white" }}>Articles</Tab>
         </TabList>
+
+        
         <TabPanels>
         <TabPanel>
   {/* Grila de produse */}
@@ -550,6 +574,69 @@ filteredGalleries.slice(0, 2).map((gallery) => (
                 </Link>
               </Box>
             </TabPanel>
+
+            <TabPanel>
+      <Flex direction="column" align="center" gap={6}>
+        <Flex direction="column" w="100%" maxW="800px" gap={4}>
+          {user.articles?.length > 0 ? (
+            user.articles.map((article) => (
+              <Box
+  key={article._id}
+  p={4}
+  borderWidth="1px"
+  borderRadius="md"
+  shadow="md"
+  _hover={{ boxShadow: "lg", transform: "scale(1.01)" }}
+  transition="all 0.2s"
+  cursor="pointer"
+  onClick={() => navigate(`/articles/${article._id}`)}
+  bg="white"
+  px={6}
+  py={12}
+  sx={{
+    backgroundImage: `
+      repeating-linear-gradient(to bottom, transparent, transparent 29px, #cbd5e0  30px),
+      linear-gradient(to right, #dc2626 1px, transparent 2px)
+    `,
+    backgroundSize: "100% 30px, 1px 100%",
+    backgroundPosition: "left 40px top, left 40px top",
+    backgroundRepeat: "repeat-y, no-repeat",
+  }}
+>
+  <Text fontWeight="bold" fontSize="xl" mb={1}>
+    {article.title}
+  </Text>
+  {article.subtitle && (
+    <Text fontSize="md" color="gray.600">
+      {article.subtitle}
+    </Text>
+  )}
+  {/* 🔽 Fragment din content fără taguri HTML */}
+  <Text fontSize="sm" color="gray.500" mt={2}>
+  {article.content ? article.content.replace(/<[^>]+>/g, "").slice(0, 50) + "..." : ""}
+  </Text>
+</Box>
+
+            ))
+          ) : (
+            <Text>No articles yet.</Text>
+          )}
+        </Flex>
+
+        <Box mt={4}>
+          <Link to={`/${user.username}/articles`}>
+            <Text
+              fontWeight="bold"
+              color="blue.500"
+              _hover={{ textDecoration: "underline" }}
+            >
+              See all articles →
+            </Text>
+          </Link>
+        </Box>
+      </Flex>
+    </TabPanel>
+
         </TabPanels>
       </Tabs>
 

@@ -6,19 +6,28 @@ import Product from "../models/productModel.js";
  */
 
 export const getUserOrders = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const user = await User.findById(userId).populate("orders.products.product")
+  try {
+    const { userId } = req.params;
 
+    const user = await User.findById(userId).populate("orders.products.product");
 
-        if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-        res.status(200).json({ orders: user.orders });
-    } catch (error) {
-        console.error("Error fetching orders:", error);
-        res.status(500).json({ error: "Failed to fetch orders" });
-    }
+    // Poți să verifici aici dacă adresa este validă sau să o completezi cu "Adresa necunoscută" dacă este invalidă
+    user.orders.forEach(order => {
+      order.address = order.address && order.address !== "N/A" ? order.address : "Adresa necunoscută";
+      order.city = order.city && order.city !== "N/A" ? order.city : "N/A";
+      order.postalCode = order.postalCode && order.postalCode !== "N/A" ? order.postalCode : "N/A";
+    });
+
+    res.status(200).json({ orders: user.orders });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
 };
+
+
 
 
 
@@ -40,40 +49,43 @@ export const addOrder = async (req, res) => {
       phone,
     } = req.body;
 
+    console.log("Received order data:", req.body); // Aici vei vedea ce date sunt trimise din frontend
+
+    
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Adaugă fiecare produs ca o comandă separată
-    products.forEach((p) => {
-      if (!p._id) {
-        console.warn("❗️ Missing product ID in order item:", p);
-        return;
-      }
-
-      user.orders.push({
+    const newOrder = {
+      products: products.map((p) => ({
         product: p._id,
         price: p.price,
         quantity: p.quantity || 1,
-        status: "Pending",
-        date: new Date(),
-        paymentMethod: paymentMethod || "card",
-        deliveryMethod: deliveryMethod || "courier",
-        firstName,
-        lastName,
-        address,
-        postalCode,
-        city,
-        phone,
-      });
-    });
+      })),
+      status: "Pending",
+      date: new Date(),
+      paymentMethod: paymentMethod || "card",
+      deliveryMethod: deliveryMethod || "courier",
+      firstName,
+      lastName,
+      address,
+      postalCode,
+      city,
+      phone,
+    };
 
+    user.orders.push(newOrder);
     await user.save();
-    res.status(201).json({ message: "Order(s) added", orders: user.orders });
+
+    res.status(201).json({ message: "Order added", orders: user.orders });
   } catch (err) {
     console.error("Error saving order:", err);
     res.status(500).json({ error: "Failed to add order" });
   }
 };
+
+
+
+
 
 
 

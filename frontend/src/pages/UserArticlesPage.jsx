@@ -1,88 +1,228 @@
-// --- UserArticlesPage.jsx ---
 import {
-    Box,
-    Button,
-    Heading,
-    Input,
-    VStack,
-    Text,
-    Link,
-  } from "@chakra-ui/react";
-  import { useState, useEffect } from "react";
-  import { Link as RouterLink, useParams } from "react-router-dom";
-  import ReactQuill from "react-quill-new";
-  import "react-quill-new/dist/quill.snow.css";
-  import useShowToast from "../hooks/useShowToast";
+  Box,
+  Button,
+  Circle,
+  Flex,
+  Heading,
+  Image,
+  Text,
+  VStack,
+  useToast,
+} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { Link as RouterLink, useParams, useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom";
+import Calendar from "react-calendar";
+import 'react-calendar/dist/Calendar.css';
+
+const UserArticlesPage = () => {
+  const { username } = useParams();
+  const navigate = useNavigate();
+  const currentUser = useRecoilValue(userAtom);
+  const toast = useToast();
+  const [articles, setArticles] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const formatDateKey = (date) => new Date(date).toISOString().split("T")[0];
   
-  const UserArticlesPage = () => {
-    const { username } = useParams();
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [articles, setArticles] = useState([]);
-    const showToast = useShowToast();
+  const articlesByDate = {};
+  articles.forEach((article) => {
+    const key = formatDateKey(article.createdAt);
+    if (!articlesByDate[key]) articlesByDate[key] = [];
+    articlesByDate[key].push(article);
+  });
   
-    const fetchArticles = async () => {
-      const res = await fetch(`/api/articles/user/${username}`, { credentials: "include" });
-      const data = await res.json();
-      if (res.ok) setArticles(data);
-    };
+  const filteredArticles = selectedDate
+    ? articlesByDate[formatDateKey(selectedDate)] || []
+    : articles;
   
-    useEffect(() => {
-      fetchArticles();
-    }, [username]);
-  
-    const handleSave = async () => {
-      if (!title || !content) return showToast("Error", "Title and content required", "error");
-  
-      const res = await fetch("/api/articles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ title, content }),
-      });
-  
-      const data = await res.json();
-      if (res.ok) {
-        setTitle("");
-        setContent("");
-        fetchArticles();
-        showToast("Saved", "Article saved", "success");
-      } else {
-        showToast("Error", data.error || "Something went wrong", "error");
-      }
-    };
-  
-    return (
-      <Box maxW="container.md" mx="auto" py={6}>
-        <VStack spacing={6} align="stretch">
-          <Heading size="lg">Write a new article</Heading>
-          <Input
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <ReactQuill
-            theme="snow"
-            value={content}
-            onChange={setContent}
-            style={{ height: "200px", marginBottom: "20px" }}
-          />
-          <Button colorScheme="blue" onClick={handleSave}>Save</Button>
-  
-          <Heading size="md" mt={8}>My Articles</Heading>
-          {articles.map((a) => (
-            <Box key={a._id} p={4} bg="gray.100" borderRadius="md">
-              <Link as={RouterLink} to={`/articles/${a._id}`} fontWeight="bold">
-                {a.title}
-              </Link>
-              <Text fontSize="sm" color="gray.600">
-                {new Date(a.createdAt).toLocaleString()}
-              </Text>
-            </Box>
-          ))}
-        </VStack>
-      </Box>
-    );
+  const tileContent = ({ date }) => {
+    const key = formatDateKey(date);
+    return articlesByDate[key] ? <Box color="blue.500" fontWeight="bold">•</Box> : null;
   };
   
-  export default UserArticlesPage;
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const res = await fetch(`/api/articles/user/${username}`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setArticles(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        } else {
+          toast({
+            title: "Error",
+            description: data.error,
+            status: "error",
+            duration: 3000,
+          });
+        }
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: err.message,
+          status: "error",
+          duration: 3000,
+        });
+      }
+    };
+    fetchArticles();
+  }, [username]);
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const month = date.toLocaleString("default", { month: "short" }).toUpperCase();
+    const day = String(date.getDate()).padStart(2, "0");
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return { day, month, time };
+  };
+  
+
+  return (
+    <Box maxW="1800px" mx="auto" py={6}>
+   
+      <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
+              <Text fontWeight="bold" fontSize="2xl" textAlign="center">
+                @{username}'s Articles
+              </Text>
+              <Flex position="absolute" right={4} gap={2}>
+                <Circle size="30px" bg="yellow.400" />
+                <Circle size="30px" bg="green.400" />
+              </Flex>
+            </Flex>
+      {currentUser?.username === username && (
+        <Button colorScheme="blue" ml={5} mb={6} onClick={() => navigate("/create-article")}>
+          Write a New Article
+        </Button>
+      )}
+
+<Flex direction={{ base: "column", md: "row" }} gap={10} px={4} mt={6}>
+  {/* Calendar Sidebar */}
+  <Box minW={{ base: "100%", md: "300px" }}>
+    <Calendar  
+      onChange={setSelectedDate}
+      value={selectedDate}
+      tileContent={tileContent}
+    />
+
+    {selectedDate && (
+      <Button mt={2} size="sm" onClick={() => setSelectedDate(null)}>
+        Show all articles
+      </Button>
+    )}
+  </Box>
+
+  {/* Article List */}
+  <VStack spacing={6} align="stretch" flex={1}>
+    {filteredArticles.length === 0 ? (
+      <Text>No articles for this day.</Text>
+    ) : (
+      filteredArticles.map((article) => {
+        const { day, month, time } = formatDate(article.createdAt);
+        return (
+          <Flex
+            key={article._id}
+            gap={4}
+            borderBottom="1px solid #e2e8f0"
+            pb={4}
+            align="flex-start"
+            wrap="wrap"
+          >
+            {/* Date */}
+            <Box w="60px" textAlign="center">
+              <Text fontWeight="bold" fontSize="lg">{day}</Text>
+              <Text fontSize="sm" color="gray.500">{month}</Text>
+              <Text fontSize="xs" color="gray.400">{time}</Text>
+            </Box>
+
+            {/* Article Details */}
+            <Box
+  key={article._id}
+  p={0}
+  borderWidth="1px"
+  borderRadius="md"
+  shadow="md"
+  _hover={{ boxShadow: "lg", transform: "scale(1.01)" }}
+  transition="all 0.2s"
+  cursor="pointer"
+  onClick={() => navigate(`/articles/${article._id}`)}
+  bg="white"
+>
+  {/* Imaginea de sus, dacă există */}
+  {article.coverImage && (
+    <Image
+      src={article.coverImage}
+      alt="Cover"
+      w="100%"
+      minH="150px"
+      maxH="250px"
+      objectFit="cover"
+      borderTopRadius="md"
+    />
+  )}
+
+  {/* Fundal de foaie DOAR sub imagine */}
+  <Box
+    px={6}
+    py={6}
+    sx={{
+      backgroundImage: `
+        repeating-linear-gradient(to bottom, transparent, transparent 29px, #cbd5e0 30px),
+        linear-gradient(to right, #dc2626 1px, transparent 2px)
+      `,
+      backgroundSize: "100% 30px, 1px 100%",
+      backgroundPosition: "left 40px top, left 40px top",
+      backgroundRepeat: "repeat-y, no-repeat",
+    }}
+  >
+    <Text
+      as={RouterLink}
+      to={`/articles/${article._id}`}
+      fontWeight="bold"
+      fontSize="xl"
+      _hover={{ textDecoration: "underline", color: "blue.500" }}
+    >
+      {article.title}
+    </Text>
+
+    {article.subtitle && (
+      <Text fontSize="md" color="gray.600" mt={1}>
+        {article.subtitle}
+      </Text>
+    )}
+
+    <Text fontSize="sm" color="gray.500" mt={2}>
+      {article.content.replace(/<[^>]+>/g, "").slice(0, 50)}...
+    </Text>
+
+    <Text fontSize="xs" color="gray.400" mt={1}>
+      {new Date(article.createdAt).toLocaleString()}
+    </Text>
+
+    <Button
+      as={RouterLink}
+      to={`/articles/${article._id}`}
+      size="sm"
+      variant="link"
+      colorScheme="blue"
+      mt={2}
+    >
+      View Details →
+    </Button>
+  </Box>
+</Box>
+
+          </Flex>
+        );
+      })
+    )}
+  </VStack>
+</Flex>
+
+    </Box>
+  );
+};
+
+export default UserArticlesPage;

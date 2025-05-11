@@ -71,7 +71,12 @@ const ExploreGalleries = () => {
         return sortDirection === "asc"
           ? (a.name || "").localeCompare(b.name || "")
           : (b.name || "").localeCompare(a.name || "");
-      } else if (sortOption === "products") {
+      } else if (sortOption === "date") {
+        return sortDirection === "asc"
+          ? new Date(a.createdAt) - new Date(b.createdAt)
+          : new Date(b.createdAt) - new Date(a.createdAt);
+      }      
+      else if (sortOption === "products") {
         return sortDirection === "asc"
           ? (a.products?.length || 0) - (b.products?.length || 0)
           : (b.products?.length || 0) - (a.products?.length || 0);
@@ -130,6 +135,8 @@ const ExploreGalleries = () => {
           >
             <option value="name">Name</option>
             <option value="products">Number of Products</option>
+            <option value="date">Created Date</option>
+
           </Select>
 
           <Button onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}>
@@ -174,8 +181,8 @@ const ExploreGalleries = () => {
             <>
 <SimpleGrid minChildWidth="400px" spacing={6}>
 {paginated.map((gallery) => (
-                  <Link to={`/gallery/${gallery._id}`} key={gallery._id}>
-                    <Box
+  <Link to={`/galleries/${gallery.owner?.username}/${gallery.name}`} key={gallery._id}>
+  <Box
                       p={0}
                       bg="gray.100"
                       borderRadius="md"

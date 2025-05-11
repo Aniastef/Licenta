@@ -55,19 +55,29 @@ export const handlePaymentSuccess = async (req, res) => {
     }
 
     // ✅ Push final, doar cu produse verificate
+    const {
+      address,
+      postalCode,
+      city,
+      phone,
+      firstName,
+      lastName,
+    } = req.body;
+    
     user.orders.push({
       products: validProductsForOrder,
       status: "Pending",
       date: new Date(),
       paymentMethod: "online",
       deliveryMethod: "courier",
-      firstName: user.firstName || "N/A",
-      lastName: user.lastName || "N/A",
-      address: user.address || "N/A",
-      postalCode: user.postalCode || "000000",
-      city: user.city || "N/A",
-      phone: user.phone || "N/A",
+      firstName,
+      lastName,
+      address,
+      postalCode,
+      city,
+      phone,
     });
+    
 
     user.cart = []; // 🧹 Curăță cart-ul
     await user.save();

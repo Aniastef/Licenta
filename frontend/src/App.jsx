@@ -35,12 +35,15 @@ import NotificationsPage from './pages/NotificationPage';
 import UserArticlesPage from './pages/UserArticlesPage';
 import ArticlePage from './pages/ArticlePage';
 import CalendarPage from './pages/CalendarPage';
-import UserArticleCalendarPage from './pages/UserArticleCalendarPage';
 import Test from './components/test';
 import ContactBar from './components/ContactBar';
 import LoginCard from './components/LoginCard';
 import UserAllGalleriesPage from './pages/UserAllGalleriesPage';
 import UserAllEventsPage from './pages/UserAllEventsPage';
+import FavoritesPage from './pages/FavoritesPage';
+import CreateOrEditArticlePage from './pages/createArticle';
+import AllArticlesPage from './pages/AllArticlesPage';
+
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -75,6 +78,8 @@ function App() {
         <Route path="/create/event" element={user ? <CreateEventPage /> : <Navigate to="/auth" />} />
         <Route path="/events/:id" element={<EventPage/>} />
         <Route path='/events' element={<EventsPage/>} />
+        <Route path='/articles' element={<AllArticlesPage/>} />
+
         <Route path="/art" element={<UserArtGallery/>} />
         <Route path="*" element={<Navigate to="/home" />} />
         <Route path="/galleries" element={<ExploreGalleries/>}/>
@@ -97,11 +102,13 @@ function App() {
         <Route path="/edit-gallery/:galleryId" element={<EditGalleryPage />} />
         <Route path="/:username/articles" element={<UserArticlesPage />} />
         <Route path="/articles/:articleId" element={<ArticlePage />} />
-        <Route path="/calendar" element={<UserArticleCalendarPage />} />
 
         <Route path="/:username/calendar" element={<CalendarPage />} />
         <Route path="/test" element={<Test />} />
         <Route path="/login" element={<LoginCard />} />
+        <Route path="/favorites/:username" element={<FavoritesPage />} />
+        <Route path="/create/article" element={<CreateOrEditArticlePage />} />
+        <Route path="/update/article/:id" element={<CreateOrEditArticlePage />} />
 
 
 

@@ -6,8 +6,11 @@ import {
   VStack,
   Text,
   IconButton,
-  HStack,
   Spinner,
+  Center,
+  HStack,
+  Circle,
+  Flex,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -15,6 +18,7 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import useShowToast from "../hooks/useShowToast";
 import { EditIcon } from "@chakra-ui/icons";
+import { Select } from "@chakra-ui/react";
 
 const ArticlePage = () => {
   const { articleId } = useParams();
@@ -22,9 +26,35 @@ const ArticlePage = () => {
   const [article, setArticle] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
+  const [editedSubtitle, setEditedSubtitle] = useState("");
   const [editedContent, setEditedContent] = useState("");
   const [loading, setLoading] = useState(true);
+  const [columnCount, setColumnCount] = useState(1);
+  const [coverImage, setCoverImage] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
 
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ align: [] }],
+      [{ color: [] }, { background: [] }],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+  
+  const quillFormats = [
+    "header",
+    "bold", "italic", "underline", "strike",
+    "list", "bullet",
+    "align",
+    "color", "background",
+    "link", "image",
+  ];
+  
+  
   useEffect(() => {
     if (!articleId) {
       showToast("Error", "Missing article ID", "error");
@@ -40,7 +70,10 @@ const ArticlePage = () => {
         if (res.ok) {
           setArticle(data);
           setEditedTitle(data.title);
+          setEditedSubtitle(data.subtitle || "");
           setEditedContent(data.content);
+          setCoverImage(data.coverImage || null);
+
         } else {
           showToast("Error", data.error || "Failed to load article", "error");
         }
@@ -54,6 +87,23 @@ const ArticlePage = () => {
     fetchArticle();
   }, [articleId, showToast]);
 
+  useEffect(() => {
+    const checkFavorite = async () => {
+      if (!articleId) return;
+      try {
+        const res = await fetch(`/api/users/favorites`, { credentials: "include" });
+        const data = await res.json();
+        if (res.ok) {
+          setIsFavorite(data.favoriteArticles?.some(a => a._id === articleId));
+        }
+      } catch (err) {
+        console.error("Error checking favorites", err);
+      }
+    };
+    checkFavorite();
+  }, [articleId]);
+  
+
   const handleSave = async () => {
     try {
       const res = await fetch(`/api/articles/${articleId}`, {
@@ -62,7 +112,10 @@ const ArticlePage = () => {
         credentials: "include",
         body: JSON.stringify({
           title: editedTitle,
+          subtitle: editedSubtitle,
           content: editedContent,
+          coverImage, // nou
+
         }),
       });
       const data = await res.json();
@@ -78,45 +131,189 @@ const ArticlePage = () => {
     }
   };
 
-  if (loading) return <Spinner />;
+  const handleAddToFavorites = async () => {
+    try {
+      const res = await fetch(`/api/users/favorites/articles`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ articleId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setIsFavorite(true);
+        showToast("Success", "Article added to favorites", "success");
+      } else {
+        showToast("Error", data.error || "Failed to favorite", "error");
+      }
+    } catch (err) {
+      showToast("Error", err.message, "error");
+    }
+  };
+  
+  const handleCancel = () => {
+    if (article) {
+      setEditedTitle(article.title);
+      setEditedSubtitle(article.subtitle || "");
+      setEditedContent(article.content);
+    }
+    setEditMode(false);
+  };
+
+  if (loading) return <Center py={20}><Spinner size="xl" /></Center>;
   if (!article) return <Text>Article not found</Text>;
 
   return (
-    <Box maxW="container.md" mx="auto" py={8}>
-      <VStack spacing={6} align="stretch">
-        <HStack justify="space-between">
-          <Heading size="lg">
-            {editMode ? (
-              <Input
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-              />
-            ) : (
-              article.title
-            )}
-          </Heading>
+    <Box maxW="1700px" mx="auto" py={8}>
+      <VStack spacing={4} align="stretch">
+        {/* HEADER + EDIT BUTTON */}
+        <Box position="relative" textAlign="center">
           {!editMode && (
             <IconButton
               icon={<EditIcon />}
               onClick={() => setEditMode(true)}
               aria-label="Edit"
+              size="sm"
+              position="absolute"
+              top={0}
+              right={0}
             />
           )}
-        </HStack>
+<Text fontSize="sm" color="gray.400">
+  Published on{" "}
+  {new Date(article.createdAt).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })}
+</Text>
+{!editMode && (
+  <Button
+    size="sm"
+    mt={2}
+    variant="outline"
+    colorScheme={isFavorite ? "green" : "blue"}
+    onClick={handleAddToFavorites}
+    isDisabled={isFavorite}
+  >
+    {isFavorite ? "Favorited" : "Add to Favorites"}
+  </Button>
+)}
 
+
+
+
+          {editMode ? (
+            <>
+              <Input
+                textAlign="center"
+                fontSize="2xl"
+                fontWeight="bold"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                mb={1}
+              />
+              <Input
+                placeholder="Subtitle"
+                value={editedSubtitle}
+                onChange={(e) => setEditedSubtitle(e.target.value)}
+                textAlign="center"
+                mb={2}
+              />
+              <Input
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setCoverImage(reader.result);
+      reader.readAsDataURL(file);
+    }
+  }}
+  mb={2}
+/>
+
+            </>
+          ) : (
+            <>
+              <Heading mt={2}>{article.title}</Heading>
+              {article.subtitle && (
+                <Text  fontSize="lg" color="gray.600" mt={2}>
+                  {article.subtitle}
+                </Text>
+              )}
+              {coverImage && (
+    <Box mt={4}>
+      <img
+        src={coverImage}
+        alt="Cover"
+        style={{
+          maxHeight: "400px",
+          objectFit: "cover",
+          width: "100%",
+          borderRadius: "8px",
+        }}
+      />
+    </Box>
+  )}
+            </>
+          )}
+
+          <Text fontSize="sm" color="gray.500" mt={2}>
+            by {article.user?.username || "Unknown"}
+          </Text>
+          
+           <Flex mt={7} align="center" justify="center" gap={2}>
+              <Circle size="30px" bg="yellow.400" />
+              <Circle size="30px" bg="green.400" />
+            </Flex>
+        </Box>
+
+        {/* CONTENT */}
         {editMode ? (
-          <>
-            <ReactQuill value={editedContent} onChange={setEditedContent} />
-            <Button mt={4} onClick={handleSave} colorScheme="blue">
-              Save Changes
-            </Button>
-          </>
-        ) : (
-          <Box
-            className="quill-content"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
-        )}
+  <>
+
+
+    <ReactQuill
+      value={editedContent}
+      onChange={setEditedContent}
+      modules={quillModules}
+      formats={quillFormats}
+    />
+
+    <HStack justify="center" mt={4}>
+      <Button onClick={handleCancel} variant="outline">
+        Cancel
+      </Button>
+      <Button onClick={handleSave} colorScheme="blue">
+        Save Changes
+      </Button>
+    </HStack>
+  </>
+) : (
+  <Box
+    mt={4}
+    px={4}
+    sx={{
+      columnCount: columnCount,
+      columnGap: "40px",
+      lineHeight: "1.8",
+      wordBreak: "break-word",
+      fontSize: "17px",
+      "& .ql-align-center": { textAlign: "center" },
+      "& .ql-align-right": { textAlign: "right" },
+      "& .ql-align-justify": { textAlign: "justify" },
+      "& hr": {
+        border: "none",
+        borderTop: "1px solid #ccc",
+        marginY: "20px",
+      },
+    }}
+    dangerouslySetInnerHTML={{ __html: article.content }}
+  />
+)}
+
       </VStack>
     </Box>
   );

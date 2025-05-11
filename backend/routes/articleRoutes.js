@@ -5,13 +5,16 @@ import {
   getArticleById,
   getArticlesByUser,
   updateArticle,
-  getMyArticles
+  getMyArticles,
+  getAllArticlesFiltered
 } from "../controllers/articleController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 
 const router = express.Router();
 
 router.post("/", protectRoute, createArticle);
+router.get("/", getAllArticlesFiltered); // 👈 noua rută pentru toate articolele cu filtre
+
 router.get("/user/:username", getArticlesByUser);
 router.get("/user/me", protectRoute, getMyArticles);
 router.get("/:id", getArticleById);
