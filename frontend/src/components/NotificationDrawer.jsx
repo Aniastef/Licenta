@@ -106,8 +106,8 @@ const NotificationDrawer = () => {
     <>
       <Box position="relative">
   <IconButton
-    icon={<BellIcon />}
-    onClick={handleOpen}
+  icon={<BellIcon boxSize={7} />} // ⬅️ fă-l mai mare, default e 5 (20px), acum e 7 (28px)
+  onClick={handleOpen}
     aria-label="Notifications"
     variant="ghost"
   />
@@ -144,31 +144,38 @@ const NotificationDrawer = () => {
   ) : (
     notifications.slice(0, 5).map((n) => (
       <Box
-        key={n._id}
-        p={3}
-        bg={n.seen ? "gray.100" : "blue.50"}
-        rounded="md"
-        w="100%"
-      >
-        <Text mb={2}>{n.message}</Text>
-        {n.type === "invite" && n.meta?.galleryId ? (
-          <GalleryInviteActions
-            galleryId={n.meta.galleryId}
-            onAccept={() => acceptInvite(n.meta.galleryId)}
-            onDecline={() => declineInvite(n.meta.galleryId)}
-          />
-        ) : (
-          <Box
-            mt={2}
-            cursor="pointer"
-            onClick={() => markAsSeenAndNavigate(n)}
-          >
-            <Text color="blue.600" fontSize="sm">
-              View
-            </Text>
-          </Box>
-        )}
-      </Box>
+      key={n._id}
+      p={3}
+      bg={n.seen ? "gray.100" : "blue.50"}
+      rounded="md"
+      w="100%"
+    >
+      <Text mb={1}>{n.message}</Text>
+    
+      {/* ⏱️ Data notificării */}
+      <Text fontSize="xs" color="gray.500" mb={2}>
+        {new Date(n.createdAt).toLocaleString()}
+      </Text>
+    
+      {n.type === "invite" && n.meta?.galleryId ? (
+        <GalleryInviteActions
+          galleryId={n.meta.galleryId}
+          onAccept={() => acceptInvite(n.meta.galleryId)}
+          onDecline={() => declineInvite(n.meta.galleryId)}
+        />
+      ) : (
+        <Box
+          mt={1}
+          cursor="pointer"
+          onClick={() => markAsSeenAndNavigate(n)}
+        >
+          <Text color="blue.600" fontSize="sm">
+            View
+          </Text>
+        </Box>
+      )}
+    </Box>
+    
     ))
   )}
 </VStack>

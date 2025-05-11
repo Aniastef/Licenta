@@ -20,6 +20,7 @@ import notificationRoutes from "./routes/notificationRoutes.js"; // ✅ nou
 import articleRoutes from "./routes/articleRoutes.js"; // ✅ nou
 import upload from "./config/imgUpload.js";
 import { EventEmitter } from "events";
+import searchRoutes from "./routes/searchRoutes.js";
 
 EventEmitter.defaultMaxListeners = 20;
 
@@ -56,7 +57,7 @@ app.use("/api/audit", auditRoutes);
 app.use("/api/reviews", reviewRoutes); // ✅ nou
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/articles", articleRoutes);
-
+app.use("/api/search", searchRoutes);
 
 
 // Not Found fallback

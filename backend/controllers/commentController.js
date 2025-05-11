@@ -4,6 +4,8 @@ import Product from "../models/productModel.js";
 import Event from "../models/eventModel.js";
 import mongoose from "mongoose";
 import Notification from "../models/notificationModel.js";
+import Gallery from "../models/galleryModel.js";
+import Article from "../models/articleModel.js"
 
 export const addComment = async (req, res) => {
   try {
@@ -27,20 +29,35 @@ export const addComment = async (req, res) => {
 
     await newComment.save();
 
-    // ✅ Trimite notificare către owner-ul resursei
+    const user = await User.findById(userId).select("firstName lastName username");
+    const fullName = `${user?.firstName || "Someone"} ${user?.lastName || ""}`.trim();
+
     let ownerId = null;
+    let link = "/";
+
     if (resourceType === "Product") {
       const product = await Product.findById(resourceId);
+      console.log("Product for comment:", product); // 🔍 Vezi ce conține
       ownerId = product?.user?.toString();
-    } else if (resourceType === "Event") {
+      link = `/products/${resourceId}#comment-${newComment._id}`;
+    }
+    
+    else if (resourceType === "Event") {
       const event = await Event.findById(resourceId);
       ownerId = event?.user?.toString();
+      link = `/events/${resourceId}#comment-${newComment._id}`;
     } else if (resourceType === "Gallery") {
-      const gallery = await Gallery.findById(resourceId);
-      ownerId = gallery?.owner?.toString();
+      const gallery = await Gallery.findById(resourceId).populate("owner", "username");
+      ownerId = gallery?.owner?._id?.toString();
+      link = `/galleries/${gallery?.owner?.username}/${gallery?.name}#comment-${newComment._id}`;
     } else if (resourceType === "Article") {
-      const articleOwner = await User.findOne({ articles: resourceId });
-      ownerId = articleOwner?._id?.toString();
+      const article = await Article.findById(resourceId).populate("user", "_id");
+      ownerId = article?.user?._id?.toString();
+      link = `/articles/${resourceId}#comment-${newComment._id}`;
+    } else if (resourceType === "User") {
+      const profileOwner = await User.findById(resourceId);
+      ownerId = profileOwner?._id?.toString();
+      link = `/profile/${profileOwner?.username}#comment-${newComment._id}`;
     }
 
     if (ownerId && ownerId !== userId) {
@@ -50,7 +67,11 @@ export const addComment = async (req, res) => {
         resourceType,
         resourceId,
         type: "new_comment",
-        message: `Someone commented on your ${resourceType.toLowerCase()}.`,
+        link,
+        message:
+          resourceType === "User"
+            ? `${fullName} left a comment on your profile.`
+            : `${fullName} commented on your ${resourceType.toLowerCase()}.`,
       });
     }
 
@@ -72,9 +93,6 @@ export const addComment = async (req, res) => {
     res.status(500).json({ message: "Failed to add comment" });
   }
 };
-
-
-
 
 export const addReply = async (req, res) => {
   try {
@@ -102,15 +120,33 @@ export const addReply = async (req, res) => {
     parentComment.replies.push(reply._id);
     await parentComment.save();
 
-    // ✅ Notificare pentru autorul comentariului părinte
     if (parentComment.userId.toString() !== req.user._id.toString()) {
+      const fromUser = await User.findById(req.user._id).select("firstName lastName");
+      const fullName = `${fromUser?.firstName || "Someone"} ${fromUser?.lastName || ""}`.trim();
+
+      let link = "/";
+      const type = parentComment.resourceType;
+      const id = parentComment.resourceId;
+
+      if (type === "Product") link = `/products/${id}#comment-${reply._id}`;
+      else if (type === "Event") link = `/events/${id}#comment-${reply._id}`;
+      else if (type === "Article") link = `/articles/${id}#comment-${reply._id}`;
+      else if (type === "User") {
+        const user = await User.findById(id);
+        link = `/profile/${user?.username || ""}#comment-${reply._id}`;
+      } else if (type === "Gallery") {
+        const gallery = await Gallery.findById(id).populate("owner", "username");
+        link = `/galleries/${gallery?.owner?.username}/${gallery?.name}#comment-${reply._id}`;
+      }
+
       await Notification.create({
         user: parentComment.userId,
         fromUser: req.user._id,
-        resourceType: parentComment.resourceType,
-        resourceId: parentComment.resourceId,
+        resourceType: type,
+        resourceId: id,
         type: "new_reply",
-        message: `Someone replied to your comment.`,
+        link,
+        message: `${fullName} replied to your comment.`,
       });
     }
 
