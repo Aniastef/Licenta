@@ -26,6 +26,8 @@ import {
   RangeSliderThumb,
 } from "@chakra-ui/react";
 import { useParams, Link } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom";
 
 const UserAllEventsPage = () => {
   const { username } = useParams();
@@ -50,7 +52,8 @@ const UserAllEventsPage = () => {
   const [customMin, setCustomMin] = useState(0);
   const [customMax, setCustomMax] = useState(1000);
   const [enablePriceFilter, setEnablePriceFilter] = useState(false);
-  
+  const currentUser = useRecoilValue(userAtom);
+
 
   useEffect(() => {
     fetchUserEvents();
@@ -77,6 +80,28 @@ const UserAllEventsPage = () => {
       setLoading(false);
     }
   };
+
+  const handleDeleteEvent = async (eventId) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+  
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+  
+      if (res.ok) {
+        setEvents((prev) => prev.filter((e) => e._id !== eventId));
+        setFilteredEvents((prev) => prev.filter((e) => e._id !== eventId));
+      } else {
+        alert(data.error || "Failed to delete event");
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+  
 
   useEffect(() => {
     const allTags = [...new Set(events.flatMap((e) => e.tags || []))];
@@ -173,6 +198,17 @@ const UserAllEventsPage = () => {
           {user ? `${user.firstName} ${user.lastName}'s Events` : `${username}'s Events`}
         </Text>
         <Flex position="absolute" right={4} gap={2}>
+        {currentUser?.username?.toLowerCase() === username?.toLowerCase() && (
+  <Button
+    colorScheme="blue"
+    ml={5}
+    mb={4}
+    onClick={() => window.location.href = "/create/event"}
+  >
+    Create new event
+  </Button>
+)}
+
           <Circle size="30px" bg="yellow.400" />
           <Circle size="30px" bg="green.400" />
         </Flex>
@@ -394,6 +430,23 @@ const UserAllEventsPage = () => {
             </Text>
           )}
         </Box>
+        {currentUser?.username?.toLowerCase() === username?.toLowerCase() &&
+ currentUser?._id === event.organizer?._id && (
+        <Button
+          colorScheme="red" 
+          maxW={"100px"}
+          mb={2}
+          ml={2}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDeleteEvent(event._id);
+          }}
+        >
+          Delete
+        </Button>
+      )}
+
       </Box>
     </Link>
   ))}

@@ -108,7 +108,7 @@ import imageCompression from "browser-image-compression";
     return (
       <Container maxW="container.md" py={8}>
         <VStack spacing={6} align="stretch">
-          <Heading>{id ? "Edit Article" : "Create New Article"}</Heading>
+          <Heading>{id ? "Edit ARTicle" : "Create new article"}</Heading>
           <Input
             placeholder="Article Title"
             value={title}

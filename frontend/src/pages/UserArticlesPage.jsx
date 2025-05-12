@@ -71,6 +71,42 @@ const UserArticlesPage = () => {
     fetchArticles();
   }, [username]);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this article?")) return;
+  
+    try {
+      const res = await fetch(`/api/articles/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({
+          title: "Deleted",
+          description: "Article deleted successfully",
+          status: "success",
+          duration: 3000,
+        });
+        setArticles((prev) => prev.filter((a) => a._id !== id));
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to delete article",
+          status: "error",
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err.message,
+        status: "error",
+        duration: 3000,
+      });
+    }
+  };
+
+  
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const month = date.toLocaleString("default", { month: "short" }).toUpperCase();
@@ -93,8 +129,8 @@ const UserArticlesPage = () => {
               </Flex>
             </Flex>
       {currentUser?.username === username && (
-        <Button colorScheme="blue" ml={5} mb={6} onClick={() => navigate("/create-article")}>
-          Write a New Article
+        <Button colorScheme="blue" ml={5} mb={6} onClick={() => navigate("/create/article")}>
+          Write a new ARTicle
         </Button>
       )}
 
@@ -211,7 +247,23 @@ const UserArticlesPage = () => {
     >
       View Details →
     </Button>
+    
   </Box>
+  {currentUser?.username === username && (
+  <Button
+    colorScheme="red"
+    size="sm"
+    ml={5}
+    mb={2}
+    onClick={(e) => {
+      e.stopPropagation();
+      handleDelete(article._id);
+    }}
+  >
+    Delete
+  </Button>
+)}
+
 </Box>
 
           </Flex>

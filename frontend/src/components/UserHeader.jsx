@@ -54,7 +54,6 @@ const UserHeader = ({ user }) => {
   const navigate = useNavigate(); // sus în componentă
 
   
-  console.log("User products:", user.products);
   const [activeGalleryFilter, setActiveGalleryFilter] = useState("owning");
 
   const ownedGalleries = user.galleries?.filter(g => g.owner === user._id);
@@ -372,7 +371,7 @@ const UserHeader = ({ user }) => {
 
       <Tabs variantariant="unstyled"  align="center">
         <TabList justifyContent="left" gap={40} flexWrap="wrap">
-          <Tab _selected={{ bg: "blue.300", color: "white" }}>Products</Tab>
+          <Tab _selected={{ bg: "blue.300", color: "white" }}>Art pieces</Tab>
           <Tab _selected={{ bg: "green.300", color: "white" }}>Galleries</Tab>
           <Tab _selected={{ bg: "orange.300", color: "white" }}>Events</Tab>
           <Tab _selected={{ bg: "orange.300", color: "white" }}>Articles</Tab>
@@ -414,7 +413,7 @@ const UserHeader = ({ user }) => {
         _hover={{ textDecoration: "underline" }}
         cursor="pointer"
       >
-        See all user's products
+        See all user's art pieces →
       </Text>
     </Link>
   </Box>
@@ -503,7 +502,7 @@ filteredGalleries.slice(0, 2).map((gallery) => (
     <Box mt={4}>
       <Link to={`/${user.username}/all-galleries`}>
         <Text fontWeight="bold" color="blue.500" _hover={{ textDecoration: "underline" }}>
-          See all galleries →
+          See all user's galleries →
         </Text>
       </Link>
     </Box>
@@ -569,7 +568,7 @@ filteredGalleries.slice(0, 2).map((gallery) => (
               <Box mt={6} textAlign="center">
                 <Link to={`/${user.username}/all-events`}>
                   <Text fontWeight="bold" color="blue.500" _hover={{ textDecoration: "underline" }} cursor="pointer">
-                    See all the events
+                    See all user's events →
                   </Text>
                 </Link>
               </Box>

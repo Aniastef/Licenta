@@ -109,3 +109,19 @@ export const updateArticle = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const deleteArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const article = await Article.findById(id);
+    if (!article) return res.status(404).json({ error: 'Article not found' });
+    if (article.user.toString() !== req.user._id.toString())
+      return res.status(403).json({ error: 'Unauthorized' });
+
+    await Article.findByIdAndDelete(id);
+    res.status(200).json({ message: 'Article deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

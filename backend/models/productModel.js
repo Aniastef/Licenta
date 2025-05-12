@@ -3,6 +3,22 @@ import mongoose from "mongoose";
 const productSchema = new mongoose.Schema(
 	{
 	  name: { type: String, required: true },
+	  category: {
+		type: String,
+		enum: [
+		  "General", "Photography", "Painting", "Drawing", "Sketch", "Illustration", "Digital Art",
+		  "Pixel Art", "3D Art", "Animation", "Graffiti", "Calligraphy", "Typography", "Collage",
+		  "Mixed Media", "Sculpture", "Installation", "Fashion", "Textile", "Architecture",
+		  "Interior Design", "Product Design", "Graphic Design", "UI/UX", "Music", "Instrumental",
+		  "Vocal", "Rap", "Spoken Word", "Podcast", "Sound Design", "Film", "Short Film",
+		  "Documentary", "Cinematography", "Video Art", "Performance", "Dance", "Theatre", "Acting",
+		  "Poetry", "Writing", "Essay", "Prose", "Fiction", "Non-fiction", "Journal", "Comics",
+		  "Manga", "Zine", "Fantasy Art", "Surrealism", "Realism", "Abstract", "Minimalism",
+		  "Expressionism", "Pop Art", "Concept Art", "AI Art", "Experimental", "Political Art",
+		  "Activist Art", "Environmental Art"
+		],
+		default: "General"
+	  },	  
 	  description: { type: String, default: "" },
 	  favoritedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	  price: { type: Number, required: false },

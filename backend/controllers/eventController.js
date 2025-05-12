@@ -266,17 +266,18 @@ export const deleteEvent = async (req, res) => {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    if (event.createdBy.toString() !== req.user._id.toString()) {
+    if (event.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized action" });
     }
 
     await event.deleteOne();
     res.status(200).json({ message: "Event deleted successfully" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
     console.error("Error deleting event: ", err.message);
+    res.status(500).json({ error: err.message });
   }
 };
+
 
 export const updateEvent = async (req, res) => {
   try {

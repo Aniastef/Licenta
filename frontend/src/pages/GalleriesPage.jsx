@@ -17,6 +17,19 @@ import {
 import { Link } from "react-router-dom";
 
 const GALLERIES_PER_PAGE = 12;
+const GALLERY_CATEGORIES = [
+  "General", "Photography", "Painting", "Drawing", "Sketch", "Illustration", "Digital Art",
+  "Pixel Art", "3D Art", "Animation", "Graffiti", "Calligraphy", "Typography", "Collage",
+  "Mixed Media", "Sculpture", "Installation", "Fashion", "Textile", "Architecture",
+  "Interior Design", "Product Design", "Graphic Design", "UI/UX", "Music", "Instrumental",
+  "Vocal", "Rap", "Spoken Word", "Podcast", "Sound Design", "Film", "Short Film",
+  "Documentary", "Cinematography", "Video Art", "Performance", "Dance", "Theatre", "Acting",
+  "Poetry", "Writing", "Essay", "Prose", "Fiction", "Non-fiction", "Journal", "Comics",
+  "Manga", "Zine", "Fantasy Art", "Surrealism", "Realism", "Abstract", "Minimalism",
+  "Expressionism", "Pop Art", "Concept Art", "AI Art", "Experimental", "Political Art",
+  "Activist Art", "Environmental Art"
+];
+
 
 const ExploreGalleries = () => {
   const [galleries, setGalleries] = useState([]);
@@ -28,7 +41,15 @@ const ExploreGalleries = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [sortDirection, setSortDirection] = useState("asc");
-
+  const [filterCategories, setFilterCategories] = useState([]);
+  const getCategoryColor = (category) => {
+    const colors = [
+      "blue", "green", "red", "orange", "purple", "teal", "cyan", "pink", "yellow"
+    ];
+    const index = GALLERY_CATEGORIES.indexOf(category);
+    return colors[index % colors.length] || "gray";
+  };
+  
   useEffect(() => {
     fetchGalleries();
   }, []);
@@ -63,8 +84,11 @@ const ExploreGalleries = () => {
       const matchTags =
         filterTags.length === 0 || filterTags.every((tag) => g.tags?.includes(tag));
 
-      return matchSearch && matchTags;
-    });
+        const matchCategory =
+  filterCategories.length === 0 || filterCategories.includes(g.category);
+
+  return matchSearch && matchCategory;
+});
 
     updated.sort((a, b) => {
       if (sortOption === "name") {
@@ -88,7 +112,7 @@ const ExploreGalleries = () => {
 
     setFilteredGalleries(updated);
     setCurrentPage(1);
-  }, [galleries, filterText, searchBy, sortOption, sortDirection, filterTags]);
+  }, [galleries, filterText, searchBy, sortOption, sortDirection, filterTags, filterCategories]);
 
   const paginated = filteredGalleries.slice(
     (currentPage - 1) * GALLERIES_PER_PAGE,
@@ -113,7 +137,7 @@ const ExploreGalleries = () => {
         <HStack spacing={4} mb={2}>
           <Text>Search by:</Text>
           <Select value={searchBy} onChange={(e) => setSearchBy(e.target.value)} w="160px">
-            <option value="name">Gallery Name</option>
+            <option value="name">Gallery name</option>
             <option value="creator">Creator</option>
             <option value="collaborators">Collaborators</option>
             <option value="tags">Tags</option>
@@ -134,8 +158,8 @@ const ExploreGalleries = () => {
             w="200px"
           >
             <option value="name">Name</option>
-            <option value="products">Number of Products</option>
-            <option value="date">Created Date</option>
+            <option value="products">Number of art pieces</option>
+            <option value="date">Creation date</option>
 
           </Select>
 
@@ -149,26 +173,35 @@ const ExploreGalleries = () => {
       <Flex direction={{ base: "column", md: "row" }} gap={6}>
         {/* Sidebar */}
         <Box w="220px" p={4} borderWidth={1} borderRadius="lg">
-          <Text fontWeight="bold">Filter by Tags</Text>
-          <Wrap spacing={2} mt={2}>
-            {["Painting", "Music", "Dancing", "Acting", "Writing"].map((tag) => (
-              <WrapItem key={tag} w="100%">
-                <Button
-                  size="sm"
-                  width="100%"
-                  borderRadius="full"
-                  colorScheme={filterTags.includes(tag) ? "blue" : "gray"}
-                  onClick={() =>
-                    setFilterTags((prev) =>
-                      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-                    )
-                  }
-                >
-                  {tag}
-                </Button>
-              </WrapItem>
-            ))}
-          </Wrap>
+        <Text fontWeight="bold">Filter by Category</Text>
+<Wrap spacing={2} mt={2} >
+  {GALLERY_CATEGORIES.map((cat) => (
+    <WrapItem key={cat} w="100%">
+     <Button
+  size="sm"
+  width="100%"
+  borderRadius="full"
+  colorScheme={
+    filterCategories.includes(cat)
+      ? getCategoryColor(cat)
+      : "gray"
+  }
+  variant={filterCategories.includes(cat) ? "solid" : "outline"}
+  onClick={() =>
+    setFilterCategories((prev) =>
+      prev.includes(cat)
+        ? prev.filter((c) => c !== cat)
+        : [...prev, cat]
+    )
+  }
+>
+  {cat}
+</Button>
+
+    </WrapItem>
+  ))}
+</Wrap>
+
         </Box>
 
         {/* Gallery List */}
@@ -229,6 +262,13 @@ const ExploreGalleries = () => {
                         <Text fontSize="sm" mt={1}>
   <strong>Creator:</strong> {gallery.owner?.firstName} {gallery.owner?.lastName}
 </Text>
+
+{gallery.category && (
+  <Text fontSize="sm" color="teal.600">
+    <strong>Category:</strong> {gallery.category}
+  </Text>
+)}
+
 
 {gallery.collaborators?.length > 0 && (
   <Text fontSize="sm" color="blue.500">

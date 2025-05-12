@@ -188,7 +188,7 @@ useEffect(() => {
 	return (
 		<Container maxW="container.md" py={8}>
 			<VStack spacing={8}>
-				<Heading>Create New Event</Heading>
+				<Heading>Create new event</Heading>
 
 				<Box w="full" p={6} rounded="lg" shadow="md">
 					<VStack spacing={4}>

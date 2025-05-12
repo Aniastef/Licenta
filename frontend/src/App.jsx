@@ -50,19 +50,6 @@ function App() {
   const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs'; // Replace with your real key
   const { isLoaded } = useLoadGoogleMapsScript(apiKey); // Load Google Maps script
 
-// Definește funcția initMap care va fi apelată când API-ul este gata
-
-
-  useEffect(() => {
-    const isAuthPage = window.location.pathname === '/auth';
-    if (!user && !isAuthPage) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
-  
-
-  // console.log("👤 Current user:", JSON.stringify(user, null, 2));
-
   return (
     <CartProvider>
     <Box minH="100vh">
@@ -98,7 +85,7 @@ function App() {
         <Route path="/:username/all-events" element={<UserAllEventsPage />} />
         <Route path="/update/product/:id" element={<UpdateProductPage />} />
         <Route path="/blocked-users" element={<BlockedUsersPage />} /> {/* Pagină pentru utilizatorii blocați */}
-        <Route path="/events/:eventId/edit" element={<EditEventPage />} />
+        <Route path="/edit/event/:eventId" element={<EditEventPage />} />
         <Route path="/edit-gallery/:galleryId" element={<EditGalleryPage />} />
         <Route path="/:username/articles" element={<UserArticlesPage />} />
         <Route path="/articles/:articleId" element={<ArticlePage />} />

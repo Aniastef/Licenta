@@ -157,7 +157,7 @@ const CreateProductPage = () => {
 	return (
 		<Container maxW="container.md" py={8}>
 			<VStack spacing={8}>
-				<Heading>Create New Product</Heading>
+				<Heading>Create new art piece</Heading>
 				<Box w="full" p={6} rounded="lg" shadow="md">
 					<VStack spacing={4}>
 						<Input placeholder="Product Name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />

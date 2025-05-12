@@ -131,6 +131,28 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
     }
   };
 
+  const handleDeleteEvent = async () => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+  
+    try {
+      const res = await fetch(`/api/events/${event._id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+  
+      const data = await res.json();
+      if (res.ok) {
+        alert("Event deleted successfully");
+        navigate("/events"); // navighează înapoi la listă
+      } else {
+        alert(data.error || "Failed to delete event");
+      }
+    } catch (err) {
+      console.error("Error deleting event:", err);
+      alert("An error occurred while deleting.");
+    }
+  };
+  
   const handleImageClick = (image) => {
     setSelectedImage(image);
     onOpen();
@@ -151,9 +173,20 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
     {event.name || "Event name"}
   </Text>
   <Flex position="absolute" right={4} gap={2}>
+  {isEventOwner && (
+    <>
+  <Button ml={2} colorScheme="blue" onClick={() => navigate(`/edit/event/${event._id}`)}>
+      Edit Event
+    </Button>
+    <Button ml={2} colorScheme="red" onClick={handleDeleteEvent}>
+      Delete Event
+    </Button>
+    </>
+    )}
     <Circle size="30px" bg="yellow.400" />
     <Circle size="30px" bg="green.400" />
   </Flex>
+  
 </Flex>
 
 

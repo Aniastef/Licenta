@@ -31,6 +31,7 @@ import p5 from '../assets/p5.jpg';
 import p6 from '../assets/p6.jpg';
 import p7 from '../assets/p7.jpg';
 import p8 from '../assets/p8.jpg';
+import { useNavigate } from "react-router-dom";
 
 const LoginCard= () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +41,7 @@ const LoginCard= () => {
   const slideshowImages = [p1, p2, p3, p4, p5, p6, p7, p8];
   const getRandomIndex = () => Math.floor(Math.random() * slideshowImages.length);
   const [currentSlide, setCurrentSlide] = useState(getRandomIndex());
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -164,7 +166,7 @@ const LoginCard= () => {
               </Button>
             </HStack>
             <Button 
-              colorScheme="pink"
+              colorScheme="orange"
               w="full"
               onClick={handleLogin}
               >
@@ -175,12 +177,17 @@ const LoginCard= () => {
             <Text align="center">
               Don't have an account?{' '}
               <Button
-                variant="link"
-                color="blue.400"
-                onClick={() => setAuthScreen("signup")}
-              >
-                Sign up
-              </Button>
+  variant="link"
+  color="blue.400"
+  onClick={() => {
+    setAuthScreen("signup");
+    navigate("/auth"); // ✅ corect
+  }}
+>
+  Sign up
+</Button>
+
+
               
             </Text>
             <Button // 👉 Ridică butonul mai aproape

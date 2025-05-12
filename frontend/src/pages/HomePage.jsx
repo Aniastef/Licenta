@@ -238,7 +238,7 @@ const circularPositions = [
   borderRadius="20px"
   _hover={{ bg: "#766a31" }}
 >
-  See all products
+  See all art pieces
 </Button>
 
         </Flex>

@@ -194,7 +194,7 @@ const ProductsPage = () => {
     <Box p={4}>
        <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
              <Text fontWeight="bold" fontSize="2xl" textAlign="center">
-                All Products
+                All art pieces
              </Text>
              <Flex position="absolute" right={4} gap={2}>
                <Circle size="30px" bg="yellow.400" />
@@ -205,7 +205,7 @@ const ProductsPage = () => {
         <HStack spacing={4} mb={2}>
           <Text>Search by:</Text>
           <Select value={searchBy} onChange={(e) => setSearchBy(e.target.value)} w="160px">
-            <option value="name">Product Name</option>
+          <option value="name">Art piece name</option>
             <option value="creator">Creator</option>
           </Select>
           <Input
@@ -389,7 +389,7 @@ const ProductsPage = () => {
           {loading ? (
             <Text>Loading...</Text>
           ) : paginatedProducts.length === 0 ? (
-            <Text>No products found.</Text>
+            <Text>No art pieces found.</Text>
           ) : (
             <>
               <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={5}>

@@ -325,7 +325,7 @@ const SignupCard = () => {
           </VStack>
         </Flex>
 
-        <Button colorScheme="green" mt={6} w="full" onClick={handleSignup}>
+        <Button colorScheme="yellow" mt={6} w="full" onClick={handleSignup}>
           Sign up
         </Button>
         <Text mt={4} align="center">

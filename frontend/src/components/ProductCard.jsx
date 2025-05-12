@@ -134,6 +134,48 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
   };
   
 
+  const handleDeleteProduct = async () => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+  
+    try {
+      const res = await fetch(`/api/products/${product._id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+  
+      if (res.ok) {
+        toast({
+          title: "Product deleted",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "top-right",
+        });
+        window.location.href = `/profile/${user.username}`; // Redirecționează spre pagina profilului
+      } else {
+        const data = await res.json();
+        toast({
+          title: "Failed to delete product",
+          description: data.error || "Unknown error",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          position: "top-right",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+  };
+
+  
   const handleAddToFavorites = async () => {
     if (!user) {
       toast({
@@ -474,6 +516,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
                   : "Out of stock"}
         </Text>
         {product.user._id === user._id ? (
+          <>
               <Button mt={2}
                 as={RouterLink}
                 to={`/update/product/${product._id}`}
@@ -483,8 +526,19 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
                 height="50px"
                 _hover={{ bg: "red.500" }}
               >
-                Edit Product
+                Edit art piece
               </Button>
+               <Button
+               mt={2}
+               colorScheme="red"
+               borderRadius="lg"
+               width={300}
+               height="45px"
+               onClick={handleDeleteProduct}
+             >
+               Delete art piece
+             </Button>
+             </>
             ) : (
               <Flex direction="row">
               <Button

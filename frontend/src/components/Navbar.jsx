@@ -62,7 +62,6 @@ const Navbar = () => {
     <Text fontFamily="logo" fontSize="3xl" fontWeight="bold">
       Art Corner
     </Text>
-    <Image src={LogoFlowers} alt="Logo icon" boxSize="28px" />
   </HStack>
   <Text fontSize="md" fontStyle="italic" color="gray.800">
     - a place to explore your passions -
@@ -74,17 +73,23 @@ const Navbar = () => {
       <Flex justify="space-between" align="center" flexWrap="wrap">
         <HStack spacing={6} fontSize="lg" flexWrap="wrap">
         <Link to="/home"><Text _hover={{ textDecoration: "underline" }}>Home</Text></Link>
-  <Link to="/orders"><Text _hover={{ textDecoration: "underline" }}>My orders</Text></Link>
   <Link to="/galleries"><Text _hover={{ textDecoration: "underline" }}>Galleries</Text></Link>
-  <Link to="/products"><Text _hover={{ textDecoration: "underline" }}>Products</Text></Link>
+  <Link to="/products"><Text _hover={{ textDecoration: "underline" }}>Art pieces</Text></Link>
   <Link to="/events"><Text _hover={{ textDecoration: "underline" }}>Events</Text></Link>
-  <Link to="/articles"><Text _hover={{ textDecoration: "underline" }}>ARTicless</Text></Link>
- 
+  <Link to="/articles"><Text _hover={{ textDecoration: "underline" }}>ARTicles</Text></Link>
   {user && (
-    <Link to={`/favorites/${user.username}`}>
-      <Text _hover={{ textDecoration: "underline" }}>Favorites</Text>
-    </Link>
-  )}
+  <Menu>
+    <MenuButton _hover={{ textDecoration: "underline" }}>
+      Create ▼
+    </MenuButton>
+    <MenuList>
+      <MenuItem as={Link} to="/create/product">➕ Art Piece</MenuItem>
+      <MenuItem as={Link} to="/create/gallery">➕ Gallery</MenuItem>
+      <MenuItem as={Link} to="/create/event">➕ Event</MenuItem>
+      <MenuItem as={Link} to="/create/article">➕ Article</MenuItem>
+    </MenuList>
+  </Menu>
+)}
           {/* 👤 PROFILE */}
           {user ? (
             <Menu>
@@ -95,54 +100,59 @@ const Navbar = () => {
               </MenuButton>
               <MenuList>
                 <MenuItem as={Link} to={`/profile/${user.username}`}>
-                  My Page
+                  My Profile
                 </MenuItem>
-                <MenuItem as={Link} to="/messages">Messages</MenuItem>
                 <MenuItem as={Link} to="/update">Edit Profile</MenuItem>
+                <MenuItem as={Link} to="/messages">Messages</MenuItem>
+                <MenuItem as={Link} to="/admin-panel">Admin Panel</MenuItem>
                 <MenuItem as={Link} to="/blocked-users">Blocked Users</MenuItem>
-                <MenuItem as={Link} to="/calendar">Calendar</MenuItem>
+                <MenuItem as={Link} to={`${user.username}/all-products`}>My art pieces</MenuItem>
+                <MenuItem as={Link} to={`${user.username}/all-galleries`}>My galleries</MenuItem>
+                <MenuItem as={Link} to={`${user.username}/all-events`}>My events</MenuItem>
+                <MenuItem as={Link} to={`${user.username}/articles`}>My articles</MenuItem>
+                <MenuItem as={Link} to="/orders">My orders</MenuItem>
+                <MenuItem as={Link} to={`favorites/${user.username}`}>Favorites</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </MenuList>
             </Menu>
           ) : (
             <Link to="/auth">Auth</Link>
           )}
+      
+
+
         </HStack>
 
         {/* SEARCH + CART + NOTIFICATIONS */}
-        <HStack spacing={4} mt={{ base: 4, md: 0 }}>
+        {/* SEARCH + CONDITIONAL ACTIONS */}
+<HStack spacing={4} mt={{ base: 4, md: 0 }}>
+  <SearchBar />
+  
+  {user && (
+    <>
+      <Link to="/cart">
+        <Button variant="ghost" display="flex" alignItems="center" gap={2}>
+          <Image src={cartIcon} alt="Cart" boxSize="24px" />
+          {cartCount > 0 && <Text fontSize="md">({cartCount})</Text>}
+        </Button>
+      </Link>
 
-         <SearchBar/>
+      <Link to="/messages">
+        <Button variant="ghost" display="flex" alignItems="center" gap={2} position="relative">
+          <Image src={messagesIcon} alt="Messages" boxSize="26px" />
+          {unreadMessages > 0 && (
+            <Box position="absolute" top="-1" right="-1" bg="red.500" color="white" fontSize="xs" px="2" rounded="full">
+              {unreadMessages}
+            </Box>
+          )}
+        </Button>
+      </Link>
 
-          <Link to="/cart">
-            <Button variant="ghost" display="flex" alignItems="center" gap={2}>
-              <Image src={cartIcon} alt="Cart" boxSize="24px" />
-              {cartCount > 0 && <Text fontSize="md">({cartCount})</Text>}
-            </Button>
-          </Link>
-          <Link to="/messages">
-  <Button variant="ghost" display="flex" alignItems="center" gap={2} position="relative">
-    <Image src={messagesIcon} alt="Messages" boxSize="26px" />
-    {unreadMessages > 0 && (
-      <Box
-        position="absolute"
-        top="-1"
-        right="-1"
-        bg="red.500"
-        color="white"
-        fontSize="xs"
-        px="2"
-        rounded="full"
-      >
-        {unreadMessages}
-      </Box>
-    )}
-  </Button>
-</Link>
+      <NotificationDrawer showBadge={true} />
+    </>
+  )}
+</HStack>
 
-
-          {user && <NotificationDrawer showBadge={true} />}
-          </HStack>
       </Flex>
     </Box>
   );

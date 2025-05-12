@@ -181,6 +181,28 @@ const ArticlePage = () => {
       showToast("Error", err.message, "error");
     }
   };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this article?")) return;
+  
+    try {
+      const res = await fetch(`/api/articles/${articleId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+  
+      if (res.ok) {
+        showToast("Success", "Article deleted", "success");
+        window.location.href = `/articles`; // sau navigate("/articles")
+      } else {
+        showToast("Error", data.error || "Failed to delete", "error");
+      }
+    } catch (err) {
+      showToast("Error", err.message, "error");
+    }
+  };
+  
   
   const handleCancel = () => {
     if (article) {
@@ -210,6 +232,18 @@ const ArticlePage = () => {
     right={0}
   />
 )}
+{isOwner && !editMode && (
+  <Button
+    colorScheme="red"
+    size="sm"
+    onClick={handleDelete}
+    mt={2}
+    mb={2}
+  >
+    Delete ARTicle
+  </Button>
+)}
+
 
 <Text fontSize="sm" color="gray.400">
   Published on{" "}

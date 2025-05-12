@@ -14,6 +14,8 @@ import {
   WrapItem,
 } from "@chakra-ui/react";
 import { useParams, Link } from "react-router-dom";
+import userAtom from "../atoms/userAtom";
+import { useRecoilValue } from "recoil";
 
 const UserAllGalleriesPage = () => {
   const { username } = useParams();
@@ -25,6 +27,7 @@ const UserAllGalleriesPage = () => {
   const [tagOptions, setTagOptions] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
   const [roleFilter, setRoleFilter] = useState("");
+  const currentUser = useRecoilValue(userAtom);
 
   useEffect(() => {
     fetchUserGalleries();
@@ -95,6 +98,29 @@ const UserAllGalleriesPage = () => {
     setFilteredGalleries(filtered);
   }, [searchTerm, galleries, roleFilter, selectedTags, user]);
 
+  const handleDeleteGallery = async (galleryId) => {
+    if (!window.confirm("Are you sure you want to delete this gallery?")) return;
+  
+    try {
+      const res = await fetch(`/api/galleries/${galleryId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+  
+      const data = await res.json();
+      if (res.ok) {
+        setGalleries((prev) => prev.filter((g) => g._id !== galleryId));
+        setFilteredGalleries((prev) => prev.filter((g) => g._id !== galleryId));
+      } else {
+        alert(data.error || "Failed to delete gallery");
+      }
+    } catch (err) {
+      console.error("Error deleting gallery:", err.message);
+      alert("Error deleting gallery");
+    }
+  };
+
+  
   return (
     <Box bg={"gray.100"} p={4} maxW="100%" mx="auto">
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
@@ -103,7 +129,20 @@ const UserAllGalleriesPage = () => {
             ? `${user.firstName} ${user.lastName}'s Galleries`
             : `${username}'s Galleries`}
         </Text>
+       
+
         <Flex position="absolute" right={4} gap={2}>
+        {currentUser && currentUser.username === username && (
+  <Button
+    colorScheme="blue"
+    ml={5}
+    mb={6}
+    onClick={() => window.location.href = "/create/gallery"}
+  >
+    Create new gallery
+  </Button>
+)}
+
           <Circle size="30px" bg="yellow.400" />
           <Circle size="30px" bg="green.400" />
         </Flex>
@@ -158,77 +197,69 @@ placeholder="Search by name, tags, or collaborators..."          value={searchTe
 <Flex wrap="wrap" justify="center" gap={8}>
 
   {filteredGalleries.map((gallery) => (
-    <Link
-      to={`/galleries/${gallery.owner.username}/${encodeURIComponent(gallery.name)}`}
-      key={gallery._id}
-    >
-<Box
-  w="700px"
-  bg="gray.100"
-  borderRadius="md"
-  boxShadow="md"
-  overflow="hidden"
-  border="1px solid #ccc"
-  _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-  transition="all 0.2s"
-  cursor="pointer"
-  display="flex"
-  flexDirection="column"
->
-
-
-
-<Box h="200px" bg="gray.300" mb={3}>
-    {gallery.coverPhoto ? (
-      <Image
-        src={gallery.coverPhoto}
-        alt={gallery.name}
-        objectFit="cover"
-        w="100%"
-        h="100%"
-      />
-    ) : gallery.products?.[0]?.images?.[0] ? (
-      <Image
-        src={gallery.products[0].images[0]}
-        alt={gallery.name}
-        objectFit="cover"
-        w="100%"
-        h="100%"
-      />
-    ) : (
-      <Flex align="center" justify="center" h="100%" bg="gray.400">
-        <Text>No cover photo</Text>
-      </Flex>
-    )}
-  </Box>
-
-
-
-
-
-
-<Box textAlign="center" py={3} px={2} display="flex" flexDir="column" justifyContent="space-between" flex="1">
-          <Text fontWeight="bold">{gallery.name}</Text>
-          <Text fontSize="sm" color="gray.600">
-            {gallery.products?.length || 0} products
-          </Text>
-          <Text fontSize="sm" mt={1}>
-            <strong>Creator:</strong> {gallery.owner?.firstName} {gallery.owner?.lastName}
-          </Text>
-          {gallery.collaborators?.length > 0 && (
-            <Text fontSize="sm" color="blue.500">
-              <strong>Collaborators:</strong>{" "}
-              {gallery.collaborators.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}
-            </Text>
-          )}
-          {gallery.tags?.length > 0 && (
-            <Text fontSize="sm" color="purple.600">
-              <strong>Tags:</strong> {gallery.tags.join(", ")}
-            </Text>
-          )}
-        </Box>
-      </Box>
-    </Link>
+   <Box
+   key={gallery._id}
+   w="700px"
+   bg="gray.100"
+   borderRadius="md"
+   boxShadow="md"
+   overflow="hidden"
+   border="1px solid #ccc"
+   _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+   transition="all 0.2s"
+   display="flex"
+   flexDirection="column"
+   cursor="pointer"
+   onClick={() =>
+     window.location.href = `/galleries/${gallery.owner.username}/${encodeURIComponent(gallery.name)}`
+   }
+ >
+   <Box h="200px" bg="gray.300" mb={3}>
+     {gallery.coverPhoto ? (
+       <Image src={gallery.coverPhoto} alt={gallery.name} objectFit="cover" w="100%" h="100%" />
+     ) : gallery.products?.[0]?.images?.[0] ? (
+       <Image src={gallery.products[0].images[0]} alt={gallery.name} objectFit="cover" w="100%" h="100%" />
+     ) : (
+       <Flex align="center" justify="center" h="100%" bg="gray.400">
+         <Text>No cover photo</Text>
+       </Flex>
+     )}
+   </Box>
+ 
+   <Box textAlign="center" py={3} px={2} display="flex" flexDir="column" justifyContent="space-between" flex="1">
+     <Text fontWeight="bold">{gallery.name}</Text>
+     <Text fontSize="sm" color="gray.600">{gallery.products?.length || 0} products</Text>
+     <Text fontSize="sm" mt={1}>
+       <strong>Creator:</strong> {gallery.owner?.firstName} {gallery.owner?.lastName}
+     </Text>
+     {gallery.collaborators?.length > 0 && (
+       <Text fontSize="sm" color="blue.500">
+         <strong>Collaborators:</strong> {gallery.collaborators.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}
+       </Text>
+     )}
+     {gallery.tags?.length > 0 && (
+       <Text fontSize="sm" color="purple.600">
+         <strong>Tags:</strong> {gallery.tags.join(", ")}
+       </Text>
+     )}
+ 
+     {/* Buton de ștergere dacă userul este owner */}
+     {currentUser && gallery.owner._id === currentUser._id && (
+       <Button
+         mt={2}
+         maxW={"150px"}
+         colorScheme="red"
+         onClick={(e) => {
+           e.stopPropagation(); // 🛑 oprește navigarea
+           handleDeleteGallery(gallery._id);
+         }}
+       >
+         Delete Gallery
+       </Button>
+     )}
+   </Box>
+ </Box>
+ 
   ))}
 </Flex>
 

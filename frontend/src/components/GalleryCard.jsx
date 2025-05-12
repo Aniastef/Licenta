@@ -114,6 +114,8 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     }
   };
   
+ 
+  
   
   const addProductToGallery = async (productId) => {
     try {
@@ -196,6 +198,32 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     }
   };
   
+  const handleDeleteGallery = async () => {
+    if (!window.confirm("Are you sure you want to delete this gallery?")) return;
+    try {
+      const res = await fetch(`/api/galleries/${gallery._id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({
+          title: "Gallery deleted",
+          description: `${gallery.name} was successfully deleted.`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        navigate("/"); // sau o altă rută relevantă după ștergere
+      } else {
+        alert(data.error || "Failed to delete gallery");
+      }
+    } catch (err) {
+      console.error("Error deleting gallery:", err.message);
+      alert("Error deleting gallery");
+    }
+  };
+  
   
   
 
@@ -215,11 +243,21 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     )}
     {canEdit && (
       <>
-        <Button colorScheme="gray" variant="outline" onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
+        <Button colorScheme="gray"  onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
           Edit Gallery
         </Button>
       </>
     )}
+    {isOwner && (
+  <>
+    <Button
+      colorScheme="red"
+      onClick={handleDeleteGallery}
+    >
+      Delete Gallery
+    </Button>
+  </>
+)}
     <Flex gap={2}>
       <Circle size="30px" bg="yellow.400" />
       <Circle size="30px" bg="green.400" />

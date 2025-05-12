@@ -8,10 +8,15 @@ import {
 	VStack,
 	Stack,
 	HStack,
+	Select,
 	Avatar,
 	Text,
 	Flex,
 	Checkbox,
+	Menu,
+	MenuButton,
+	MenuList,
+	MenuItem,
   } from "@chakra-ui/react";
   import { useState } from "react";
   import useShowToast from "../hooks/useShowToast";
@@ -20,6 +25,71 @@ import {
   import userAtom from "../atoms/userAtom"; // ✅ import currentUser
   import imageCompression from "browser-image-compression";
 import GalleryImageCropModal from "../components/GalleryImageCropModal";
+const GALLERY_CATEGORIES = [
+	"General",
+	"Photography",
+	"Painting",
+	"Drawing",
+	"Sketch",
+	"Illustration",
+	"Digital Art",
+	"Pixel Art",
+	"3D Art",
+	"Animation",
+	"Graffiti",
+	"Calligraphy",
+	"Typography",
+	"Collage",
+	"Mixed Media",
+	"Sculpture",
+	"Installation",
+	"Fashion",
+	"Textile",
+	"Architecture",
+	"Interior Design",
+	"Product Design",
+	"Graphic Design",
+	"UI/UX",
+	"Music",
+	"Instrumental",
+	"Vocal",
+	"Rap",
+	"Spoken Word",
+	"Podcast",
+	"Sound Design",
+	"Film",
+	"Short Film",
+	"Documentary",
+	"Cinematography",
+	"Video Art",
+	"Performance",
+	"Dance",
+	"Theatre",
+	"Acting",
+	"Poetry",
+	"Writing",
+	"Essay",
+	"Prose",
+	"Fiction",
+	"Non-fiction",
+	"Journal",
+	"Comics",
+	"Manga",
+	"Zine",
+	"Fantasy Art",
+	"Surrealism",
+	"Realism",
+	"Abstract",
+	"Minimalism",
+	"Expressionism",
+	"Pop Art",
+	"Concept Art",
+	"AI Art",
+	"Experimental",
+	"Political Art",
+	"Activist Art",
+	"Environmental Art"
+  ];
   
 const compressImage = async (file) => {
 	try {
@@ -164,11 +234,11 @@ const dataURLtoFile = (dataUrl, filename) => {
 	  <Container maxW="container.md" py={8}>
 		<VStack spacing={8}>
 		  <Heading as="h1" size="2xl">
-			Create New Gallery
+			Create new gallery
 		  </Heading>
   
-		  <Box w="full" p={6} rounded="lg" shadow="md">
-			<VStack spacing={4}>
+		  <Box w="full" p={6} rounded="lg" shadow="md" overflow="visible">
+		  <VStack spacing={4}>
 			  <Input
 				placeholder="Gallery Name"
 				value={newGallery.name}
@@ -176,13 +246,23 @@ const dataURLtoFile = (dataUrl, filename) => {
 				  setNewGallery({ ...newGallery, name: e.target.value })
 				}
 			  />
-			  <Input
-				placeholder="Category"
-				value={newGallery.category}
-				onChange={(e) =>
-				  setNewGallery({ ...newGallery, category: e.target.value })
-				}
-			  />
+			<Menu>
+  <MenuButton as={Button} w="full" textAlign="left">
+    {newGallery.category || "Select category"}
+  </MenuButton>
+  <MenuList maxH="300px" overflowY="auto">
+    {GALLERY_CATEGORIES.map((cat) => (
+      <MenuItem
+        key={cat}
+        onClick={() => setNewGallery({ ...newGallery, category: cat })}
+      >
+        {cat}
+      </MenuItem>
+    ))}
+  </MenuList>
+</Menu>
+
+
 			  <Textarea
 				placeholder="Gallery Description"
 				value={newGallery.description}
