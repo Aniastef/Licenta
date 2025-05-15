@@ -301,6 +301,7 @@ export const updateGallery = async (req, res) => {
     }
 
     await gallery.save();
+    await gallery.populate("owner", "username"); // 🔥 adaugă această linie
     res.status(200).json(gallery);
   } catch (err) {
     console.error("Error updating gallery:", err.message);

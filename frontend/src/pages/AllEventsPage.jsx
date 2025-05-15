@@ -28,13 +28,37 @@ const EVENTS_PER_PAGE = 12;
 const ALL_EVENT_TAGS = ["Music", "Art", "Tech", "Workshop", "Theatre"];
 const TICKET_TYPES = ["free", "paid", "donation"];
 const LANGUAGES = ["english", "romanian", "french", "german"];
-const PRICE_RANGES = [
-  { label: "Sub 1000", min: 0, max: 999 },
-  { label: "1000 - 1500", min: 1000, max: 1500 },
-  { label: "1500 - 2000", min: 1500, max: 2000 },
-  { label: "2000 - 3000", min: 2000, max: 3000 },
-  { label: "Peste 3000", min: 3001, max: Infinity },
+const ALL_EVENT_CATEGORIES = [
+  "Universal","Music", "Art", "Tech", "Workshop", "Theatre", "Festival",
+  "Literature", "Exhibition", "Dance", "Film", "Charity",
+  "Community", "Education"
 ];
+const categoryColorMap = {
+  Universal: "rgb(140, 189, 112)",
+  Music: "rgb(174, 174, 163)",
+  Art: "rgb(110, 184, 113)",
+  Tech: "rgb(119, 185, 167)",
+  Workshop: "rgb(126, 183, 194)",
+  Theatre: "rgb(172, 102, 117)",
+  Festival: "rgb(116, 167, 117)",
+  Literature: "rgb(195, 128, 102)",
+  Exhibition: "rgb(137, 147, 187)",
+  Dance: "rgb(188, 188, 187)",
+  Film: "rgb(161, 199, 128)",
+  Charity: "rgb(162, 100, 110)",
+  Community: "rgb(108, 116, 175)",
+  Education: "rgb(174, 175, 168)",
+ 
+};
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  const day = date.toLocaleDateString("en-US", { day: "2-digit" });
+  const month = date.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+  const year = date.toLocaleDateString("en-US", { year: "numeric" });
+  return { day, month, year };
+};
+
+
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -55,16 +79,31 @@ const EventsPage = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [sortDirection, setSortDirection] = useState("desc"); // "asc" | "desc"
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [filterCategories, setFilterCategories] = useState([]);
+
 
   useEffect(() => {
     fetchEvents();
   }, []);
 
+  const getEventStatus = (eventDate) => {
+    const today = new Date();
+    const eventDay = new Date(eventDate);
+    if (eventDay.toDateString() === today.toDateString()) return "ongoing";
+    return eventDay > today ? "upcoming" : "completed";
+  };
+
+  
   const fetchEvents = async () => {
     try {
       const response = await fetch("/api/events", { credentials: "include" });
       const data = await response.json();
-      setEvents(data.events || []);
+      const enriched = data.events.map(e => ({
+        ...e,
+        status: getEventStatus(e.date)
+      }));
+      setEvents(enriched);
     } catch (error) {
       console.error("Error fetching events:", error.message);
     } finally {
@@ -88,6 +127,9 @@ const EventsPage = () => {
       const name = event.name || "";
       const userFirstName = event.user?.firstName || "";
       const userLastName = event.user?.lastName || "";
+      const matchCategory =
+      filterCategories.length === 0 || filterCategories.includes(event.category);
+    
 
       let matchSearch = true;
 const lowerFilter = filterText.toLowerCase();
@@ -139,6 +181,7 @@ if (dateTo) {
           return (
             matchSearch &&
             matchTags &&
+            matchCategory && // ✅ nou
             matchTicketType &&
             matchLanguage &&
             matchPriceSlider &&
@@ -148,37 +191,58 @@ if (dateTo) {
           
               });
 
-              updated.sort((a, b) => {
-                if (sortOption === "price") {
-                  return sortDirection === "asc"
+              if (sortOption === "status" || !initialLoadDone) {
+                const order = { ongoing: 0, upcoming: 1, completed: 2 };
+                updated.sort((a, b) => {
+                  const statusDiff = order[a.status] - order[b.status];
+                  if (statusDiff !== 0) return statusDiff;
+                  return new Date(a.date) - new Date(b.date);
+                });
+              } else if (sortOption === "price") {
+                updated.sort((a, b) =>
+                  sortDirection === "asc"
                     ? (a.price || 0) - (b.price || 0)
-                    : (b.price || 0) - (a.price || 0);
-                } else if (sortOption === "name") {
-                  return sortDirection === "asc"
+                    : (b.price || 0) - (a.price || 0)
+                );
+              } else if (sortOption === "name") {
+                updated.sort((a, b) =>
+                  sortDirection === "asc"
                     ? (a.name || "").localeCompare(b.name || "")
-                    : (b.name || "").localeCompare(a.name || "");
-                } else if (sortOption === "interested") {
-                  return sortDirection === "asc"
+                    : (b.name || "").localeCompare(a.name || "")
+                );
+              } else if (sortOption === "interested") {
+                updated.sort((a, b) =>
+                  sortDirection === "asc"
                     ? (a.interestedParticipants?.length || 0) - (b.interestedParticipants?.length || 0)
-                    : (b.interestedParticipants?.length || 0) - (a.interestedParticipants?.length || 0);
-                } else if (sortOption === "going") {
-                  return sortDirection === "asc"
+                    : (b.interestedParticipants?.length || 0) - (a.interestedParticipants?.length || 0)
+                );
+              } else if (sortOption === "going") {
+                updated.sort((a, b) =>
+                  sortDirection === "asc"
                     ? (a.goingParticipants?.length || 0) - (b.goingParticipants?.length || 0)
-                    : (b.goingParticipants?.length || 0) - (a.goingParticipants?.length || 0);
-                } else if (sortOption === "location") {
-                  return sortDirection === "asc"
+                    : (b.goingParticipants?.length || 0) - (a.goingParticipants?.length || 0)
+                );
+              } else if (sortOption === "location") {
+                updated.sort((a, b) =>
+                  sortDirection === "asc"
                     ? (a.location || "").localeCompare(b.location || "")
-                    : (b.location || "").localeCompare(a.location || "");
-                } else {
-                  return sortDirection === "asc"
+                    : (b.location || "").localeCompare(a.location || "")
+                );
+              } else {
+                updated.sort((a, b) =>
+                  sortDirection === "asc"
                     ? new Date(a.date) - new Date(b.date)
-                    : new Date(b.date) - new Date(a.date);
-                }
-              });
+                    : new Date(b.date) - new Date(a.date)
+                );
+              }
+              
+                
               
 
     setFilteredEvents(updated);
     setCurrentPage(1);
+    if (!initialLoadDone) setInitialLoadDone(true);
+
   }, [
     events,
     sortOption,
@@ -193,6 +257,7 @@ if (dateTo) {
     dateFrom,
     dateTo,
     statusFilters,
+    filterCategories, // ✅ ADĂUGAT
     currentPage, // <== ADĂUGĂ AICI
   ]);
   
@@ -258,20 +323,8 @@ if (dateTo) {
     <Flex direction={{ base: "column", md: "row" }} gap={6}>
       {/* Sidebar Filters */}
       <Box w="220px" p={4} borderWidth={1} borderRadius="lg">
-        <Text fontWeight="bold">Pret</Text>
-        <Stack spacing={1} mt={2}>
-          {PRICE_RANGES.map((range) => (
-            <Checkbox
-              key={range.label}
-              isChecked={priceFilters.some((r) => r.label === range.label)}
-              onChange={() => togglePriceFilter(range)}
-            >
-              {range.label}
-            </Checkbox>
-          ))}
-        </Stack>
+        
 
-        <Divider my={3} />
         <Text fontWeight="bold">Price Range</Text>
 <RangeSlider
   value={priceRange}
@@ -380,26 +433,35 @@ if (dateTo) {
 
 
         <Divider my={3} />
-        <Text fontWeight="bold">Tags</Text>
-        <Wrap spacing={2} mt={2} maxW="100%">
-          {ALL_EVENT_TAGS.map((tag) => (
-            <WrapItem key={tag} w="100%">
-              <Button
-                size="sm"
-                width="100%"
-                borderRadius="full"
-                colorScheme={filterTags.includes(tag) ? "blue" : "gray"}
-                onClick={() =>
-                  setFilterTags((prev) =>
-                    prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-                  )
-                }
-              >
-                {tag}
-              </Button>
-            </WrapItem>
-          ))}
-        </Wrap>
+        <Text fontWeight="bold">Categories</Text>
+<Wrap spacing={2} mt={2} maxW="100%">
+  {ALL_EVENT_CATEGORIES.map((cat) => {
+    const isSelected = filterCategories.includes(cat);
+    const background = isSelected ? "#2B6CB0" : categoryColorMap[cat]; // use Chakra's blue[700] for selected
+
+    return (
+      <WrapItem key={cat}>
+        <Button
+          size="sm"
+          borderRadius="md"
+          bg={background}
+          color={isSelected ? "white" : "black"}
+          _hover={{ opacity: 0.8 }}
+          onClick={() =>
+            setFilterCategories((prev) =>
+              prev.includes(cat)
+                ? prev.filter((c) => c !== cat)
+                : [...prev, cat]
+            )
+          }
+        >
+          {cat}
+        </Button>
+      </WrapItem>
+    );
+  })}
+</Wrap>
+
       </Box>
 
         {/* Events List */}
@@ -437,29 +499,44 @@ if (dateTo) {
                         )}
                       </Box>
 
-                      <Box textAlign="center" py={3} minH="120px">
-  <Text fontWeight="bold">{event.name}</Text>
-  <Text fontSize="sm" color="gray.600">Taking place on {new Date(event.date).toLocaleDateString()}</Text>
-  <Text fontSize="sm" color="blue.600">
-  <strong>Location:</strong>{" "}
-  {event.location
-    ? event.location.split(",").slice(-2).map(p => p.trim()).join(", ")
-    : "N/A"}
-</Text>
-  <Text fontSize="sm"><strong> Creator:</strong> {event.user?.firstName || "-"} {event.user?.lastName || ""}</Text>
-  <Text fontSize="sm" color="orange.600"><strong>Going:</strong> {event.goingParticipants?.length || 0}</Text>
+                      <Flex p={4} gap={3} align="center">
+  {/* Data pe stânga */}  
+  <Flex direction="column" align="center" minW="50px">
+    <Text fontWeight="bold" fontSize="lg">{formatDate(event.date).day}</Text>
+    <Text fontWeight="bold" fontSize="sm">{formatDate(event.date).month}</Text>
+    <Text fontWeight="bold" fontSize="sm">{formatDate(event.date).year}</Text>
+  </Flex>
 
-  {["paid", "donation"].includes(event.ticketType) && event.price > 0 && (
-    <Text mt={1} fontSize="sm" color="green">
-      <strong>Price:</strong> {event.price} RON
+  {/* Detalii pe dreapta */}
+  <Box textAlign="left">
+    <Text fontWeight="bold">{event.name}</Text>
+    {event.category && (
+      <Text fontSize="sm" color="teal.600">
+        <strong>Category:</strong> {event.category}
+      </Text>
+    )}
+    <Text fontSize="sm" color="blue.600">
+      <strong>Location:</strong>{" "}
+      {event.location
+        ? event.location.split(",").slice(-2).map(p => p.trim()).join(", ")
+        : "N/A"}
     </Text>
-  )}
-  {event.tags?.length > 0 && (
-  <Text fontSize="sm" color="purple.600">
-    <strong>Tags:</strong> {event.tags.join(", ")}
-  </Text>
-)}
-</Box>
+    <Text fontSize="sm"><strong>Creator:</strong> {event.user?.firstName || "-"} {event.user?.lastName || ""}</Text>
+    <Text fontSize="sm" color="orange.600"><strong>Going:</strong> {event.goingParticipants?.length || 0}</Text>
+
+    {["paid", "donation"].includes(event.ticketType) && event.price > 0 && (
+      <Text mt={1} fontSize="sm" color="green">
+        <strong>Price:</strong> {event.price} RON
+      </Text>
+    )}
+    {event.tags?.length > 0 && (
+      <Text fontSize="sm" color="purple.600">
+        <strong>Tags:</strong> {event.tags.join(", ")}
+      </Text>
+    )}
+  </Box>
+</Flex>
+
 
 
                     </Box>

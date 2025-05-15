@@ -369,12 +369,12 @@ const UserHeader = ({ user }) => {
       
       <Flex mt={23} gap={20} direction={"column"} textAlign="center">
 
-      <Tabs variantariant="unstyled"  align="center">
-        <TabList justifyContent="left" gap={40} flexWrap="wrap">
-          <Tab _selected={{ bg: "blue.300", color: "white" }}>Art pieces</Tab>
-          <Tab _selected={{ bg: "green.300", color: "white" }}>Galleries</Tab>
-          <Tab _selected={{ bg: "orange.300", color: "white" }}>Events</Tab>
-          <Tab _selected={{ bg: "orange.300", color: "white" }}>Articles</Tab>
+      <Tabs variant="unstyled"  align="center">
+        <TabList justifyContent="left" gap={100} flexWrap="wrap">
+          <Tab _selected={{ bg: "orange.400", color: "white" }}>Art pieces</Tab>
+          <Tab _selected={{ bg: "green.400", color: "white" }}>Galleries</Tab>
+          <Tab _selected={{ bg: "purple.400", color: "white" }}>Events</Tab>
+          <Tab _selected={{ bg: "blue.400", color: "white" }}>Articles</Tab>
         </TabList>
 
         
@@ -388,13 +388,54 @@ const UserHeader = ({ user }) => {
         transition="all 0.2s" cursor="pointer"
         onClick={() => navigate(`/products/${product._id}`)} key={product._id} w="200px" borderWidth="1px" borderRadius="md" overflow="hidden">
           <Box h="200px" bg="purple.200">
-            {product.images && product.images[0] && (
-              <Image src={product.images[0]} alt={product.name} w="100%" h="100%" objectFit="cover" />
-            )}
+          {product.images?.[0] ? (
+  <Image
+    src={product.images[0]}
+    alt={product.name}
+    w="100%"
+    h="100%"
+    objectFit="cover"
+  />
+) : product.videos?.[0] ? (
+  <Box
+    as="video"
+    src={product.videos[0]}
+    muted
+    loop
+    autoPlay
+    playsInline
+    preload="metadata"
+    w="100%"
+    h="100%"
+    objectFit="cover"
+  />
+) : (
+  <Flex
+    align="center"
+    justify="center"
+    w="100%"
+    h="100%"
+    bg="gray.200"
+    color="gray.600"
+    fontWeight="bold"
+    fontSize="lg"
+  >
+    {product.name}
+  </Flex>
+)}
+
           </Box>
           <Box p={4}>
             <Text fontWeight="bold" mb={1}>{product.name}</Text>
-            <Text fontSize="sm">{product.price ? `${product.price} $` : "Not for sale"}</Text>
+            {product.price > 0 && (
+  <Text fontSize="sm">{product.price} $</Text>
+)}
+
+{product.category && (
+  <Text fontSize="xs" mt={1} color="gray.600">
+    Category: {product.category}
+  </Text>
+)}
             <Text fontSize="xs" mt={2}>{product.tags?.join(", ")}</Text>
           </Box>
         </Box>
@@ -440,17 +481,11 @@ const UserHeader = ({ user }) => {
       >
         Collaborating
       </Button>
-      <Button
-        bg={activeGalleryFilter === "favorites" ? "yellow.400" : "yellow.200"}
-        onClick={() => setActiveGalleryFilter("favorites")}
-        borderRadius="full"
-      >
-        Favorites
-      </Button>
+     
     </Flex>
 
     {/* Galerii */}
-    <Flex direction="column" gap={4} w="100%">
+    <Flex direction="column" gap={4} w="500px">
   {filteredGalleries.length > 0 ? (
 filteredGalleries.slice(0, 2).map((gallery) => (
   <Box
@@ -464,19 +499,22 @@ filteredGalleries.slice(0, 2).map((gallery) => (
         onClick={() => navigate(`/galleries/${user.username}/${gallery.name}`)}
       >
         {/* Cover Photo */}
-        <Box h="150px" overflow="hidden">
-          {gallery.coverPhoto ? (
-            <Image
-              src={gallery.coverPhoto}
-              alt={gallery.name}
-              w="100%"
-              h="100%"
-              objectFit="cover"
-            />
-          ) : (
-            <Box bg="purple.200" w="100%" h="100%" />
-          )}
-        </Box>
+        <Box h="150px" overflow="hidden" bg="blue.400" display="flex" alignItems="center" justifyContent="center">
+  {gallery.coverPhoto ? (
+    <Image
+      src={gallery.coverPhoto}
+      alt={gallery.name}
+      w="400px"
+      h="100%"
+      objectFit="cover"
+    />
+  ) : (
+    <Text fontWeight="bold" color="white" fontSize="lg" textAlign="center" px={2}>
+      {gallery.name}
+    </Text>
+  )}
+</Box>
+
 
         {/* Gallery details */}
         <Box p={4}>
@@ -484,7 +522,7 @@ filteredGalleries.slice(0, 2).map((gallery) => (
             {gallery.name}
           </Text>
           <Text fontSize="sm" color="gray.600" mb={1}>
-            {gallery.type || "No type specified"}
+            {gallery.category || "No category specified"}
           </Text>
           <Text fontSize="xs" color="gray.500">
             {gallery.tags?.length > 0 ? gallery.tags.join(", ") : "No tags"}
@@ -515,7 +553,7 @@ filteredGalleries.slice(0, 2).map((gallery) => (
                 <Button onClick={() => setEventFilter("going")} bg={eventFilter === "going" ? "yellow.400" : "yellow.200"}>Events marked going</Button>
                 <Button onClick={() => setEventFilter("interested")} bg={eventFilter === "interested" ? "yellow.400" : "yellow.200"}>Events marked interested</Button>
               </Flex>
-              <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="center">
+            <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="center">
   {(eventFilter === "created" ? createdEvents : eventFilter === "going" ? goingEvents : interestedEvents)
     ?.slice(0, 6) // Limitează la 6 evenimente
     .map((event) => {
@@ -523,7 +561,7 @@ filteredGalleries.slice(0, 2).map((gallery) => (
       return (
         <Link to={`/events/${event._id}`} key={event._id}>
   <Box
-    w="250px"
+    w="340px"
     borderWidth="1px"
     borderRadius="md"
     overflow="hidden"
@@ -541,9 +579,31 @@ filteredGalleries.slice(0, 2).map((gallery) => (
       objectFit="cover"
     />
   ) : (
-    <Box bg="purple.200" w="100%" h="100%" />
+    <Box
+      w="100%"
+      h="100%"
+      bg="orange.300"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <Text
+        fontWeight="bold"
+        color="white"
+        fontSize="lg"
+        textAlign="center"
+        px={2}
+      >
+        {event.name}
+      </Text>
+    </Box>
   )}
 </Box>
+
+
+
+
+
           <Flex p={4} gap={3} align="center">
             {/* Data pe stânga */}
             <Flex direction="column" align="center" minW="50px">
@@ -555,6 +615,11 @@ filteredGalleries.slice(0, 2).map((gallery) => (
             {/* Detalii eveniment */}
             <Box textAlign="left">
               <Text fontSize="md" fontWeight="bold" isTruncated>{event.name || "Nume eveniment"}</Text>
+              {event.category && (
+  <Text fontSize="sm" >
+   Category: {event.category}
+  </Text>
+)}
               <Text fontSize="sm" isTruncated>{event.location || "TBA"}</Text>
               <Text fontSize="xs">{event.time || "TBA"}</Text>
             </Box>
@@ -602,12 +667,18 @@ filteredGalleries.slice(0, 2).map((gallery) => (
     backgroundRepeat: "repeat-y, no-repeat",
   }}
 >
+  
   <Text fontWeight="bold" fontSize="xl" mb={1}>
     {article.title}
   </Text>
   {article.subtitle && (
     <Text fontSize="md" color="gray.600">
       {article.subtitle}
+    </Text>
+  )}
+   {article.category && (
+    <Text fontSize="sm" color="teal.600">
+      Category: {article.category}
     </Text>
   )}
   {/* 🔽 Fragment din content fără taguri HTML */}

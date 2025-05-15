@@ -29,6 +29,71 @@ const GALLERY_CATEGORIES = [
   "Expressionism", "Pop Art", "Concept Art", "AI Art", "Experimental", "Political Art",
   "Activist Art", "Environmental Art"
 ];
+const galleryCategoryColorMap = {
+  "General": "rgb(50, 206, 128)",
+  "Photography": "rgb(58, 78, 160)",
+  "Painting": "rgb(81, 144, 173)",
+  "Drawing": "rgb(198, 175, 218)",
+  "Sketch": "rgb(191, 89, 177)",
+  "Illustration": "rgb(53, 183, 216)",
+  "Digital Art": "rgb(216, 88, 158)",
+  "Pixel Art": "rgb(220, 161, 218)",
+  "3D Art": "rgb(213, 193, 150)",
+  "Animation": "rgb(134, 215, 81)",
+  "Graffiti": "rgb(116, 200, 177)",
+  "Calligraphy": "rgb(78, 131, 164)",
+  "Typography": "rgb(194, 117, 158)",
+  "Collage": "rgb(72, 87, 122)",
+  "Mixed Media": "rgb(147, 78, 104)",
+  "Sculpture": "rgb(73, 96, 176)",
+  "Installation": "rgb(73, 167, 131)",
+  "Fashion": "rgb(213, 197, 156)",
+  "Textile": "rgb(211, 57, 158)",
+  "Architecture": "rgb(194, 67, 86)",
+  "Interior Design": "rgb(203, 140, 77)",
+  "Product Design": "rgb(84, 61, 88)",
+  "Graphic Design": "rgb(167, 144, 200)",
+  "UI/UX": "rgb(106, 101, 172)",
+  "Music": "rgb(55, 146, 114)",
+  "Instrumental": "rgb(60, 137, 162)",
+  "Vocal": "rgb(183, 117, 78)",
+  "Rap": "rgb(139, 101, 87)",
+  "Spoken Word": "rgb(69, 175, 160)",
+  "Podcast": "rgb(138, 210, 206)",
+  "Sound Design": "rgb(56, 60, 84)",
+  "Film": "rgb(96, 165, 74)",
+  "Short Film": "rgb(50, 101, 106)",
+  "Documentary": "rgb(135, 209, 120)",
+  "Cinematography": "rgb(172, 96, 94)",
+  "Video Art": "rgb(200, 108, 51)",
+  "Performance": "rgb(98, 149, 186)",
+  "Dance": "rgb(67, 135, 179)",
+  "Theatre": "rgb(97, 156, 194)",
+  "Acting": "rgb(128, 183, 205)",
+  "Poetry": "rgb(107, 116, 220)",
+  "Writing": "rgb(122, 114, 166)",
+  "Essay": "rgb(77, 201, 96)",
+  "Prose": "rgb(172, 78, 89)",
+  "Fiction": "rgb(167, 154, 168)",
+  "Non-fiction": "rgb(62, 95, 206)",
+  "Journal": "rgb(217, 209, 220)",
+  "Comics": "rgb(90, 218, 100)",
+  "Manga": "rgb(85, 100, 167)",
+  "Zine": "rgb(144, 190, 51)",
+  "Fantasy Art": "rgb(197, 187, 166)",
+  "Surrealism": "rgb(187, 188, 168)",
+  "Realism": "rgb(106, 182, 215)",
+  "Abstract": "rgb(125, 177, 95)",
+  "Minimalism": "rgb(183, 213, 183)",
+  "Expressionism": "rgb(89, 193, 69)",
+  "Pop Art": "rgb(86, 52, 125)",
+  "Concept Art": "rgb(98, 69, 72)",
+  "AI Art": "rgb(119, 100, 120)",
+  "Experimental": "rgb(147, 192, 176)",
+  "Political Art": "rgb(127, 100, 152)",
+  "Activist Art": "rgb(168, 194, 100)",
+  "Environmental Art": "rgb(139, 61, 59)"
+};
 
 
 const ExploreGalleries = () => {
@@ -42,13 +107,9 @@ const ExploreGalleries = () => {
   const [loading, setLoading] = useState(true);
   const [sortDirection, setSortDirection] = useState("asc");
   const [filterCategories, setFilterCategories] = useState([]);
-  const getCategoryColor = (category) => {
-    const colors = [
-      "blue", "green", "red", "orange", "purple", "teal", "cyan", "pink", "yellow"
-    ];
-    const index = GALLERY_CATEGORIES.indexOf(category);
-    return colors[index % colors.length] || "gray";
-  };
+  const getCategoryColor = (category) =>
+    galleryCategoryColorMap[category] || "gray";
+  
   
   useEffect(() => {
     fetchGalleries();
@@ -174,33 +235,33 @@ const ExploreGalleries = () => {
         {/* Sidebar */}
         <Box w="220px" p={4} borderWidth={1} borderRadius="lg">
         <Text fontWeight="bold">Filter by Category</Text>
-<Wrap spacing={2} mt={2} >
-  {GALLERY_CATEGORIES.map((cat) => (
-    <WrapItem key={cat} w="100%">
-     <Button
-  size="sm"
-  width="100%"
-  borderRadius="full"
-  colorScheme={
-    filterCategories.includes(cat)
-      ? getCategoryColor(cat)
-      : "gray"
-  }
-  variant={filterCategories.includes(cat) ? "solid" : "outline"}
-  onClick={() =>
-    setFilterCategories((prev) =>
-      prev.includes(cat)
-        ? prev.filter((c) => c !== cat)
-        : [...prev, cat]
-    )
-  }
->
-  {cat}
-</Button>
-
-    </WrapItem>
-  ))}
+<Wrap spacing={2} mt={2}>
+  {GALLERY_CATEGORIES.map((cat) => {
+    const isSelected = filterCategories.includes(cat);
+    return (
+      <WrapItem key={cat} >
+        <Button
+          size="sm"
+          width="100%"
+          borderRadius="full"
+          bg={isSelected ? "#2B6CB0" : galleryCategoryColorMap[cat]}
+          color={isSelected ? "white" : "black"}
+          _hover={{ opacity: 0.8 }}
+          onClick={() =>
+            setFilterCategories((prev) =>
+              prev.includes(cat)
+                ? prev.filter((c) => c !== cat)
+                : [...prev, cat]
+            )
+          }
+        >
+          {cat}
+        </Button>
+      </WrapItem>
+    );
+  })}
 </Wrap>
+
 
         </Box>
 

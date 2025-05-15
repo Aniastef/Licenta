@@ -213,6 +213,11 @@ const UserArticlesPage = () => {
       backgroundRepeat: "repeat-y, no-repeat",
     }}
   >
+     {article.category && (
+      <Text fontSize="sm" color="teal.600">
+        Category: {article.category}
+      </Text>
+    )}
     <Text
       as={RouterLink}
       to={`/articles/${article._id}`}

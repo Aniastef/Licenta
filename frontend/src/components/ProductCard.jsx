@@ -27,6 +27,8 @@ import writingBackground from "../assets/writing.svg";
 
 
 const ProductCard = ({ product }) => {
+  if (!product) return <Text>Loading product...</Text>;
+
   const { addToCart } = useCart();
   const user = useRecoilValue(userAtom);
   const toast = useToast();
@@ -36,6 +38,13 @@ const ProductCard = ({ product }) => {
   const [quantity, setQuantity] = useState(1);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isLongDescription = product?.description?.length > 300;
+  const hasImageOrVideoOrWriting =
+  (product.images?.length || 0) > 0 ||
+  (product.videos?.length || 0) > 0 ||
+  (Array.isArray(product.writing) && product.writing.length > 0) ||
+  (typeof product.writing === "string" && product.writing.trim());
+
+const onlyAudio = (product.audios?.length > 0) && !hasImageOrVideoOrWriting;
 
   const {
     isOpen: isImageOpen,
@@ -52,6 +61,7 @@ const ProductCard = ({ product }) => {
 const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 const modes = ["image", "video", "writing"];
 const otherModes = modes.filter((mode) => mode !== viewMode);
+
 
   useEffect(() => {
     if (!product || !product.images) return;
@@ -109,8 +119,12 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
       setViewMode("video");
     } else if (product.images?.length > 0) {
       setViewMode("image");
+    } else if (product.audios?.length > 0) {
+      setViewMode("audio");
     }
   }, [product]);
+  
+  
   
   console.log("writing:", product?.writing);
 
@@ -248,35 +262,26 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
       <Flex direction="column" align="center" gap={4}>
         
       <HStack spacing={4} ml={100}>
-  {product.videos?.length > 0 && viewMode !== "video" && (
-    <Button
-      colorScheme="yellow"
-      size="md"
-      onClick={() => setViewMode("video")}
-    >
-      Switch to video
-    </Button>
-  )}
-  {typeof product.writing === "string" && product.writing.trim() && viewMode !== "writing" && (
-  <Button
-    colorScheme="purple"
-    size="md"
-    onClick={() => setViewMode("writing")}
-  >
-    Switch to writing
-  </Button>
-)}
-
-  {product.images?.length > 0 && viewMode !== "image" && (
-    <Button
-      colorScheme="green"
-      size="md"
-      onClick={() => setViewMode("image")}
-    >
+  {viewMode !== "image" && product.images?.length > 0 && (
+    <Button colorScheme="green" size="md" onClick={() => setViewMode("image")}>
       Switch to image
     </Button>
   )}
+  {viewMode !== "video" && product.videos?.length > 0 && (
+    <Button colorScheme="yellow" size="md" onClick={() => setViewMode("video")}>
+      Switch to video
+    </Button>
+  )}
+  {viewMode !== "writing" &&
+    ((typeof product.writing === "string" && product.writing.trim()) ||
+      (Array.isArray(product.writing) && product.writing[0]?.trim())) && (
+      <Button colorScheme="purple" size="md" onClick={() => setViewMode("writing")}>
+        Switch to writing
+      </Button>
+    )}
 </HStack>
+
+
 
 
           <Flex direction="row" align="flex-start" gap={10} pl={4}>
@@ -356,58 +361,47 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
           {/* Right Section - Main Image */}
           <Flex justify="center">
   {viewMode === "writing" ? (
-    <Box
-  w="1000px"
-  h="800px"
-  position="relative"
->
-  {/* Foaia statică pe fundal */}
-  <Image
-    src={writingBackground}
-    alt="writing paper"
-    position="absolute"
-    top="0"
-    left="0"
-    width="100%"
-    height="100%"
-    objectFit="cover"
-    zIndex={0}
-    pointerEvents="none"
-  />
-
-  {/* Text scrollabil deasupra foii */}
-  <Box
-    position="absolute"
-    top="110"
-    left="0"
-    right="0"
-    bottom="10"
-    overflowY="auto"
-    px={50}
-    pt={10} // spațiu față de banda de sus
-    zIndex={1}
-  >
-    <Box
-      fontFamily="serif"
-      fontSize="lg"
-      color="black"
-      whiteSpace="pre-wrap"
-      lineHeight="1.8"
-      dangerouslySetInnerHTML={{
-        __html:
-          Array.isArray(product.writing) && product.writing.length > 0
-            ? product.writing[0]
-            : typeof product.writing === "string"
-            ? product.writing
-            : "",
-      }}
-    />
-  </Box>
-</Box>
-
-
-
-  
+    <Box w="700px" h="700px" position="relative">
+      <Image
+        src={writingBackground}
+        alt="writing paper"
+        position="absolute"
+        top="0"
+        left="0"
+        width="100%"
+        height="100%"
+        objectFit="cover"
+        zIndex={0}
+        pointerEvents="none"
+      />
+      <Box
+        position="absolute"
+        top="110"
+        left="0"
+        right="0"
+        bottom="10"
+        overflowY="auto"
+        px={50}
+        pt={10}
+        zIndex={1}
+      >
+        <Box
+          fontFamily="serif"
+          fontSize="lg"
+          color="black"
+          whiteSpace="pre-wrap"
+          lineHeight="1.8"
+          dangerouslySetInnerHTML={{
+            __html:
+              Array.isArray(product.writing) && product.writing.length > 0
+                ? product.writing[0]
+                : typeof product.writing === "string"
+                ? product.writing
+                : "",
+          }}
+        />
+      </Box>
+    </Box>
   ) : viewMode === "image" ? (
     <Box
       w="800px"
@@ -431,7 +425,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
         }}
       />
     </Box>
-  ) : (
+  ) : viewMode === "video" ? (
     <Box
       w="800px"
       h="600px"
@@ -455,8 +449,35 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
         borderRadius="md"
       />
     </Box>
-  )}
+  ) : viewMode === "audio" && onlyAudio ? (
+    <Box
+      w="800px"
+      h="600px"
+      overflowY="auto"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+    >
+      <Box minW="300px" maxW="500px" p={2} borderRadius="md" boxShadow="md">
+      <VStack spacing={4}>
+  {product.audios.map((url, index) => (
+    <Box
+      key={index}
+      minW="300px"
+      maxW="500px"
+      p={2}
+      borderRadius="md"
+      boxShadow="md"
+    >
+      <WaveformPlayer url={url} />
+    </Box>
+  ))}
+</VStack>
+      </Box>
+    </Box>
+  ) : null}
 </Flex>
+
 
         </Flex>
         </Flex>
@@ -485,9 +506,24 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
       </Button>
     </HStack>
 
-        <Text mt={2}>
-          Created by {product.user?.firstName || "Unknown"} {product.user?.lastName || "User"}
-        </Text>
+    {product.user?.username && (
+  <Text mt={2}>
+    Created by{" "}
+    <RouterLink
+      to={`/profile/${product.user.username}`}
+      style={{ color: "#3182ce", textDecoration: "underline" }}
+    >
+      {product.user.firstName || "Unknown"} {product.user.lastName || "User"}
+    </RouterLink>
+  </Text>
+)}
+
+        {product.category && (
+  <Text mt={1} color="gray.600">
+    Category: <b>{product.category}</b>
+  </Text>
+)}
+
         {product.galleries?.length > 0 && (
   <Box mt={2}>
     <Text fontWeight="bold">Part of galleries:</Text>
@@ -520,7 +556,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
               <Button mt={2}
                 as={RouterLink}
                 to={`/update/product/${product._id}`}
-                bg="red.400"
+                bg="orange"
                 borderRadius="lg"
                 width={300}
                 height="50px"
@@ -595,7 +631,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
           wordBreak="break-word"
           dangerouslySetInnerHTML={{
             __html: isLongDescription
-              ? product.description.slice(0, 600) + "..."
+              ? product.description.slice(0, 500) + "..."
               : product.description,
           }}
         />
@@ -621,22 +657,21 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
           </Flex>
       
 </Flex>
-{product.audios?.length > 0 && (
-  <Box maxW="1300px" mx="auto">
+{product.audios?.length > 0 && !onlyAudio && (
+  <Box maxW="800px" w="100%" ml={105} mt={6}>
+    <Flex align="center" gap={2} position="relative" justify="center">
+      {product.audios.length > 2 && (
+        <IconButton
+          icon={<ChevronLeftIcon boxSize={6} />}
+          onClick={() => scrollByAmount(-400)}
+          aria-label="Scroll left"
+          bg="white"
+          boxShadow="md"
+          borderRadius="full"
+          _hover={{ bg: "gray.100" }}
+        />
+      )}
 
-    <Flex align="center" gap={2} position="relative">
-      {/* Scroll Left */}
-      <IconButton
-        icon={<ChevronLeftIcon boxSize={6} />}
-        onClick={() => scrollByAmount(-400)}
-        aria-label="Scroll left"
-        bg="white"
-        boxShadow="md"
-        borderRadius="full"
-        _hover={{ bg: "gray.100" }}
-      />
-
-      {/* Carusel */}
       <Box
         ref={scrollRef}
         overflowX="auto"
@@ -649,7 +684,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
           "&::-webkit-scrollbar-thumb": { background: "#ccc", borderRadius: "8px" },
         }}
       >
-        <HStack spacing={4}>
+        <HStack spacing={4} justify="center">
           {product.audios.map((url, i) => (
             <Box
               key={i}
@@ -658,6 +693,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
               borderRadius="md"
               p={2}
               flexShrink={0}
+              boxShadow="sm"
             >
               <WaveformPlayer url={url} />
             </Box>
@@ -665,19 +701,22 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
         </HStack>
       </Box>
 
-      {/* Scroll Right */}
-      <IconButton
-        icon={<ChevronRightIcon boxSize={6} />}
-        onClick={() => scrollByAmount(400)}
-        aria-label="Scroll right"
-        bg="white"
-        boxShadow="md"
-        borderRadius="full"
-        _hover={{ bg: "gray.100" }}
-      />
+      {product.audios.length > 2 && (
+        <IconButton
+          icon={<ChevronRightIcon boxSize={6} />}
+          onClick={() => scrollByAmount(400)}
+          aria-label="Scroll right"
+          bg="white"
+          boxShadow="md"
+          borderRadius="full"
+          _hover={{ bg: "gray.100" }}
+        />
+      )}
     </Flex>
   </Box>
 )}
+
+
 
 
 

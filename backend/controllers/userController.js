@@ -20,13 +20,13 @@ export const getUserProfile = async (req, res) => {
   
 	 // 1. Galeriile create de acest user
 const ownedGalleries = await Gallery.find({ owner: user._id })
-.select("name isPublic owner collaborators pendingCollaborators coverPhoto type tags");
+.select("name isPublic owner collaborators pendingCollaborators coverPhoto category tags");
 
 // 2. Galeriile unde acest user e colaborator (deținute de alții)
 const collaboratedGalleries = await Gallery.find({
 collaborators: user._id,
 owner: { $ne: user._id },
-}).select("name isPublic owner collaborators pendingCollaborators coverPhoto type tags");
+}).select("name isPublic owner collaborators pendingCollaborators coverPhoto category tags");
 
   
 	  // Vizibilitatea galeriilor
@@ -57,7 +57,7 @@ owner: { $ne: user._id },
 		},
 		{
 		  path: "events",
-		  select: "name date time location coverImage",
+		  select: "name date category time location coverImage",
 		  populate: { path: "user", select: "firstName lastName" },
 		},
 	  ]);
@@ -65,11 +65,12 @@ owner: { $ne: user._id },
 
 	  // ⚠️ QUERY SEPARAT PENTRU PRODUSE (NU populate pe `products[]`)
 	  const products = await Product.find({ user: user._id })
-		.select("name price images tags createdAt")
-		.sort({ createdAt: -1 }); // Cele mai noi
+  .select("name price images videos tags createdAt category") // 🔄 adaugă și videos, category
+  .sort({ createdAt: -1 });
+
 
 		const articles = await Article.find({ user: user._id })
-  .select("title subtitle createdAt content")
+  .select("title subtitle category createdAt content")
   .sort({ createdAt: -1 })
   .limit(3);
 

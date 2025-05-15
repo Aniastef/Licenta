@@ -17,6 +17,8 @@ import {
 	MenuButton,
 	MenuList,
 	MenuItem,
+	FormControl,
+	FormLabel,
   } from "@chakra-ui/react";
   import { useState } from "react";
   import useShowToast from "../hooks/useShowToast";
@@ -25,6 +27,7 @@ import {
   import userAtom from "../atoms/userAtom"; // ✅ import currentUser
   import imageCompression from "browser-image-compression";
 import GalleryImageCropModal from "../components/GalleryImageCropModal";
+import ReactQuill from "react-quill-new";
 const GALLERY_CATEGORIES = [
 	"General",
 	"Photography",
@@ -231,7 +234,7 @@ const dataURLtoFile = (dataUrl, filename) => {
 	  
   
 	return (
-	  <Container maxW="container.md" py={8}>
+	  <Container maxW="container.md" >
 		<VStack spacing={8}>
 		  <Heading as="h1" size="2xl">
 			Create new gallery
@@ -246,38 +249,55 @@ const dataURLtoFile = (dataUrl, filename) => {
 				  setNewGallery({ ...newGallery, name: e.target.value })
 				}
 			  />
-			<Menu>
-  <MenuButton as={Button} w="full" textAlign="left">
-    {newGallery.category || "Select category"}
-  </MenuButton>
-  <MenuList maxH="300px" overflowY="auto">
+			<FormControl>
+  <FormLabel>Category</FormLabel>
+  <Select
+    value={newGallery.category || "General"}
+    onChange={(e) => setNewGallery({ ...newGallery, category: e.target.value })}
+  >
     {GALLERY_CATEGORIES.map((cat) => (
-      <MenuItem
-        key={cat}
-        onClick={() => setNewGallery({ ...newGallery, category: cat })}
-      >
+      <option key={cat} value={cat}>
         {cat}
-      </MenuItem>
+      </option>
     ))}
-  </MenuList>
-</Menu>
+  </Select>
+</FormControl>
 
 
-			  <Textarea
-				placeholder="Gallery Description"
-				value={newGallery.description}
-				onChange={(e) =>
-				  setNewGallery({ ...newGallery, description: e.target.value })
-				}
-			  />
-			 <Checkbox
+
+<FormControl>
+  <FormLabel>Description</FormLabel>
+  <ReactQuill
+    theme="snow"
+    value={newGallery.description}
+    onChange={(value) => setNewGallery({ ...newGallery, description: value })}
+    modules={{
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ align: [] }],
+        [{ color: [] }, { background: [] }],
+        ["link"],
+        ["clean"],
+      ],
+    }}
+    formats={[
+      "header", "bold", "italic", "underline", "strike",
+      "list", "bullet", "align", "color", "background", "link"
+    ]}
+    style={{ height: "200px", width: "100%", marginBottom: "40px" }}
+  />
+</FormControl>
+
+			 {/* <Checkbox
   isChecked={newGallery.isPublic === false}
   onChange={(e) =>
     setNewGallery({ ...newGallery, isPublic: !e.target.checked })
   }
 >
   Make gallery private
-</Checkbox>
+</Checkbox> */}
 
   
 			  <Input
@@ -335,9 +355,8 @@ const dataURLtoFile = (dataUrl, filename) => {
 			  )}
   
 			  <Stack spacing={2} w="full">
-				<Heading as="h4" size="sm">
-				  Cover Photo
-				</Heading>
+			  <FormLabel mb={-1} >Cover image</FormLabel>
+
 				<Input
 				  type="file"
 				  accept="image/*"
@@ -346,7 +365,7 @@ const dataURLtoFile = (dataUrl, filename) => {
 			  </Stack>
   
 			  <Button
-				colorScheme="blue"
+				colorScheme="green"
 				onClick={handleAddGallery}
 				w="full"
 				isLoading={isLoading}

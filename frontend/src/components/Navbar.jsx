@@ -100,12 +100,12 @@ const Navbar = () => {
               </MenuButton>
               <MenuList>
                 <MenuItem as={Link} to={`/profile/${user.username}`}>
-                  My Profile
+                  My profile
                 </MenuItem>
-                <MenuItem as={Link} to="/update">Edit Profile</MenuItem>
+                <MenuItem as={Link} to="/update">Edit profile</MenuItem>
                 <MenuItem as={Link} to="/messages">Messages</MenuItem>
-                <MenuItem as={Link} to="/admin-panel">Admin Panel</MenuItem>
-                <MenuItem as={Link} to="/blocked-users">Blocked Users</MenuItem>
+                <MenuItem as={Link} to="/admin-panel">Admin panel</MenuItem>
+                <MenuItem as={Link} to="/blocked-users">Blocked users</MenuItem>
                 <MenuItem as={Link} to={`${user.username}/all-products`}>My art pieces</MenuItem>
                 <MenuItem as={Link} to={`${user.username}/all-galleries`}>My galleries</MenuItem>
                 <MenuItem as={Link} to={`${user.username}/all-events`}>My events</MenuItem>

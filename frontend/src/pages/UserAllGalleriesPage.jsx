@@ -134,7 +134,7 @@ const UserAllGalleriesPage = () => {
         <Flex position="absolute" right={4} gap={2}>
         {currentUser && currentUser.username === username && (
   <Button
-    colorScheme="blue"
+    colorScheme="green"
     ml={5}
     mb={6}
     onClick={() => window.location.href = "/create/gallery"}
@@ -199,7 +199,7 @@ placeholder="Search by name, tags, or collaborators..."          value={searchTe
   {filteredGalleries.map((gallery) => (
    <Box
    key={gallery._id}
-   w="700px"
+   w="600px"
    bg="gray.100"
    borderRadius="md"
    boxShadow="md"
@@ -214,7 +214,7 @@ placeholder="Search by name, tags, or collaborators..."          value={searchTe
      window.location.href = `/galleries/${gallery.owner.username}/${encodeURIComponent(gallery.name)}`
    }
  >
-   <Box h="200px" bg="gray.300" mb={3}>
+   <Box h="210px" bg="gray.300" mb={3}>
      {gallery.coverPhoto ? (
        <Image src={gallery.coverPhoto} alt={gallery.name} objectFit="cover" w="100%" h="100%" />
      ) : gallery.products?.[0]?.images?.[0] ? (

@@ -15,7 +15,7 @@ import {
   SimpleGrid,
   Circle,
 } from "@chakra-ui/react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 
@@ -30,6 +30,7 @@ const UserAllProductsPage = () => {
   const [saleStatuses, setSaleStatuses] = useState([]); // ["forSale", "notForSale"]
   const [user, setUser] = useState(null); // nouă stare
   const currentUser = useRecoilValue(userAtom);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserProducts();
@@ -126,7 +127,7 @@ const UserAllProductsPage = () => {
   <Flex position="absolute" right={4} gap={2}>
   {currentUser?.username?.toLowerCase() === username?.toLowerCase() && (
   <Button
-    colorScheme="blue"
+    colorScheme="orange"
     ml={5}
     mb={4}
     onClick={() => window.location.href = "/create/product"}

@@ -48,6 +48,8 @@ const CreateProductPage = () => {
 		price: "",
 		quantity: 1,
 		forSale: true,
+		category: "", // 🆕
+
 		galleries: [],
 		images: [],
 		videos: [],
@@ -155,21 +157,41 @@ const CreateProductPage = () => {
 	};
 
 	return (
-		<Container maxW="container.md" py={8}>
+		<Container maxW="container.md" >
 			<VStack spacing={8}>
 				<Heading>Create new art piece</Heading>
 				<Box w="full" p={6} rounded="lg" shadow="md">
 					<VStack spacing={4}>
-						<Input placeholder="Product Name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
-						<Text fontWeight="bold" alignSelf="start">Product Description</Text>
-<ReactQuill
-  theme="snow"
-  value={newProduct.description}
-  onChange={(value) => setNewProduct({ ...newProduct, description: value })}
-  style={{ height: "200px", 
- width: "700px", // înălțime fixă 
-  marginBottom: "20px", overflowY: "auto" }}
-/>		
+						<Input placeholder="Art piece name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
+						<FormControl>
+  <FormLabel>Description</FormLabel>
+  <ReactQuill
+    theme="snow"
+    value={newProduct.description}
+    onChange={(value) => setNewProduct({ ...newProduct, description: value })}
+    modules={{
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ align: [] }],
+        [{ color: [] }, { background: [] }],
+        ["link", "image"],
+        ["clean"],
+      ],
+    }}
+    formats={[
+      "header", "bold", "italic", "underline", "strike",
+      "list", "bullet", "align", "color", "background", "link", "image"
+    ]}
+    style={{ height: "200px", width: "100%", marginBottom: "30px" }}
+  />
+</FormControl>
+	
+<FormControl display="flex" alignItems="center">
+							<FormLabel mb={-1} mt={2}>Is for sale</FormLabel>
+							<Switch isChecked={newProduct.forSale} onChange={(e) => setNewProduct({ ...newProduct, forSale: e.target.checked })} />
+						</FormControl>
 {newProduct.forSale && (
   <Input
     type="number"
@@ -180,46 +202,137 @@ const CreateProductPage = () => {
     }
   />
 )}
-<Input type="number" placeholder="Quantity" min="0" value={newProduct.quantity} onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })} />
+{newProduct.forSale && (
+  <FormControl>
+    <FormLabel>Stock / Quantity</FormLabel>
+    <Input
+      type="number"
+      min="0"
+      placeholder="Quantity"
+      value={newProduct.quantity}
+      onChange={(e) =>
+        setNewProduct({
+          ...newProduct,
+          quantity: parseInt(e.target.value) || 0,
+        })
+      }
+    />
+  </FormControl>
+)}
 
-						<FormControl display="flex" alignItems="center">
-							<FormLabel mb="0">For Sale</FormLabel>
-							<Switch isChecked={newProduct.forSale} onChange={(e) => setNewProduct({ ...newProduct, forSale: e.target.checked })} />
-						</FormControl>
 
-						<Select
-							placeholder="Select a gallery"
-							value={newProduct.galleries[0] || ""}
-							onChange={(e) => setNewProduct({ ...newProduct, galleries: [e.target.value] })}
-						>
-							<option value="">All Products</option>
-							{userGalleries.map((gallery) => (
-								<option key={gallery._id} value={gallery._id}>{gallery.name}</option>
-							))}
-						</Select>
+						
+						<FormControl>
+  <FormLabel>Category</FormLabel>
+  <Select
+    value={newProduct.category || "General"} // fallback la "General"
+    onChange={(e) =>
+      setNewProduct({ ...newProduct, category: e.target.value })
+    }
+  >
+    {[
+      "General", "Photography", "Painting", "Drawing", "Sketch", "Illustration", "Digital Art",
+      "Pixel Art", "3D Art", "Animation", "Graffiti", "Calligraphy", "Typography", "Collage",
+      "Mixed Media", "Sculpture", "Installation", "Fashion", "Textile", "Architecture",
+      "Interior Design", "Product Design", "Graphic Design", "UI/UX", "Music", "Instrumental",
+      "Vocal", "Rap", "Spoken Word", "Podcast", "Sound Design", "Film", "Short Film",
+      "Documentary", "Cinematography", "Video Art", "Performance", "Dance", "Theatre", "Acting",
+      "Poetry", "Writing", "Essay", "Prose", "Fiction", "Non-fiction", "Journal", "Comics",
+      "Manga", "Zine", "Fantasy Art", "Surrealism", "Realism", "Abstract", "Minimalism",
+      "Expressionism", "Pop Art", "Concept Art", "AI Art", "Experimental", "Political Art",
+      "Activist Art", "Environmental Art"
+    ].map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </Select>
+</FormControl>
+
+
+
+
+<FormControl>
+  <FormLabel>Gallery</FormLabel>
+  <Select
+    value={newProduct.galleries[0] || "general-placeholder"}
+    onChange={(e) => {
+      const selected = e.target.value;
+      setNewProduct({ ...newProduct, galleries: selected === "general-placeholder" ? [] : [selected] });
+    }}
+  >
+    <option value="general-placeholder">General</option>
+    {userGalleries.map((gallery) => (
+      <option key={gallery._id} value={gallery._id}>
+        {gallery.name}
+      </option>
+    ))}
+  </Select>
+</FormControl>
+
 
 						{/* 🔽 Upload fields */}
-						<Input type="file" accept="image/*" multiple onChange={(e) => setImageFiles([...e.target.files])} />
-						<Input type="file" accept="video/*" multiple onChange={(e) => setVideoFiles([...e.target.files])} />
-						<Input type="file" accept="audio/*" multiple onChange={(e) => setAudioFiles([...e.target.files])} />
-						<Text fontWeight="bold" alignSelf="start">Writing / Poem</Text>
-						<ReactQuill
-  theme="snow"
-  value={newProduct.writing}
-  onChange={(value) => setNewProduct({ ...newProduct, writing: value })}
-  style={{
-    height: "200px",  
-	width: "700px",       // înălțime fixă
-    overflowY: "auto",       // scroll vertical
-    marginBottom: "20px"
-  }}
-/>
+						<FormControl>
+  <FormLabel >Images</FormLabel>
+  <Input
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={(e) => setImageFiles([...e.target.files])}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Videos</FormLabel>
+  <Input
+    type="file"
+    accept="video/*"
+    multiple
+    onChange={(e) => setVideoFiles([...e.target.files])}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Audios</FormLabel>
+  <Input
+    type="file"
+    accept="audio/*"
+    multiple
+    onChange={(e) => setAudioFiles([...e.target.files])}
+  />
+</FormControl>
+
+<FormControl>
+  <FormLabel>Writing / poem</FormLabel>
+  <ReactQuill
+    theme="snow"
+    value={newProduct.writing}
+    onChange={(value) => setNewProduct({ ...newProduct, writing: value })}
+    modules={{
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ align: [] }],
+        [{ color: [] }, { background: [] }],
+        ["link"],
+        ["clean"],
+      ],
+    }}
+    formats={[
+      "header", "bold", "italic", "underline", "strike",
+      "list", "bullet", "align", "color", "background", "link"
+    ]}
+    style={{ height: "200px", width: "100%", marginBottom: "50px" }}
+  />
+</FormControl>
 
 
 
 
-						<Button colorScheme="blue" onClick={handleAddProduct} w="full" isLoading={isLoading}>
-							Add Product
+
+						<Button colorScheme="orange" onClick={handleAddProduct} w="full" isLoading={isLoading}>
+							Add art piece
 						</Button>
 					</VStack>
 				</Box>

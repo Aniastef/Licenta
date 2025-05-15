@@ -12,9 +12,10 @@ export const createEvent = async (req, res) => {
   try {
     const {
       name, description, date, time, tags, coverImage, location, coordinates: clientCoordinates,
-      capacity, price, ticketType, language, collaborators, gallery, attachments,
+      capacity, category, price, ticketType, language, collaborators, gallery, attachments,
       visibility, isDraft
     } = req.body;
+    
 
     if (!name) {
       return res.status(400).json({ error: "Name is required" });
@@ -64,7 +65,8 @@ export const createEvent = async (req, res) => {
       user: req.user._id,
       location,
       coordinates,
-      capacity,
+      capacity,               // <--- nou
+      category,               // <--- nou
       price,
       ticketType,
       language,
@@ -74,6 +76,7 @@ export const createEvent = async (req, res) => {
       visibility,
       isDraft,
     });
+    
 
     await newEvent.save();
 
@@ -285,8 +288,9 @@ export const updateEvent = async (req, res) => {
     const {
       name, description, date, time, coverImage, tags, location, capacity, price,
       ticketType, language, collaborators, gallery, attachments,
-      visibility, isDraft, coordinates
+      visibility, isDraft, coordinates, category
     } = req.body;
+    
 
     const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
@@ -339,6 +343,7 @@ export const updateEvent = async (req, res) => {
     event.price = price ?? event.price;
     event.ticketType = ticketType || event.ticketType;
     event.language = language || event.language;
+    event.category = category || event.category;
     event.collaborators = collaborators || event.collaborators;
     event.gallery = galleryUrls;
     event.attachments = finalAttachments;
@@ -351,6 +356,13 @@ export const updateEvent = async (req, res) => {
     res.status(500).json({ error: err.message });
     console.error("Error updating event: ", err.message);
   }
+};
+
+const getEventStatus = (eventDate) => {
+  const today = new Date();
+  const eventDay = new Date(eventDate);
+  if (eventDay.toDateString() === today.toDateString()) return "ongoing";
+  return eventDay > today ? "upcoming" : "completed";
 };
 
 

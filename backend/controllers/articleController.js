@@ -3,14 +3,15 @@ import Article from '../models/articleModel.js';
 
 export const createArticle = async (req, res) => {
   try {
-    const { title, subtitle, content, coverImage } = req.body; // 🆕 adaugă coverImage
+    const { title, subtitle, content, coverImage, category } = req.body;
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
     const article = new Article({
       title,
       subtitle,
       content,
-      coverImage, // 🆕 setează-l
+      coverImage,
+      category,
       user: req.user._id,
     });
 
@@ -20,6 +21,7 @@ export const createArticle = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 export const getArticlesByUser = async (req, res) => {
@@ -91,19 +93,20 @@ export const getArticleById = async (req, res) => {
 export const updateArticle = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, subtitle, content, coverImage } = req.body; // 🆕 adaugă coverImage
+    const { title, subtitle, content, coverImage, category } = req.body;
 
     const article = await Article.findById(id);
     if (!article) return res.status(404).json({ error: 'Not found' });
-    if (article.user.toString() !== req.user._id.toString()) return res.status(403).json({ error: 'Unauthorized' });
+    if (article.user.toString() !== req.user._id.toString())
+      return res.status(403).json({ error: 'Unauthorized' });
 
     article.title = title || article.title;
     article.subtitle = subtitle || article.subtitle;
     article.content = content || article.content;
-    article.coverImage = coverImage || article.coverImage; // 🆕 updatează dacă a fost modificată
+    article.coverImage = coverImage || article.coverImage;
+    article.category = category || article.category;
 
     await article.save();
-
     res.status(200).json(article);
   } catch (err) {
     res.status(500).json({ error: err.message });

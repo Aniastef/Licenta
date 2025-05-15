@@ -93,6 +93,18 @@ const eventSchema = new mongoose.Schema(
           fileUrl: String,
         },
       ],
+      category: {
+        type: String,
+        enum: [
+          "Music", "Art", "Tech", "Workshop", "Theatre", "Festival", "Literature", 
+          "Exhibition", "Dance", "Film", "Charity", "Community", "Education", "Universal"
+        ],
+        default: "Universal"
+      },
+      capacity: {
+        type: Number,
+        default: 0,
+      },      
       visibility: {
         type: String,
         enum: ["public", "private"],

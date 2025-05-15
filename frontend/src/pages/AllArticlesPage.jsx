@@ -15,6 +15,11 @@ import {
 import { Link } from "react-router-dom";
 
 const ARTICLES_PER_PAGE = 12;
+const ARTICLE_CATEGORIES = [
+  "Personal", "Opinion", "Review", "Tutorial", "Poetry", "Reflection",
+  "News", "Interview", "Tech", "Art", "Photography", "Research", "Journal", "Story"
+];
+
 
 const AllArticlesPage = () => {
   const [articles, setArticles] = useState([]);
@@ -25,6 +30,7 @@ const AllArticlesPage = () => {
   const [sortOption, setSortOption] = useState("date");
   const [sortDirection, setSortDirection] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -41,7 +47,7 @@ const AllArticlesPage = () => {
 
   useEffect(() => {
     let updated = [...articles];
-
+  
     if (searchText.trim()) {
       updated = updated.filter((a) =>
         a.title.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -49,17 +55,23 @@ const AllArticlesPage = () => {
         a.content?.toLowerCase().includes(searchText.toLowerCase())
       );
     }
-
+  
     if (dateFrom) {
-        const from = new Date(dateFrom + "T00:00:00");
-        updated = updated.filter((a) => new Date(a.createdAt) >= from);
-      }
-      
-      if (dateTo) {
-        const to = new Date(dateTo + "T23:59:59");
-        updated = updated.filter((a) => new Date(a.createdAt) <= to);
-      }
-      
+      const from = new Date(dateFrom + "T00:00:00");
+      updated = updated.filter((a) => new Date(a.createdAt) >= from);
+    }
+  
+    if (dateTo) {
+      const to = new Date(dateTo + "T23:59:59");
+      updated = updated.filter((a) => new Date(a.createdAt) <= to);
+    }
+  
+    if (selectedCategories.length > 0) {
+      updated = updated.filter((a) =>
+        selectedCategories.includes(a.category)
+      );
+    }
+  
     updated.sort((a, b) => {
       if (sortOption === "title") {
         return sortDirection === "asc"
@@ -71,10 +83,19 @@ const AllArticlesPage = () => {
           : new Date(b.createdAt) - new Date(a.createdAt);
       }
     });
-
+  
     setFilteredArticles(updated);
     setCurrentPage(1);
-  }, [articles, searchText, dateFrom, dateTo, sortOption, sortDirection]);
+  }, [
+    articles,
+    searchText,
+    dateFrom,
+    dateTo,
+    sortOption,
+    sortDirection,
+    selectedCategories, // ✅ ADĂUGĂ DEPENDENȚA AICI!
+  ]);
+  
 
   const paginated = filteredArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,
@@ -106,6 +127,22 @@ const AllArticlesPage = () => {
           <Text>to</Text>
           <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
         </HStack>
+        <Select
+    placeholder="Filter by category"
+    value={selectedCategories[0] || ""}
+    onChange={(e) =>
+      setSelectedCategories(
+        e.target.value ? [e.target.value] : []
+      )
+    }
+    maxW="250px"
+  >
+    {ARTICLE_CATEGORIES.map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </Select>
 
         <HStack>
           <Select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
@@ -150,10 +187,17 @@ const AllArticlesPage = () => {
                   mb={3}
                 />
               )}
+              {article.category && (
+  <Text fontSize="sm" color="teal.600">
+    Category: {article.category}
+  </Text>
+)}
+
               <Text fontWeight="bold" fontSize="xl">{article.title}</Text>
               {article.subtitle && (
                 <Text fontSize="md" color="gray.600">{article.subtitle}</Text>
               )}
+              
               <Text fontSize="sm" mt={2} color="gray.500">
                 {article.content?.replace(/<[^>]+>/g, "").slice(0, 50)}...
               </Text>

@@ -243,7 +243,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     )}
     {canEdit && (
       <>
-        <Button colorScheme="gray"  onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
+        <Button colorScheme="green"  onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
           Edit Gallery
         </Button>
       </>
@@ -259,8 +259,8 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   </>
 )}
     <Flex gap={2}>
-      <Circle size="30px" bg="yellow.400" />
-      <Circle size="30px" bg="green.400" />
+      <Circle size="30px" bg="brown" />
+      <Circle size="30px" bg="blue.300" />
     </Flex>
   </Flex>
 </Flex>
@@ -287,18 +287,29 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       <Text fontSize="lg" fontWeight="bold">
        Created by: {`${gallery.owner?.firstName} ${gallery.owner?.lastName}`}
       </Text>
+      
+      {gallery.category && (
+  <Text fontWeight="semibold" color="blue.600">
+    Category: {gallery.category}
+  </Text>
+)}
+
       {canEdit && (
-          <Button colorScheme="blue" onClick={onOpen}>Add Existing Product</Button>
+          <Button colorScheme="orange" onClick={onOpen}>Add Existing Product</Button>
          
       )}
+      
       <Flex right={0} gap={2}>
-    <Circle size="30px" bg="yellow.400" />
-    <Circle size="30px" bg="green.400" />
+    <Circle size="30px" bg="yellow" />
+    <Circle size="30px" bg="green" />
   </Flex>
+  
+
 {/* aici chestii in paralel */}
       </Flex>
 
       <Flex justifyContent="space-between" px={10}>
+        
       <Flex width={"100%"} direction="column" gap={2}>
       {gallery.collaborators?.length > 0 && (
         <Flex direction="row" gap={2}>
@@ -308,6 +319,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
           ))}
         </Flex>
       )}
+      
         {gallery.tags?.length > 0 && (
       <Flex direction="row" gap={2}>
         {gallery.tags.map((tag, idx) => (

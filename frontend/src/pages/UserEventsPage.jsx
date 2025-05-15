@@ -43,8 +43,15 @@ const UserEventsPage = () => {
             </Box>
           )}
         </Box>
+
         <Flex direction="row" justify="space-between">
         <Heading size="md">{event.name}</Heading>
+        {event.category && (
+  <Text fontSize="sm" color="teal.600" mt={1}>
+    <strong>Category:</strong> {event.category}
+  </Text>
+)}
+
         <Text>Taking place on {event.date}</Text>
         </Flex>
         <Text>Created by: {event.creatorName}</Text> {/* Afișează numele creatorului */}

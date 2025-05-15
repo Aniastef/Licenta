@@ -175,7 +175,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   <Flex position="absolute" right={4} gap={2}>
   {isEventOwner && (
     <>
-  <Button ml={2} colorScheme="blue" onClick={() => navigate(`/edit/event/${event._id}`)}>
+  <Button ml={2} colorScheme="purple" onClick={() => navigate(`/edit/event/${event._id}`)}>
       Edit Event
     </Button>
     <Button ml={2} colorScheme="red" onClick={handleDeleteEvent}>
@@ -229,6 +229,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
       <Flex mt={3} justifyContent="space-between" px={4}>
       <Flex maxW="800px" mx={8} direction="column" gap={2}>
         <Text><strong>Info</strong></Text>
+        <Text><strong>Category:</strong> {event.category || "Universal"}</Text>
         <Text><strong>Capacity:</strong> {event.capacity || "Unlimited"}</Text>
         <Text><strong>Ticket Type:</strong> {event.ticketType}</Text>
         <Text><strong>Price:</strong> {event.price > 0 ? `${event.price} RON` : "Free"}</Text>

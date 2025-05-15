@@ -25,6 +25,7 @@ import video3 from "../assets/3.mp4";
 import video4 from "../assets/4.mp4";
 import video5 from "../assets/5.mp4";
 import TestimonialCarousel from "../components/testimonialsCarousel";
+import { useNavigate } from "react-router-dom"; // adaugă asta sus în fișier
 
 
 const HomePage = () => {
@@ -34,6 +35,11 @@ const videoList = [video1, video2, video3, video4, video5];
 const [topRated, setTopRated] = useState([]);
 const [upcomingEvents, setUpcomingEvents] = useState([]);
 const [randomUsers, setRandomUsers] = useState([]);
+const navigate = useNavigate(); // adaugă în componentă
+
+const handleCategoryClick = (category) => {
+  navigate(`/products?category=${encodeURIComponent(category)}`);
+};
 
 useEffect(() => {
   const fetchRandomUsers = async () => {
@@ -175,17 +181,19 @@ const circularPositions = [
         { label: "Poetry", color: "#6ac6dc" },
       ].map(({ label, color }) => (
         <Button
-          key={label}
-          bg={color}
-          color="black"
-          fontWeight="semibold"
-          borderRadius="full"
-          px={6}
-          py={2}
-          _hover={{ opacity: 0.85 }}
-        >
-          {label}
-        </Button>
+  key={label}
+  bg={color}
+  color="black"
+  fontWeight="semibold"
+  borderRadius="full"
+  px={6}
+  py={2}
+  _hover={{ opacity: 0.85 }}
+  onClick={() => handleCategoryClick(label)}
+>
+  {label}
+</Button>
+
       ))}
     </Grid>
 
@@ -280,6 +288,10 @@ const circularPositions = [
                 <Text fontSize="lg" mb={2} noOfLines={1}>
                   {product.name}
                 </Text>
+                <Text fontSize="md" mb={2} noOfLines={1}>
+                  Category: {product.category}
+                </Text>
+
                 <Button
                   as={Link}
                   to={`/products/${product._id}`}
@@ -367,7 +379,8 @@ const circularPositions = [
         textAlign="left"
       >
         <Text fontWeight="bold">{event.name}</Text>
-        <Text fontSize="sm">
+        <Text fontWeight="semibold">Category: {event.category}</Text>
+        <Text fontSize="sm">Taking place on
   {new Date(event.date).toLocaleDateString()} {event.time && (
     <><span style={{ marginLeft: 6 }}>🕒</span> {event.time}</>
   )}

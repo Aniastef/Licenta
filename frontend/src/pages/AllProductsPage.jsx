@@ -25,12 +25,91 @@ import {
   SimpleGrid,
   Icon,
   Circle,
+  Wrap, WrapItem,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { StarIcon } from "@chakra-ui/icons";
+import { useLocation } from "react-router-dom";
 
 const PRODUCTS_PER_PAGE = 60;
-const ALL_TAGS = ["Painting", "Music", "Dancing", "Acting", "BrrBrrPatatim", "a"];
+const ALL_CATEGORIES = [
+  "General", "Photography", "Painting", "Drawing", "Sketch", "Illustration", "Digital Art",
+  "Pixel Art", "3D Art", "Animation", "Graffiti", "Calligraphy", "Typography", "Collage",
+  "Mixed Media", "Sculpture", "Installation", "Fashion", "Textile", "Architecture",
+  "Interior Design", "Product Design", "Graphic Design", "UI/UX", "Music", "Instrumental",
+  "Vocal", "Rap", "Spoken Word", "Podcast", "Sound Design", "Film", "Short Film",
+  "Documentary", "Cinematography", "Video Art", "Performance", "Dance", "Theatre", "Acting",
+  "Poetry", "Writing", "Essay", "Prose", "Fiction", "Non-fiction", "Journal", "Comics",
+  "Manga", "Zine", "Fantasy Art", "Surrealism", "Realism", "Abstract", "Minimalism",
+  "Expressionism", "Pop Art", "Concept Art", "AI Art", "Experimental", "Political Art",
+  "Activist Art", "Environmental Art"
+];
+
+const categoryColorMap = {
+  "General": "rgb(13,179,119)",
+  "Photography": "rgb(162,165,195)",
+  "Painting": "rgb(40,117,236)",
+  "Drawing": "rgb(104,29,114)",
+  "Sketch": "rgb(77,190,167)",
+  "Illustration": "rgb(51,220,166)",
+  "Digital Art": "rgb(10,5,110)",
+  "Pixel Art": "rgb(63,109,249)",
+  "3D Art": "rgb(90,161,188)",
+  "Animation": "rgb(214,182,182)",
+  "Graffiti": "rgb(3,241,128)",
+  "Calligraphy": "rgb(210,232,99)",
+  "Typography": "rgb(96,56,80)",
+  "Collage": "rgb(194,175,189)",
+  "Mixed Media": "rgb(103,189,162)",
+  "Sculpture": "rgb(129,126,137)",
+  "Installation": "rgb(124,216,251)",
+  "Fashion": "rgb(147,224,2)",
+  "Textile": "rgb(146,44,136)",
+  "Architecture": "rgb(45,36,43)",
+  "Interior Design": "rgb(183,13,57)",
+  "Product Design": "rgb(53,43,177)",
+  "Graphic Design": "rgb(243,106,119)",
+  "UI/UX": "rgb(18,33,172)",
+  "Music": "rgb(71,220,189)",
+  "Instrumental": "rgb(198,128,17)",
+  "Vocal": "rgb(54,56,30)",
+  "Rap": "rgb(174,79,22)",
+  "Spoken Word": "rgb(218,183,29)",
+  "Podcast": "rgb(71,150,63)",
+  "Sound Design": "rgb(234,245,185)",
+  "Film": "rgb(186,233,2)",
+  "Short Film": "rgb(193,56,119)",
+  "Documentary": "rgb(12,39,99)",
+  "Cinematography": "rgb(216,194,21)",
+  "Video Art": "rgb(135,205,229)",
+  "Performance": "rgb(148,70,169)",
+  "Dance": "rgb(122,229,235)",
+  "Theatre": "rgb(70,171,175)",
+  "Acting": "rgb(135,83,247)",
+  "Poetry": "rgb(248,236,89)",
+  "Writing": "rgb(175,150,171)",
+  "Essay": "rgb(14,52,206)",
+  "Prose": "rgb(62,42,215)",
+  "Fiction": "rgb(195,241,31)",
+  "Non-fiction": "rgb(53,192,165)",
+  "Journal": "rgb(107,43,86)",
+  "Comics": "rgb(38,91,181)",
+  "Manga": "rgb(137,226,50)",
+  "Zine": "rgb(200,98,250)",
+  "Fantasy Art": "rgb(19,241,5)",
+  "Surrealism": "rgb(205,55,208)",
+  "Realism": "rgb(171,194,101)",
+  "Abstract": "rgb(227,83,219)",
+  "Minimalism": "rgb(182,127,46)",
+  "Expressionism": "rgb(151,30,82)",
+  "Pop Art": "rgb(222,216,170)",
+  "Concept Art": "rgb(249,133,177)",
+  "AI Art": "rgb(49,49,255)",
+  "Experimental": "rgb(112,75,85)",
+  "Political Art": "rgb(50,14,57)",
+  "Activist Art": "rgb(246,20,155)",
+  "Environmental Art": "rgb(3,92,232)"
+};
 const PRICE_RANGES = [
   { label: "Sub 1000", min: 0, max: 999 },
   { label: "1000 - 1500", min: 1000, max: 1500 },
@@ -51,13 +130,22 @@ const ProductsPage = () => {
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [priceFilters, setPriceFilters] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortDirection, setSortDirection] = useState("desc"); // "asc" | "desc"
   const [customMin, setCustomMin] = useState(0);
   const [customMax, setCustomMax] = useState(10000);
-  
+  const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+const initialCategory = queryParams.get("category");
+
+useEffect(() => {
+  if (initialCategory && ALL_CATEGORIES.includes(initialCategory)) {
+    setSelectedCategories([initialCategory]);
+  }
+}, [initialCategory]);
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -81,11 +169,16 @@ const ProductsPage = () => {
 
     updated = updated.filter((p) => {
       const matchSearch =
-        searchBy === "name"
-          ? p.name.toLowerCase().includes(filterText.toLowerCase())
-          : `${p.user?.firstName || ""} ${p.user?.lastName || ""}`
-              .toLowerCase()
-              .includes(filterText.toLowerCase());
+      searchBy === "name"
+        ? p.name.toLowerCase().includes(filterText.toLowerCase())
+        : searchBy === "creator"
+        ? `${p.user?.firstName || ""} ${p.user?.lastName || ""}`
+            .toLowerCase()
+            .includes(filterText.toLowerCase())
+        : searchBy === "tags"
+        ? p.tags?.some((tag) => tag.toLowerCase().includes(filterText.toLowerCase()))
+        : true;
+    
 
       const matchSale =
         filterForSale === "forsale"
@@ -115,8 +208,11 @@ const ProductsPage = () => {
       const matchRating =
         selectedRatings.length === 0 || selectedRatings.some((r) => Math.floor(p.averageRating || 0) === r);
 
-      const matchTags =
-        selectedTags.length === 0 || selectedTags.some((tag) => p.tags?.includes(tag));
+        const matchCategories =
+        selectedCategories.length === 0 || selectedCategories.includes(p.category);
+      
+
+        
 
         return (
           matchSearch &&
@@ -126,7 +222,7 @@ const ProductsPage = () => {
           matchPriceSlider &&
           matchPriceFilters &&
           matchRating &&
-          matchTags
+          matchCategories // ✅ înlocuit din matchTags
         );
         
     });
@@ -173,7 +269,7 @@ const ProductsPage = () => {
 
     setFilteredProducts(updated);
     setCurrentPage(1);
-  }, [products, filterText, searchBy, filterForSale, sortOption, sortDirection, availability, mediaTypes, priceRange, priceFilters, selectedRatings, selectedTags]);
+  }, [products, filterText, searchBy, filterForSale, sortOption, sortDirection, availability, mediaTypes, priceRange, priceFilters, selectedRatings, selectedCategories]);
 
   const togglePriceFilter = (range) => {
     setPriceFilters((prev) =>
@@ -204,9 +300,11 @@ const ProductsPage = () => {
       <Flex justify="space-between" align="center" mb={4} wrap="wrap">
         <HStack spacing={4} mb={2}>
           <Text>Search by:</Text>
-          <Select value={searchBy} onChange={(e) => setSearchBy(e.target.value)} w="160px">
+          <Select value={searchBy} onChange={(e) => setSearchBy(e.target.value)} w="180px">
           <option value="name">Art piece name</option>
             <option value="creator">Creator</option>
+            <option value="tags">Tags</option> {/* ✅ ADĂUGAT */}
+
           </Select>
           <Input
             placeholder={`Search this ${searchBy}...`}
@@ -359,30 +457,37 @@ const ProductsPage = () => {
 
           <Divider my={4} />
 
-          <Text fontWeight="bold">Art Type</Text>
-          <Stack spacing={2} mt={2}>
-            {ALL_TAGS.map((tag) => (
-              <Button
-                key={tag}
-                borderRadius={20}
-                colorScheme={
-                  tag === "Painting" ? "red" :
-                  tag === "Music" ? "green" :
-                  tag === "Dancing" ? "yellow" :
-                  tag === "Acting" ? "cyan" :
-                  tag === "BrrBrrPatatim" ? "orange" : "brown"
-                }
-                size="sm"
-                onClick={() =>
-                  setSelectedTags((prev) =>
-                    prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-                  )
-                }
-              >
-                {tag}
-              </Button>
-            ))}
-          </Stack>
+          <Text fontWeight="bold">Categories</Text>
+<Wrap spacing={2} mt={2} maxW="240px">
+  {ALL_CATEGORIES.map((cat) => {
+    const isSelected = selectedCategories.includes(cat);
+    const bgColor = isSelected ? "#2B6CB0" : categoryColorMap[cat];
+    const textColor = isSelected ? "white" : "black";
+
+    return (
+      <WrapItem key={cat}>
+        <Button
+          size="sm"
+          borderRadius="md"
+          bg={bgColor}
+          color={textColor}
+          _hover={{ opacity: 0.8 }}
+          onClick={() =>
+            setSelectedCategories((prev) =>
+              prev.includes(cat)
+                ? prev.filter((c) => c !== cat)
+                : [...prev, cat]
+            )
+          }
+        >
+          {cat}
+        </Button>
+      </WrapItem>
+    );
+  })}
+</Wrap>
+
+
         </Box>
 
         <Box flex={1}>
@@ -410,13 +515,33 @@ const ProductsPage = () => {
                       flexDirection="column"
                   >
                     <Box
-                       h="250px" bg="gray.100"
+                       h="280px" bg="gray.100"
                        borderWidth="1px"
                     >
-                     {product.images?.[0] ? (
+   {product.images?.[0] ? (
   <Image
     src={product.images[0]}
     alt={product.name}
+    w="100%"
+    h="100%"
+    objectFit="cover"
+  />
+) : product.videos?.[0] ? (
+  <Box
+    as="video"
+    src={product.videos[0]}
+    poster={
+      product.videos[0].includes("/upload/")
+        ? product.videos[0]
+            .replace("/upload/", "/upload/so_1/")
+            .replace(/\.(mp4|webm)$/, ".jpg")
+        : ""
+    }
+    muted
+    loop
+    autoPlay
+    playsInline
+    preload="none"
     w="100%"
     h="100%"
     objectFit="cover"
@@ -436,6 +561,10 @@ const ProductsPage = () => {
   </Flex>
 )}
 
+
+
+
+
                     </Box>
                 
 <Box textAlign="center" py={3}   minH="150px">
@@ -443,6 +572,11 @@ const ProductsPage = () => {
                       <Text color="gray.500" fontSize="sm">
                         <strong>Artist:</strong> {product.user?.firstName || "-"} {product.user?.lastName || ""}
                       </Text>
+                      {product.category && (
+  <Text fontSize="sm" color="gray.600" mt={1}>
+    <strong>Category:</strong> {product.category}
+  </Text>
+)}
                       {/* <Text fontSize="xs" color="gray.600">
                         Created: {new Date(product.createdAt).toLocaleString("ro-RO", {
                           day: "numeric",

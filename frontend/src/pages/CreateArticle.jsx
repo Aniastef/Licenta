@@ -8,6 +8,9 @@ import {
     useToast,
     Text,
     Spinner,
+    FormLabel,
+    Stack,
+    Select,
   } from "@chakra-ui/react";
   import { useState, useEffect } from "react";
   import { useNavigate, useParams } from "react-router-dom";
@@ -15,6 +18,10 @@ import {
   import "react-quill-new/dist/quill.snow.css";
   import GalleryImageCropModal from "../components/GalleryImageCropModal";
 import imageCompression from "browser-image-compression";
+const ARTICLE_CATEGORIES = [
+  "Personal", "Opinion", "Review", "Tutorial", "Poetry", "Reflection",
+        "News", "Interview", "Tech", "Art", "Photography","Research", "Journal", "Story"
+];
 
   const CreateOrEditArticlePage = () => {
     const { id } = useParams(); // Dacă există, e editare
@@ -29,7 +36,8 @@ import imageCompression from "browser-image-compression";
     const [rawCoverImage, setRawCoverImage] = useState(null);
     const [croppedCoverImage, setCroppedCoverImage] = useState(null);
     const [isCropModalOpen, setIsCropModalOpen] = useState(false);
-    
+    const [category, setCategory] = useState("");
+
   
     useEffect(() => {
       if (id) {
@@ -40,6 +48,8 @@ import imageCompression from "browser-image-compression";
             setSubtitle(data.subtitle || "");
             setContent(data.content || "");
             setCoverImage(data.coverImage || "");
+            setCategory(data.category || "");
+
 
           })
           .catch((err) => {
@@ -72,7 +82,7 @@ import imageCompression from "browser-image-compression";
           method: id ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ title, subtitle, content, coverImage, draft: asDraft })
+          body: JSON.stringify({ title, subtitle, content, coverImage, category, draft: asDraft })
         });
   
         const data = await res.json();
@@ -106,8 +116,8 @@ import imageCompression from "browser-image-compression";
       );
   
     return (
-      <Container maxW="container.md" py={8}>
-        <VStack spacing={6} align="stretch">
+      <Container maxW="container.md" >
+        <VStack spacing={4} align="stretch">
           <Heading>{id ? "Edit ARTicle" : "Create new article"}</Heading>
           <Input
             placeholder="Article Title"
@@ -119,9 +129,25 @@ import imageCompression from "browser-image-compression";
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
 />
+<Select
+  placeholder="Select category"
+  value={category}
+  onChange={(e) => setCategory(e.target.value)}
+>
+  {ARTICLE_CATEGORIES.map((cat) => (
+    <option key={cat} value={cat}>
+      {cat}
+    </option>
+  ))}
+</Select>
+
+<Stack w="full">
+            <FormLabel>Cover image</FormLabel>
+
 <Input
   type="file"
   accept="image/*"
+  mt={-3}
   onChange={(e) => {
     const file = e.target.files[0];
     if (file) {
@@ -134,7 +160,7 @@ import imageCompression from "browser-image-compression";
     }
   }}
 />
-
+</Stack>
 
 {croppedCoverImage && (
   <Box mt={2}>
@@ -165,7 +191,7 @@ import imageCompression from "browser-image-compression";
     "header", "bold", "italic", "underline", "strike",
     "list", "bullet", "align", "color", "background", "link", "image"
   ]}
-  style={{ height: "200px", overflowY: "auto", marginBottom: "20px" }}
+  style={{ height: "200px", marginBottom: "50px" }}
 />
 
           <Box display="flex" justifyContent="flex-end" gap={4}>

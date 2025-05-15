@@ -10,7 +10,7 @@ import Notification from "../models/notificationModel.js";
 
 export const createProduct = async (req, res) => {
 	try {
-		const { name, description, writing, price, quantity, forSale, galleries, images = [], videos = [], audios = [] } = req.body;
+		const { name, description, writing, price, quantity, forSale, galleries, images = [], videos = [], audios = [], category } = req.body;
   
 	  if (!req.user) {
 		return res.status(403).json({ error: "User not authenticated" });
@@ -46,7 +46,7 @@ export const createProduct = async (req, res) => {
   
 	  const newProduct = new Product({
 		name,
-		description: description?.trim() || "No description", // ✅ fallback
+		description: description?.trim() || "No description",
 		price,
 		quantity: quantity || 0,
 		forSale: forSale !== undefined ? forSale : true,
@@ -55,8 +55,10 @@ export const createProduct = async (req, res) => {
 		videos: uploadedVideos,
 		audios: uploadedAudios,
 		writing,
+		category: category || "General", // ✅ ADĂUGAT
 		user: req.user._id,
 	  });
+	  
   
 	  await newProduct.save();
   
@@ -145,7 +147,8 @@ try {
 		images = [],
 		videos = [],
 		audios = [],
-		writing // ✅ adaugă aici!
+		writing, // ✅ adaugă aici!
+		category, // ✅ ADĂUGAT
 	  } = req.body;
 	  
 	const product = await Product.findById(productId);
@@ -205,6 +208,8 @@ try {
 	product.videos = uploadedVideos;
 	product.audios = uploadedAudios;
 	product.writing = writing ?? product.writing;
+	product.category = category || product.category;
+
 
 
 	await product.save();

@@ -9,6 +9,7 @@ import {
 	Stack,
 	Select,
 	Text,
+	HStack,
 	Flex,
 	IconButton,
 	CloseButton,
@@ -25,6 +26,8 @@ import useLoadGoogleMapsScript from "../hooks/useLoadGoogleMapsScript";
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
 import imageCompression from "browser-image-compression";
 import EventImageCropModal from "../components/EventImageCropModal";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 
 const compressImage = async (file) => {
 	try {
@@ -40,6 +43,12 @@ const compressImage = async (file) => {
 		return file;
 	}
 };
+
+const EVENT_CATEGORIES = [
+	"Music", "Art", "Tech", "Workshop", "Theatre", "Festival", "Literature",
+	"Exhibition", "Dance", "Film", "Charity", "Community", "Education", "Universal"
+  ];
+  
 
 const CreateEventPage = () => {
 
@@ -186,48 +195,97 @@ useEffect(() => {
 	};
 	
 	return (
-		<Container maxW="container.md" py={8}>
+		<Container maxW="container.md" >
 			<VStack spacing={8}>
 				<Heading>Create new event</Heading>
 
 				<Box w="full" p={6} rounded="lg" shadow="md">
 					<VStack spacing={4}>
 						<Input placeholder="Event Name" value={newEvent.name} onChange={(e) => setNewEvent({ ...newEvent, name: e.target.value })} />
-						<Textarea placeholder="Event Description" value={newEvent.description} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
-						<Input type="date" value={newEvent.date} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} />
-						<FormControl id="time" mt={4}>
-  <FormLabel>Time</FormLabel>
-  <Input
+						<FormControl>
+						<FormLabel>Description</FormLabel>
+						<ReactQuill
+    theme="snow"
+    value={newEvent.description}
+    onChange={(value) => setNewEvent({ ...newEvent, description: value })}
+    modules={{
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ align: [] }],
+        [{ color: [] }, { background: [] }],
+        ["link"],
+        ["clean"],
+      ],
+    }}
+    formats={[
+      "header", "bold", "italic", "underline", "strike",
+      "list", "bullet", "align", "color", "background", "link"
+    ]}
+    style={{ height: "200px", width: "100%", marginBottom: "30px" }}
+  />
+</FormControl>
+
+<Stack w="full">
+<FormLabel mb={-1} mt={2}>Date</FormLabel>
+			<HStack align="start" spacing={4}>
+			<Input type="date" value={newEvent.date} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} />
+			<Input
     type="time"
     value={newEvent.time} // ✅ folosește `newEvent.time`
     onChange={(e) =>
       setNewEvent((prev) => ({ ...prev, time: e.target.value }))
     }
   />
-</FormControl>
+</HStack>
+</Stack>
+		
 
 
 {/* Locație cu Google Places Autocomplete */}
 {/* Locație cu Google Places Autocomplete */}
 <Stack w="full">
-              <Heading as="h4" size="sm">Location</Heading>
+		  <FormLabel mb={-1}>Location</FormLabel>
               <Input
                 ref={inputRef}
                 placeholder="Search for a location"
               />
             </Stack>
+			<Stack w="full">
+  <FormLabel mb={-1}>Category</FormLabel>
+  <Select
+    placeholder="Select category"
+    value={newEvent.category}
+    onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
+  >
+    {EVENT_CATEGORIES.map((cat) => (
+      <option key={cat} value={cat}>{cat}</option>
+    ))}
+  </Select>
+</Stack>
+
 						<Input placeholder="Tags (comma-separated)" value={newEvent.tags} onChange={(e) => setNewEvent({ ...newEvent, tags: e.target.value })} />
 						<Input placeholder="Max Capacity" type="number" value={newEvent.capacity} onChange={(e) => setNewEvent({ ...newEvent, capacity: e.target.value })} />
+						
+						<Stack w="full">
+
+		 <FormLabel mb={-1}>Ticket type</FormLabel>
+
 						<Select value={newEvent.ticketType} onChange={(e) => setNewEvent({ ...newEvent, ticketType: e.target.value })}>
 							<option value="free">Free</option>
 							<option value="paid">Paid</option>
 							<option value="donation">Donation</option>
 						</Select>
+						</Stack>
+
+
 						<Input placeholder="Price (RON)" type="number" value={newEvent.price} onChange={(e) => setNewEvent({ ...newEvent, price: e.target.value })} />
 						<Input placeholder="Language (e.g., en, ro)" value={newEvent.language} onChange={(e) => setNewEvent({ ...newEvent, language: e.target.value })} />
 						<Stack w="full">
-							<Heading as="h4" size="sm">Cover Image</Heading>
-							<Input
+						<FormLabel mb={-1}>Cover image</FormLabel>
+						
+						<Input
   type="file"
   accept="image/*"
   onChange={(e) => {
@@ -246,16 +304,16 @@ useEffect(() => {
 						</Stack>
 
 						<Stack w="full">
-							<Heading as="h4" size="sm">Gallery Images</Heading>
+		  <FormLabel mb={-1}>Gallery images</FormLabel>
 							<Input type="file" accept="image/*" multiple onChange={(e) => setNewGalleryFiles(Array.from(e.target.files))} />
 						</Stack>
 
 						<Stack w="full">
-							<Heading as="h4" size="sm">Attachments (PDF, etc.)</Heading>
+		  <FormLabel mb={-1}>Attachments</FormLabel>
 							<Input type="file" multiple onChange={(e) => setNewAttachments(Array.from(e.target.files))} />
 						</Stack>
 
-						<Button colorScheme="blue" onClick={handleAddEvent} w="full" isLoading={isLoading}>
+						<Button colorScheme="purple" onClick={handleAddEvent} w="full" isLoading={isLoading}>
 							Add Event
 						</Button>
 					</VStack>

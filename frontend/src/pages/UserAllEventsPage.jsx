@@ -54,6 +54,14 @@ const UserAllEventsPage = () => {
   const [enablePriceFilter, setEnablePriceFilter] = useState(false);
   const currentUser = useRecoilValue(userAtom);
 
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = date.toLocaleDateString("en-US", { day: "2-digit" });
+    const month = date.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+    const year = date.toLocaleDateString("en-US", { year: "numeric" });
+    return { day, month, year };
+  };
+  
 
   useEffect(() => {
     fetchUserEvents();
@@ -200,7 +208,7 @@ const UserAllEventsPage = () => {
         <Flex position="absolute" right={4} gap={2}>
         {currentUser?.username?.toLowerCase() === username?.toLowerCase() && (
   <Button
-    colorScheme="blue"
+    colorScheme="purple"
     ml={5}
     mb={4}
     onClick={() => window.location.href = "/create/event"}
@@ -383,21 +391,22 @@ const UserAllEventsPage = () => {
         <>
 <Flex mt={4} wrap="wrap" justify="center" gap={5}>
   {filteredEvents.map((event) => (
-    <Link to={`/events/${event._id}`} key={event._id}>
-      <Box
-        w="350px"
-        bg="gray.100"
-        borderRadius="md"
-        boxShadow="md"
-        overflow="hidden"
-        border="1px solid #ccc"
-        _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-        transition="all 0.2s"
-        cursor="pointer"
-        display="flex"
-        flexDirection="column"
-      >
-        <Box h="200px" bg="gray.300" mb={3}>
+    <Box
+      key={event._id}
+      w="350px"
+      bg="gray.100"
+      borderRadius="md"
+      boxShadow="md"
+      overflow="hidden"
+      border="1px solid #ccc"
+      _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+      transition="all 0.2s"
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
+    >
+      <Link to={`/events/${event._id}`}>
+        <Box h="200px" bg="gray.300">
           {event.coverImage ? (
             <Image
               src={event.coverImage}
@@ -408,15 +417,31 @@ const UserAllEventsPage = () => {
             />
           ) : (
             <Flex align="center" justify="center" h="100%" bg="gray.400">
-              <Text>No cover image</Text>
+              <Text fontWeight="bold" color="white" fontSize="lg" textAlign="center" px={2}>
+                {event.name}
+              </Text>
             </Flex>
           )}
         </Box>
-        <Box textAlign="center" py={2} px={3} minH="120px">
+
+        <Box textAlign="center" py={2} px={3}>
           <Text fontWeight="bold">{event.name}</Text>
-          <Text fontSize="sm" color="gray.600">{event.date}</Text>
+          {event.category && (
+  <Text fontSize="sm" color="teal.600" mt={1}>
+    <strong>Category:</strong> {event.category}
+  </Text>
+)}
+
+{event.date && (() => {
+  const { day, month, year } = formatDate(event.date);
+  return (
+    <Text fontSize="sm" color="gray.600">
+      {`${day} ${month} ${year}`}
+    </Text>
+  );
+})()}
           <Text fontSize="sm" mt={1}>
-            <strong>Organizer:</strong> {event.organizer?.firstName} {event.organizer?.lastName}
+            <strong>Organizer:</strong> {event.user?.firstName} {event.user?.lastName}
           </Text>
           {event.coHosts?.length > 0 && (
             <Text fontSize="sm" color="blue.500">
@@ -430,27 +455,30 @@ const UserAllEventsPage = () => {
             </Text>
           )}
         </Box>
-        {currentUser?.username?.toLowerCase() === username?.toLowerCase() &&
- currentUser?._id === event.organizer?._id && (
-        <Button
-          colorScheme="red" 
-          maxW={"100px"}
-          mb={2}
-          ml={2}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleDeleteEvent(event._id);
-          }}
-        >
-          Delete
-        </Button>
-      )}
+      </Link>
 
-      </Box>
-    </Link>
+      {/* Buton centrat */}
+      {currentUser &&
+        currentUser.username?.toLowerCase() === username?.toLowerCase() &&
+        currentUser._id?.toString() === event.user?._id?.toString() && (
+          <Flex justify="center" pb={3}>
+            <Button
+              colorScheme="red"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleDeleteEvent(event._id);
+              }}
+            >
+              Delete
+            </Button>
+          </Flex>
+        )}
+    </Box>
   ))}
 </Flex>
+
 
 </>
 

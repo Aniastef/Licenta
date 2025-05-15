@@ -22,6 +22,12 @@ import { Select } from "@chakra-ui/react";
 import userAtom from "../atoms/userAtom";
 import { useRecoilValue } from "recoil";
 import CommentsSection from "../components/CommentsSection";
+import GalleryImageCropModal from "../components/GalleryImageCropModal";
+import imageCompression from "browser-image-compression";
+const ARTICLE_CATEGORIES = [
+  "Personal", "Opinion", "Review", "Tutorial", "Poetry", "Reflection",
+        "News", "Interview", "Tech", "Art", "Photography","Research", "Journal", "Story"
+];
 
 const ArticlePage = () => {
   const { articleId } = useParams();
@@ -38,6 +44,10 @@ const ArticlePage = () => {
   const currentUser = useRecoilValue(userAtom);
   const [isOwner, setIsOwner] = useState(false);
   const [activeSection, setActiveSection] = useState("comments");
+  const [rawCoverImage, setRawCoverImage] = useState(null);
+  const [croppedCoverImage, setCroppedCoverImage] = useState(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [category, setCategory] = useState("");
 
 
   const quillModules = {
@@ -82,6 +92,8 @@ const ArticlePage = () => {
           setEditedSubtitle(data.subtitle || "");
           setEditedContent(data.content);
           setCoverImage(data.coverImage || null);
+          setCategory(data.category || "");
+
 
         } else {
           showToast("Error", data.error || "Failed to load article", "error");
@@ -124,6 +136,8 @@ const ArticlePage = () => {
           subtitle: editedSubtitle,
           content: editedContent,
           coverImage, // nou
+          category,
+
 
         }),
       });
@@ -213,6 +227,13 @@ const ArticlePage = () => {
     setEditMode(false);
   };
 
+  useEffect(() => {
+    if (croppedCoverImage) {
+      setCoverImage(croppedCoverImage);
+    }
+  }, [croppedCoverImage]);
+
+  
   if (loading) return <Center py={20}><Spinner size="xl" /></Center>;
   if (!article) return <Text>Article not found</Text>;
 
@@ -276,6 +297,17 @@ const ArticlePage = () => {
                 textAlign="center"
                 mb={2}
               />
+              <Select
+  placeholder="Select category"
+  value={category}
+  onChange={(e) => setCategory(e.target.value)}
+  mb={2}
+>
+  {ARTICLE_CATEGORIES.map((cat) => (
+    <option key={cat} value={cat}>{cat}</option>
+  ))}
+</Select>
+
               
               <Input
   type="file"
@@ -284,12 +316,26 @@ const ArticlePage = () => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setCoverImage(reader.result);
+      reader.onloadend = () => {
+        setRawCoverImage(reader.result);
+        setIsCropModalOpen(true);
+      };
       reader.readAsDataURL(file);
     }
   }}
   mb={2}
 />
+{croppedCoverImage && (
+  <Box mt={2}>
+    <img
+      src={croppedCoverImage}
+      alt="Cropped cover preview"
+      style={{ maxHeight: "100%", width: "650px", objectFit: "cover", borderRadius: "6px" }}
+    />
+  </Box>
+)}
+
+
 
             </>
           ) : (
@@ -300,6 +346,12 @@ const ArticlePage = () => {
                   {article.subtitle}
                 </Text>
               )}
+              {article.category && (
+  <Text fontSize="sm" color="teal.600">
+    Category: {article.category}
+  </Text>
+)}
+
 {!editMode && !isOwner && (
   <IconButton
     aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
@@ -406,6 +458,16 @@ const ArticlePage = () => {
 
 
       </VStack>
+      <GalleryImageCropModal
+  isOpen={isCropModalOpen}
+  onClose={() => setIsCropModalOpen(false)}
+  imageSrc={rawCoverImage}
+  onCropComplete={(cropped) => {
+    setCroppedCoverImage(cropped);
+    setCoverImage(cropped); // actualizează imaginea de trimis
+  }}
+/>
+
     </Box>
   );
 };
