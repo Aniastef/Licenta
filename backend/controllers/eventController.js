@@ -105,10 +105,11 @@ export const getEvent = async (req, res) => {
     }
 
     const event = await Event.findById(eventId)
-      .populate("user", "username firstName lastName")
-      .populate("interestedParticipants", "firstName lastName profilePicture")
-      .populate("goingParticipants", "firstName lastName profilePicture");
+  .populate("user", "username firstName lastName")
+  .populate("goingParticipants", "firstName lastName profilePicture _id")
+  .populate("interestedParticipants", "firstName lastName profilePicture _id");
 
+      
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }

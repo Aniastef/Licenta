@@ -210,18 +210,6 @@ if (dateTo) {
                     ? (a.name || "").localeCompare(b.name || "")
                     : (b.name || "").localeCompare(a.name || "")
                 );
-              } else if (sortOption === "interested") {
-                updated.sort((a, b) =>
-                  sortDirection === "asc"
-                    ? (a.interestedParticipants?.length || 0) - (b.interestedParticipants?.length || 0)
-                    : (b.interestedParticipants?.length || 0) - (a.interestedParticipants?.length || 0)
-                );
-              } else if (sortOption === "going") {
-                updated.sort((a, b) =>
-                  sortDirection === "asc"
-                    ? (a.goingParticipants?.length || 0) - (b.goingParticipants?.length || 0)
-                    : (b.goingParticipants?.length || 0) - (a.goingParticipants?.length || 0)
-                );
               } else if (sortOption === "location") {
                 updated.sort((a, b) =>
                   sortDirection === "asc"
@@ -306,8 +294,7 @@ if (dateTo) {
   >
     <option value="date">Date</option>
     <option value="name">Name</option>
-    <option value="interested">Interested Users</option>
-    <option value="going">Going Users</option>
+   
     <option value="location">Location</option>
     <option value="price">Price</option>
   </Select>

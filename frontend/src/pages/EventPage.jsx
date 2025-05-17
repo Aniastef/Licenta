@@ -1,4 +1,4 @@
-import { Flex, Spinner, Text, VStack } from '@chakra-ui/react';
+import { Divider, Flex, Spinner, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import EventCard from '../components/EventCard';
@@ -35,7 +35,10 @@ export default function EventPage() {
   return (
     <Flex direction="column">
 <EventCard event={event} currentUserId={currentUser?._id} fetchEvent={fetchEvent} />
-<CommentsSection resourceId={id} resourceType="Event"/>
+<Divider my={4} />
+<CommentsSection  resourceId={id} resourceType="Event"/>
+<Divider my={4} />
+
     </Flex>
       
   );

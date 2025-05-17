@@ -1,4 +1,4 @@
-import { Button, Flex, Spinner, Text, useToast, VStack } from '@chakra-ui/react';
+import { Button, Divider, Flex, Spinner, Text, useToast, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -37,8 +37,10 @@ export default function ProductPage() {
   return (
     <Flex direction="column">
     <ProductCard product={product} />
+<Divider my={4} />
 
     <Flex gap={4} ml={20} mt={6} mb={6} px={4}>
+      
       <Button
         bg={activeSection === "reviews" ? "yellow.300" : "gray.200"}
         onClick={() => setActiveSection("reviews")}
@@ -57,6 +59,7 @@ export default function ProductPage() {
     {activeSection === "comments" && (
       <CommentsSection resourceId={id} resourceType="Product" />
     )}
+<Divider my={4} />
 
     </Flex>
   );

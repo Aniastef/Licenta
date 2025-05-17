@@ -12,8 +12,10 @@ import {
   TabPanels,
   Tab,
   TabPanel,
+  Button,
 } from "@chakra-ui/react";
 import { useParams, Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 
 const FavoritesPage = () => {
   const { username } = useParams();
@@ -128,32 +130,36 @@ const FavoritesPage = () => {
               <Flex wrap="wrap" justify="center" gap={6}>
                 {favoriteProducts.map((product) => (
                   <Link to={`/products/${product._id}`} key={product._id}>
-                    <Box
-                      w="100%"
-                      bg="gray.100"
-                      borderRadius="md"
-                      boxShadow="md"
-                      overflow="hidden"
-                      border="1px solid #ccc"
-                      _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-                      transition="all 0.2s"
-                      cursor="pointer"
-                    >
-                      <Box h="270px" bg="gray.200">
-                        {product.images?.[0] ? (
-                          <Image
-                            src={product.images[0]}
-                            alt={product.name}
-                            w="100%"
-                            h="100%"
-                            objectFit="cover"
-                          />
-                        ) : (
-                          <Flex align="center" justify="center" h="100%" bg="gray.300" color="gray.600">
-                            <Text>{product.name}</Text>
-                          </Flex>
-                        )}
-                      </Box>
+                   <Box
+  w="220px"
+  bg="white"
+  borderRadius="md"
+  boxShadow="md"
+  overflow="hidden"
+  border="1px solid #e2e8f0"
+  _hover={{ boxShadow: "lg", transform: "scale(1.03)" }}
+  transition="all 0.2s"
+  cursor="pointer"
+  display="flex"
+  flexDirection="column"
+>
+
+<Box h="270px" bg="gray.100">
+  {product.images?.[0] ? (
+    <Image
+      src={product.images[0]}
+      alt={product.name}
+      w="100%"
+      h="100%"
+      objectFit="cover"
+    />
+  ) : (
+    <Flex align="center" justify="center" h="100%" color="gray.500">
+      <Text>No image</Text>
+    </Flex>
+  )}
+</Box>
+
                       <Box textAlign="center" py={3} px={2}>
                         <Text fontWeight="bold" noOfLines={1}>{product.name}</Text>
                         {product.forSale && product.price > 0 && (
@@ -172,37 +178,101 @@ const FavoritesPage = () => {
 
           {/* ARTICLES */}
           <TabPanel>
-            {favoriteArticles.length === 0 ? (
-              <Text>No favorite articles.</Text>
-            ) : (
-              <Flex wrap="wrap" justify="center" gap={6}>
-                {favoriteArticles.map((article) => (
-                  <Link to={`/articles/${article._id}`} key={article._id}>
-                    <Box
-                      w="300px"
-                      p={4}
-                      bg="gray.100"
-                      borderRadius="md"
-                      boxShadow="md"
-                      border="1px solid #ccc"
-                      transition="all 0.2s"
-                      _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-                    >
-                      <Heading size="sm" mb={1}>{article.title}</Heading>
-                      <Text fontSize="sm" color="gray.600">{article.subtitle || "No subtitle"}</Text>
-                      <Text fontSize="xs" mt={2} color="gray.500">
-                        {new Date(article.createdAt).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </Text>
-                    </Box>
-                  </Link>
-                ))}
-              </Flex>
+  {favoriteArticles.length === 0 ? (
+    <Text>No favorite articles.</Text>
+  ) : (
+    <Flex wrap="wrap" justify="center" gap={6}>
+      {favoriteArticles.map((article) => (
+        <Box
+          key={article._id}
+          w="320px"
+          bg="white"
+          borderRadius="md"
+          shadow="md"
+          border="1px solid #e2e8f0"
+          overflow="hidden"
+          transition="all 0.2s"
+          _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+          cursor="pointer"
+          onClick={() => window.location.href = `/articles/${article._id}`}
+        >
+          {/* Imaginea de copertă */}
+          {article.coverImage && (
+            <Image
+              src={article.coverImage}
+              alt="Cover"
+              w="100%"
+              h="200px"
+              objectFit="cover"
+              borderTopRadius="md"
+            />
+          )}
+
+          {/* Fundal tip foaie */}
+          <Box
+            px={4}
+            py={4}
+            sx={{
+              backgroundImage: `
+                repeating-linear-gradient(to bottom, transparent, transparent 29px, #cbd5e0 30px),
+                linear-gradient(to right, #dc2626 1px, transparent 2px)
+              `,
+              backgroundSize: "100% 30px, 1px 100%",
+              backgroundPosition: "left 40px top, left 40px top",
+              backgroundRepeat: "repeat-y, no-repeat",
+            }}
+          >
+            {article.category && (
+              <Text fontSize="xs" color="teal.600" mb={1}>
+                {article.category}
+              </Text>
             )}
-          </TabPanel>
+
+            <Text
+              fontWeight="bold"
+              fontSize="lg"
+              noOfLines={2}
+              _hover={{ textDecoration: "underline", color: "blue.500" }}
+            >
+              {article.title}
+            </Text>
+
+            {article.subtitle && (
+              <Text fontSize="sm" color="gray.600" noOfLines={2} mt={1}>
+                {article.subtitle}
+              </Text>
+            )}
+
+            <Text fontSize="sm" color="gray.500" mt={2}>
+              {article.content?.replace(/<[^>]+>/g, "").slice(0, 60)}...
+            </Text>
+
+            <Text fontSize="xs" color="gray.400" mt={2}>
+              {new Date(article.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            </Text>
+
+            <Button
+              as={RouterLink}
+              to={`/articles/${article._id}`}
+              size="sm"
+              variant="link"
+              colorScheme="blue"
+              mt={2}
+            >
+              View Details →
+            </Button>
+          </Box>
+        </Box>
+      ))}
+    </Flex>
+  )}
+</TabPanel>
+
+
         </TabPanels>
       </Tabs>
     </Box>

@@ -74,6 +74,16 @@ const ARTICLE_CATEGORIES = [
         });
         return;
       }
+      if (!category) {
+        toast({
+          title: "Error",
+          description: "Please select a category.",
+          status: "error",
+          duration: 3000,
+        });
+        return;
+      }
+      
   
       setIsLoading(true);
   
@@ -118,7 +128,8 @@ const ARTICLE_CATEGORIES = [
     return (
       <Container maxW="container.md" >
         <VStack spacing={4} align="stretch">
-          <Heading>{id ? "Edit ARTicle" : "Create new article"}</Heading>
+          
+          <Heading textAlign="center">{id ? "Edit ARTicle" : "Create new article"}</Heading>
           <Input
             placeholder="Article Title"
             value={title}

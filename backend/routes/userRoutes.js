@@ -1,6 +1,7 @@
 import express from "express";
-import { signupUser,loginUser,logoutUser,updateUser, getUserProfile, getUserWithGalleries, searchUsers, getFavoriteProducts, blockUser, unblockUser, getBlockedUsers,getMe, moveToFavorites, getRandomUsers, saveQuote, addGalleryToFavorites, removeGalleryFromFavorites, getUserFavorites, addArticleToFavorites, removeArticleFromFavorites, getUserFavoriteArticles} from "../controllers/userController.js";
+import { signupUser,loginUser,logoutUser,updateUser, getUserProfile, getUserWithGalleries, searchUsers, getFavoriteProducts, blockUser, unblockUser, getBlockedUsers,getMe, moveToFavorites, getRandomUsers, saveQuote, addGalleryToFavorites, removeGalleryFromFavorites, getUserFavorites, addArticleToFavorites, removeArticleFromFavorites, getUserFavoriteArticles, updateUserByAdmin} from "../controllers/userController.js";
 import protectRoute from "../middlewares/protectRoute.js";
+import adminOnly from "../middlewares/adminOnly.js";
 
 const router=express.Router();
 
@@ -27,6 +28,7 @@ router.get("/:username/favorites-all", getUserFavorites);
 router.post("/favorites/articles", protectRoute, addArticleToFavorites);
 router.delete("/favorites/articles/remove", protectRoute, removeArticleFromFavorites);
 router.get("/favorites", protectRoute, getUserFavoriteArticles); // ✅ adaugă
+router.put("/admin/users/:id/update", protectRoute, adminOnly, updateUserByAdmin);
 
 
 export default router;

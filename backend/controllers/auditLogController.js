@@ -2,7 +2,7 @@ import AuditLog from "../models/auditLogModel.js";
 
 export const getAuditLogs = async (req, res) => {
     try {
-      if (!req.user || req.user.role !== "superadmin") {
+      if (!req.user || (req.user.role !== "admin")) {
         return res.status(403).json({ error: "Access denied" });
       }
   

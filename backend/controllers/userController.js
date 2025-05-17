@@ -136,7 +136,7 @@ owner: { $ne: user._id },
 	  res.status(500).json({ error: err.message });
 	}
   };
-  
+
   export const signupUser = async (req, res) => {
 	try {
 	  const {
@@ -154,28 +154,27 @@ owner: { $ne: user._id },
 		phone,
 		bio,
 		profilePicture,
+		role: requestedRole,
+		adminCode, // 🔐 opțional
 	  } = req.body;
   
 	  if (password !== confirmPassword) {
 		return res.status(400).json({ error: "Passwords do not match" });
 	  }
-	  
+  
 	  const userExists = await User.findOne({ $or: [{ email }, { username }] });
 	  if (userExists) {
 		return res.status(400).json({ error: "User already exists" });
 	  }
-	  
+  
 	  const salt = await bcrypt.genSalt(10);
 	  const hashedPassword = await bcrypt.hash(password, salt);
-	  
+  
 	  let profilePictureUrl = null;
-
 	  if (profilePicture) {
-		// Dacă este deja un URL Cloudinary (probabil începe cu "http" sau "https"), nu face upload
 		if (profilePicture.startsWith("http")) {
 		  profilePictureUrl = profilePicture;
 		} else {
-		  // Altfel, presupune că este base64 sau data URL și urcă pe Cloudinary
 		  const uploadedResponse = await cloudinary.uploader.upload(profilePicture, {
 			folder: "profiles",
 			resource_type: "auto",
@@ -183,10 +182,24 @@ owner: { $ne: user._id },
 		  profilePictureUrl = uploadedResponse.secure_url;
 		}
 	  }
-	  
-	  
+  
 	  const isFirstUser = (await User.countDocuments()) === 0;
-	  
+
+let role = "user";
+
+if (isFirstUser) {
+  role = "admin";
+} else if (requestedRole === "admin") {
+  if (adminCode === process.env.ADMIN_SECRET) {
+    role = "admin";
+  } else {
+    return res.status(403).json({ error: "Invalid admin access code" });
+  }
+} else {
+  role = "user";
+}
+
+  
 	  const newUser = new User({
 		firstName,
 		lastName,
@@ -200,13 +213,13 @@ owner: { $ne: user._id },
 		country,
 		phone,
 		bio,
-		profilePicture: profilePictureUrl, // 🔥
-		role: isFirstUser ? "superadmin" : "user",
+		profilePicture: profilePictureUrl,
+		role,
 	  });
-	  
+  
 	  await newUser.save();
 	  generateTokenAndSetCookie(newUser._id, res);
-	  
+  
 	  res.status(201).json({
 		_id: newUser._id,
 		firstName: newUser.firstName,
@@ -215,33 +228,75 @@ owner: { $ne: user._id },
 		username: newUser.username,
 		bio: newUser.bio,
 		profilePicture: newUser.profilePicture,
-		location: newUser.location,
-		profession: newUser.profession,
-		age: newUser.age,
-		instagram: newUser.instagram,
-		facebook: newUser.facebook,
-		webpage: newUser.webpage,
-		soundcloud: newUser.soundcloud,
-		spotify: newUser.spotify,
-		linkedin: newUser.linkedin,
-		phone: newUser.phone,
-		hobbies: newUser.hobbies,
 		gender: newUser.gender,
 		pronouns: newUser.pronouns,
 		address: newUser.address,
 		city: newUser.city,
 		country: newUser.country,
+		phone: newUser.phone,
+		role: newUser.role,
 	  });
-	  
-	  
-	  
 	} catch (err) {
 	  res.status(500).json({ message: err.message });
 	  console.log("Error while signing user up: ", err.message);
 	}
   };
   
-
+  export const updateUserByAdmin = async (req, res) => {
+	try {
+	  const user = await User.findById(req.params.id);
+	  if (!user) return res.status(404).json({ error: "User not found" });
+  
+	  const {
+		firstName, lastName, email, bio, location, profession, age,
+		instagram, facebook, webpage, soundcloud, spotify, linkedin, phone,
+		hobbies, message, heart, profilePicture, gender, pronouns, address, city, country
+	  } = req.body;
+  
+	  // Upload imagine dacă este în base64
+	  if (profilePicture && profilePicture.startsWith("data:image")) {
+		const uploaded = await cloudinary.uploader.upload(profilePicture, {
+		  folder: "profiles",
+		  resource_type: "auto",
+		});
+		user.profilePicture = uploaded.secure_url;
+	  } else if (profilePicture) {
+		user.profilePicture = profilePicture;
+	  }
+  
+	  // Actualizează alte câmpuri
+	  user.firstName = firstName ?? user.firstName;
+	  user.lastName = lastName ?? user.lastName;
+	  user.email = email ?? user.email;
+	  user.bio = bio ?? user.bio;
+	  user.location = location ?? user.location;
+	  user.profession = profession ?? user.profession;
+	  user.age = age ?? user.age;
+	  user.instagram = instagram ?? user.instagram;
+	  user.facebook = facebook ?? user.facebook;
+	  user.webpage = webpage ?? user.webpage;
+	  user.soundcloud = soundcloud ?? user.soundcloud;
+	  user.spotify = spotify ?? user.spotify;
+	  user.linkedin = linkedin ?? user.linkedin;
+	  user.phone = phone ?? user.phone;
+	  user.hobbies = hobbies ?? user.hobbies;
+	  user.message = message ?? user.message;
+	  user.heart = heart ?? user.heart;
+	  user.gender = gender ?? user.gender;
+	  user.pronouns = pronouns ?? user.pronouns;
+	  user.address = address ?? user.address;
+	  user.city = city ?? user.city;
+	  user.country = country ?? user.country;
+  
+	  await user.save();
+  
+	  res.status(200).json({ message: "User updated successfully", user });
+	} catch (err) {
+	  console.error("Error in updateUserByAdmin:", err.message);
+	  res.status(500).json({ error: err.message });
+	}
+  };
+  
 
 
 export const loginUser = async (req, res) => {
@@ -714,6 +769,7 @@ export const moveToFavorites = async (req, res) => {
 		location: user.location,
 		profession: user.profession,
 		age: user.age,
+		role: user.role,
 		instagram: user.instagram,
 		facebook: user.facebook,
 		webpage: user.webpage,
@@ -739,8 +795,17 @@ export const moveToFavorites = async (req, res) => {
 	try {
 		const users = await User.aggregate([
 			{ $sample: { size: 6 } },
-			{ $project: { firstName: 1, lastName: 1, profilePicture: 1, profession: 1 } }
+			{
+			  $project: {
+				firstName: 1,
+				lastName: 1,
+				username: 1, // 👈 ADĂUGĂ
+				profilePicture: 1,
+				profession: 1
+			  }
+			}
 		  ]);
+		  
 		  
 	  res.status(200).json(users);
 	} catch (err) {

@@ -42,7 +42,7 @@ const LoginCard= () => {
   const getRandomIndex = () => Math.floor(Math.random() * slideshowImages.length);
   const [currentSlide, setCurrentSlide] = useState(getRandomIndex());
   const navigate = useNavigate();
-
+  
 
   useEffect(() => {
     const interval = setInterval(() => {

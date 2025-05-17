@@ -27,12 +27,21 @@ const NotificationDrawer = () => {
     try {
       const res = await fetch("/api/notifications", { credentials: "include" });
       const data = await res.json();
-      setNotifications(data);
-      setUnseenCount(data.filter((n) => !n.seen).length);
+      
+      // If it's an array, use it, otherwise log an error
+      if (Array.isArray(data)) {
+        setNotifications(data);
+        setUnseenCount(data.filter((n) => !n.seen).length);
+      } else {
+        console.error("Expected an array of notifications, got:", data);
+        setNotifications([]);
+        setUnseenCount(0);
+      }
     } catch (err) {
       console.error("Failed to fetch notifications", err);
     }
   };
+  
 
   const handleOpen = () => {
     setIsOpen(true);

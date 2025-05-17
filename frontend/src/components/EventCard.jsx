@@ -251,12 +251,12 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   )}
 </Text>
 
-        {event.description && (
+{event.description && (
   <>
     {event.description.length > 300 ? (
       <>
         <Collapse startingHeight={100} in={isDescriptionExpanded}>
-          <Text whiteSpace="pre-wrap">{event.description}</Text>
+          <Box dangerouslySetInnerHTML={{ __html: event.description }} />
         </Collapse>
         <Button
           variant="link"
@@ -268,10 +268,11 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         </Button>
       </>
     ) : (
-      <Text whiteSpace="pre-wrap">{event.description}</Text>
+      <Box dangerouslySetInnerHTML={{ __html: event.description }} />
     )}
   </>
 )}
+
 <Flex direction={"row"} gap={2} mt={event.description?.length > 300 ? 4 : 2}>
 
         <Menu>

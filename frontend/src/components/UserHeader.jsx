@@ -525,7 +525,9 @@ filteredGalleries.slice(0, 2).map((gallery) => (
             {gallery.category || "No category specified"}
           </Text>
           <Text fontSize="xs" color="gray.500">
-            {gallery.tags?.length > 0 ? gallery.tags.join(", ") : "No tags"}
+          {Array.isArray(gallery.tags) && gallery.tags.length > 0
+  ? gallery.tags.join(", ")
+  : "No tags"}
           </Text>
         </Box>
       </Box>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Flex, Heading, Text, Image, Select, Input, Spinner, VStack } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, Image, Select, Input, Spinner, VStack, Divider } from "@chakra-ui/react";
 import GalleryCard from "../components/GalleryCard";
 import CommentsSection from "../components/CommentsSection";
 import { useRecoilValue } from "recoil";
@@ -43,8 +43,16 @@ export default function GalleryPage() {
 
   return (
     <Flex direction="column">
-      <GalleryCard gallery={gallery} currentUserId={currentUser._id} fetchGallery={fetchGallery} />
-      <CommentsSection resourceId={gallery._id} resourceType="Gallery" />
+<GalleryCard
+  gallery={gallery}
+  currentUserId={currentUser?._id} // ← folosim optional chaining
+  fetchGallery={fetchGallery}
+/>
+<Divider my={4} />
+
+<CommentsSection resourceId={gallery._id} resourceType="Gallery" />
+<Divider my={4} />
+
     </Flex>
   );
 }

@@ -339,79 +339,87 @@ const circularPositions = [
   </Text>
 
   {upcomingEvents.map((event, index) => (
-    <Flex
-      key={event._id}
-      justify={index % 2 === 0 ? "flex-start" : "flex-end"}
-      align="center"
-      mb={12}
-      ml={index % 2 === 0 ? { base: 0, md: "-10" } : 0}
-      mr={index % 2 !== 0 ? { base: 0, md: "-10" } : 0}
-    >
-      {index % 2 === 0 && (
-        <Box
-          bg="gray.400"
-          w="60%"
-          h="200px"
-          border={"1px"}	
-          borderColor={"gray.500"}
-          borderTopRightRadius="100px"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          fontWeight="semibold"
-          overflow="hidden"
-        >
-          {event.coverImage ? (
-            <Image src={event.coverImage} objectFit="cover" w="100%" h="100%" />
-          ) : (
-            "poza eveniment"
-          )}
-        </Box>
-      )}
-
+  <Flex
+    key={event._id}
+    justify={index % 2 === 0 ? "flex-start" : "flex-end"}
+    align="center"
+    mb={12}
+    ml={index % 2 === 0 ? { base: 0, md: "-10" } : 0}
+    mr={index % 2 !== 0 ? { base: 0, md: "-10" } : 0}
+    cursor="pointer"
+    onClick={() => navigate(`/events/${event._id}`)}
+    _hover={{ opacity: 0.95 }}
+  >
+    {index % 2 === 0 && (
       <Box
-        bg="gray.300"
-        p={4}
-        mx={-4}
-        boxShadow="md"
-        zIndex={1}
-        maxW="300px"
-        textAlign="left"
+        bg="gray.400"
+        w="60%"
+        h="200px"
+        border={"1px"}
+        borderColor={"gray.500"}
+        borderTopRightRadius="100px"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        fontWeight="semibold"
+        overflow="hidden"
       >
-        <Text fontWeight="bold">{event.name}</Text>
-        <Text fontWeight="semibold">Category: {event.category}</Text>
-        <Text fontSize="sm">Taking place on
-  {new Date(event.date).toLocaleDateString()} {event.time && (
-    <><span style={{ marginLeft: 6 }}>🕒</span> {event.time}</>
-  )}
-</Text>
-        <Text fontSize="sm">{event.location}</Text>
+        {event.coverImage ? (
+          <Image src={event.coverImage} objectFit="cover" w="100%" h="100%" />
+        ) : (
+          "poza eveniment"
+        )}
       </Box>
+    )}
 
-      {index % 2 !== 0 && (
-        <Box
-          bg="gray.700"
-          w="60%"
-          h="200px"
-          border={"1px"}	
-          borderColor={"gray.500"}
-          borderTopLeftRadius="100px"
-          color="white"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          fontWeight="semibold"
-          overflow="hidden"
-        >
-          {event.coverImage ? (
-            <Image src={event.coverImage} objectFit="cover" w="100%" h="100%" />
-          ) : (
-            "poza eveniment"
-          )}
-        </Box>
-      )}
-    </Flex>
-  ))}
+    <Box
+      bg="gray.300"
+      p={4}
+      mx={-4}
+      boxShadow="md"
+      zIndex={1}
+      maxW="300px"
+      textAlign="left"
+    >
+      <Text fontWeight="bold">{event.name}</Text>
+      <Text fontWeight="semibold">Category: {event.category}</Text>
+      <Text fontSize="sm">
+        Taking place on{" "}
+        {new Date(event.date).toLocaleDateString()}{" "}
+        {event.time && (
+          <>
+            <span style={{ marginLeft: 6 }}>🕒</span> {event.time}
+          </>
+        )}
+      </Text>
+      <Text fontSize="sm">{event.location}</Text>
+    </Box>
+
+    {index % 2 !== 0 && (
+      <Box
+        bg="gray.700"
+        w="60%"
+        h="200px"
+        border={"1px"}
+        borderColor={"gray.500"}
+        borderTopLeftRadius="100px"
+        color="white"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        fontWeight="semibold"
+        overflow="hidden"
+      >
+        {event.coverImage ? (
+          <Image src={event.coverImage} objectFit="cover" w="100%" h="100%" />
+        ) : (
+          "poza eveniment"
+        )}
+      </Box>
+    )}
+  </Flex>
+))}
+
 
   <Flex justify="space-between" align="center" mt={8}>
   <Button
@@ -460,15 +468,26 @@ const circularPositions = [
     left={circularPositions[i]?.left}
     transform={circularPositions[i]?.transform}
   >
-    <Avatar
-      size="2xl"
-      src={user.profilePicture || "https://i.pravatar.cc/150?img=" + (i + 10)}
-      name={`${user.firstName} ${user.lastName}`}
-    />
-    <Text fontSize="sm" mt={1}>{user.firstName} {user.lastName}</Text>
-    <Text fontSize="xs" color="gray.600">{user.profession || "Artist"}</Text>
+    <Box
+      as={Link}
+      to={`/profile/${user.username}`}
+      _hover={{ transform: "scale(1.05)", transition: "0.2s" }}
+    >
+      <Avatar
+        size="2xl"
+        src={user.profilePicture || undefined} // 🔥 Eliminăm fallback
+        name={`${user.firstName} ${user.lastName}`} // ✅ Chakra va genera inițiale dacă nu există poză
+      />
+    </Box>
+    <Text fontSize="sm" mt={1}>
+      {user.firstName} {user.lastName}
+    </Text>
+    <Text fontSize="xs" color="gray.600">
+      {user.profession || "Artist"}
+    </Text>
   </VStack>
 ))}
+
 
 
       </Box>

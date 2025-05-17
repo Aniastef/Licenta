@@ -204,7 +204,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin", "superadmin"], // ✅ Mai multe roluri
+      enum: ["user", "admin"], // ✅ Mai multe roluri
       default: "user",
     },
     isVerified: { type: Boolean, default: false }, // ✅ Verificare email

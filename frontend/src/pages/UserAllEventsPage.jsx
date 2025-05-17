@@ -391,91 +391,76 @@ const UserAllEventsPage = () => {
         <>
 <Flex mt={4} wrap="wrap" justify="center" gap={5}>
   {filteredEvents.map((event) => (
-    <Box
-      key={event._id}
-      w="350px"
-      bg="gray.100"
-      borderRadius="md"
-      boxShadow="md"
-      overflow="hidden"
-      border="1px solid #ccc"
-      _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-      transition="all 0.2s"
-      display="flex"
-      flexDirection="column"
-      justifyContent="space-between"
-    >
-      <Link to={`/events/${event._id}`}>
-        <Box h="200px" bg="gray.300">
-          {event.coverImage ? (
-            <Image
-              src={event.coverImage}
-              alt={event.name}
-              objectFit="cover"
-              w="100%"
-              h="100%"
-            />
-          ) : (
-            <Flex align="center" justify="center" h="100%" bg="gray.400">
-              <Text fontWeight="bold" color="white" fontSize="lg" textAlign="center" px={2}>
-                {event.name}
-              </Text>
-            </Flex>
-          )}
-        </Box>
-
-        <Box textAlign="center" py={2} px={3}>
-          <Text fontWeight="bold">{event.name}</Text>
-          {event.category && (
-  <Text fontSize="sm" color="teal.600" mt={1}>
-    <strong>Category:</strong> {event.category}
-  </Text>
-)}
-
-{event.date && (() => {
-  const { day, month, year } = formatDate(event.date);
-  return (
-    <Text fontSize="sm" color="gray.600">
-      {`${day} ${month} ${year}`}
-    </Text>
-  );
-})()}
-          <Text fontSize="sm" mt={1}>
-            <strong>Organizer:</strong> {event.user?.firstName} {event.user?.lastName}
-          </Text>
-          {event.coHosts?.length > 0 && (
-            <Text fontSize="sm" color="blue.500">
-              <strong>Co-Hosts:</strong>{" "}
-              {event.coHosts.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}
-            </Text>
-          )}
-          {event.tags?.length > 0 && (
-            <Text fontSize="sm" color="purple.600">
-              <strong>Tags:</strong> {event.tags.join(", ")}
-            </Text>
-          )}
-        </Box>
-      </Link>
-
-      {/* Buton centrat */}
-      {currentUser &&
-        currentUser.username?.toLowerCase() === username?.toLowerCase() &&
-        currentUser._id?.toString() === event.user?._id?.toString() && (
-          <Flex justify="center" pb={3}>
-            <Button
-              colorScheme="red"
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleDeleteEvent(event._id);
-              }}
-            >
-              Delete
-            </Button>
-          </Flex>
-        )}
-    </Box>
+   <Link to={`/events/${event._id}`} key={event._id}>
+   <Box
+     w="340px"
+     borderWidth="1px"
+     borderRadius="md"
+     overflow="hidden"
+     _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+     transition="all 0.2s"
+   >
+     <Box h="150px" overflow="hidden">
+       {event.coverImage ? (
+         <Image
+           src={event.coverImage}
+           alt={event.name}
+           w="100%"
+           h="100%"
+           objectFit="cover"
+         />
+       ) : (
+         <Box
+           w="100%"
+           h="100%"
+           bg="orange.300"
+           display="flex"
+           alignItems="center"
+           justifyContent="center"
+         >
+           <Text
+             fontWeight="bold"
+             color="white"
+             fontSize="lg"
+             textAlign="center"
+             px={2}
+           >
+             {event.name}
+           </Text>
+         </Box>
+       )}
+     </Box>
+ 
+     <Flex p={4} gap={3} align="center">
+       {/* Data în stânga */}
+       <Flex direction="column" align="center" minW="50px">
+         {(() => {
+           const { day, month, year } = formatDate(event.date);
+           return (
+             <>
+               <Text fontWeight="bold" fontSize="lg">{day}</Text>
+               <Text fontWeight="bold" fontSize="sm">{month}</Text>
+               <Text fontWeight="bold" fontSize="sm">{year}</Text>
+             </>
+           );
+         })()}
+       </Flex>
+ 
+       {/* Detalii în dreapta */}
+       <Box textAlign="left">
+         <Text fontSize="md" fontWeight="bold" isTruncated>
+           {event.name || "Nume eveniment"}
+         </Text>
+         {event.category && (
+           <Text fontSize="sm">Category: {event.category}</Text>
+         )}
+         <Text fontSize="sm" isTruncated>{event.location || "TBA"}</Text>
+         <Text fontSize="xs">{event.time || "TBA"}</Text>
+       </Box>
+     </Flex>
+   </Box>
+ </Link>
+ 
   ))}
 </Flex>
 

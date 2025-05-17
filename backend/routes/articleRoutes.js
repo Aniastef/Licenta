@@ -6,7 +6,8 @@ import {
   updateArticle,
   getMyArticles,
   getAllArticlesFiltered,
-  deleteArticle
+  deleteArticle,
+  getAllArticles
 } from "../controllers/articleController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 
@@ -21,5 +22,7 @@ router.get("/user/:username", getArticlesByUser);          // 🔼 mai sus
 router.get("/:id", getArticleById);                         // trebuie să fie ultima GET
 router.put("/:id", protectRoute, updateArticle);
 router.delete("/:id", protectRoute, deleteArticle);
+router.get("/admin/articles", protectRoute, getAllArticles);
+
 
 export default router;

@@ -24,8 +24,8 @@ const articleSchema = new mongoose.Schema(
         "Personal", "Opinion", "Review", "Tutorial", "Poetry", "Reflection",
         "News", "Interview", "Tech", "Art", "Photography","Research", "Journal", "Story"
       ],
-      default: "Personal", // sau alege alt default valid
-    },
+      required: true,
+        },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

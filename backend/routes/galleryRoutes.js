@@ -29,7 +29,7 @@ router.get("/user/:username", getAllUserGalleries);
 
 
 // 👤 Obținere galerie după username + gallery name (pentru afișare publică)
-router.get("/:username/:galleryName", protectRoute, getGallery); // ✅
+router.get("/:username/:galleryName", getGallery); // ✅
 
 // ✅ Creare galerie
 router.post("/create", upload.single("coverPhoto"), protectRoute, createGallery);

@@ -116,11 +116,15 @@ export const getProduct = async (req, res) => {
 		return res.status(404).json({ error: "Product not found" });
 	  }
   
-	  if (product.user.toString() !== req.user._id.toString()) {
+	  if (
+		product.user.toString() !== req.user._id.toString() &&
+		req.user.role !== "admin" &&
+		req.user.role !== "admin"
+	  ) {
 		return res.status(403).json({ error: "Unauthorized action" });
 	  }
   
-	  await product.deleteOne();
+	  await product.deleteOne(); // ✅ Acesta este pasul lipsă
   
 	  res.status(200).json({ message: "Product deleted successfully" });
 	} catch (err) {
@@ -128,6 +132,8 @@ export const getProduct = async (req, res) => {
 	  res.status(500).json({ error: "Failed to delete product" });
 	}
   };
+  
+  
   
   
   

@@ -44,8 +44,13 @@ const SignupCard = () => {
     email: "", username: "", password: "", confirmPassword: "",
     bio: "", typeOfArt: "", artistName: "", website: "",
     profilePicture: null,
-    customGender: ""  // 🔥 Asta adaugă
+    customGender: "",
+    agreedToTerms: false,
+    role: "user", // 👈 AICI
+    adminCode: "", // 🔐 Cod pentru a valida înregistrarea ca admin
+
   });
+  
   
   const [errors, setErrors] = useState({});
 
@@ -88,7 +93,11 @@ const SignupCard = () => {
   
     if (!inputs.firstName.trim()) newErrors.firstName = "First name is required";
     if (!inputs.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!inputs.username.trim()) newErrors.username = "Username is required";
+    if (!inputs.username.trim()) {
+      newErrors.username = "Username is required";
+    } else if (/\s/.test(inputs.username)) {
+      newErrors.username = "Username cannot contain spaces";
+    }
   
     if (!inputs.email.trim()) {
       newErrors.email = "Email is required";
@@ -96,17 +105,37 @@ const SignupCard = () => {
       newErrors.email = "Invalid email format";
     }
   
-    if (inputs.password.length < 6) {
+    if (!inputs.password) {
+      newErrors.password = "Password is required";
+    } else if (inputs.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
+    } else if (!/[A-Z]/.test(inputs.password)) {
+      newErrors.password = "Password must contain at least one uppercase letter";
+    } else if (!/[a-z]/.test(inputs.password)) {
+      newErrors.password = "Password must contain at least one lowercase letter";
+    } else if (!/[0-9]/.test(inputs.password)) {
+      newErrors.password = "Password must contain at least one number";
+    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(inputs.password)) {
+      newErrors.password = "Password must contain at least one special character";
     }
+    
   
     if (inputs.password !== inputs.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
   
+    if (inputs.bio.length > 0 && inputs.bio.length < 10) {
+      newErrors.bio = "Bio should be at least 10 characters if provided";
+    }
+  
+    if (!inputs.agreedToTerms) {
+      newErrors.agreedToTerms = "You must agree to the terms and conditions";
+    }
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  
   
 
   const handleSignup = async () => {
@@ -324,6 +353,43 @@ const SignupCard = () => {
             </FormControl>
           </VStack>
         </Flex>
+        <FormControl>
+  <FormLabel mt={2}>Register as</FormLabel>
+  <Select
+    value={inputs.role}
+    onChange={(e) => setInputs({ ...inputs, role: e.target.value })}
+  >
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+  </Select>
+</FormControl>
+{inputs.role === "admin" && (
+  <FormControl mt={2}>
+    <FormLabel>Admin Access Code</FormLabel>
+    <Input
+      type="text"
+      placeholder="Enter secret admin code"
+      value={inputs.adminCode}
+      onChange={(e) => setInputs({ ...inputs, adminCode: e.target.value })}
+    />
+  </FormControl>
+)}
+
+
+        <FormControl  mt={5} isInvalid={errors.agreedToTerms}>
+  <Checkbox
+    isChecked={inputs.agreedToTerms}
+    onChange={(e) =>
+      setInputs({ ...inputs, agreedToTerms: e.target.checked })
+    }
+  >
+    I agree to the{" "}
+    <Text as="span" color="blue.500" textDecoration="underline" cursor="pointer">
+      terms and conditions
+    </Text>
+  </Checkbox>
+  <FormErrorMessage>{errors.agreedToTerms}</FormErrorMessage>
+</FormControl>
 
         <Button colorScheme="yellow" mt={6} w="full" onClick={handleSignup}>
           Sign up

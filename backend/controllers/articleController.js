@@ -69,8 +69,9 @@ export const getAllArticlesFiltered = async (req, res) => {
     }
 
     const articles = await Article.find(filter)
-      .populate("user", "username")
-      .sort({ createdAt: -1 });
+    .populate("user", "firstName lastName username") // 🔥 adaugă toate câmpurile necesare
+    .sort({ createdAt: -1 });
+  
 
     res.status(200).json(articles);
   } catch (err) {
@@ -128,3 +129,18 @@ export const deleteArticle = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// ADD IN articleController.js
+export const getAllArticles = async (req, res) => {
+  try {
+    const articles = await Article.find()
+      .populate("user", "firstName lastName")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ articles }); // ✅ răspunsul corect către frontend
+  } catch (err) {
+    console.error("Error fetching articles:", err.message);
+    res.status(500).json({ error: "Failed to fetch articles" });
+  }
+};
+

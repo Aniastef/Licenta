@@ -220,9 +220,13 @@ export const updateGallery = async (req, res) => {
     const gallery = await Gallery.findById(galleryId);
     if (!gallery) return res.status(404).json({ error: "Gallery not found" });
 
-    if (gallery.owner.toString() !== req.user._id.toString()) {
+    if (
+      gallery.owner.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({ error: "Unauthorized action" });
     }
+    
 
     // 🔄 Actualizări de bază
     gallery.name = name || gallery.name;
@@ -315,16 +319,16 @@ export const updateGallery = async (req, res) => {
 export const getAllGalleries = async (req, res) => {
   try {
    // getAllGalleries
-const galleries = await Gallery.find()
-.populate("owner", "username firstName lastName profilePicture")
-.populate("collaborators", "firstName lastName")
-.populate({
-  path: "products",
-  select: "images",
-})
-.select("name tags products owner coverPhoto collaborators createdAt")
-.sort({ createdAt: -1 });
-
+   const galleries = await Gallery.find()
+   .populate("owner", "username firstName lastName profilePicture")
+   .populate("collaborators", "firstName lastName")
+   .populate({
+     path: "products",
+     select: "images",
+   })
+   .select("name category tags products owner coverPhoto collaborators createdAt") // 👈 AICI!
+   .sort({ createdAt: -1 });
+ 
 
     res.status(200).json({ galleries });
   } catch (err) {

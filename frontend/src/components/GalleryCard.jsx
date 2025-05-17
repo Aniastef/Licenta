@@ -236,11 +236,12 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   </Text>
   
   <Flex alignItems="center" gap={4}>
-  {!isOwner && (
-      <Button colorScheme="yellow" onClick={addGalleryToFavorites}>
-        Add Gallery to Favorites
-      </Button>
-    )}
+  {currentUserId && !isOwner && (
+  <Button colorScheme="yellow" onClick={addGalleryToFavorites}>
+    Add Gallery to Favorites
+  </Button>
+)}
+
     {canEdit && (
       <>
         <Button colorScheme="green"  onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
@@ -346,7 +347,10 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         </Button>
       </>
     ) : (
-      <Text whiteSpace="pre-wrap">{gallery.description}</Text>
+<Box
+  className="quill-content"
+  dangerouslySetInnerHTML={{ __html: gallery.description }}
+/>
     )}
   </>
 )}

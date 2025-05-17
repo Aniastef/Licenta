@@ -35,10 +35,10 @@ const ImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Crop your profile picture</ModalHeader>
+      <ModalContent maxH="90vh" overflow="hidden">
+      <ModalHeader>Crop your profile picture</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody maxH="calc(100vh - 200px)" overflowY="auto">
         <Box position="relative" width="100%" paddingTop="100%" bg="gray.900">
   <Cropper
     image={imageSrc}

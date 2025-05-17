@@ -136,10 +136,11 @@ useEffect(() => {
 	};
 
 	const handleAddEvent = async () => {
-		if (!newEvent.name) {
-			showToast("Error", "Name is required", "error");
+		if (!newEvent.name || !newEvent.date ) {
+			showToast("Error", "Please complete all required fields.", "error");
 			return;
-		}
+		  }
+		  
 	
 		setIsLoading(true);
 		try {

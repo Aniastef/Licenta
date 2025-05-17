@@ -236,7 +236,7 @@ const dataURLtoFile = (dataUrl, filename) => {
 	return (
 	  <Container maxW="container.md" >
 		<VStack spacing={8}>
-		  <Heading as="h1" size="2xl">
+		  <Heading mb={4} textAlign="center">
 			Create new gallery
 		  </Heading>
   

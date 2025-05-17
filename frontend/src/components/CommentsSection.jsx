@@ -219,7 +219,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
   const toggleReplies = (commentId) => { setShowReplies((prev) => ({ ...prev, [commentId]: !prev[commentId] })); };
 
   return (
-    <Flex direction="column" ml={100} gap={6}>
+    <Flex direction="column" ml={100}  gap={6}>
       {/* Header-ul tău cu buline */}
       <Flex direction="row" align="center" justifyContent="space-between">
         <Text fontWeight="bold" width="100px" borderBottom="2px solid gray" pb={1}>Comments</Text>

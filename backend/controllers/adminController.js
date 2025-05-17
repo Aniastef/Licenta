@@ -7,7 +7,7 @@ export const getAllUsers = async (req, res) => {
   try {
     console.log("Authenticated user:", req.user);
 
-    if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
+    if (!req.user || (req.user.role !== "admin")) {
       return res.status(403).json({ error: "Access denied" });
     }
 
@@ -21,15 +21,15 @@ export const getAllUsers = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
+    if (!req.user || (req.user.role !== "admin" )) {
       return res.status(403).json({ error: "Access denied" });
     }
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (user.role === "superadmin") {
-      return res.status(400).json({ error: "Superadmin cannot be deleted" });
+    if (user.role === "admin") {
+      return res.status(400).json({ error: "admin cannot be deleted" });
     }
 
     await User.findByIdAndDelete(req.params.id);
@@ -45,15 +45,15 @@ export const deleteUser = async (req, res) => {
 
 export const updateAdminRole = async (req, res) => {
   try {
-    if (!req.user || req.user.role !== "superadmin") {
-      return res.status(403).json({ error: "Only superadmins can update roles" });
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can update roles" });
     }
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (user.role === "superadmin" && req.body.role !== "superadmin") {
-      return res.status(400).json({ error: "Superadmin cannot be downgraded" });
+    if (user.role === "admin" && req.body.role !== "admin") {
+      return res.status(400).json({ error: "admin cannot be downgraded" });
     }
 
     user.role = req.body.role;
@@ -75,8 +75,8 @@ export const toggleBlockUser = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (user.role === "superadmin") {
-      return res.status(403).json({ error: "Superadmins cannot be blocked" });
+    if (user.role === "admin") {
+      return res.status(403).json({ error: "admins cannot be blocked" });
     }
 
     user.isBlocked = !user.isBlocked;
@@ -95,8 +95,10 @@ export const toggleBlockUser = async (req, res) => {
 export const updateUserAdmin = async (req, res) => {
   const {
     firstName, lastName, email, username, role, password, bio, location,
-    profession, age, instagram, facebook, webpage, profilePicture
+    profession, age,profilePicture, phone, hobbies, gender, pronouns,
+    address, city, country
   } = req.body;
+  
   const userId = req.params.id;
   const requestingUser = req.user;
 
@@ -104,12 +106,12 @@ export const updateUserAdmin = async (req, res) => {
     let user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (user.role === "superadmin" && requestingUser.role === "superadmin") {
-      return res.status(403).json({ error: "Superadmin cannot modify another superadmin" });
+    if (user.role === "admin" && requestingUser.role === "admin") {
+      return res.status(403).json({ error: "admin cannot modify another admin" });
     }
 
-    if (role && user.role === "superadmin" && requestingUser.role !== "superadmin") {
-      return res.status(403).json({ error: "Only superadmins can change superadmin roles" });
+    if (role && user.role === "admin" && requestingUser.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can change admin roles" });
     }
 
     const oldData = { ...user._doc };
@@ -122,9 +124,13 @@ export const updateUserAdmin = async (req, res) => {
     user.location = location || user.location;
     user.profession = profession || user.profession;
     user.age = age || user.age;
-    user.facebook = facebook || user.facebook;
-    user.instagram = instagram || user.instagram;
-    user.webpage = webpage || user.webpage;
+    user.phone = phone || user.phone;
+    user.hobbies = hobbies || user.hobbies;
+    user.gender = gender || user.gender;
+    user.pronouns = pronouns || user.pronouns;
+    user.address = address || user.address;
+    user.city = city || user.city;
+    user.country = country || user.country;
     user.profilePicture = profilePicture || user.profilePicture;
 
     if (password) {
@@ -139,6 +145,8 @@ export const updateUserAdmin = async (req, res) => {
 
     res.status(200).json({ message: "User updated successfully" });
   } catch (err) {
+    console.error("❌ Error in updateUserAdmin:", err); // ← adaugă asta
+
     res.status(500).json({ error: err.message });
   }
 };
@@ -172,19 +180,19 @@ export const handleRoleChange = async (req, res) => {
     const { role } = req.body;
     const requestingUser = req.user;
 
-    if (!requestingUser || requestingUser.role !== "superadmin") {
-      return res.status(403).json({ error: "Only superadmins can update roles" });
+    if (!requestingUser || requestingUser.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can update roles" });
     }
 
-    if (!["user", "admin", "superadmin"].includes(role)) {
+    if (!["user", "admin"].includes(role)) {
       return res.status(400).json({ error: "Invalid role" });
     }
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (user.role === "superadmin" && role !== "superadmin") {
-      return res.status(400).json({ error: "Superadmin cannot be downgraded" });
+    if (user.role === "admin" && role !== "admin") {
+      return res.status(400).json({ error: "admin cannot be downgraded" });
     }
 
     user.role = role;

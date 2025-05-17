@@ -494,16 +494,19 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
 >
   {product.name}
 </Text>
-      <Button
-        variant="ghost"
-        colorScheme={isFavorite ? "red" : "gray"}
-        onClick={handleAddToFavorites}
-        fontSize="sm"
-        leftIcon={<span>{isFavorite ? "❤️" : "🤍"}</span>}
-        _hover={{ bg: "transparent", textDecoration: "underline" }}
-      >
-        {isFavorite ? "remove from favorites" : "add to favorites"}
-      </Button>
+{user && (
+  <Button
+    variant="ghost"
+    colorScheme={isFavorite ? "red" : "gray"}
+    onClick={handleAddToFavorites}
+    fontSize="sm"
+    leftIcon={<span>{isFavorite ? "❤️" : "🤍"}</span>}
+    _hover={{ bg: "transparent", textDecoration: "underline" }}
+  >
+    {isFavorite ? "remove from favorites" : "add to favorites"}
+  </Button>
+)}
+
     </HStack>
 
     {product.user?.username && (
@@ -551,7 +554,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
                   ? `Stock: ${product.quantity} left`
                   : "Out of stock"}
         </Text>
-        {product.user._id === user._id ? (
+        {product.user?._id && user?._id && product.user._id === user._id ? (
           <>
               <Button mt={2}
                 as={RouterLink}

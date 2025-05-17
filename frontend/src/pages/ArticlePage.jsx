@@ -11,6 +11,7 @@ import {
   HStack,
   Circle,
   Flex,
+  Divider,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -352,7 +353,7 @@ const ArticlePage = () => {
   </Text>
 )}
 
-{!editMode && !isOwner && (
+{currentUser && !editMode && !isOwner && (
   <IconButton
     aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
     icon={<Text fontSize="2xl">{isFavorite ? "❤️" : "🤍"}</Text>}
@@ -363,9 +364,10 @@ const ArticlePage = () => {
     size="sm"
     position="absolute"
     top={0}
-    right="40px" // puțin distanțat de edit
+    right="40px"
   />
 )}
+
 
 
               {coverImage && (
@@ -452,9 +454,12 @@ const ArticlePage = () => {
 
 {article && (
   <Box mt={10}>
+    <Divider my={4} />
+    
     <CommentsSection resourceId={article._id} resourceType="Article" />
   </Box>
 )}
+<Divider my={4} />
 
 
       </VStack>
