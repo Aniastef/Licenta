@@ -1,5 +1,6 @@
 // --- articleController.js ---
 import Article from '../models/articleModel.js';
+import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul dacă e diferit
 
 export const createArticle = async (req, res) => {
   try {
@@ -16,6 +17,13 @@ export const createArticle = async (req, res) => {
     });
 
     await article.save();
+    await addAuditLog({
+  action: "create_article",
+  performedBy: req.user._id,
+  targetArticle: article._id,
+  details: `Created article: ${article.title}`,
+});
+
     res.status(201).json(article);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -108,6 +116,13 @@ export const updateArticle = async (req, res) => {
     article.category = category || article.category;
 
     await article.save();
+    await addAuditLog({
+  action: "update_article",
+  performedBy: req.user._id,
+  targetArticle: article._id,
+  details: `Updated article: ${article.title}`,
+});
+
     res.status(200).json(article);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -124,6 +139,13 @@ export const deleteArticle = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
 
     await Article.findByIdAndDelete(id);
+    await addAuditLog({
+  action: "delete_article",
+  performedBy: req.user._id,
+  targetArticle: article._id,
+  details: `Deleted article: ${article.title}`,
+});
+
     res.status(200).json({ message: 'Article deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -1,12 +1,17 @@
 import mongoose from "mongoose";
 
 const auditLogSchema = new mongoose.Schema({
-  action: { type: String, required: true }, // Ex: "User deleted", "Role changed"
-  performedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Cine a făcut acțiunea
-  targetUser: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Dacă se aplică unui user
-  timestamp: { type: Date, default: Date.now }, // Când s-a făcut acțiunea
-  details: { type: String } // Informații adiționale
+  action: { type: String, required: true },
+  performedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  targetUser: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // optional
+  targetProduct: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+  targetEvent: { type: mongoose.Schema.Types.ObjectId, ref: "Event" },
+  targetGallery: { type: mongoose.Schema.Types.ObjectId, ref: "Gallery" },
+  targetArticle: { type: mongoose.Schema.Types.ObjectId, ref: "Article" },
+  details: { type: String },
+  timestamp: { type: Date, default: Date.now },
 });
+
 
 const AuditLog = mongoose.model("AuditLog", auditLogSchema);
 export default AuditLog;

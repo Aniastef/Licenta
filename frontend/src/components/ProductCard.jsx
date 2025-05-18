@@ -534,7 +534,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
       {product.galleries.map((gallery) => (
         <RouterLink
           key={gallery._id}
-          to={`/galleries/${product.user?.username}/${gallery.name}`}
+          to={`/galleries/${gallery._id}`}
           style={{ color: "#3182ce", textDecoration: "underline" }}
         >
           {gallery.name}

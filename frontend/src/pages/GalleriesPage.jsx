@@ -275,7 +275,7 @@ const ExploreGalleries = () => {
             <>
 <SimpleGrid minChildWidth="400px" spacing={6}>
 {paginated.map((gallery) => (
-  <Link to={`/galleries/${gallery.owner?.username}/${gallery.name}`} key={gallery._id}>
+<Link to={`/galleries/${gallery._id}`} key={gallery._id}>
   <Box
                       p={0}
                       bg="gray.100"

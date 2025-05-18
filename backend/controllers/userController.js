@@ -7,6 +7,7 @@ import Gallery from "../models/galleryModel.js";
 import Product from "../models/productModel.js";
 import Article from "../models/articleModel.js"; // Asigură-te că e importat
 import Notification from "../models/notificationModel.js"; // asigură-te că e importat
+import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul dacă e diferit
 
 export const getUserProfile = async (req, res) => {
 	try {
@@ -218,6 +219,13 @@ if (isFirstUser) {
 	  });
   
 	  await newUser.save();
+	  await addAuditLog({
+  action: "signup",
+  performedBy: newUser._id,
+  targetUser: newUser._id,
+  details: `New account created: ${newUser.username}`
+});
+
 	  generateTokenAndSetCookie(newUser._id, res);
   
 	  res.status(201).json({
@@ -289,7 +297,13 @@ if (isFirstUser) {
 	  user.country = country ?? user.country;
   
 	  await user.save();
-  
+  await addAuditLog({
+  action: "update_user_by_admin",
+  performedBy: req.user._id,
+  targetUser: user._id,
+  details: `Admin updated user: ${user.firstName} ${user.lastName}`
+});
+
 	  res.status(200).json({ message: "User updated successfully", user });
 	} catch (err) {
 	  console.error("Error in updateUserByAdmin:", err.message);
@@ -688,7 +702,13 @@ export const moveToFavorites = async (req, res) => {
   
 	  // Ștergem utilizatorul din baza de date
 	  await User.findByIdAndDelete(id);
-  
+  await addAuditLog({
+  action: "delete_user",
+  performedBy: currentUserId,
+  targetUser: id,
+  details: `Deleted user: ${userToDelete.username || userToDelete.email}`
+});
+
 	  res.status(200).json({ message: "User deleted successfully" });
 	} catch (err) {
 	  res.status(500).json({ error: err.message });

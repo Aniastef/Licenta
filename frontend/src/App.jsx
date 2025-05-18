@@ -71,7 +71,7 @@ function App() {
         <Route path="*" element={<Navigate to="/home" />} />
         <Route path="/galleries" element={<ExploreGalleries/>}/>
         <Route path="/create/gallery" element={<CreateGalleryPage/>}/>
-        <Route path="/galleries/:username/:galleryName" element={<GalleryPage />} />
+        <Route path="/galleries/:galleryId" element={<GalleryPage />} />    
         <Route path="/messages" element={<MessagesPage />} /> {/* Pagină pentru mesaje */}
         <Route path="/notifications" element={user ? <NotificationsPage /> : <Navigate to="/auth" />} />
         <Route path="/messages/:userId" element={<MessagesPage />} />

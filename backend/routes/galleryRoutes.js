@@ -4,7 +4,6 @@ import upload from "../config/imgUpload.js";
 import {
   createGallery,
   getGallery,
-  getGalleryById,
   updateGallery,
   deleteGallery,
   getAllGalleries,
@@ -24,12 +23,10 @@ const router = express.Router();
 router.post("/:galleryId/accept-invite", protectRoute, acceptGalleryInvite);
 router.post("/:galleryId/decline-invite", protectRoute, declineGalleryInvite);
 // 🔄 Obținere galerie după ID (folosită pentru editare)
-router.get("/:galleryId", protectRoute, getGalleryById); // trebuie să fie înainte de username/name
+router.get("/:galleryId", protectRoute, getGallery);
 router.get("/user/:username", getAllUserGalleries);
 
 
-// 👤 Obținere galerie după username + gallery name (pentru afișare publică)
-router.get("/:username/:galleryName", getGallery); // ✅
 
 // ✅ Creare galerie
 router.post("/create", upload.single("coverPhoto"), protectRoute, createGallery);

@@ -7,7 +7,7 @@ import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 
 export default function GalleryPage() {
-  const { username, galleryName } = useParams();
+  const { galleryId } = useParams();
   const [gallery, setGallery] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,13 +17,11 @@ export default function GalleryPage() {
 
   const fetchGallery = async () => {
     try {
-      console.log("Fetching gallery for:", username, galleryName);
-      const response = await fetch(`/api/galleries/${username}/${galleryName}`, {
+      const response = await fetch(`/api/galleries/${galleryId}`, {
         credentials: "include", // 🔐 pentru autentificare cu sesiune
       });
             if (!response.ok) throw new Error("Failed to fetch gallery");
       const data = await response.json();
-      console.log("Fetched Gallery Data:", data);
       setGallery(data);
     } catch (err) {
       console.error("Error fetching gallery:", err);
@@ -34,8 +32,10 @@ export default function GalleryPage() {
   };
 
   useEffect(() => {
-    fetchGallery();
-  }, [username, galleryName]);
+  console.log("➡️ galleryId from params:", galleryId);
+  fetchGallery();
+}, [galleryId]);
+
 
   if (isLoading) return <Spinner size="xl" />;
   if (error) return <Text>Error: {error}</Text>;

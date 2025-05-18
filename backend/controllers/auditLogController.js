@@ -6,7 +6,13 @@ export const getAuditLogs = async (req, res) => {
         return res.status(403).json({ error: "Access denied" });
       }
   
-      const logs = await AuditLog.find().populate("performedBy", "firstName lastName email").populate("targetUser", "firstName lastName email");
+const logs = await AuditLog.find()
+  .populate("performedBy", "firstName lastName email")
+  .populate("targetUser", "firstName lastName email")
+  .populate("targetProduct", "name")
+  .populate("targetEvent", "name")
+  .populate("targetGallery", "name")
+  .populate("targetArticle", "title");
       console.log("Audit logs found:", logs);
 
       res.json(logs);
@@ -16,10 +22,19 @@ export const getAuditLogs = async (req, res) => {
     }
   };
   
-  export const addAuditLog = async (action, performedBy, targetUser = null, details = "") => {
-    try {
-      await AuditLog.create({ action, performedBy, targetUser, details });
-    } catch (err) {
-      console.error("Error saving audit log:", err);
-    }
-  };
+export const addAuditLog = async ({ action, performedBy, details = "", targetUser = null, targetProduct = null, targetEvent = null, targetGallery = null, targetArticle = null }) => {
+  try {
+    await AuditLog.create({
+      action,
+      performedBy,
+      targetUser,
+      targetProduct,
+      targetEvent,
+      targetGallery,
+      targetArticle,
+      details
+    });
+  } catch (err) {
+    console.error("Error saving audit log:", err);
+  }
+};

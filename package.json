@@ -4,6 +4,7 @@
     "@tiptap/react": "^2.11.7",
     "@tiptap/starter-kit": "^2.11.7",
     "react-calendar": "^5.1.0",
-    "react-quill": "^2.0.0"
+    "react-quill": "^2.0.0",
+    "recharts": "^2.15.3"
   }
 }

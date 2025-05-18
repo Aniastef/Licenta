@@ -79,7 +79,8 @@ const FavoritesPage = () => {
                 {favoriteGalleries.map((gallery) => (
                   <Link
                     key={gallery._id}
-                    to={`/galleries/${gallery.owner?.username}/${encodeURIComponent(gallery.name)}`}
+                    to={`/galleries/${gallery._id}`}
+
                   >
                     <Box
                       bg="gray.100"

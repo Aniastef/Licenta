@@ -496,8 +496,8 @@ filteredGalleries.slice(0, 2).map((gallery) => (
         _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
         transition="all 0.2s"
         cursor="pointer"
-        onClick={() => navigate(`/galleries/${user.username}/${gallery.name}`)}
-      >
+        onClick={() => navigate(`/galleries/${gallery._id}`)}
+        >
         {/* Cover Photo */}
         <Box h="150px" overflow="hidden" bg="blue.400" display="flex" alignItems="center" justifyContent="center">
   {gallery.coverPhoto ? (

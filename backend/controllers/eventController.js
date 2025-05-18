@@ -6,6 +6,7 @@ import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
 import Notification from "../models/notificationModel.js"
 import axios from 'axios';  // To make an API request to the geocoding service
+import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul dacă e diferit
 
 
 export const createEvent = async (req, res) => {
@@ -79,6 +80,12 @@ export const createEvent = async (req, res) => {
     
 
     await newEvent.save();
+await addAuditLog({
+  action: "create_event",
+  performedBy: req.user._id,
+  targetEvent: newEvent._id,
+  details: `Created event: ${newEvent.name}`,
+});
 
     // Adaugă evenimentul la utilizator
 await User.findByIdAndUpdate(
@@ -275,6 +282,13 @@ export const deleteEvent = async (req, res) => {
     }
 
     await event.deleteOne();
+    await addAuditLog({
+  action: "delete_event",
+  performedBy: req.user._id,
+  targetEvent: event._id,
+  details: `Deleted event: ${event.name}`,
+});
+
     res.status(200).json({ message: "Event deleted successfully" });
   } catch (err) {
     console.error("Error deleting event: ", err.message);
@@ -352,6 +366,13 @@ export const updateEvent = async (req, res) => {
     event.isDraft = typeof isDraft === 'boolean' ? isDraft : event.isDraft;
 
     await event.save();
+    await addAuditLog({
+  action: "update_event",
+  performedBy: req.user._id,
+  targetEvent: event._id,
+  details: `Updated event: ${event.name}`,
+});
+
     res.status(200).json(event);
   } catch (err) {
     res.status(500).json({ error: err.message });

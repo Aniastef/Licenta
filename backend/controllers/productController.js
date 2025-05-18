@@ -6,6 +6,7 @@ import Comment from "../models/commentModel.js";
 import Gallery from "../models/galleryModel.js";
 import User from "../models/userModel.js";
 import Notification from "../models/notificationModel.js";
+import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul dacă e diferit
 
 
 export const createProduct = async (req, res) => {
@@ -61,7 +62,13 @@ export const createProduct = async (req, res) => {
 	  
   
 	  await newProduct.save();
-  
+  await addAuditLog({
+  action: "create_product",
+  performedBy: req.user._id,
+  targetProduct: newProduct._id,
+  details: `Created product: ${newProduct.name}`
+});
+
 	  if (galleries && galleries.length > 0) {
 		await Gallery.updateMany(
 		  { _id: { $in: galleries } },
@@ -125,7 +132,13 @@ export const getProduct = async (req, res) => {
 	  }
   
 	  await product.deleteOne(); // ✅ Acesta este pasul lipsă
-  
+  await addAuditLog({
+  action: "delete_product",
+  performedBy: req.user._id,
+  targetProduct: product._id,
+  details: `Deleted product: ${product.name}`
+});
+
 	  res.status(200).json({ message: "Product deleted successfully" });
 	} catch (err) {
 	  console.error("Error deleting product:", err.message);
@@ -219,6 +232,13 @@ try {
 
 
 	await product.save();
+	await addAuditLog({
+  action: "update_product",
+  performedBy: req.user._id,
+  targetProduct: product._id,
+  details: `Updated product: ${product.name}`
+});
+
 	res.status(200).json(product);
 } catch (err) {
 	console.error("Error updating product:", err.message);

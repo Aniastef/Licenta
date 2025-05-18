@@ -211,7 +211,7 @@ placeholder="Search by name, tags, or collaborators..."          value={searchTe
    flexDirection="column"
    cursor="pointer"
    onClick={() =>
-     window.location.href = `/galleries/${gallery.owner.username}/${encodeURIComponent(gallery.name)}`
+   window.location.href = `/galleries/${gallery._id}`
    }
  >
    <Box h="210px" bg="gray.300" mb={3}>

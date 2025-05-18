@@ -208,11 +208,11 @@ const dataURLtoFile = (dataUrl, filename) => {
 		console.log("➡️ Collaborators being sent:", collaborators);
 		showToast("Gallery created successfully", "", "success");
   
-		if (data.isPublic || data.owner._id === currentUser._id) {
-			navigate(`/galleries/${data.owner.username}/${encodeURIComponent(data.name)}`);
+		if (data._id) {
+  navigate(`/galleries/${data._id}`);
+  showToast("Gallery created", "Waiting for approval or invite acceptance", "info");
+}
 
-		  showToast("Gallery created", "Waiting for approval or invite acceptance", "info");
-		}
 	  } catch (error) {
 		showToast("Error", error.message, "error");
 	  } finally {

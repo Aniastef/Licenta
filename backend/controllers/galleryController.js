@@ -6,6 +6,7 @@ import User from "../models/userModel.js";
 import Product from "../models/productModel.js";
 import Notification from "../models/notificationModel.js";
 import { createNotification } from "./notificationController.js"; // adaugă sus
+import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul dacă e diferit
 
 export const createGallery = async (req, res) => {
   try {
@@ -54,6 +55,13 @@ export const createGallery = async (req, res) => {
     });
 
     await newGallery.save();
+    await addAuditLog({
+  action: "create_gallery",
+  performedBy: req.user._id,
+  targetGallery: newGallery._id,
+  details: `Created gallery: ${newGallery.name}`,
+});
+
     await newGallery.populate("owner", "username");
 
     await User.findByIdAndUpdate(
@@ -68,7 +76,7 @@ export const createGallery = async (req, res) => {
         userId,
         type: "invite",
         message: `${req.user.firstName} ${req.user.lastName} invited you to collaborate on gallery "${name}"`,
-        link: `/galleries/${req.user.username}/${name}`,
+        link: `/galleries/${newGallery._id}`,
         meta: { galleryId: newGallery._id },
       });
       console.log("📩 Notificare pentru:", userId);
@@ -89,62 +97,39 @@ export const createGallery = async (req, res) => {
 
 export const getGallery = async (req, res) => {
   try {
-    const { username } = req.params;
-    const galleryName = decodeURIComponent(req.params.galleryName);
-    const currentUserId = req.user?._id?.toString();
+    const { galleryId } = req.params;
+    const currentUserId = req.user?._id?.toString();  // ← aici e nevoie să fie autentificat
 
-    // 🔍 Găsește userul după username
-    const user = await User.findOne({ username });
-    if (!user) {
-      console.log("❌ User not found:", username);
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // 🔍 Găsește galeria asociată
-    const gallery = await Gallery.findOne({
-      name: galleryName,
-      $or: [
-        { owner: user._id },
-        { collaborators: user._id },
-      ],
-    })
+    const gallery = await Gallery.findById(galleryId)
       .populate("owner", "firstName lastName username _id")
       .populate("collaborators", "username firstName lastName _id")
       .populate("pendingCollaborators", "username firstName lastName _id")
       .populate({
         path: "products.product",
-        model: "Product", // ✅ Asigură modelul explicit
+        model: "Product",
         select: "images name price quantity forSale description",
       });
 
     if (!gallery) {
-      console.log("❌ Gallery not found:", galleryName);
       return res.status(404).json({ error: "Gallery not found" });
     }
 
-    // 🔐 Verifică permisiunile
     const isOwner = currentUserId && gallery.owner._id.toString() === currentUserId;
-    const isCollaborator = currentUserId &&
-      gallery.collaborators.some((c) => c._id.toString() === currentUserId);
+    const isCollaborator = currentUserId && gallery.collaborators.some(c => c._id.toString() === currentUserId);
 
     if (!gallery.isPublic && !isOwner && !isCollaborator) {
       return res.status(403).json({ error: "This gallery is private." });
     }
 
-    // 🔀 Sortează produsele după `order`
     gallery.products.sort((a, b) => a.order - b.order);
-
-    console.log("📦 Returned product order:", gallery.products.map(p => ({
-      id: p.product?._id?.toString(),
-      order: p.order
-    })));
-
     return res.status(200).json(gallery);
   } catch (err) {
     console.error("💥 Error in getGallery:", err.message);
     res.status(500).json({ error: "Failed to fetch gallery" });
   }
 };
+
+
 
 
 
@@ -282,7 +267,7 @@ export const updateGallery = async (req, res) => {
           userId,
           type: "invite",
           message: `${req.user.firstName} ${req.user.lastName} invited you to collaborate on gallery "${gallery.name}"`,
-          link: `/galleries/${req.user.username}/${gallery.name}`,
+          link: `/galleries/${gallery._id}`,
           meta: { galleryId: gallery._id },
         });
       }
@@ -305,6 +290,20 @@ export const updateGallery = async (req, res) => {
     }
 
     await gallery.save();
+    await addAuditLog({
+  action: "delete_gallery",
+  performedBy: req.user._id,
+  targetGallery: gallery._id,
+  details: `Deleted gallery: ${gallery.name}`,
+});
+
+    await addAuditLog({
+  action: "update_gallery",
+  performedBy: req.user._id,
+  targetGallery: gallery._id,
+  details: `Updated gallery: ${gallery.name}`,
+});
+
     await gallery.populate("owner", "username"); // 🔥 adaugă această linie
     res.status(200).json(gallery);
   } catch (err) {
@@ -319,16 +318,17 @@ export const updateGallery = async (req, res) => {
 export const getAllGalleries = async (req, res) => {
   try {
    // getAllGalleries
-   const galleries = await Gallery.find()
-   .populate("owner", "username firstName lastName profilePicture")
-   .populate("collaborators", "firstName lastName")
-   .populate({
-     path: "products",
-     select: "images",
-   })
-   .select("name category tags products owner coverPhoto collaborators createdAt") // 👈 AICI!
-   .sort({ createdAt: -1 });
+ const galleries = await Gallery.find()
+  .populate("owner", "username firstName lastName profilePicture")
+  .populate("collaborators", "firstName lastName")
+  .populate({
+    path: "products.product",
+    select: "images", // ← doar câmpuri esențiale
+  })
+  .select("name category tags products owner coverPhoto collaborators createdAt")
+  .sort({ createdAt: -1 });
  
+console.log("Galleries count:", galleries.length);
 
     res.status(200).json({ galleries });
   } catch (err) {
@@ -376,38 +376,6 @@ export const addProductToGallery = async (req, res) => {
   } catch (err) {
     console.error("Error adding product to gallery:", err.message);
     res.status(500).json({ message: err.message });
-  }
-};
-
-// ✅ Get gallery by ID (for editing)
-export const getGalleryById = async (req, res) => {
-  try {
-    const gallery = await Gallery.findById(req.params.galleryId)
-      .populate("owner", "username")
-      .populate("collaborators", "username firstName lastName _id")
-      .populate({
-        path: "products.product",
-        select: "images name price quantity forSale description",
-      });
-
-    if (!gallery) {
-      return res.status(404).json({ error: "Gallery not found" });
-    }
-
-    if (!gallery.owner) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // ✅ Include și ID-ul userului logat în răspuns
-    const currentUserId = req.user?._id?.toString();
-
-    res.status(200).json({
-      ...gallery.toObject(), // convertim la obiect pur pentru a putea extinde
-      currentUserId,
-    });
-  } catch (err) {
-    console.error("Error fetching gallery by ID:", err.message);
-    res.status(500).json({ error: "Failed to fetch gallery" });
   }
 };
 
