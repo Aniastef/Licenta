@@ -325,7 +325,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
         : product.videos?.map((url, i) => (
             <Box
               key={i}
-              as="video"
+            as="video"
               src={url}
               onClick={() => setCurrentVideoIndex(i)}
               muted
@@ -554,6 +554,17 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
                   ? `Stock: ${product.quantity} left`
                   : "Out of stock"}
         </Text>
+ {product.forSale && typeof product.price === "number" && (
+  <Text mt={1} color="green.600" fontWeight="bold" fontSize="lg">
+    Price: {product.price.toFixed(2)}{" "}
+    <Text as="span" fontWeight="semibold">
+      {product.currency || "USD"}
+    </Text>
+  </Text>
+)}
+
+
+
         {product.user?._id && user?._id && product.user._id === user._id ? (
           <>
               <Button mt={2}

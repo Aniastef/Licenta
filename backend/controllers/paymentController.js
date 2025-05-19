@@ -132,9 +132,20 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(400).json({ error: "No items provided" });
     }
 
+    // ✅ Extrage valutele distincte
+    const uniqueCurrencies = [...new Set(items.map(item => item.currency || "ron"))];
+
+    if (uniqueCurrencies.length > 1) {
+      return res.status(400).json({
+        error: "All items in the cart must use the same currency for payment.",
+      });
+    }
+
+    const currency = uniqueCurrencies[0];
+
     const lineItems = items.map((item) => ({
       price_data: {
-        currency: "ron",
+        currency: currency.toLowerCase(),
         product_data: { name: item.name },
         unit_amount: Math.round(item.price * 100),
       },
@@ -142,11 +153,9 @@ export const createCheckoutSession = async (req, res) => {
     }));
 
     const totalAmount = lineItems.reduce((total, item) => total + item.price_data.unit_amount * item.quantity, 0);
-    console.log("🔹 Total amount in cents:", totalAmount);
-
     if (totalAmount < 200) {
       return res.status(400).json({
-        error: "Total must be at least 2 RON",
+        error: `Total must be at least 2 ${currency.toUpperCase()}`,
       });
     }
 

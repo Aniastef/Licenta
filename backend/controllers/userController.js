@@ -66,7 +66,7 @@ owner: { $ne: user._id },
 
 	  // ⚠️ QUERY SEPARAT PENTRU PRODUSE (NU populate pe `products[]`)
 	  const products = await Product.find({ user: user._id })
-  .select("name price images videos tags createdAt category") // 🔄 adaugă și videos, category
+  .select("name price currency images videos tags createdAt category") // 🔄 adaugă și videos, category
   .sort({ createdAt: -1 });
 
 

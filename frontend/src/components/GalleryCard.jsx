@@ -418,9 +418,12 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         <Text fontWeight="semibold" textAlign="center">
     {p.name}
   </Text>
-  <Text fontSize="sm" color="gray.600" textAlign="center">
-  {p.forSale && p.price != null ? `Price: ${p.price} RON` : "Not for sale"}
+<Text fontSize="sm" color="green.600" textAlign="center">
+  {p.forSale && p.price != null
+    ? `Price: ${p.price} ${p.currency || "RON"}`
+    : "Not for sale"}
 </Text>
+
 
 
         {/* Afișăm tag-urile */}

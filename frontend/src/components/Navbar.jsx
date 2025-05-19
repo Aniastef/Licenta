@@ -74,7 +74,7 @@ const Navbar = () => {
         <HStack spacing={6} fontSize="lg" flexWrap="wrap">
         <Link to="/home"><Text _hover={{ textDecoration: "underline" }}>Home</Text></Link>
   <Link to="/galleries"><Text _hover={{ textDecoration: "underline" }}>Galleries</Text></Link>
-  <Link to="/products"><Text _hover={{ textDecoration: "underline" }}>Art pieces</Text></Link>
+  <Link to="/products"><Text _hover={{ textDecoration: "underline" }}>Art Pieces</Text></Link>
   <Link to="/events"><Text _hover={{ textDecoration: "underline" }}>Events</Text></Link>
   <Link to="/articles"><Text _hover={{ textDecoration: "underline" }}>ARTicles</Text></Link>
   {user && (
@@ -104,7 +104,9 @@ const Navbar = () => {
                 </MenuItem>
                 <MenuItem as={Link} to="/update">Edit profile</MenuItem>
                 <MenuItem as={Link} to="/messages">Messages</MenuItem>
-                <MenuItem as={Link} to="/admin-panel">Admin panel</MenuItem>
+{user.role === "admin" && (
+  <MenuItem as={Link} to="/admin-panel">Admin panel</MenuItem>
+)}
                 <MenuItem as={Link} to="/blocked-users">Blocked users</MenuItem>
                 <MenuItem as={Link} to={`${user.username}/all-products`}>My art pieces</MenuItem>
                 <MenuItem as={Link} to={`${user.username}/all-galleries`}>My galleries</MenuItem>

@@ -38,14 +38,24 @@ const CartPage = () => {
     updateCartQuantity(item.product._id, item.quantity + 1);
   };
 
-  const calculateTotal = () =>
-    cart
-      .reduce((sum, item) => {
-        const price = Number(item.product.price);
-        const qty = Number(item.quantity);
-        return sum + (isNaN(price) || isNaN(qty) ? 0 : price * qty);
-      }, 0)
-      .toFixed(2);
+const calculateTotal = () => {
+  const totals = {};
+
+  cart.forEach((item) => {
+    const price = Number(item.product.price);
+    const qty = Number(item.quantity);
+    const currency = item.product.currency || "RON";
+
+    if (!totals[currency]) totals[currency] = 0;
+
+    if (!isNaN(price) && !isNaN(qty)) {
+      totals[currency] += price * qty;
+    }
+  });
+
+  return totals;
+};
+
 
   return (
     <Box p={8}>
@@ -78,13 +88,30 @@ const CartPage = () => {
               position="relative"
             >
               
-              <Image
-                src={item.product.images?.[0] || "https://i.pravatar.cc/150"}
-                alt={item.product.name}
-                boxSize="120px"
-                borderRadius="lg"
-                objectFit="cover"
-              />
+             {item.product.images?.[0] ? (
+  <Image
+    src={item.product.images[0]}
+    alt={item.product.name}
+    boxSize="120px"
+    borderRadius="lg"
+    objectFit="cover"
+  />
+) : (
+  <Flex
+    boxSize="120px"
+    borderRadius="lg"
+    bg="gray.300"
+    justify="center"
+    align="center"
+    textAlign="center"
+    p={2}
+  >
+    <Text fontWeight="bold" fontSize="sm" color="gray.700">
+      {item.product.name}
+    </Text>
+  </Flex>
+)}
+
               
 
               <Box flex="1" mx={4}>
@@ -131,10 +158,10 @@ const CartPage = () => {
 
               <VStack spacing={2} align="end">
                 <Text fontSize="lg" color="gray.600">
-                  {unitPrice} RON × {item.quantity}
+{unitPrice} {item.product.currency || "RON"} × {item.quantity}
                 </Text>
                 <Text fontSize="2xl" color="green.600" fontWeight="bold">
-                  {totalPrice} RON
+{totalPrice} {item.product.currency || "RON"}
                 </Text>
                 <IconButton
                   icon={<CloseIcon />}
@@ -152,9 +179,15 @@ const CartPage = () => {
 
       {/* Totals */}
       <Box mt={8} textAlign="right">
-        <Text fontSize="xl" fontWeight="semibold">
-          Total: {calculateTotal()} lei
+        <Text fontSize="2xl" fontWeight="bold">
+          Total:
         </Text>
+        {Object.entries(calculateTotal()).map(([currency, total]) => (
+  <Text key={currency} fontSize="xl" fontWeight="semibold">
+    {total.toFixed(2)} {currency}
+  </Text>
+))}
+
         <Text fontSize="sm" mt={1}>
           + shipping costs may apply
         </Text>

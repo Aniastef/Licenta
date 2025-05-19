@@ -160,11 +160,12 @@ const OrdersPage = () => {
       : [{ product: order.product, quantity: order.quantity, price: order.price }];
 
     const rows = products.map((item) => [
-      item.product?.name || "Produs",
-      item.quantity,
-      `${item.price} RON`,
-      `${(item.quantity * item.price).toFixed(2)} RON`,
-    ]);
+  item.product?.name || "Produs",
+  item.quantity,
+`${item.price} ${item.product?.currency || item.currency || "RON"}`
+  `${(item.quantity * item.price).toFixed(2)} ${item.currency || "RON"}`,
+]);
+
 
     autoTable(doc, {
       startY: 70,
@@ -173,7 +174,12 @@ const OrdersPage = () => {
     });
 
     const total = rows.reduce((acc, row) => acc + parseFloat(row[3]), 0);
-    doc.text(`Total: ${total.toFixed(2)} RON`, 14, doc.lastAutoTable.finalY + 10);
+doc.text(
+  `Total: ${total.toFixed(2)} ${products[0].product?.currency || products[0].currency || "RON"}`,
+  14,
+  doc.lastAutoTable.finalY + 10
+);
+
 
     doc.save(`Factura_Comanda_${order._id.slice(-6)}.pdf`);
   };
@@ -194,7 +200,9 @@ const OrdersPage = () => {
                   <Text fontSize="sm">
                     Data: {new Date(order.date).toLocaleString()} {/* Afișează și ora */}
                   </Text>
-                  <Text fontSize="sm">Total: {total.toFixed(2)} RON</Text>
+<Text fontSize="sm">
+  Total: {total.toFixed(2)} {order.products?.[0]?.product?.currency || order.currency || "RON"}
+</Text>
                 </Box>
                 <Badge
                   colorScheme={
@@ -241,11 +249,14 @@ const OrdersPage = () => {
                       </Box>
                       <VStack align="start" spacing={1} flex="1">
                         <Text fontWeight="bold">{item.product?.name}</Text>
-                        <Text fontSize="sm">Preț unitar: {item.price} RON</Text>
-                        <Text fontSize="sm">Cantitate: {item.quantity}</Text>
-                        <Text fontWeight="semibold">
-                          Total: {(item.price * item.quantity).toFixed(2)} RON
-                        </Text>
+                        <Text fontSize="sm">Quantity: {item.quantity}</Text>
+                       <Text fontSize="sm">
+  Price per unity: {item.price} {item.product?.currency || item.currency || "RON"}
+</Text>
+<Text fontWeight="semibold">
+  Total: {(item.price * item.quantity).toFixed(2)} {item.product?.currency || item.currency || "RON"}
+</Text>
+
                       </VStack>
                     </HStack>
                   ))
@@ -276,11 +287,14 @@ const OrdersPage = () => {
                     </Box>
                     <VStack align="start" spacing={1} flex="1">
                       <Text fontWeight="bold">{order.product?.name}</Text>
-                      <Text fontSize="sm">Preț unitar: {order.price} RON</Text>
-                      <Text fontSize="sm">Cantitate: {order.quantity}</Text>
-                      <Text fontWeight="semibold">
-                        Total: {(order.price * order.quantity).toFixed(2)} RON
-                      </Text>
+                      <Text fontSize="sm">Quantity: {order.quantity}</Text>
+                     <Text fontSize="sm">
+  Price per unity {order.price} {order.product?.currency || order.currency || "RON"}
+</Text>
+<Text fontWeight="semibold">
+  Total: {(order.price * order.quantity).toFixed(2)} {order.product?.currency || order.currency || "RON"}
+</Text>
+
                     </VStack>
                   </HStack>
                 )}

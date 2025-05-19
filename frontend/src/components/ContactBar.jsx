@@ -8,7 +8,7 @@ import navbarBg from "../assets/navbar.svg"; // imaginea decorativă
 
 const ContactBar = () => {
   return (
-    <Box w="100%" mt={20} bg="#d2b48c" position="relative" overflow="visible">
+    <Box w="100%" mt={20} position="relative" overflow="visible">
       
       {/* Fundal inversat cu imaginea SVG */}
       <Image

@@ -230,7 +230,7 @@ const UserAllProductsPage = () => {
 
     {product.forSale && (
       <Text fontSize="sm" color="green.600">
-        {product.price} RON
+        {product.price} 
       </Text>
     )}
 
@@ -348,11 +348,12 @@ const UserAllProductsPage = () => {
       {/* detalii + buton */}
       <Box textAlign="center" py={3} px={2}>
         <Text fontWeight="bold" noOfLines={1}>{product.name}</Text>
-        {product.forSale && product.price > 0 && (
-          <Text fontSize="sm" color="green.600">
-            For Sale: {product.price} RON
-          </Text>
-        )}
+     {typeof product.price === "number" && product.price > 0 && (
+  <Text fontSize="sm" color="green.600">
+    Price: {product.price} {product.currency || "RON"}
+  </Text>
+)}
+
         {product.forSale && product.price > 0 && (
           <Text fontSize="sm" color="gray.600">
             Stock: {product.quantity}

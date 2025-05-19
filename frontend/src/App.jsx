@@ -35,7 +35,6 @@ import NotificationsPage from './pages/NotificationPage';
 import UserArticlesPage from './pages/UserArticlesPage';
 import ArticlePage from './pages/ArticlePage';
 import CalendarPage from './pages/CalendarPage';
-import Test from './components/test';
 import ContactBar from './components/ContactBar';
 import LoginCard from './components/LoginCard';
 import UserAllGalleriesPage from './pages/UserAllGalleriesPage';
@@ -91,7 +90,6 @@ function App() {
         <Route path="/articles/:articleId" element={<ArticlePage />} />
 
         <Route path="/:username/calendar" element={<CalendarPage />} />
-        <Route path="/test" element={<Test />} />
         <Route path="/login" element={<LoginCard />} />
         <Route path="/favorites/:username" element={<FavoritesPage />} />
         <Route path="/create/article" element={<CreateOrEditArticlePage />} />

@@ -427,8 +427,10 @@ const UserHeader = ({ user }) => {
           </Box>
           <Box p={4}>
             <Text fontWeight="bold" mb={1}>{product.name}</Text>
-            {product.price > 0 && (
-  <Text fontSize="sm">{product.price} $</Text>
+      { product.price !== undefined && (
+  <Text color="green.600" fontSize="sm">
+   Price: {product.price.toFixed(2)} {product.currency || "RON"}
+  </Text>
 )}
 
 {product.category && (

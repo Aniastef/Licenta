@@ -141,6 +141,7 @@ const CheckoutPage = () => {
           name: item.product.name,
           price: item.product.price,
           quantity: item.quantity || 1,
+          currency: item.product.currency || "ron", // ✅ TRIMITE valuta
         })),
       }),
     });
@@ -234,7 +235,28 @@ const CheckoutPage = () => {
   return (
     <VStack spacing={6} align="center" p={5}>
       <Text fontSize="2xl" fontWeight="bold">Checkout</Text>
-      <Text fontSize="lg">Total: {totalPrice.toFixed(2)} RON</Text>
+<Box textAlign="center">
+  <Text fontSize="lg" fontWeight="semibold" mb={1}>Total:</Text>
+  {Object.entries(
+    cart.reduce((acc, item) => {
+      const price = Number(item.product?.price);
+      const qty = Number(item.quantity);
+      const currency = item.product?.currency || "RON";
+
+      if (!acc[currency]) acc[currency] = 0;
+      if (!isNaN(price) && !isNaN(qty)) {
+        acc[currency] += price * qty;
+      }
+      return acc;
+    }, {})
+  ).map(([currency, amount]) => (
+    <Text key={currency} fontSize="lg">
+      {amount.toFixed(2)} {currency}
+    </Text>
+  ))}
+</Box>
+
+
 
       <Select w="300px" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
         <option value="online">Pay online with card</option>

@@ -11,7 +11,7 @@ import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul 
 
 export const createProduct = async (req, res) => {
 	try {
-		const { name, description, writing, price, quantity, forSale, galleries, images = [], videos = [], audios = [], category } = req.body;
+const { name, description, writing, price, currency, quantity, forSale, galleries, images = [], videos = [], audios = [], category } = req.body;
   
 	  if (!req.user) {
 		return res.status(403).json({ error: "User not authenticated" });
@@ -46,19 +46,24 @@ export const createProduct = async (req, res) => {
 	  }
   
 	  const newProduct = new Product({
-		name,
-		description: description?.trim() || "No description",
-		price,
-		quantity: quantity || 0,
-		forSale: forSale !== undefined ? forSale : true,
-		galleries: galleries || [],
-		images: uploadedImages,
-		videos: uploadedVideos,
-		audios: uploadedAudios,
-		writing,
-		category: category || "General", // ✅ ADĂUGAT
-		user: req.user._id,
-	  });
+  name,
+  description: description?.trim() || "No description",
+  price,
+  currency, // 👈 Adăugat aici
+  quantity: quantity || 0,
+  forSale: forSale !== undefined ? forSale : true,
+  galleries: galleries || [],
+  images: uploadedImages,
+  videos: uploadedVideos,
+  audios: uploadedAudios,
+  writing,
+  category: category || "General",
+  user: req.user._id,
+});
+if (forSale && (!price || !currency)) {
+  return res.status(400).json({ error: "Price and currency are required if product is for sale." });
+}
+
 	  
   
 	  await newProduct.save();
@@ -157,18 +162,20 @@ export const updateProduct = async (req, res) => {
 try {
 	const { productId } = req.params;
 	const {
-		name,
-		description,
-		price,
-		quantity,
-		forSale,
-		galleries,
-		images = [],
-		videos = [],
-		audios = [],
-		writing, // ✅ adaugă aici!
-		category, // ✅ ADĂUGAT
-	  } = req.body;
+  name,
+  description,
+  price,
+  quantity,
+  forSale,
+  galleries,
+  images = [],
+  videos = [],
+  audios = [],
+  writing,
+  category,
+  currency // 👈 aici
+} = req.body;
+
 	  
 	const product = await Product.findById(productId);
 	if (!product) {
@@ -228,6 +235,7 @@ try {
 	product.audios = uploadedAudios;
 	product.writing = writing ?? product.writing;
 	product.category = category || product.category;
+product.currency = currency || product.currency;
 
 
 
@@ -318,7 +326,7 @@ export const getAllUserProducts = async (req, res) => {
   
 	  const products = await Product.find({ user: user._id })
 		.populate("galleries", "name")
-		.select("name price quantity forSale images videos audios writing galleries createdAt");
+		.select("name price currency quantity forSale images videos audios writing galleries createdAt");
   
 	  res.status(200).json({ user, products }); // ✅ trimite și user
 	} catch (err) {

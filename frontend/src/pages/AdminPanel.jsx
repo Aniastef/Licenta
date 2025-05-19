@@ -84,6 +84,11 @@ const [rawArticleCover, setRawArticleCover] = useState(null);
 const [croppedArticleCover, setCroppedArticleCover] = useState(null);
 const [isArticleCropOpen, setIsArticleCropOpen] = useState(false);
 
+const [orders, setOrders] = useState([]);
+const [orderSearch, setOrderSearch] = useState("");
+const [orderSortField, setOrderSortField] = useState("createdAt");
+const [orderSortOrder, setOrderSortOrder] = useState("desc");
+
 const handleEditGallery = (gallery) => {
   setEditGallery({
   ...gallery,
@@ -96,6 +101,18 @@ const handleEditGallery = (gallery) => {
 
   setIsGalleryModalOpen(true);
 };
+
+const fetchOrders = async () => {
+  try {
+    const res = await fetch("/api/orders", { credentials: "include" });
+    const data = await res.json();
+    setOrders(data.orders || []);
+  } catch (err) {
+    toast({ title: "Error loading orders", status: "error" });
+  }
+};
+
+
 const prettifyDetails = (details) => {
   try {
     const parsed = JSON.parse(details.replace(/^Updated fields:\s*/, ""));
@@ -680,6 +697,19 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
   //   user.role.toLowerCase().includes(searchQuery.toLowerCase())
   // );
   
+  const filteredOrders = orders
+  .filter(order =>
+    order.user?.email.toLowerCase().includes(orderSearch.toLowerCase()) ||
+    order._id.includes(orderSearch)
+  )
+  .sort((a, b) => {
+    const valA = a[orderSortField];
+    const valB = b[orderSortField];
+    if (valA < valB) return orderSortOrder === "asc" ? -1 : 1;
+    if (valA > valB) return orderSortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
+
   const filteredUsers = users
     .filter(user =>
       (roleFilter === "all" || user.role === roleFilter) &&
@@ -829,6 +859,16 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
   setActiveTab("articles");
   fetchArticles(); // La fel pentru events și galleries
 }}>ARTicles</Button>
+<Button
+  colorScheme={activeTab === "orders" ? "blue" : "gray"}
+  onClick={() => {
+    setActiveTab("orders");
+    fetchOrders(); // funcție definită mai jos
+  }}
+>
+  Orders
+</Button>
+
         <Button 
           colorScheme={activeTab === "logs" ? "blue" : "gray"} 
           onClick={() => {
@@ -1026,7 +1066,6 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
               >
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
-                <option value="admin">admin</option>
               </Select>
             </Td>
             <Td display="flex" gap={2}>
@@ -1439,6 +1478,65 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
           ) : (
             <Tr>
               <Td colSpan={5}>No articles found</Td>
+            </Tr>
+          )}
+        </Tbody>
+      </Table>
+    </Box>
+  </Box>
+)}
+
+{activeTab === "orders" && (
+  <Box>
+    <Heading textAlign="center" size="md" mb={4}>Manage Orders</Heading>
+
+    <Input
+      placeholder="Search by user email or order ID..."
+      value={orderSearch}
+      onChange={(e) => setOrderSearch(e.target.value)}
+      mb={4}
+    />
+
+    <Flex gap={3} wrap="wrap" mb={4}>
+      <Select
+        size="sm"
+        value={orderSortField}
+        onChange={(e) => setOrderSortField(e.target.value)}
+        maxW="200px"
+      >
+        <option value="createdAt">Sort by date</option>
+        <option value="total">Sort by total</option>
+      </Select>
+      <Button size="sm" onClick={() => setOrderSortOrder(orderSortOrder === "asc" ? "desc" : "asc")}>
+        {orderSortOrder === "asc" ? "⬆️ Ascending" : "⬇️ Descending"}
+      </Button>
+    </Flex>
+
+    <Box width="100%">
+      <Table width="100%" variant="simple">
+        <Thead>
+          <Tr>
+            <Th>Order ID</Th>
+            <Th>User</Th>
+            <Th>Total</Th>
+            <Th>Date</Th>
+            <Th>Status</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {filteredOrders.length > 0 ? (
+            filteredOrders.map(order => (
+              <Tr key={order._id}>
+                <Td>{order._id}</Td>
+                <Td>{order.user?.firstName} {order.user?.lastName}</Td>
+                <Td>${order.total.toFixed(2)}</Td>
+                <Td>{new Date(order.createdAt).toLocaleDateString()}</Td>
+                <Td>{order.status}</Td>
+              </Tr>
+            ))
+          ) : (
+            <Tr>
+              <Td colSpan="5">No orders found</Td>
             </Tr>
           )}
         </Tbody>

@@ -587,19 +587,19 @@ useEffect(() => {
                         })}
                       </Text> */}
 
-                      {product.price >0 && (
-                           <Button
-                          size="sm"
-                          mt={1}
-                          bg="green"
-                          color="white"
-                          borderRadius="20px"
-                          _hover={{ bg: "#766a31" }}
-                        >
-                        Price: {product.forSale ? `${product.price} RON` : "N/A"}
-                        </Button>
-                      
-                      )}
+                 {product.forSale && product.price > 0 && (
+  <Button
+    size="sm"
+    mt={1}
+    bg="green"
+    color="white"
+    borderRadius="20px"
+    _hover={{ bg: "#766a31" }}
+  >
+    Price: {product.price.toFixed(2)} {product.currency || "RON"}
+  </Button>
+)}
+
                       {product.averageRating > 0 && (
                         <Text mt={2} fontSize="sm" color="yellow.500">
                           ★ {product.averageRating.toFixed(1)}

@@ -43,18 +43,19 @@ const compressImage = async (file) => {
 const CreateProductPage = () => {
 	const setProduct = useSetRecoilState(productAtom);
 	const [newProduct, setNewProduct] = useState({
-		name: "",
-		description: "",
-		price: "",
-		quantity: 1,
-		forSale: true,
-		category: "", // 🆕
+  name: "",
+  description: "",
+  price: "",
+  currency: "EUR", // 👈 Adăugat
+  quantity: null,   // 👈 Inițial null, va fi setat doar dacă e de vânzare
+  forSale: true,
+  category: "",
+  galleries: [],
+  images: [],
+  videos: [],
+  audios: [],
+});
 
-		galleries: [],
-		images: [],
-		videos: [],
-		audios: [],
-	});
 	const [imageFiles, setImageFiles] = useState([]);
 	const [videoFiles, setVideoFiles] = useState([]);
 	const [audioFiles, setAudioFiles] = useState([]);
@@ -193,32 +194,53 @@ const CreateProductPage = () => {
 							<Switch isChecked={newProduct.forSale} onChange={(e) => setNewProduct({ ...newProduct, forSale: e.target.checked })} />
 						</FormControl>
 {newProduct.forSale && (
-  <Input
-    type="number"
-    placeholder="Price"
-    value={newProduct.price}
-    onChange={(e) =>
-      setNewProduct({ ...newProduct, price: parseFloat(e.target.value) || 0 })
-    }
-  />
-)}
-{newProduct.forSale && (
-  <FormControl>
-    <FormLabel>Stock / Quantity</FormLabel>
+  <>
     <Input
-      type="number"
-      min="0"
-      placeholder="Quantity"
-      value={newProduct.quantity}
-      onChange={(e) =>
-        setNewProduct({
-          ...newProduct,
-          quantity: parseInt(e.target.value) || 0,
-        })
-      }
-    />
-  </FormControl>
+  type="number"
+  placeholder="Price"
+  value={newProduct.price ?? 0} // Asigură-te că e un număr valid
+  onChange={(e) =>
+    setNewProduct({ ...newProduct, price: parseFloat(e.target.value) || 0 })
+  }
+/>
+
+    <FormControl>
+      <FormLabel>Currency</FormLabel>
+      <Select
+        value={newProduct.currency}
+        onChange={(e) =>
+          setNewProduct({ ...newProduct, currency: e.target.value })
+        }
+      >
+        {[
+          "EUR", "USD", "GBP", "RON", "CHF", "NOK", "SEK", "DKK", "PLN", "CZK", "HUF", "BGN",
+          "HRK", "ISK", "TRY", "RSD", "UAH"
+        ].map((cur) => (
+          <option key={cur} value={cur}>
+            {cur}
+          </option>
+        ))}
+      </Select>
+    </FormControl>
+
+    <FormControl>
+      <FormLabel>Stock / Quantity</FormLabel>
+      <Input
+        type="number"
+        min="0"
+        placeholder="Quantity"
+        value={newProduct.quantity ?? ""}
+        onChange={(e) =>
+          setNewProduct({
+            ...newProduct,
+            quantity: e.target.value === "" ? null : parseInt(e.target.value),
+          })
+        }
+      />
+    </FormControl>
+  </>
 )}
+
 
 
 						

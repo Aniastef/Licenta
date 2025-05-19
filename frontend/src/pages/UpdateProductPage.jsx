@@ -182,24 +182,48 @@ import {
 				<FormLabel mt={2}>Is for sale</FormLabel>
 				<Switch isChecked={product.forSale} onChange={(e) => setProduct({ ...product, forSale: e.target.checked })} />
 			  </FormControl>
-  
-			  {product.forSale && (
-				<>
-				  <Input
-					type="number"
-					placeholder="Price"
-					value={product.price}
-					onChange={(e) => setProduct({ ...product, price: parseFloat(e.target.value) || 0 })}
-				  />
-				  <Input
-					type="number"
-					min="0"
-					placeholder="Quantity"
-					value={product.quantity}
-					onChange={(e) => setProduct({ ...product, quantity: parseInt(e.target.value) || 0 })}
-				  />
-				</>
-			  )}
+  {product.forSale && (
+  <>
+   <Input
+  type="number"
+  placeholder="Price"
+  value={product.price ?? 0} // fallback la 0
+  onChange={(e) =>
+    setProduct({ ...product, price: parseFloat(e.target.value) || 0 })
+  }
+/>
+
+    
+    <Select
+      placeholder="Currency"
+      value={product.currency || "EUR"}
+      onChange={(e) =>
+        setProduct({ ...product, currency: e.target.value })
+      }
+    >
+      {[
+        "EUR", "USD", "GBP", "RON", "CHF", "NOK", "SEK", "DKK",
+        "PLN", "CZK", "HUF", "BGN", "HRK", "ISK", "TRY", "RSD", "UAH"
+      ].map((cur) => (
+        <option key={cur} value={cur}>{cur}</option>
+      ))}
+    </Select>
+
+    <Input
+      type="number"
+      min="0"
+      placeholder="Quantity"
+      value={product.quantity}
+      onChange={(e) =>
+        setProduct({
+          ...product,
+          quantity: parseInt(e.target.value) || 0,
+        })
+      }
+    />
+  </>
+)}
+
   
 			  <FormControl>
 				<FormLabel>Category</FormLabel>
