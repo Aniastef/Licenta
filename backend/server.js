@@ -21,6 +21,7 @@ import articleRoutes from "./routes/articleRoutes.js"; // ✅ nou
 import upload from "./config/imgUpload.js";
 import { EventEmitter } from "events";
 import searchRoutes from "./routes/searchRoutes.js";
+import reportRoutes from './routes/reportRoutes.js';
 
 EventEmitter.defaultMaxListeners = 20;
 
@@ -58,7 +59,7 @@ app.use("/api/reviews", reviewRoutes); // ✅ nou
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/search", searchRoutes);
-
+app.use("/api/report", reportRoutes); // fără 's'
 
 // Not Found fallback
 app.use((req, res) => {

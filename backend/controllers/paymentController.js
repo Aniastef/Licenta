@@ -11,7 +11,6 @@ import Product from "../models/productModel.js";
 export const handlePaymentSuccess = async (req, res) => {
   try {
     const { userId } = req.body;
-    console.log("🔹 Payment success request for user:", userId);
 
     const user = await User.findById(userId).populate("cart.product");
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -26,17 +25,14 @@ export const handlePaymentSuccess = async (req, res) => {
       const product = await Product.findById(item.product?._id);
 
       if (!product || !product.forSale) {
-        console.log("⚠️ Skipping invalid product:", item.product?._id);
         continue;
       }
 
       if (product.user.toString() === userId.toString()) {
-        console.log("⛔ Can't buy own product:", product.name);
         continue;
       }
 
       if (product.quantity < item.quantity) {
-        console.log("🚫 Not enough stock for", product.name);
         return res.status(400).json({ error: `Not enough stock for ${product.name}` });
       }
 

@@ -414,7 +414,6 @@ export const removeFromFavorites = async (req, res) => {
         const { id: productId } = req.params; // Extragem ID-ul produsului
         const userId = req.user.id; // ID-ul utilizatorului autentificat
 
-        console.log("Removing favorite product:", productId, "for user:", userId);
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });

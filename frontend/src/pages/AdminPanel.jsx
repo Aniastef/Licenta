@@ -88,6 +88,23 @@ const [orders, setOrders] = useState([]);
 const [orderSearch, setOrderSearch] = useState("");
 const [orderSortField, setOrderSortField] = useState("createdAt");
 const [orderSortOrder, setOrderSortOrder] = useState("desc");
+const [reports, setReports] = useState([]);
+const [reportsLoading, setReportsLoading] = useState(false);
+
+const fetchReports = async () => {
+  try {
+    setReportsLoading(true);
+    const res = await fetch("/api/report", {
+      credentials: "include",
+    });
+    const data = await res.json();
+    setReports(data || []);
+  } catch (err) {
+    toast({ title: "Error loading reports", status: "error" });
+  } finally {
+    setReportsLoading(false);
+  }
+};
 
 const handleEditGallery = (gallery) => {
   setEditGallery({
@@ -104,7 +121,7 @@ const handleEditGallery = (gallery) => {
 
 const fetchOrders = async () => {
   try {
-    const res = await fetch("/api/orders", { credentials: "include" });
+const res = await fetch("/api/orders", { credentials: "include" });
     const data = await res.json();
     setOrders(data.orders || []);
   } catch (err) {
@@ -286,6 +303,40 @@ formData.append("tags", Array.isArray(editGallery.tags) ? editGallery.tags.join(
   }
 };
 
+const handleDeleteReport = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this report?")) return;
+
+  try {
+    const res = await fetch(`/api/report/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    if (!res.ok) throw new Error("Failed to delete report");
+
+    toast({ title: "Report deleted", status: "success" });
+    fetchReports();
+  } catch (err) {
+    toast({ title: err.message, status: "error" });
+  }
+};
+
+const handleResolveReport = async (id) => {
+  try {
+    const res = await fetch(`/api/report/${id}/resolve`, {
+      method: "PATCH",
+      credentials: "include",
+    });
+
+    if (!res.ok) throw new Error("Failed to resolve report");
+
+    toast({ title: "Report marked as resolved", status: "success" });
+    fetchReports();
+  } catch (err) {
+    toast({ title: err.message, status: "error" });
+  }
+};
+
 
 const handleDeleteGallery = async (id) => {
   if (!window.confirm("Are you sure you want to delete this gallery?")) return;
@@ -404,7 +455,6 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
       // ✅ Sortare descrescătoare după timestamp
       const sortedLogs = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   
-      console.log("Fetched logs:", sortedLogs); // ✅ Debugging
       setLogs(sortedLogs);
     } catch (err) {
       toast({ title: "Error fetching logs", status: "error" });
@@ -884,6 +934,16 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
         >
           Dashboard
         </Button>
+        <Button
+  colorScheme={activeTab === "reports" ? "blue" : "gray"}
+  onClick={() => {
+    setActiveTab("reports");
+    fetchReports(); // vei defini această funcție
+  }}
+>
+  Reports
+</Button>
+
         </Flex>
 </Box>
 
@@ -1672,6 +1732,78 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
     )}
   </Box>
 )}
+
+{activeTab === "reports" && (
+  <Box>
+    <Heading textAlign="center" size="md" mb={4}>User Reports</Heading>
+
+    {reportsLoading ? (
+      <Spinner />
+    ) : (
+<Box overflowX="hidden">
+<Table variant="simple" width="100%" tableLayout="fixed">
+          <Thead>
+            <Tr>
+              <Th>Reporter</Th>
+              <Th>Reported User</Th>
+              <Th>Reason</Th>
+              <Th>Details</Th>
+              <Th>Date</Th>
+              <Th>Actions</Th>
+
+            </Tr>
+          </Thead>
+          <Tbody>
+            {reports.length > 0 ? (
+              reports.map((report) => (
+                <Tr key={report._id}>
+                  <Td>{report.reporter?.firstName} {report.reporter?.lastName}</Td>
+                  <Td>{report.reportedUser?.firstName} {report.reportedUser?.lastName}</Td>
+                  <Td>{report.reason}</Td>
+<Td
+  whiteSpace="pre-wrap"
+  maxWidth="250px"
+  overflowY="auto"
+  overflowX="hidden"
+  style={{
+    maxHeight: "100px",
+    display: "block"
+  }}
+>
+  {report.details}
+</Td>
+                  <Td>{new Date(report.date).toLocaleString()}</Td>
+                <Td display="flex" gap={2}>
+  <Button
+    size="sm"
+    colorScheme="green"
+    onClick={() => handleResolveReport(report._id)}
+  >
+    Mark Resolved
+  </Button>
+  <Button
+    size="sm"
+    colorScheme="red"
+    onClick={() => handleDeleteReport(report._id)}
+  >
+    Delete
+  </Button>
+</Td>
+
+                </Tr>
+              ))
+            ) : (
+              <Tr>
+                <Td colSpan="5">No reports found</Td>
+              </Tr>
+            )}
+          </Tbody>
+        </Table>
+      </Box>
+    )}
+  </Box>
+)}
+
   <Modal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)}>
   <ModalOverlay />
   <ModalContent>

@@ -49,7 +49,6 @@ export const addOrder = async (req, res) => {
       phone,
     } = req.body;
 
-    console.log("Received order data:", req.body); // Aici vei vedea ce date sunt trimise din frontend
 
     
     const user = await User.findById(userId);
@@ -137,4 +136,35 @@ export const cancelOrder = async (req, res) => {
 
 // (aici rămân celelalte funcții pe care le ai deja, gen addOrder, getOrders etc.)
 
-  
+
+// Admin - Get All Orders from All Users
+export const getAllOrders = async (req, res) => {
+  try {
+    console.log("✅ getAllOrders triggered"); // ADĂUGĂ ASTA
+
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    const users = await User.find({ "orders.0": { $exists: true } })
+      .select("firstName lastName email orders")
+      .populate("orders.products.product");
+
+    const allOrders = users.flatMap(user =>
+      user.orders.map(order => ({
+        ...order.toObject(),
+        user: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email
+        }
+      }))
+    );
+
+    res.status(200).json({ orders: allOrders });
+  } catch (err) {
+    console.error("Error fetching all orders:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};

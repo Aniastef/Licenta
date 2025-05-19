@@ -5,7 +5,6 @@ import { addAuditLog } from "./auditLogController.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    console.log("Authenticated user:", req.user);
 
     if (!req.user || (req.user.role !== "admin")) {
       return res.status(403).json({ error: "Access denied" });

@@ -9,7 +9,6 @@ export const getConversations = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    console.log("🔄 Fetching conversations for user:", req.user._id);
 
     const conversations = await Message.aggregate([
       {
@@ -70,7 +69,6 @@ export const getConversations = async (req, res) => {
     
     
 
-    console.log("✅ Conversations found:", conversations);
     res.status(200).json({ conversations });
   } catch (err) {
     console.error("❌ Error fetching conversations:", err.message);
@@ -81,7 +79,6 @@ export const getConversations = async (req, res) => {
 export const getMessages = async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log("📢 Fetching messages between:", req.user._id, "and", userId);
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       console.error("❌ Invalid user ID:", userId);
@@ -99,7 +96,6 @@ export const getMessages = async (req, res) => {
 .sort({ timestamp: 1 });
 
 
-    console.log("✅ Messages response:", JSON.stringify(messages, null, 2)); // 🔥 DEBUGGING
 
     res.status(200).json({ messages });
   } catch (err) {

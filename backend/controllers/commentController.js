@@ -37,7 +37,6 @@ export const addComment = async (req, res) => {
 
     if (resourceType === "Product") {
       const product = await Product.findById(resourceId);
-      console.log("Product for comment:", product); // 🔍 Vezi ce conține
       ownerId = product?.user?.toString();
       link = `/products/${resourceId}#comment-${newComment._id}`;
     }

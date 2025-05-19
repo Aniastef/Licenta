@@ -22,7 +22,6 @@ export const CartProvider = ({ children }) => {
       const res = await fetch(`/api/cart/${userId}`, { credentials: "include" });
       const data = await res.json();
       setCart(data);
-      console.log("🛍 Cart fetched:", data);
     } catch (err) {
       console.error("❌ Error fetching cart:", err);
     }

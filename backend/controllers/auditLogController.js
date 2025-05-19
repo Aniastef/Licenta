@@ -13,7 +13,6 @@ const logs = await AuditLog.find()
   .populate("targetEvent", "name")
   .populate("targetGallery", "name")
   .populate("targetArticle", "title");
-      console.log("Audit logs found:", logs);
 
       res.json(logs);
     } catch (err) {

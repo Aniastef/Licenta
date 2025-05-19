@@ -40,6 +40,29 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const isGoing = event?.goingParticipants?.some((user) => user._id === currentUserId);
   const isEventOwner = event?.user?._id === currentUserId;
 
+  const addToCart = async (eventId, userId) => {
+  try {
+    const response = await fetch('/api/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        userId,
+        itemId: eventId,
+        quantity: 1,
+        itemType: "Event"
+      })
+    });
+
+    if (!response.ok) throw new Error("Failed to add ticket to cart");
+    alert("Ticket added to cart!");
+  } catch (err) {
+    console.error(err);
+    alert("Could not add ticket");
+  }
+};
+
+
   useEffect(() => {
     if (isLoaded && event?.coordinates && mapRef.current) {
       const map = new google.maps.Map(mapRef.current, {
@@ -219,6 +242,15 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         <Flex gap={4}>
           <Button bg={isGoing ? "gray.400" : "green.300"} onClick={markGoing}>{isGoing ? "Unmark Going" : "Mark if Going"}</Button>
           <Button bg={isInterested ? "gray.400" : "yellow.300"} onClick={markInterested}>{isInterested ? "Unmark Interested" : "Mark if Interested"}</Button>
+        {event.ticketType === 'paid' && (
+  <Button 
+    colorScheme="teal"
+    onClick={() => addToCart(event._id, currentUserId)}
+  >
+    Add Ticket to Cart
+  </Button>
+)}
+
         </Flex>
       )}
   <Box bg="goldenrod" color="black" borderRadius="full" px={6} py={1} fontWeight="bold">

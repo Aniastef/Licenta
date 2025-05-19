@@ -79,7 +79,6 @@ export const createGallery = async (req, res) => {
         link: `/galleries/${newGallery._id}`,
         meta: { galleryId: newGallery._id },
       });
-      console.log("📩 Notificare pentru:", userId);
     }
 
     res.status(201).json(newGallery);
@@ -159,11 +158,7 @@ export const getProductsNotInGallery = async (req, res) => {
       _id: { $nin: existingProductIds },
     });
 
-    console.log("🧾 Toate produsele tale:", products.map(p => ({
-      id: p._id.toString(),
-      name: p.name,
-    })));
-    console.log("🟢 Produse disponibile pt adăugare:", products.map(p => p._id.toString()));
+ 
 
     res.status(200).json({ products });
 
@@ -328,7 +323,6 @@ export const getAllGalleries = async (req, res) => {
   .select("name category tags products owner coverPhoto collaborators createdAt")
   .sort({ createdAt: -1 });
  
-console.log("Galleries count:", galleries.length);
 
     res.status(200).json({ galleries });
   } catch (err) {
@@ -498,13 +492,8 @@ export const updateProductOrder = async (req, res) => {
         order: index,
       }));
 
-    console.log(
-      "✅ Saved new product order:",
-      gallery.products.map((p) => ({
-        id: p.product.toString(),
-        order: p.order,
-      }))
-    );
+  
+
 
     await gallery.save();
     return res.status(200).json({ message: "Product order updated" });
@@ -542,8 +531,6 @@ export const updateProductOrder = async (req, res) => {
       
       await gallery.save();
 
-      console.log("🎯 Pending:", gallery.pendingCollaborators.map(id => id.toString()));
-console.log("👤 Current:", userId.toString());
 
   
       res.status(200).json({ message: "You are now a collaborator" });

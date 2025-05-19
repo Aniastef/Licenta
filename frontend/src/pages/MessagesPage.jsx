@@ -11,6 +11,8 @@ import {
   Avatar,
   Spinner,
   useToast,
+   Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton,
+  ModalBody, ModalFooter, Textarea, Select, useDisclosure,
   Spacer,
   Image
 } from "@chakra-ui/react";
@@ -34,6 +36,9 @@ const MessagesPage = () => {
   const fileInputRef = useRef();
 
   const [isBlocked, setIsBlocked] = useState(false);
+const { isOpen, onOpen, onClose } = useDisclosure();
+const [reportReason, setReportReason] = useState("");
+const [reportDetails, setReportDetails] = useState("");
 
 
   const currentUserId = currentUser?._id;
@@ -211,6 +216,9 @@ const MessagesPage = () => {
     }
   };
 
+
+
+
   const handleSelectUser = (user) => {
     setSelectedUser(user);
     navigate(`/messages/${user._id}`);
@@ -305,6 +313,37 @@ if (selectedFiles.length > 0) {
     }
   }, [currentUser]);
   
+const handleSubmitReport = async () => {
+  if (!reportReason) {
+    toast({ title: "Please select a reason", status: "warning" });
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/report", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        reportedUserId: userId,
+        reason: reportReason,
+        details: reportDetails,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to send report");
+
+    toast({ title: "Report submitted", status: "success" });
+    setReportReason("");
+    setReportDetails("");
+    onClose();
+  } catch (error) {
+    toast({ title: error.message, status: "error" });
+  }
+};
 
   return (
     <Flex height="100vh">
@@ -419,13 +458,10 @@ if (selectedFiles.length > 0) {
   <Spacer /> {/* 🔥 Mută butoanele în dreapta */}
   {selectedUser && currentUser && (
     <HStack spacing={2}>
-      <Button
-        colorScheme="red"
-        variant="outline"
-        onClick={() => console.log("Report user")} // 🔥 Aici adaugi logica de report
-      >
-        Report User
-      </Button>
+      <Button colorScheme="red" variant="outline" onClick={onOpen}>
+  Report User
+</Button>
+
       <Button
         colorScheme={isBlocked ? "green" : "red"}
         onClick={handleToggleBlock}
@@ -614,6 +650,40 @@ if (selectedFiles.length > 0) {
           <Heading size="lg" mb={2}>Messages</Heading>
         )}
       </Box>
+      <Modal isOpen={isOpen} onClose={onClose}>
+  <ModalOverlay />
+  <ModalContent>
+    <ModalHeader>Report {selectedUser?.firstName}</ModalHeader>
+    <ModalCloseButton />
+    <ModalBody>
+      <Select
+        placeholder="Select a reason"
+        value={reportReason}
+        onChange={(e) => setReportReason(e.target.value)}
+        mb={3}
+      >
+        <option value="harassment">Harassment</option>
+        <option value="spam">Spam or advertising</option>
+        <option value="inappropriate">Inappropriate content</option>
+        <option value="impersonation">Impersonation</option>
+        <option value="other">Other</option>
+      </Select>
+      <Textarea
+        placeholder="Additional details (optional)"
+        value={reportDetails}
+        onChange={(e) => setReportDetails(e.target.value)}
+        rows={4}
+      />
+    </ModalBody>
+    <ModalFooter>
+      <Button onClick={onClose} mr={3}>Cancel</Button>
+      <Button colorScheme="red" onClick={handleSubmitReport}>
+        Submit Report
+      </Button>
+    </ModalFooter>
+  </ModalContent>
+</Modal>
+
     </Flex>
   );
 }

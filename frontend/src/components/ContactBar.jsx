@@ -17,7 +17,7 @@ const ContactBar = () => {
         w="100%"
         transform="rotate(180deg)"
         position="absolute"
-        top="-90px"
+        top="-76px"
         left="0"
         zIndex={1}
         pointerEvents="none"
