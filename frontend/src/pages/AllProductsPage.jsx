@@ -587,7 +587,7 @@ useEffect(() => {
                         })}
                       </Text> */}
 
-                 {product.forSale && product.price > 0 && (
+        {product.forSale && product.price > 0 && (
   <Button
     size="sm"
     mt={1}
@@ -596,9 +596,11 @@ useEffect(() => {
     borderRadius="20px"
     _hover={{ bg: "#766a31" }}
   >
-    Price: {product.price.toFixed(2)} {product.currency || "RON"}
+    Price: {product.price.toFixed(2)} EUR
   </Button>
 )}
+
+
 
                       {product.averageRating > 0 && (
                         <Text mt={2} fontSize="sm" color="yellow.500">

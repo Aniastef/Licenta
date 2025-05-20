@@ -22,6 +22,7 @@ const CheckoutPage = () => {
   const user = useRecoilValue(userAtom);
   const toast = useToast();
   const navigate = useNavigate();
+const isOnlyTickets = cart.every(item => item.itemType === "Event");
 
   const [paymentMethod, setPaymentMethod] = useState("online");
   const [deliveryMethod, setDeliveryMethod] = useState("courier");
@@ -65,18 +66,19 @@ const CheckoutPage = () => {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          userId: user._id,
-          cart: validCart,
-          totalAmount: totalPrice,
-          paymentMethod,
-          deliveryMethod,
-          firstName,
-          lastName,
-          address,
-          city,
-          postalCode,
-          phone,
-        }),
+  userId: user._id,
+  cart: validCart,
+  totalAmount: totalPrice,
+  paymentMethod,
+  deliveryMethod,
+  firstName: isOnlyTickets ? undefined : firstName,
+  lastName: isOnlyTickets ? undefined : lastName,
+  address: isOnlyTickets ? undefined : address,
+  postalCode: isOnlyTickets ? undefined : postalCode,
+  city: isOnlyTickets ? undefined : city,
+  phone: isOnlyTickets ? undefined : phone,
+}),
+
       });
   
       const data = await res.json();
@@ -99,7 +101,9 @@ const CheckoutPage = () => {
   
       toast({ title: "Plată reușită!", status: "success", duration: 3000 });
       setCart([]);
-      navigate("/orders");
+await fetchCart();
+navigate("/orders");
+
   
     } catch (err) {
       console.error("❌ Payment processing failed", err);
@@ -124,37 +128,49 @@ const CheckoutPage = () => {
     }
   }, []);
 
-  const handlePayment = async () => {
-    if (paymentMethod !== "online") {
-      handleDeliveryOrder();
-      return;
-    }
+const handlePayment = async () => {
+  if (paymentMethod !== "online") {
+    handleDeliveryOrder();
+    return;
+  }
 
-    const stripe = await stripePromise;
+  const stripe = await stripePromise;
 
-    const response = await fetch("/api/payment/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        items: cart.map((item) => ({
-          name: item.product.name,
-          price: item.product.price,
-          quantity: item.quantity || 1,
-          currency: item.product.currency || "ron", // ✅ TRIMITE valuta
-        })),
-      }),
+
+  // 🧾 3. Creează sesiunea Stripe
+  const checkoutItems = cart.map((item) => ({
+    name: item.product.name,
+    price: item.product.price,
+    quantity: item.quantity || 1,
+  }));
+
+  console.log("Sending checkout data:", { items: checkoutItems });
+
+  const response = await fetch("/api/payment/create-checkout-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ items: checkoutItems }),
+  });
+
+  const data = await response.json();
+
+  if (!data.sessionId) {
+    console.error("❌ No sessionId received!", data);
+    toast({
+      title: "Payment error",
+      description: "Could not initiate Stripe session. Check console.",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
     });
+    return;
+  }
 
-    const data = await response.json();
-    if (!data.sessionId) {
-      console.error("❌ No sessionId received!");
-      return;
-    }
+  localStorage.setItem("hasProcessed", "true");
+  await stripe.redirectToCheckout({ sessionId: data.sessionId });
+};
 
-    localStorage.setItem("hasProcessed", "true");
-    await stripe.redirectToCheckout({ sessionId: data.sessionId });
-  };
 
   const validateDeliveryFields = () => {
     return firstName && lastName && address && postalCode && city && phone;
@@ -237,23 +253,10 @@ const CheckoutPage = () => {
       <Text fontSize="2xl" fontWeight="bold">Checkout</Text>
 <Box textAlign="center">
   <Text fontSize="lg" fontWeight="semibold" mb={1}>Total:</Text>
-  {Object.entries(
-    cart.reduce((acc, item) => {
-      const price = Number(item.product?.price);
-      const qty = Number(item.quantity);
-      const currency = item.product?.currency || "RON";
+ <Text fontSize="lg">
+  {totalPrice.toFixed(2)}
+</Text>
 
-      if (!acc[currency]) acc[currency] = 0;
-      if (!isNaN(price) && !isNaN(qty)) {
-        acc[currency] += price * qty;
-      }
-      return acc;
-    }, {})
-  ).map(([currency, amount]) => (
-    <Text key={currency} fontSize="lg">
-      {amount.toFixed(2)} {currency}
-    </Text>
-  ))}
 </Box>
 
 
@@ -269,44 +272,47 @@ const CheckoutPage = () => {
         <option value="easybox">EasyBox locker</option>
       </Select>
 
-      <VStack spacing={3} w="100%" maxW="500px">
-  <Input
-    placeholder="First Name"
-    value={firstName}
-    onChange={(e) => setFirstName(e.target.value)}
-  />
-  <Input
-    placeholder="Last Name"
-    value={lastName}
-    onChange={(e) => setLastName(e.target.value)}
-  />
-  <Input
-    placeholder={
-      deliveryMethod === "easybox"
-        ? "EasyBox Locker Address"
-        : "Full Home Address"
-    }
-    value={address}
-    onChange={(e) => setAddress(e.target.value)}
-  />
-  <HStack w="100%">
+ {!isOnlyTickets && (
+  <VStack spacing={3} w="100%" maxW="500px">
     <Input
-      placeholder="Postal Code"
-      value={postalCode}
-      onChange={(e) => setPostalCode(e.target.value)}
+      placeholder="First Name"
+      value={firstName}
+      onChange={(e) => setFirstName(e.target.value)}
     />
     <Input
-      placeholder="City"
-      value={city}
-      onChange={(e) => setCity(e.target.value)}
+      placeholder="Last Name"
+      value={lastName}
+      onChange={(e) => setLastName(e.target.value)}
     />
-  </HStack>
-  <Input
-    placeholder="Phone Number"
-    value={phone}
-    onChange={(e) => setPhone(e.target.value)}
-  />
-</VStack>
+    <Input
+      placeholder={
+        deliveryMethod === "easybox"
+          ? "EasyBox Locker Address"
+          : "Full Home Address"
+      }
+      value={address}
+      onChange={(e) => setAddress(e.target.value)}
+    />
+    <HStack w="100%">
+      <Input
+        placeholder="Postal Code"
+        value={postalCode}
+        onChange={(e) => setPostalCode(e.target.value)}
+      />
+      <Input
+        placeholder="City"
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+      />
+    </HStack>
+    <Input
+      placeholder="Phone Number"
+      value={phone}
+      onChange={(e) => setPhone(e.target.value)}
+    />
+  </VStack>
+)}
+
 
 
       <Button colorScheme="green" onClick={handlePayment}>

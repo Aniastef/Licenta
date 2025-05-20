@@ -13,15 +13,15 @@ import { Link } from "react-router-dom";
 
 const testimonials = [
   {
-    text: `It was the right thing at the right time! I was looking forward to that week since the beginning of the year with both fear and excitement. I knew deep inside that I'll be having the time of my life in ISWinT, and my gut feelings are never wrong.`,
-    user: "ilef.t",
-    name: "Ilef Toukebri",
+    text: `Art Corner is so much more than just a platform for me. It has to be my biggest project, where I tried to make a place where every artist can share his thoughts freely and let himself be inspired by others. Art is amazing, it's an important part of our world and we all know it!`,
+    user: "stefania",
+    name: "Stefania Istvan",
     avatar: "/avatars/ilef.jpg",
   },
   {
-    text: `Being part of ISWinT was an incredible adventure! I made unforgettable memories, formed priceless friendships, and met wonderful people. Every moment was filled with joy and excitement, creating bonds that will last a lifetime.`,
-    user: "jimmyz",
-    name: "Jimmy Mok Zheng",
+    text: `Joining Art Corner felt like coming home. I connected with artists from different countries, shared my music, and even started collaborations I never imagined possible. It’s not just a platform - it’s a creative family.`,
+    user: "alexandra",
+    name: "Alexandra Talapan",
     avatar: "/avatars/jimmy.jpg",
   },
 ];

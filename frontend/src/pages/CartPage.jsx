@@ -23,38 +23,43 @@ const CartPage = () => {
   const handleDecrease = (item) => {
     setStockLimitItemId(null);
     if (item.quantity <= 1) {
-      removeFromCart(item.product._id);
+removeFromCart(item.product._id, item.itemType);
     } else {
-      updateCartQuantity(item.product._id, item.quantity - 1);
+updateCartQuantity(item.product._id, item.quantity - 1, item.itemType);
     }
   };
 
-  const handleIncrease = (item) => {
-    if (item.quantity >= item.product.quantity) {
-      setStockLimitItemId(item.product._id);
-      return;
-    }
-    setStockLimitItemId(null);
-    updateCartQuantity(item.product._id, item.quantity + 1);
-  };
+ const handleIncrease = (item) => {
+  const maxQty =
+    item.itemType === "Event"
+      ? item.product.capacity
+      : item.product.quantity;
+
+  if (item.quantity >= maxQty) {
+    setStockLimitItemId(item.product._id);
+    return;
+  }
+
+  setStockLimitItemId(null);
+  updateCartQuantity(item.product._id, item.quantity + 1, item.itemType);
+};
+
 
 const calculateTotal = () => {
-  const totals = {};
+  let total = 0;
 
   cart.forEach((item) => {
     const price = Number(item.product.price);
     const qty = Number(item.quantity);
-    const currency = item.product.currency || "RON";
-
-    if (!totals[currency]) totals[currency] = 0;
 
     if (!isNaN(price) && !isNaN(qty)) {
-      totals[currency] += price * qty;
+      total += price * qty;
     }
   });
 
-  return totals;
+  return total;
 };
+
 
 
   return (
@@ -74,8 +79,10 @@ const calculateTotal = () => {
 
       <VStack spacing={6} align="stretch">
         {cart.map((item) => {
-          const unitPrice = Number(item.product.price);
-          const totalPrice = (unitPrice * item.quantity).toFixed(2);
+          const isEvent = item.itemType === "Event";
+const unitPrice = Number(item.product.price);
+const totalPrice = (unitPrice * item.quantity).toFixed(2);
+const maxQty = isEvent ? item.product.capacity : item.product.quantity;
 
           return (
             <Flex
@@ -88,9 +95,9 @@ const calculateTotal = () => {
               position="relative"
             >
               
-             {item.product.images?.[0] ? (
+           {item.product.images?.[0] || item.product.coverImage ? (
   <Image
-    src={item.product.images[0]}
+    src={item.product.images?.[0] || item.product.coverImage}
     alt={item.product.name}
     boxSize="120px"
     borderRadius="lg"
@@ -112,17 +119,25 @@ const calculateTotal = () => {
   </Flex>
 )}
 
+
               
 
               <Box flex="1" mx={4}>
-                <Link to={`/products/${item.product._id}`}>
+<Link to={isEvent ? `/events/${item.product._id}` : `/products/${item.product._id}`}>
                   <Text fontWeight="bold" fontSize="xl">
                     {item.product.name}
                   </Text>
+                  <Text fontSize="xs" color="gray.500" fontStyle="italic">
+  {isEvent ? "Event Ticket" : "Product"}
+</Text>
+
                 </Link>
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  by {item.product.user?.firstName} {item.product.user?.lastName}
-                </Text>
+                {item.product.user && (
+  <Text fontSize="sm" color="gray.600" mt={1}>
+    by {item.product.user.firstName} {item.product.user.lastName}
+  </Text>
+)}
+
 
                 <Box mt={3}>
                   <Text fontSize="xs" color="gray.600">
@@ -141,12 +156,13 @@ const calculateTotal = () => {
                       -
                     </Button>
                     <Button
-                      size="sm"
-                      onClick={() => handleIncrease(item)}
-                      isDisabled={item.quantity >= item.product.quantity}
-                    >
-                      +
-                    </Button>
+  size="sm"
+  onClick={() => handleIncrease(item)}
+  isDisabled={item.quantity >= maxQty}
+>
+  +
+</Button>
+
                   </HStack>
                   {stockLimitItemId === item.product._id && (
                     <Text color="red.500" fontSize="sm" mt={1}>
@@ -158,17 +174,18 @@ const calculateTotal = () => {
 
               <VStack spacing={2} align="end">
                 <Text fontSize="lg" color="gray.600">
-{unitPrice} {item.product.currency || "RON"} × {item.quantity}
+{unitPrice} EUR × {item.quantity}
                 </Text>
-                <Text fontSize="2xl" color="green.600" fontWeight="bold">
-{totalPrice} {item.product.currency || "RON"}
-                </Text>
+               <Text fontSize="2xl" color="green.600" fontWeight="bold">
+  {totalPrice} EUR
+</Text>
+
                 <IconButton
                   icon={<CloseIcon />}
                   colorScheme="red"
                   variant="solid"
                   borderRadius="12px"
-                  onClick={() => removeFromCart(item.product._id)}
+onClick={() => removeFromCart(item.product._id, item.itemType)}
                   aria-label="Remove item"
                 />
               </VStack>
@@ -179,14 +196,13 @@ const calculateTotal = () => {
 
       {/* Totals */}
       <Box mt={8} textAlign="right">
-        <Text fontSize="2xl" fontWeight="bold">
-          Total:
-        </Text>
-        {Object.entries(calculateTotal()).map(([currency, total]) => (
-  <Text key={currency} fontSize="xl" fontWeight="semibold">
-    {total.toFixed(2)} {currency}
-  </Text>
-))}
+       <Text fontSize="2xl" fontWeight="bold">
+  Total:
+</Text>
+<Text fontSize="xl" fontWeight="semibold">
+  {calculateTotal().toFixed(2)} EUR
+</Text>
+
 
         <Text fontSize="sm" mt={1}>
           + shipping costs may apply

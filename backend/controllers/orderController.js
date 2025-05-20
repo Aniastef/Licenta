@@ -15,7 +15,7 @@ export const getUserOrders = async (req, res) => {
 
     // Poți să verifici aici dacă adresa este validă sau să o completezi cu "Adresa necunoscută" dacă este invalidă
     user.orders.forEach(order => {
-      order.address = order.address && order.address !== "N/A" ? order.address : "Adresa necunoscută";
+      order.address = order.address && order.address !== "N/A" ? order.address : "Unknown address";
       order.city = order.city && order.city !== "N/A" ? order.city : "N/A";
       order.postalCode = order.postalCode && order.postalCode !== "N/A" ? order.postalCode : "N/A";
     });
@@ -66,10 +66,11 @@ export const addOrder = async (req, res) => {
       deliveryMethod: deliveryMethod || "courier",
       firstName,
       lastName,
-      address,
-      postalCode,
-      city,
-      phone,
+    address: address || "N/A",
+postalCode: postalCode || "N/A",
+city: city || "N/A",
+phone: phone || "N/A",
+
     };
 
     user.orders.push(newOrder);

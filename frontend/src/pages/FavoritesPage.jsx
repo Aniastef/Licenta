@@ -164,7 +164,7 @@ const FavoritesPage = () => {
                       <Box textAlign="center" py={3} px={2}>
                         <Text fontWeight="bold" noOfLines={1}>{product.name}</Text>
                         {product.forSale && product.price > 0 && (
-                          <Text fontSize="sm" color="green.600">For Sale: {product.price} RON</Text>
+                          <Text fontSize="sm" color="green.600">For Sale: {product.price} EUR</Text>
                         )}
                         {product.forSale && product.price > 0 && (
                           <Text fontSize="sm" color="gray.600">Stock: {product.quantity}</Text>

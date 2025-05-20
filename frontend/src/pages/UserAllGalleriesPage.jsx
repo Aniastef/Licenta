@@ -122,7 +122,7 @@ const UserAllGalleriesPage = () => {
 
   
   return (
-    <Box bg={"gray.100"} p={4} maxW="100%" mx="auto">
+    <Box  p={4} maxW="100%" mx="auto">
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
         <Text fontWeight="bold" fontSize="2xl" textAlign="center">
           {user

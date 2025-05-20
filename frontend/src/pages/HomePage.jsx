@@ -202,11 +202,13 @@ const circularPositions = [
     </Text>
 
     <Text fontSize="md" color="gray.700" textAlign="left">
-      text lung cu chestii       text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante...
-      text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante...
-      interesante text lung      text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante...
-      cu chestii interesant      text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante...
-      e text lung cu chestii interesante text lung cu chestii interesante text lung cu chestii interesante...
+   At Art Corner, we believe that every brushstroke, every melody, every sculpture, every verse holds a deeper meaning - a story waiting to be told. This platform was born out of a simple yet powerful idea: that art, in all its forms, can connect people across borders, cultures, and generations.
+
+Whether you're a seasoned artist or just beginning your journey, Art Corner welcomes you. Here, your voice matters. Share your passion, showcase your talent, and explore the works of others who, like you, see the world through a creative lens.
+
+Our global community is built on mutual inspiration, collaboration, and the courage to express what words sometimes cannot. From visual arts to music, poetry, teaching, and crafting - we celebrate every story, every medium, and every soul behind the art.
+
+Join us and be part of a movement that turns creativity into connection. Because your story deserves to be seen. Your art deserves to be felt.
     </Text>
 
     <Button
@@ -310,7 +312,9 @@ const circularPositions = [
 
 
       {/* Mood Section */}
-      <Box
+     
+ <VStack  textAlign="center" mb={3}>
+ <Box
   py={10}
   px={4}
   bgImage="url('/path/to/background.jpg')"
@@ -327,11 +331,24 @@ const circularPositions = [
     <Box boxSize={6} bg="green.600" borderRadius="full" />
     <Box boxSize={6} bg="gray.800" borderRadius="full" />
   </HStack>
-
+ <Button
+    as={Link}
+    to="/articles"
+    size="sm"
+    bg="#2f5e56"
+    color="white"
+    borderRadius="20px"
+    _hover={{ bg: "#244b46" }}
+  >
+     Dive into insightful ARTicles written by our creative community
+  </Button>
   <HStack spacing={6} justify="center">
     <TestimonialCarousel />
   </HStack>
 </Box>
+  
+ 
+</VStack>
 
 <Box mb={100} px={6}>
   <Text textAlign="center" fontWeight="semibold" fontSize="2xl" mb={10}>

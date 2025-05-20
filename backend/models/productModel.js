@@ -22,33 +22,6 @@ const productSchema = new mongoose.Schema(
 	  description: { type: String, default: "" },
 	  favoritedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	  price: { type: Number, required: false },
-	  currency: {
-  type: String,
-  enum: [
-    "USD", // US Dollar
-    "EUR", // Euro
-    "GBP", // British Pound
-    "RON", // Romanian Leu
-    "CHF", // Swiss Franc
-    "NOK", // Norwegian Krone
-    "SEK", // Swedish Krona
-    "DKK", // Danish Krone
-    "PLN", // Polish Zloty
-    "CZK", // Czech Koruna
-    "HUF", // Hungarian Forint
-    "BGN", // Bulgarian Lev
-    "HRK", // Croatian Kuna (optional, for historical data)
-    "ISK", // Icelandic Krona
-    "TRY", // Turkish Lira (non-EU, but often relevant)
-    "RSD", // Serbian Dinar
-    "UAH", // Ukrainian Hryvnia
-    "JPY", // Japanese Yen (non-EU, but already present)
-    "CAD", // Canadian Dollar
-    "AUD"  // Australian Dollar
-  ],
-  default: "EUR"
-},
-
 	  quantity: { type: Number, required: true, default: 0 }, // ✅ Stocul produsului
 	  forSale: { type: Boolean, default: true }, // ✅ Dacă produsul este de vânzare sau doar pentru afișare
 	  tags: [{ type: String }],

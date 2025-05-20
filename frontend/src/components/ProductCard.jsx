@@ -554,14 +554,12 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
                   ? `Stock: ${product.quantity} left`
                   : "Out of stock"}
         </Text>
- {product.forSale && typeof product.price === "number" && (
+{product.forSale && typeof product.price === "number" && (
   <Text mt={1} color="green.600" fontWeight="bold" fontSize="lg">
-    Price: {product.price.toFixed(2)}{" "}
-    <Text as="span" fontWeight="semibold">
-      {product.currency || "USD"}
-    </Text>
+    Price: €{product.price.toFixed(2)}
   </Text>
 )}
+
 
 
 

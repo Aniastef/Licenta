@@ -513,7 +513,7 @@ if (dateTo) {
 
     {["paid", "donation"].includes(event.ticketType) && event.price > 0 && (
       <Text mt={1} fontSize="sm" color="green">
-        <strong>Price:</strong> {event.price} RON
+        <strong>Price:</strong> {event.price} EUR
       </Text>
     )}
     {event.tags?.length > 0 && (

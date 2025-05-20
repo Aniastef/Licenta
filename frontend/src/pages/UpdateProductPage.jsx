@@ -106,7 +106,13 @@ import {
 		showToast("Error", "Name is required", "error");
 		return;
 	  }
-  
+  const isAddingAudio = audioFiles.length > 0;
+  const hasVisualMedia = imageFiles.length > 0 || videoFiles.length > 0 || (product.images?.length || 0) > 0 || (product.videos?.length || 0) > 0;
+
+  if (isAddingAudio && !hasVisualMedia) {
+    showToast("Error", "You must have at least one image or video if you add audio.", "error");
+    return;
+  }
 	  setUpdating(true);
 	  try {
 		const compressedImages = await Promise.all(imageFiles.map((file) => compressImage(file)));
@@ -194,20 +200,7 @@ import {
 />
 
     
-    <Select
-      placeholder="Currency"
-      value={product.currency || "EUR"}
-      onChange={(e) =>
-        setProduct({ ...product, currency: e.target.value })
-      }
-    >
-      {[
-        "EUR", "USD", "GBP", "RON", "CHF", "NOK", "SEK", "DKK",
-        "PLN", "CZK", "HUF", "BGN", "HRK", "ISK", "TRY", "RSD", "UAH"
-      ].map((cur) => (
-        <option key={cur} value={cur}>{cur}</option>
-      ))}
-    </Select>
+ 
 
     <Input
       type="number"

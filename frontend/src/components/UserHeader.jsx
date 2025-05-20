@@ -340,31 +340,36 @@ const UserHeader = ({ user }) => {
 
       <Text textAlign="left" fontWeight="bold" fontSize="lg" mb={2}>About me</Text>
 
-      <Flex ml={2} gap={200} direction={"row"} textAlign="center">
-  {/* Coloană stânga: age și profession */}
-  <Flex gap={2} direction={"column"} textAlign="center">
-    {aboutMeItemsLeft.map((item, idx) =>
-      item.label ? (
-        <Flex key={idx} gap={2} direction={"row"} textAlign="center">
-          <Image src={item.icon} w="16px" h="16px" />
-          <Text textAlign="left">{item.label}</Text>
-        </Flex>
-      ) : null
+    {/* Colectăm elementele vizibile */}
+  <Flex gap={10}>
+    {aboutMeItemsLeft.some((item) => item.label) && (
+      <Flex gap={2} direction="column">
+        {aboutMeItemsLeft.map(
+          (item, idx) =>
+            item.label && (
+              <Flex key={idx} gap={2} align="center">
+                <Image src={item.icon} w="16px" h="16px" />
+                <Text>{item.label}</Text>
+              </Flex>
+            )
+        )}
+      </Flex>
     )}
-  </Flex>
 
-  {/* Coloană dreapta: location și hobbies */}
-  <Flex gap={2} direction={"column"} textAlign="center">
-    {aboutMeItemsRight.map((item, idx) =>
-      item.label ? (
-        <Flex key={idx} gap={2} direction={"row"} textAlign="center">
-          <Image src={item.icon} w="16px" h="16px" />
-          <Text textAlign="left">{item.label}</Text>
-        </Flex>
-      ) : null
+    {aboutMeItemsRight.some((item) => item.label) && (
+      <Flex gap={2} direction="column">
+        {aboutMeItemsRight.map(
+          (item, idx) =>
+            item.label && (
+              <Flex key={idx} gap={2} align="center">
+                <Image src={item.icon} w="16px" h="16px" />
+                <Text>{item.label}</Text>
+              </Flex>
+            )
+        )}
+      </Flex>
     )}
   </Flex>
-</Flex>
    
       
       <Flex mt={23} gap={20} direction={"column"} textAlign="center">
@@ -428,9 +433,10 @@ const UserHeader = ({ user }) => {
           <Box p={4}>
             <Text fontWeight="bold" mb={1}>{product.name}</Text>
       { product.price !== undefined && (
-  <Text color="green.600" fontSize="sm">
-   Price: {product.price.toFixed(2)} {product.currency || "RON"}
-  </Text>
+ <Text color="green.600" fontSize="sm">
+  Price: {product.price.toFixed(2)} EUR
+</Text>
+
 )}
 
 {product.category && (

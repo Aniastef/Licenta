@@ -7,42 +7,53 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 import User from "../models/userModel.js";
 import Product from "../models/productModel.js";
+import Event from "../models/eventModel.js";
+
 
 export const handlePaymentSuccess = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, cart, paymentMethod, deliveryMethod, firstName, lastName, address, postalCode, city, phone } = req.body;
 
     const user = await User.findById(userId).populate("cart.product");
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (!user.cart.length) {
-      return res.status(400).json({ error: "Cart is empty" });
-    }
+    if (!user.cart.length) return res.status(400).json({ error: "Cart is empty" });
 
     const validProductsForOrder = [];
 
     for (const item of user.cart) {
-      const product = await Product.findById(item.product?._id);
+      if (!item.product) continue;
 
-      if (!product || !product.forSale) {
-        continue;
+      let product = null;
+
+      if (item.itemType === "Product") {
+        product = await Product.findById(item.product._id);
+        if (!product || !product.forSale || product.user.toString() === userId.toString()) continue;
+        if (product.quantity < item.quantity) {
+          return res.status(400).json({ error: `Not enough stock for ${product.name}` });
+        }
+
+        product.quantity -= item.quantity;
+        await product.save();
+
+      } else if (item.itemType === "Event") {
+        product = await Event.findById(item.product._id);
+        if (!product || product.ticketType !== "paid") continue;
+        if (product.capacity < item.quantity) {
+          return res.status(400).json({ error: `Not enough tickets for ${product.name}` });
+        }
+
+        product.capacity -= item.quantity;
+        await product.save();
       }
 
-      if (product.user.toString() === userId.toString()) {
-        continue;
-      }
-
-      if (product.quantity < item.quantity) {
-        return res.status(400).json({ error: `Not enough stock for ${product.name}` });
-      }
-
-      product.quantity -= item.quantity;
-      await product.save();
+      if (!product) continue;
 
       validProductsForOrder.push({
-        product: product._id, // ✅ garantat valid
+        product: product._id,
         price: product.price,
         quantity: item.quantity,
+        itemType: item.itemType || "Product",
       });
     }
 
@@ -50,32 +61,24 @@ export const handlePaymentSuccess = async (req, res) => {
       return res.status(400).json({ error: "No valid products available to order" });
     }
 
-    // ✅ Push final, doar cu produse verificate
-    const {
-      address,
-      postalCode,
-      city,
-      phone,
-      firstName,
-      lastName,
-    } = req.body;
-    
-    user.orders.push({
-      products: validProductsForOrder,
-      status: "Pending",
-      date: new Date(),
-      paymentMethod: "online",
-      deliveryMethod: "courier",
-      firstName,
-      lastName,
-      address,
-      postalCode,
-      city,
-      phone,
-    });
-    
+    const normalize = (val) => (typeof val === "string" && val.trim() !== "" ? val.trim() : "N/A");
 
-    user.cart = []; // 🧹 Curăță cart-ul
+user.orders.push({
+  products: validProductsForOrder,
+  status: "Pending",
+  date: new Date(),
+  paymentMethod: paymentMethod || "online",
+  deliveryMethod: deliveryMethod || "courier",
+  firstName: firstName?.trim() || user.firstName || "N/A",
+  lastName: lastName?.trim() || user.lastName || "N/A",
+address: address?.trim() || "Unknown address",
+postalCode: postalCode?.trim() || "Postal code not available",
+city: city?.trim() || "Unknown city",
+phone: phone?.trim() || "Phone not available",
+
+});
+
+    user.cart = [];
     await user.save();
 
     console.log("✅ Order placed successfully");
@@ -86,7 +89,6 @@ export const handlePaymentSuccess = async (req, res) => {
     return res.status(500).json({ error: "Failed to process order" });
   }
 };
-
 
 
 export const processPayment = async (req, res) => {
@@ -128,20 +130,12 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(400).json({ error: "No items provided" });
     }
 
-    // ✅ Extrage valutele distincte
-    const uniqueCurrencies = [...new Set(items.map(item => item.currency || "ron"))];
+   const currency = "eur"; // Folosește o monedă fixă
 
-    if (uniqueCurrencies.length > 1) {
-      return res.status(400).json({
-        error: "All items in the cart must use the same currency for payment.",
-      });
-    }
-
-    const currency = uniqueCurrencies[0];
 
     const lineItems = items.map((item) => ({
       price_data: {
-        currency: currency.toLowerCase(),
+    currency: "eur", // valoare fixă
         product_data: { name: item.name },
         unit_amount: Math.round(item.price * 100),
       },
@@ -151,7 +145,7 @@ export const createCheckoutSession = async (req, res) => {
     const totalAmount = lineItems.reduce((total, item) => total + item.price_data.unit_amount * item.quantity, 0);
     if (totalAmount < 200) {
       return res.status(400).json({
-        error: `Total must be at least 2 ${currency.toUpperCase()}`,
+        error: `Total must be at least 2 EUR}`,
       });
     }
 

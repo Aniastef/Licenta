@@ -26,6 +26,8 @@ import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import QRCode from "qrcode";
+
 const OrdersPage = () => {
   const user = useRecoilValue(userAtom);
   const [orders, setOrders] = useState([]);
@@ -70,6 +72,38 @@ const OrdersPage = () => {
     });
   };
   
+const generateTicket = async (order) => {
+  const doc = new jsPDF();
+
+  doc.setFontSize(20);
+  doc.text("🎫 Ticket Digital", 70, 25);
+  doc.setFontSize(12);
+  doc.text(`Comanda #${order._id}`, 14, 40);
+  doc.text(`Data: ${new Date(order.date).toLocaleString()}`, 14, 48);
+
+  order.products.forEach((item, idx) => {
+    const yOffset = 60 + idx * 30;
+    doc.setFontSize(14);
+    doc.text(`${idx + 1}. ${item.product?.name || "Eveniment"}`, 14, yOffset);
+    doc.setFontSize(12);
+    doc.text(`Quantity: ${item.quantity}`, 14, yOffset + 6);
+    doc.text(`Price: ${item.price} EUR`, 14, yOffset + 12);
+  });
+
+  // 🔲 Cod QR
+  const qrData = `ticket:${order._id}`; // poți include mai multe detalii aici dacă vrei
+  const qrImage = await QRCode.toDataURL(qrData);
+
+  doc.addImage(qrImage, "PNG", 150, 30, 40, 40); // Poziție și dimensiune
+
+  doc.setFontSize(10);
+  doc.text("Prezentarea acestui Ticket la intrare poate fi necesară.", 14, doc.internal.pageSize.height - 20);
+
+  doc.save(`Ticket_${order._id.slice(-6)}.pdf`);
+};
+
+
+
   const toggleSortDirection = (column) => {
     setSortDirection((prevDirection) => ({
       ...prevDirection,
@@ -130,27 +164,27 @@ const OrdersPage = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(18);
-    doc.text("Factura", 14, 20);
+    doc.text("Invoice", 14, 20);
 
     doc.setFontSize(12);
-    doc.text(`Comanda #${order._id}`, 14, 30);
-    doc.text(`Data: ${new Date(order.date).toLocaleDateString()}`, 14, 36);
+    doc.text(`Order #${order._id}`, 14, 30);
+    doc.text(`Date: ${new Date(order.date).toLocaleDateString()}`, 14, 36);
 
-    doc.text(`Livrare la: ${order.address}, ${order.city}`, 14, 44);
-    doc.text(`Telefon: ${order.phone}`, 14, 50);
+    doc.text(`Delivery at: ${order.address}, ${order.city}`, 14, 44);
+    doc.text(`Phone number: ${order.phone}`, 14, 50);
     doc.text(
       `Plata: ${
         order.paymentMethod === "cash"
           ? "Cash"
           : order.paymentMethod === "online"
-          ? "Card online"
-          : "Card la livrare"
+          ? "Online card"
+          : "Card at delivery"
       }`,
       14,
       56
     );
     doc.text(
-      `Livrare: ${order.deliveryMethod === "easybox" ? "EasyBox" : "Courier"}`,
+      `Delivery: ${order.deliveryMethod === "easybox" ? "EasyBox" : "Courier"}`,
       14,
       62
     );
@@ -162,26 +196,28 @@ const OrdersPage = () => {
     const rows = products.map((item) => [
   item.product?.name || "Produs",
   item.quantity,
-`${item.price} ${item.product?.currency || item.currency || "RON"}`
-  `${(item.quantity * item.price).toFixed(2)} ${item.currency || "RON"}`,
+  `${item.price} EUR`, 
+  `${(item.quantity * item.price).toFixed(2)} EUR`,
 ]);
+
 
 
     autoTable(doc, {
       startY: 70,
-      head: [["Produs", "Cantitate", "Pret unitar", "Total"]],
+      head: [["Product", "Quantity", "Price per unit", "Total"]],
       body: rows,
     });
 
     const total = rows.reduce((acc, row) => acc + parseFloat(row[3]), 0);
 doc.text(
-  `Total: ${total.toFixed(2)} ${products[0].product?.currency || products[0].currency || "RON"}`,
+  `Total: ${total.toFixed(2)} EUR`, 
   14,
   doc.lastAutoTable.finalY + 10
 );
 
 
-    doc.save(`Factura_Comanda_${order._id.slice(-6)}.pdf`);
+
+    doc.save(`Invoice_order_${order._id.slice(-6)}.pdf`);
   };
 
   const OrderAccordion = ({ orders }) => (
@@ -196,13 +232,19 @@ doc.text(
             <h2>
               <AccordionButton _expanded={{ bg: "gray.100" }}>
                 <Box flex="1" textAlign="left">
-                  <Text fontWeight="bold">Comanda #{order._id.slice(-6)}</Text>
+<Text fontWeight="bold">
+  Order #{order._id.slice(-6)}{" "}
+  <Badge ml={2} colorScheme={order.products.every(p => p.itemType === "Event") ? "purple" : "blue"}>
+    Type: {order.products.every(p => p.itemType === "Event") ? "Ticket" : "Produs"}
+  </Badge>
+</Text>
                   <Text fontSize="sm">
-                    Data: {new Date(order.date).toLocaleString()} {/* Afișează și ora */}
+                    Date: {new Date(order.date).toLocaleString()} {/* Afișează și ora */}
                   </Text>
 <Text fontSize="sm">
-  Total: {total.toFixed(2)} {order.products?.[0]?.product?.currency || order.currency || "RON"}
+  Total: {total.toFixed(2)} EUR
 </Text>
+
                 </Box>
                 <Badge
                   colorScheme={
@@ -250,12 +292,14 @@ doc.text(
                       <VStack align="start" spacing={1} flex="1">
                         <Text fontWeight="bold">{item.product?.name}</Text>
                         <Text fontSize="sm">Quantity: {item.quantity}</Text>
-                       <Text fontSize="sm">
-  Price per unity: {item.price} {item.product?.currency || item.currency || "RON"}
+                      <Text fontSize="sm">
+  Price per unity: {item.price} EUR
 </Text>
+
 <Text fontWeight="semibold">
-  Total: {(item.price * item.quantity).toFixed(2)} {item.product?.currency || item.currency || "RON"}
+  Total: {(item.price * item.quantity).toFixed(2)} EUR
 </Text>
+
 
                       </VStack>
                     </HStack>
@@ -288,76 +332,93 @@ doc.text(
                     <VStack align="start" spacing={1} flex="1">
                       <Text fontWeight="bold">{order.product?.name}</Text>
                       <Text fontSize="sm">Quantity: {order.quantity}</Text>
-                     <Text fontSize="sm">
-  Price per unity {order.price} {order.product?.currency || order.currency || "RON"}
+                  <Text fontSize="sm">
+  Price per unity: {order.price} EUR
 </Text>
+
 <Text fontWeight="semibold">
-  Total: {(order.price * order.quantity).toFixed(2)} {order.product?.currency || order.currency || "RON"}
+  Total: {(order.price * order.quantity).toFixed(2)} EUR
 </Text>
+
 
                     </VStack>
                   </HStack>
                 )}
-                <Divider />
-                <Text fontWeight="semibold">Livrare:</Text>
-  
-                {(order.firstName || order.lastName) && (
-                  <Text fontSize="sm">👤 {order.firstName} {order.lastName}</Text>
-                )}
-  
-  {order.address && order.address !== "N/A" ? (
-  <Text fontSize="sm">🏠 {order.address}, {order.city}</Text>
+               <Divider />
+<Text fontWeight="semibold">Delivery:</Text>
+
+{order.products.every(p => p.itemType === "Event") ? (
+  <>
+    <Text fontStyle="italic" color="gray.600"> Digital ticket – no physical delivery</Text>
+    <Button
+      colorScheme="purple"
+      variant="outline"
+      size="sm"
+      mt={2}
+      onClick={() => generateTicket(order)}
+    >
+     Download ticket
+    </Button>
+  </>
 ) : (
-  <Text fontSize="sm" color="gray.500">Adresa indisponibilă</Text>
+  <>
+    {(order.firstName || order.lastName) && (
+      <Text fontSize="sm">👤 {order.firstName} {order.lastName}</Text>
+    )}
+   <Text fontSize="sm">
+  🏠 {order.address && order.address !== "N/A" ? order.address : "Unknown address"},
+  {order.city && order.city !== "N/A" ? order.city : "N/A"}
+</Text>
+
+<Text fontSize="sm">
+  📮 {order.postalCode && order.postalCode !== "N/A" ? `Postal code: ${order.postalCode}` : "Postal code not available"}
+</Text>
+
+<Text fontSize="sm">
+  📞 {order.phone && order.phone !== "N/A" ? order.phone : "Phone not available"}
+</Text>
+
+    {order.paymentMethod && order.paymentMethod !== "N/A" && (
+      <Text fontSize="sm">
+        💳 {
+          order.paymentMethod === "cash"
+            ? "Cash"
+            : order.paymentMethod === "online"
+            ? "Online card"
+            : "Card at delivery"
+        }
+      </Text>
+    )}
+    {order.deliveryMethod && order.deliveryMethod !== "N/A" && (
+      <Text fontSize="sm">
+        🚚 {order.deliveryMethod === "easybox" ? "EasyBox" : "Courier"}
+      </Text>
+    )}
+
+    {order.status === "Pending" && (
+      <Button
+        colorScheme="red"
+        size="sm"
+        mt={2}
+        onClick={() => handleCancelOrder(order._id)}
+      >
+        Cancel order
+      </Button>
+    )}
+    <Button
+      colorScheme="teal"
+      variant="outline"
+      size="sm"
+      mt={2}
+      onClick={() => generateInvoice(order)}
+    >
+      Download invoice
+    </Button>
+  </>
 )}
 
-{order.postalCode && order.postalCode !== "N/A" ? (
-  <Text fontSize="sm">📮 Cod poștal: {order.postalCode}</Text>
-) : (
-  <Text fontSize="sm" color="gray.500">Cod poștal indisponibil</Text>
-)}
+    
 
-                {order.phone?.trim() !== "" && order.phone !== "N/A" && (
-                  <Text fontSize="sm">📞 {order.phone}</Text>
-                )}
-  
-                {order.paymentMethod && order.paymentMethod !== "N/A" && (
-                  <Text fontSize="sm">
-                    💳 {
-                      order.paymentMethod === "cash"
-                        ? "Cash"
-                        : order.paymentMethod === "online"
-                        ? "Card online"
-                        : "Card la livrare"
-                    }
-                  </Text>
-                )}
-  
-                {order.deliveryMethod && order.deliveryMethod !== "N/A" && (
-                  <Text fontSize="sm">
-                    🚚 {order.deliveryMethod === "easybox" ? "EasyBox" : "Courier"}
-                  </Text>
-                )}
-  
-                {order.status === "Pending" && (
-                  <Button
-                    colorScheme="red"
-                    size="sm"
-                    mt={2}
-                    onClick={() => handleCancelOrder(order._id)}
-                  >
-                    Anulează Comanda
-                  </Button>
-                )}
-                <Button
-                  colorScheme="teal"
-                  variant="outline"
-                  size="sm"
-                  mt={2}
-                  onClick={() => generateInvoice(order)}
-                >
-                  Descarcă Factura
-                </Button>
               </VStack>
             </AccordionPanel>
           </AccordionItem>
@@ -368,32 +429,31 @@ doc.text(
   
   return (
     <Box p={5}>
-      <Flex justify="space-between" align="center">
-        <Text fontSize="3xl" fontWeight="bold" mb={2}>
-          My Orders
-        </Text>
-        <Flex gap={2}>
-          <Button
-            onClick={() => {
-              setSortBy("date");
-              toggleSortDirection("date");
-            }}
-          >
-            Sort by Date
-            {sortDirection.date === "asc" ? " ↑" : " ↓"}
-          </Button>
-  
-          <Button
-            onClick={() => {
-              setSortBy("total");
-              toggleSortDirection("total");
-            }}
-          >
-            Sort by Total
-            {sortDirection.total === "asc" ? " ↑" : " ↓"}
-          </Button>
-        </Flex>
-      </Flex>
+      <VStack spacing={4} mb={4}>
+  <Text fontSize="3xl" fontWeight="bold" textAlign="center">
+    My Orders
+  </Text>
+  <Flex gap={2} justify="center" wrap="wrap">
+    <Button
+      onClick={() => {
+        setSortBy("date");
+        toggleSortDirection("date");
+      }}
+    >
+      Sort by Date {sortDirection.date === "asc" ? "↑" : "↓"}
+    </Button>
+
+    <Button
+      onClick={() => {
+        setSortBy("total");
+        toggleSortDirection("total");
+      }}
+    >
+      Sort by Total {sortDirection.total === "asc" ? "↑" : "↓"}
+    </Button>
+  </Flex>
+</VStack>
+
   
       {loading ? (
         <Spinner size="xl" />

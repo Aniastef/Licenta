@@ -40,15 +40,15 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const isGoing = event?.goingParticipants?.some((user) => user._id === currentUserId);
   const isEventOwner = event?.user?._id === currentUserId;
 
-  const addToCart = async (eventId, userId) => {
+const addToCart = async (eventId, userId) => {
   try {
-    const response = await fetch('/api/cart/add', {
+    const response = await fetch('/api/cart/add-to-cart', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         userId,
-        itemId: eventId,
+        itemId: eventId, // ✅ aici era problema
         quantity: 1,
         itemType: "Event"
       })
@@ -61,6 +61,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
     alert("Could not add ticket");
   }
 };
+
 
 
   useEffect(() => {
@@ -123,6 +124,8 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   if (!event) {
     return <Box><Text>Loading event details...</Text></Box>;
   }
+
+  console.log("event.ticketType =", event.ticketType);
 
   const markInterested = async () => {
     try {
@@ -217,7 +220,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
 <Box mt={2} borderRadius="md" overflow="hidden" w="100%" maxW="1200px" mx="auto">
   <Box position="relative" paddingTop="33.125%"> {/* 16:9 aspect ratio */}
     <Image
-      src={event.coverImage || "https://via.placeholder.com/800"}
+      src={event.coverImage }
       alt="Event Cover"
       objectFit="cover"
       position="absolute"
@@ -238,21 +241,25 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
             year: "numeric",
           })}   
   </Box>
-  {!isEventOwner && (
-        <Flex gap={4}>
-          <Button bg={isGoing ? "gray.400" : "green.300"} onClick={markGoing}>{isGoing ? "Unmark Going" : "Mark if Going"}</Button>
-          <Button bg={isInterested ? "gray.400" : "yellow.300"} onClick={markInterested}>{isInterested ? "Unmark Interested" : "Mark if Interested"}</Button>
-        {event.ticketType === 'paid' && (
-  <Button 
-    colorScheme="teal"
-    onClick={() => addToCart(event._id, currentUserId)}
-  >
-    Add Ticket to Cart
-  </Button>
+ {currentUserId && !isEventOwner && (
+  <Flex gap={4}>
+    <Button bg={isGoing ? "gray.400" : "red.300"} onClick={markGoing}>
+      {isGoing ? "Unmark Going" : "Mark if Going"}
+    </Button>
+    <Button bg={isInterested ? "gray.400" : "yellow.300"} onClick={markInterested}>
+      {isInterested ? "Unmark Interested" : "Mark if Interested"}
+    </Button>
+    {event.ticketType?.toLowerCase() === "paid" && (
+      <Button
+        colorScheme="green"
+        onClick={() => addToCart(event._id, currentUserId)}
+      >
+        Add Ticket to Cart
+      </Button>
+    )}
+  </Flex>
 )}
 
-        </Flex>
-      )}
   <Box bg="goldenrod" color="black" borderRadius="full" px={6} py={1} fontWeight="bold">
     {event.location || "Location unknown yet"}
         </Box>
@@ -264,7 +271,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         <Text><strong>Category:</strong> {event.category || "Universal"}</Text>
         <Text><strong>Capacity:</strong> {event.capacity || "Unlimited"}</Text>
         <Text><strong>Ticket Type:</strong> {event.ticketType}</Text>
-        <Text><strong>Price:</strong> {event.price > 0 ? `${event.price} RON` : "Free"}</Text>
+        <Text><strong>Price:</strong> {event.price > 0 ? `${event.price} EUR` : "Free"}</Text>
         <Text><strong>Language:</strong> {event.language?.toUpperCase() || "N/A"}</Text>
         <Text>
   <strong>Created by:</strong>{" "}

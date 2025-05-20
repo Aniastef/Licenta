@@ -144,7 +144,7 @@ export default function FavoriteProductsPage() {
                   objectFit="cover"
                 />
                 <Text mt={2} fontWeight="bold">{product.name}</Text>
-                <Text fontSize="sm">{product.price} RON</Text>
+                <Text fontSize="sm">{product.price} EUR</Text>
               </RouterLink>
                 <Button
                     colorScheme="red"

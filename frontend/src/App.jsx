@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import userAtom from './atoms/userAtom';
 import { Box } from '@chakra-ui/react';
 import HomePage from './pages/HomePage';
 import UserPage from './pages/UserPage';
 import UpdateProfilePage from './pages/UpdateProfilePage';
-import AuthPage from './pages/AuthPage'
+import AuthPage from './pages/AuthPage';
 import Navbar from './components/Navbar';
 import CreateProductPage from './pages/CreateProductPage';
 import ProductPage from './pages/ProductPage';
@@ -42,67 +42,66 @@ import UserAllEventsPage from './pages/UserAllEventsPage';
 import FavoritesPage from './pages/FavoritesPage';
 import CreateOrEditArticlePage from './pages/createArticle';
 import AllArticlesPage from './pages/AllArticlesPage';
+import { AnimatePresence } from 'framer-motion';
+import PageWrapper from './components/PageWrapper';
 
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
-  const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs'; // Replace with your real key
-  const { isLoaded } = useLoadGoogleMapsScript(apiKey); // Load Google Maps script
+  const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs';
+  const { isLoaded } = useLoadGoogleMapsScript(apiKey);
+  const location = useLocation();
 
   return (
     <CartProvider>
-    <Box minH="100vh">
-       <Navbar/>
-      <Routes>
-        <Route path='/home' element={<HomePage/>} />
-        <Route path='/auth' element={!user ? <AuthPage /> : <Navigate to='/' />} />
-        <Route path="/profile/:username" element={<UserPage />} />
-        <Route path='/update' element={user ? <UpdateProfilePage /> : <Navigate to='/auth' />} />
-        <Route path="/create/product" element={<CreateProductPage />} />
-        <Route path='/products' element={<ProductsPage/>} />
-        <Route path="/products/:id" element={<ProductPage/>} />
-        <Route path="/create/event" element={user ? <CreateEventPage /> : <Navigate to="/auth" />} />
-        <Route path="/events/:id" element={<EventPage/>} />
-        <Route path='/events' element={<EventsPage/>} />
-        <Route path='/articles' element={<AllArticlesPage/>} />
-
-        <Route path="/art" element={<UserArtGallery/>} />
-        <Route path="*" element={<Navigate to="/home" />} />
-        <Route path="/galleries" element={<ExploreGalleries/>}/>
-        <Route path="/create/gallery" element={<CreateGalleryPage/>}/>
-        <Route path="/galleries/:galleryId" element={<GalleryPage />} />    
-        <Route path="/messages" element={<MessagesPage />} /> {/* Pagină pentru mesaje */}
-        <Route path="/notifications" element={user ? <NotificationsPage /> : <Navigate to="/auth" />} />
-        <Route path="/messages/:userId" element={<MessagesPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} /> {/* ✅ Adaugă ruta corectă */}
-        <Route path="/orders" element={<OrdersPage />} /> {/* ✅ Noua pagină */}
-        <Route path='/admin-panel' element={<AdminPanel/>}/>
-        <Route path="/:username/favorites" element={<FavoriteProductsPage />} />
-        <Route path="/:username/all-products" element={<UserAllProductsPage />} />
-        <Route path="/:username/all-galleries" element={<UserAllGalleriesPage />} />
-        <Route path="/:username/all-events" element={<UserAllEventsPage />} />
-        <Route path="/update/product/:id" element={<UpdateProductPage />} />
-        <Route path="/blocked-users" element={<BlockedUsersPage />} /> {/* Pagină pentru utilizatorii blocați */}
-        <Route path="/edit/event/:eventId" element={<EditEventPage />} />
-        <Route path="/edit-gallery/:galleryId" element={<EditGalleryPage />} />
-        <Route path="/:username/articles" element={<UserArticlesPage />} />
-        <Route path="/articles/:articleId" element={<ArticlePage />} />
-
-        <Route path="/:username/calendar" element={<CalendarPage />} />
-        <Route path="/login" element={<LoginCard />} />
-        <Route path="/favorites/:username" element={<FavoritesPage />} />
-        <Route path="/create/article" element={<CreateOrEditArticlePage />} />
-        <Route path="/update/article/:id" element={<CreateOrEditArticlePage />} />
-
-
-
-      </Routes>
-            <ContactBar />
-      
-    </Box>
+      <Box minH="100vh">
+        <Navbar />
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path='/home' element={<PageWrapper><HomePage /></PageWrapper>} />
+            <Route path='/auth' element={!user ? <PageWrapper><AuthPage /></PageWrapper> : <Navigate to='/' />} />
+            <Route path='/profile/:username' element={<PageWrapper><UserPage /></PageWrapper>} />
+            <Route path='/update' element={user ? <PageWrapper><UpdateProfilePage /></PageWrapper> : <Navigate to='/auth' />} />
+            <Route path='/create/product' element={<PageWrapper><CreateProductPage /></PageWrapper>} />
+            <Route path='/products' element={<PageWrapper><ProductsPage /></PageWrapper>} />
+            <Route path='/products/:id' element={<PageWrapper><ProductPage /></PageWrapper>} />
+            <Route path='/create/event' element={user ? <PageWrapper><CreateEventPage /></PageWrapper> : <Navigate to='/auth' />} />
+            <Route path='/events/:id' element={<PageWrapper><EventPage /></PageWrapper>} />
+            <Route path='/events' element={<PageWrapper><EventsPage /></PageWrapper>} />
+            <Route path='/articles' element={<PageWrapper><AllArticlesPage /></PageWrapper>} />
+            <Route path='/art' element={<PageWrapper><UserArtGallery /></PageWrapper>} />
+            <Route path='*' element={<Navigate to='/home' />} />
+            <Route path='/galleries' element={<PageWrapper><ExploreGalleries /></PageWrapper>} />
+            <Route path='/create/gallery' element={<PageWrapper><CreateGalleryPage /></PageWrapper>} />
+            <Route path='/galleries/:galleryId' element={<PageWrapper><GalleryPage /></PageWrapper>} />
+            <Route path='/messages' element={<PageWrapper><MessagesPage /></PageWrapper>} />
+            <Route path='/notifications' element={user ? <PageWrapper><NotificationsPage /></PageWrapper> : <Navigate to='/auth' />} />
+            <Route path='/messages/:userId' element={<PageWrapper><MessagesPage /></PageWrapper>} />
+            <Route path='/cart' element={<PageWrapper><CartPage /></PageWrapper>} />
+            <Route path='/checkout' element={<PageWrapper><CheckoutPage /></PageWrapper>} />
+            <Route path='/orders' element={<PageWrapper><OrdersPage /></PageWrapper>} />
+            <Route path='/admin-panel' element={<PageWrapper><AdminPanel /></PageWrapper>} />
+            <Route path='/:username/favorites' element={<PageWrapper><FavoriteProductsPage /></PageWrapper>} />
+            <Route path='/:username/all-products' element={<PageWrapper><UserAllProductsPage /></PageWrapper>} />
+            <Route path='/:username/all-galleries' element={<PageWrapper><UserAllGalleriesPage /></PageWrapper>} />
+            <Route path='/:username/all-events' element={<PageWrapper><UserAllEventsPage /></PageWrapper>} />
+            <Route path='/update/product/:id' element={<PageWrapper><UpdateProductPage /></PageWrapper>} />
+            <Route path='/blocked-users' element={<PageWrapper><BlockedUsersPage /></PageWrapper>} />
+            <Route path='/edit/event/:eventId' element={<PageWrapper><EditEventPage /></PageWrapper>} />
+            <Route path='/edit-gallery/:galleryId' element={<PageWrapper><EditGalleryPage /></PageWrapper>} />
+            <Route path='/:username/articles' element={<PageWrapper><UserArticlesPage /></PageWrapper>} />
+            <Route path='/articles/:articleId' element={<PageWrapper><ArticlePage /></PageWrapper>} />
+            <Route path='/:username/calendar' element={<PageWrapper><CalendarPage /></PageWrapper>} />
+            <Route path='/login' element={<PageWrapper><LoginCard /></PageWrapper>} />
+            <Route path='/favorites/:username' element={<PageWrapper><FavoritesPage /></PageWrapper>} />
+            <Route path='/create/article' element={<PageWrapper><CreateOrEditArticlePage /></PageWrapper>} />
+            <Route path='/update/article/:id' element={<PageWrapper><CreateOrEditArticlePage /></PageWrapper>} />
+          </Routes>
+        </AnimatePresence>
+        <ContactBar />
+      </Box>
     </CartProvider>
-   
   );
 }
+
 export default App;

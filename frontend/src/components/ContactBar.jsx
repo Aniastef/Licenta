@@ -34,7 +34,7 @@ const ContactBar = () => {
         py={10}
         textAlign="center"
       >
-        <Text fontWeight="bold" fontSize="2xl" mb={4}>
+        <Text fontWeight="bold" fontSize="2xl" mt={0} mb={4}>
           Got any questions?
         </Text>
 

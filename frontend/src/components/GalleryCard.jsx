@@ -230,58 +230,57 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   return (
     <Flex  direction={"column"} >
 
-<Flex justifyContent="space-between" px={4} pt={4} position="relative">
+<Flex direction="column" alignItems="center" px={4} pt={4} position="relative">
   <Text fontWeight="bold" fontSize="2xl" textAlign="center">
     {gallery.name || "Gallery Name"}
   </Text>
-  
-  <Flex alignItems="center" gap={4}>
-  {currentUserId && !isOwner && (
-  <Button colorScheme="yellow" onClick={addGalleryToFavorites}>
-    Add Gallery to Favorites
-  </Button>
-)}
 
-    {canEdit && (
-      <>
-        <Button colorScheme="green"  onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
+  <Flex justifyContent="space-between" w="100%" mt={4} alignItems="center">
+    <Box />
+    
+    <Flex alignItems="center" gap={4}>
+      {currentUserId && !isOwner && (
+        <Button colorScheme="yellow" onClick={addGalleryToFavorites}>
+          Add Gallery to Favorites
+        </Button>
+      )}
+
+      {canEdit && (
+        <Button colorScheme="green" onClick={() => navigate(`/edit-gallery/${gallery._id}`)}>
           Edit Gallery
         </Button>
-      </>
-    )}
-    {isOwner && (
-  <>
-    <Button
-      colorScheme="red"
-      onClick={handleDeleteGallery}
-    >
-      Delete Gallery
-    </Button>
-  </>
-)}
-    <Flex gap={2}>
-      <Circle size="30px" bg="brown" />
-      <Circle size="30px" bg="blue.300" />
+      )}
+
+      {isOwner && (
+        <Button colorScheme="red" onClick={handleDeleteGallery}>
+          Delete Gallery
+        </Button>
+      )}
+
     </Flex>
   </Flex>
 </Flex>
 
 
-<Box mt={2} borderRadius="md" overflow="hidden" w="100%" maxW="95%" mx="auto">
-  <Box position="relative" paddingTop="30.125%"> {/* Aspect ratio 1200 / 398 */}
-    <Image
-      src={gallery.coverPhoto || "https://via.placeholder.com/800"}
-      alt="Gallery Cover"
-      objectFit="cover"
-      position="absolute"
-      top="0"
-      left="0"
-      width="100%"
-      height="100%"
-      borderRadius="md"
-    />
+
+{gallery.coverPhoto && (
+  <Box mt={2} borderRadius="md" overflow="hidden" w="100%" maxW="95%" mx="auto">
+    <Box position="relative" paddingTop="30.125%">
+      <Image
+        src={gallery.coverPhoto}
+        alt="Gallery Cover"
+        objectFit="cover"
+        position="absolute"
+        top="0"
+        left="0"
+        width="100%"
+        height="100%"
+        borderRadius="md"
+      />
+    </Box>
   </Box>
-</Box>
+)}
+
 
 
       <Flex justifyContent="space-between" mt={3}  px={10}>
@@ -420,9 +419,10 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   </Text>
 <Text fontSize="sm" color="green.600" textAlign="center">
   {p.forSale && p.price != null
-    ? `Price: ${p.price} ${p.currency || "RON"}`
+    ? `Price: ${p.price} EUR`
     : "Not for sale"}
 </Text>
+
 
 
 
@@ -518,7 +518,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         />
         <Heading size="sm" mt={2} textAlign="center">{product.name}</Heading>
         <Text fontSize="sm" color="gray.600" textAlign="center">
-          {product.forSale && product.price != null ? `${product.price} RON` : "Not for Sale"}
+          {product.forSale && product.price != null ? `${product.price} EUR` : "Not for Sale"}
         </Text>
         <Tag
           colorScheme={product.forSale ? (product.quantity > 0 ? "green" : "red") : "gray"}

@@ -46,7 +46,6 @@ const CreateProductPage = () => {
   name: "",
   description: "",
   price: "",
-  currency: "EUR", // 👈 Adăugat
   quantity: null,   // 👈 Inițial null, va fi setat doar dacă e de vânzare
   forSale: true,
   category: "",
@@ -103,7 +102,10 @@ const CreateProductPage = () => {
 				showToast("Error", "Name is required", "error");
 				return;
 			}
-		
+		if (audioFiles.length > 0 && imageFiles.length === 0 && videoFiles.length === 0) {
+    showToast("Error", "You must upload at least one image or video if you add audio", "error");
+    return;
+  }
 			setIsLoading(true);
 		
 			try {
@@ -204,24 +206,8 @@ const CreateProductPage = () => {
   }
 />
 
-    <FormControl>
-      <FormLabel>Currency</FormLabel>
-      <Select
-        value={newProduct.currency}
-        onChange={(e) =>
-          setNewProduct({ ...newProduct, currency: e.target.value })
-        }
-      >
-        {[
-          "EUR", "USD", "GBP", "RON", "CHF", "NOK", "SEK", "DKK", "PLN", "CZK", "HUF", "BGN",
-          "HRK", "ISK", "TRY", "RSD", "UAH"
-        ].map((cur) => (
-          <option key={cur} value={cur}>
-            {cur}
-          </option>
-        ))}
-      </Select>
-    </FormControl>
+
+    
 
     <FormControl>
       <FormLabel>Stock / Quantity</FormLabel>

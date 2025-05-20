@@ -17,23 +17,31 @@ export const CartProvider = ({ children }) => {
   }, [userId]);
   
 
-  const fetchCart = async () => {
-    try {
-      const res = await fetch(`/api/cart/${userId}`, { credentials: "include" });
-      const data = await res.json();
-      setCart(data);
-    } catch (err) {
-      console.error("❌ Error fetching cart:", err);
-    }
-  };
+ const fetchCart = async () => {
+  try {
+    const res = await fetch(`/api/cart/${userId}`, { credentials: "include" });
+    const data = await res.json();
 
-  const updateCartQuantity = async (productId, quantity) => {
+    if (Array.isArray(data)) {
+      setCart(data);
+    } else {
+      console.warn("⚠️ Cart response is not an array:", data);
+      setCart([]); // fallback, previne cart.map error
+    }
+  } catch (err) {
+    console.error("❌ Error fetching cart:", err);
+    setCart([]); // fallback la eroare
+  }
+};
+
+
+const updateCartQuantity = async (productId, quantity, itemType = "Product") => {
     try {
       const res = await fetch(`/api/cart/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ productId, quantity, userId }),
+body: JSON.stringify({ productId, quantity, userId, itemType }),
       });
       const data = await res.json();
       setCart(data);
@@ -43,13 +51,13 @@ export const CartProvider = ({ children }) => {
   };
   
 
-  const removeFromCart = async (productId) => {
+const removeFromCart = async (productId, itemType = "Product") => {
     try {
       const res = await fetch(`/api/cart/remove`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ userId, productId }), // ✅ Correct usage
+body: JSON.stringify({ userId, productId, itemType }),
       });
       const data = await res.json();
       setCart(data);
@@ -79,7 +87,7 @@ export const CartProvider = ({ children }) => {
         console.warn("❌ Nu există stoc suficient pentru", newItem.product.name);
         return;
       }
-      updateCartQuantity(newItem.product._id, totalQty);
+updateCartQuantity(newItem.product._id, totalQty, newItem.product.itemType || "Product");
       return;
     }
     // Dacă nu există item, dar cantitatea cerută > stoc disponibil
@@ -95,10 +103,12 @@ if (newItem.quantity > newItem.product.quantity) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          userId,
-          productId: newItem.product._id,
-          quantity: newItem.quantity || 1,
-        }),
+  userId,
+  itemId: newItem.product._id, // ← folosește `itemId`
+  quantity: newItem.quantity || 1,
+  itemType: newItem.product.itemType || "Product",
+}),
+
       });
   
       const data = await res.json();
@@ -108,7 +118,13 @@ if (newItem.quantity > newItem.product.quantity) {
         return;
       }
   
-      setCart(data);
+     if (Array.isArray(data)) {
+  setCart(data);
+} else {
+  console.warn("❌ Cart response is not an array:", data);
+  setCart([]); // fallback
+}
+
     } catch (err) {
       console.error("❌ Error adding to cart:", err);
     }

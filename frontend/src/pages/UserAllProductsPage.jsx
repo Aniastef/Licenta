@@ -269,7 +269,7 @@ const UserAllProductsPage = () => {
       
                 {filteredProducts[0].forSale && filteredProducts[0].price > 0 && (
                   <Text fontSize="sm" color="green.600">
-                    For Sale: {filteredProducts[0].price} RON
+                    For Sale: {filteredProducts[0].price} EUR
                   </Text>
                 )}
       
@@ -348,11 +348,12 @@ const UserAllProductsPage = () => {
       {/* detalii + buton */}
       <Box textAlign="center" py={3} px={2}>
         <Text fontWeight="bold" noOfLines={1}>{product.name}</Text>
-     {typeof product.price === "number" && product.price > 0 && (
+    {typeof product.price === "number" && product.price > 0 && (
   <Text fontSize="sm" color="green.600">
-    Price: {product.price} {product.currency || "RON"}
+    Price: {product.price}
   </Text>
 )}
+
 
         {product.forSale && product.price > 0 && (
           <Text fontSize="sm" color="gray.600">

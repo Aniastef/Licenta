@@ -110,14 +110,20 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     cart: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product", // ✅ Referință către modelul `Product`
-        },
-        quantity: { type: Number, default: 1 },
-      },
-    ],
+  {
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      refPath: 'cart.itemType' // ✅ corect: suportă dinamic Product sau Event
+    },
+    quantity: { type: Number, default: 1 },
+    itemType: {
+      type: String,
+      enum: ['Product', 'Event'],
+      default: 'Product'
+    }
+  }
+],
+
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -125,43 +131,48 @@ const userSchema = new mongoose.Schema(
       },
     ],
     orders: [
+  {
+    products: [
       {
-        products: [
-          {
-            product: {
-              type: mongoose.Schema.Types.ObjectId,
-              ref: "Product",
-              required: true,
-            },
-            price: Number,
-            quantity: { type: Number, default: 1 },
-          }
-        ],
-        status: {
-          type: String,
-          enum: ["Pending", "Delivered", "Cancelled"],
-          default: "Pending",
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          refPath: 'orders.products.itemType', // 👈 dinamic: Product sau Event
+          required: true,
         },
-        date: { type: Date, default: Date.now },
-    
-        paymentMethod: {
+        itemType: {
           type: String,
-          enum: ["online", "cash", "card_on_delivery"],
-          default: "online",
+          enum: ["Product", "Event"],
+          default: "Product",
         },
-        deliveryMethod: {
-          type: String,
-          enum: ["courier", "easybox"],
-          default: "courier",
-        },
-        firstName: String,
-        lastName: String,
-        address: String,
-        postalCode: String,
-        city: String,
-        phone: String,
+        price: Number,
+        quantity: { type: Number, default: 1 },
       }
     ],
+    status: {
+      type: String,
+      enum: ["Pending", "Delivered", "Cancelled"],
+      default: "Pending",
+    },
+    date: { type: Date, default: Date.now },
+    paymentMethod: {
+      type: String,
+      enum: ["online", "cash", "card_on_delivery"],
+      default: "online",
+    },
+    deliveryMethod: {
+      type: String,
+      enum: ["courier", "easybox"],
+      default: "courier",
+    },
+    firstName: String,
+    lastName: String,
+    address: String,
+    postalCode: String,
+    city: String,
+    phone: String,
+  }
+],
+
     events: [
       {
         type: mongoose.Schema.Types.ObjectId,

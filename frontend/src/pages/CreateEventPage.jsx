@@ -48,7 +48,22 @@ const EVENT_CATEGORIES = [
 	"Music", "Art", "Tech", "Workshop", "Theatre", "Festival", "Literature",
 	"Exhibition", "Dance", "Film", "Charity", "Community", "Education", "Universal"
   ];
-  
+
+  const LANGUAGES = [
+  { label: "🇬🇧 English", value: "en" },
+  { label: "🇷🇴 Romanian", value: "ro" },
+  { label: "🇫🇷 French", value: "fr" },
+  { label: "🇩🇪 German", value: "de" },
+  { label: "🇪🇸 Spanish", value: "es" },
+  { label: "🇮🇹 Italian", value: "it" },
+  { label: "🇵🇹 Portuguese", value: "pt" },
+  { label: "🇳🇱 Dutch", value: "nl" },
+  { label: "🇸🇪 Swedish", value: "sv" },
+  { label: "🇯🇵 Japanese", value: "ja" },
+  { label: "🇨🇳 Chinese", value: "zh" },
+  { label: "🌐 Other", value: "other" }
+];
+
 
 const CreateEventPage = () => {
 
@@ -136,10 +151,22 @@ useEffect(() => {
 	};
 
 	const handleAddEvent = async () => {
-		if (!newEvent.name || !newEvent.date ) {
-			showToast("Error", "Please complete all required fields.", "error");
-			return;
-		  }
+		if (!newEvent.name || !newEvent.date) {
+  showToast("Error", "Please complete all required fields: name and date.", "error");
+  return;
+}
+
+if (!coverImage) {
+  showToast("Error", "Please upload a cover image.", "error");
+  return;
+}
+
+
+if (newEvent.ticketType === "paid" && (!newEvent.capacity || Number(newEvent.capacity) <= 0)) {
+  showToast("Error", "Please specify a valid capacity for paid tickets.", "error");
+  return;
+}
+
 		  
 	
 		setIsLoading(true);
@@ -267,7 +294,6 @@ useEffect(() => {
 </Stack>
 
 						<Input placeholder="Tags (comma-separated)" value={newEvent.tags} onChange={(e) => setNewEvent({ ...newEvent, tags: e.target.value })} />
-						<Input placeholder="Max Capacity" type="number" value={newEvent.capacity} onChange={(e) => setNewEvent({ ...newEvent, capacity: e.target.value })} />
 						
 						<Stack w="full">
 
@@ -281,8 +307,36 @@ useEffect(() => {
 						</Stack>
 
 
-						<Input placeholder="Price (RON)" type="number" value={newEvent.price} onChange={(e) => setNewEvent({ ...newEvent, price: e.target.value })} />
-						<Input placeholder="Language (e.g., en, ro)" value={newEvent.language} onChange={(e) => setNewEvent({ ...newEvent, language: e.target.value })} />
+{newEvent.ticketType === "paid" && (
+  <>
+    <Input
+      placeholder="Price (EUR)"
+      type="number"
+      value={newEvent.price}
+      onChange={(e) => setNewEvent({ ...newEvent, price: e.target.value })}
+    />
+    <Input
+      placeholder="Max Capacity"
+      type="number"
+      value={newEvent.capacity}
+      onChange={(e) => setNewEvent({ ...newEvent, capacity: e.target.value })}
+    />
+  </>
+)}
+<Stack w="full">
+  <FormLabel mb={-1}>Language</FormLabel>
+  <Select
+    placeholder="Select language"
+    value={newEvent.language}
+    onChange={(e) => setNewEvent({ ...newEvent, language: e.target.value })}
+  >
+    {LANGUAGES.map((lang) => (
+      <option key={lang.value} value={lang.value}>
+        {lang.label}
+      </option>
+    ))}
+  </Select>
+</Stack>
 						<Stack w="full">
 						<FormLabel mb={-1}>Cover image</FormLabel>
 						

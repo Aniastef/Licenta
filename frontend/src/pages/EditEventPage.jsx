@@ -34,6 +34,20 @@ const EVENT_CATEGORIES = [
   "Exhibition", "Dance", "Film", "Charity", "Community", "Education", "Other"
 ];
  
+const LANGUAGES = [
+  { label: "🇬🇧 English", value: "en" },
+  { label: "🇷🇴 Romanian", value: "ro" },
+  { label: "🇫🇷 French", value: "fr" },
+  { label: "🇩🇪 German", value: "de" },
+  { label: "🇪🇸 Spanish", value: "es" },
+  { label: "🇮🇹 Italian", value: "it" },
+  { label: "🇵🇹 Portuguese", value: "pt" },
+  { label: "🇳🇱 Dutch", value: "nl" },
+  { label: "🇯🇵 Japanese", value: "ja" },
+  { label: "🇨🇳 Chinese", value: "zh" },
+  { label: "🌐 Other", value: "other" }
+];
+
 export default function EditEventPage() {
 const { eventId } = useParams();
 const [eventData, setEventData] = useState(null);
@@ -283,7 +297,20 @@ return (
          </Stack>
 
           <Input placeholder="Price" type="number" value={eventData.price || ""} onChange={(e) => handleChange("price", Number(e.target.value))} />
-          <Input placeholder="Language" value={eventData.language || ""} onChange={(e) => handleChange("language", e.target.value)} />
+<Stack w="full">
+  <FormLabel mb={-1}>Language</FormLabel>
+  <Select
+    placeholder="Select language"
+    value={eventData.language || ""}
+    onChange={(e) => handleChange("language", e.target.value)}
+  >
+    {LANGUAGES.map((lang) => (
+      <option key={lang.value} value={lang.value}>
+        {lang.label}
+      </option>
+    ))}
+  </Select>
+</Stack>
 
           <Stack w="full">
           <FormLabel mb={-1} >Cover image</FormLabel>

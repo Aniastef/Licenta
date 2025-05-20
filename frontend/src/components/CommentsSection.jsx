@@ -145,35 +145,35 @@ export default function CommentsSection({ resourceId, resourceType }) {
   };
   
 
-   const handleAddComment = async () => {
-    if (!newComment.trim() || !user) return;
-  
-    try {
-      const res = await fetch(`/api/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: newComment,
-          userId: user._id,
-          resourceId,
-          resourceType, // Utilizează resourceType din props
-        }),
-        credentials: "include",
-      });
-  
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Failed to add comment:", errorData.message);
-        return;
-      }
-  
-      const data = await res.json();
-      setComments((prev) => [...prev, data.comment]);
-      setNewComment("");
-    } catch (err) {
-      console.error("Error adding comment:", err.message);
+const handleAddComment = async () => {
+  if (!newComment.trim() || !user) return;
+
+  try {
+    const res = await fetch(`/api/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: newComment,
+        userId: user._id,
+        resourceId,
+        resourceType,
+      }),
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error("Failed to add comment:", errorData.message);
+      return;
     }
-  };
+
+    setNewComment("");
+    await fetchComments(); // 🔥 Soluția cheie: reîncarcă comentariile complet populate
+  } catch (err) {
+    console.error("Error adding comment:", err.message);
+  }
+};
+
 
   const handleAddReply = async (parentId) => {
     if (!replyContent[parentId]?.trim() || !user) return;
