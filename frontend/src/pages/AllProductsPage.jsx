@@ -111,11 +111,11 @@ const categoryColorMap = {
   "Environmental Art": "rgb(3,92,232)"
 };
 const PRICE_RANGES = [
-  { label: "Sub 1000", min: 0, max: 999 },
+  { label: "Under 1000", min: 0, max: 999 },
   { label: "1000 - 1500", min: 1000, max: 1500 },
   { label: "1500 - 2000", min: 1500, max: 2000 },
   { label: "2000 - 3000", min: 2000, max: 3000 },
-  { label: "Peste 3000", min: 3001, max: Infinity },
+  { label: "Over 3000", min: 3001, max: Infinity },
 ];
 
 const ProductsPage = () => {
@@ -341,7 +341,7 @@ useEffect(() => {
 
       <Flex direction={{ base: "column", md: "row" }} gap={6}>
         <Box minW="260px" p={4} borderWidth={1} borderRadius="lg">
-        <Text fontWeight="bold">Pret</Text>
+        <Text fontWeight="bold">Price</Text>
           <Stack spacing={1} mt={2}>
             {PRICE_RANGES.map((range) => (
               <Checkbox
