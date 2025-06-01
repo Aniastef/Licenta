@@ -248,7 +248,7 @@ Join us and be part of a movement that turns creativity into connection. Because
   borderRadius="20px"
   _hover={{ bg: "#766a31" }}
 >
-  See all art pieces
+  See all artworks
 </Button>
 
         </Flex>
@@ -277,7 +277,7 @@ Join us and be part of a movement that turns creativity into connection. Because
              <Box position="relative" w="full" pt="100%" overflow="hidden">
   <Image
     src={product.images[0]}
-    alt={product.name}
+    alt={product.title}
     position="absolute"
     top="0"
     left="0"
@@ -287,8 +287,8 @@ Join us and be part of a movement that turns creativity into connection. Because
   />
 </Box>
               <Box p={4} textAlign="center">
-                <Text fontSize="lg" mb={2} noOfLines={1}>
-                  {product.name}
+                <Text fontSize="lg" fontWeight={"semibold"} mb={2} noOfLines={1}>
+                  {product.title}
                 </Text>
                 <Text fontSize="md" mb={2} noOfLines={1}>
                   Category: {product.category}

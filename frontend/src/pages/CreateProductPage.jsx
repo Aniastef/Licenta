@@ -43,7 +43,7 @@ const compressImage = async (file) => {
 const CreateProductPage = () => {
 	const setProduct = useSetRecoilState(productAtom);
 	const [newProduct, setNewProduct] = useState({
-  name: "",
+  title: "",
   description: "",
   price: "",
   quantity: null,   // 👈 Inițial null, va fi setat doar dacă e de vânzare
@@ -98,8 +98,8 @@ const CreateProductPage = () => {
 		});
 
 		const handleAddProduct = async () => {
-			if (!newProduct.name) {
-				showToast("Error", "Name is required", "error");
+			if (!newProduct.title) {
+				showToast("Error", "Title is required", "error");
 				return;
 			}
 		if (audioFiles.length > 0 && imageFiles.length === 0 && videoFiles.length === 0) {
@@ -162,10 +162,10 @@ const CreateProductPage = () => {
 	return (
 		<Container maxW="container.md" >
 			<VStack spacing={8}>
-				<Heading>Create new art piece</Heading>
+				<Heading>Create new artwork</Heading>
 				<Box w="full" p={6} rounded="lg" shadow="md">
 					<VStack spacing={4}>
-						<Input placeholder="Art piece name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
+						<Input placeholder="Artwork title" value={newProduct.title} onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} />
 						<FormControl>
   <FormLabel>Description</FormLabel>
   <ReactQuill
@@ -340,7 +340,7 @@ const CreateProductPage = () => {
 
 
 						<Button colorScheme="orange" onClick={handleAddProduct} w="full" isLoading={isLoading}>
-							Add art piece
+							Add artwork
 						</Button>
 					</VStack>
 				</Box>

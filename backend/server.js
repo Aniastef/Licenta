@@ -69,3 +69,5 @@ app.use((req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Server started at http://localhost:${PORT}`)
 );
+
+export default app; // This is the correct way to export in an ES Module

@@ -25,6 +25,8 @@ import { useNavigate } from "react-router-dom";
 import RectangleShape from "../assets/rectangleShape";
 import useLoadGoogleMapsScript from "../hooks/useLoadGoogleMapsScript";
 import { Carousel } from "react-responsive-carousel";
+import { useCart } from "../components/CartContext";
+
 
 const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const mapRef = useRef(null);
@@ -35,32 +37,33 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const [showGallery, setShowGallery] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+const { addToCart } = useCart();
 
   const isInterested = event?.interestedParticipants?.some((user) => user._id === currentUserId);
   const isGoing = event?.goingParticipants?.some((user) => user._id === currentUserId);
   const isEventOwner = event?.user?._id === currentUserId;
 
-const addToCart = async (eventId, userId) => {
-  try {
-    const response = await fetch('/api/cart/add-to-cart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        userId,
-        itemId: eventId, // ✅ aici era problema
-        quantity: 1,
-        itemType: "Event"
-      })
-    });
+// const addToCart = async (eventId, userId) => {
+//   try {
+//     const response = await fetch('/api/cart/add-to-cart', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       credentials: 'include',
+//       body: JSON.stringify({
+//         userId,
+//         itemId: eventId, // ✅ aici era problema
+//         quantity: 1,
+//         itemType: "Event"
+//       })
+//     });
 
-    if (!response.ok) throw new Error("Failed to add ticket to cart");
-    alert("Ticket added to cart!");
-  } catch (err) {
-    console.error(err);
-    alert("Could not add ticket");
-  }
-};
+//     if (!response.ok) throw new Error("Failed to add ticket to cart");
+//     alert("Ticket added to cart!");
+//   } catch (err) {
+//     console.error(err);
+//     alert("Could not add ticket");
+//   }
+// };
 
 
 
@@ -250,12 +253,24 @@ const addToCart = async (eventId, userId) => {
       {isInterested ? "Unmark Interested" : "Mark if Interested"}
     </Button>
     {event.ticketType?.toLowerCase() === "paid" && (
-      <Button
-        colorScheme="green"
-        onClick={() => addToCart(event._id, currentUserId)}
-      >
-        Add Ticket to Cart
-      </Button>
+  <Button
+  colorScheme="green"
+  onClick={() =>
+    addToCart({
+      product: {
+        ...event,
+        _id: event._id,
+        itemType: "Event",
+        quantity: event.capacity || 1, // 🔧 important pentru limită stoc
+      },
+      quantity: 1,
+    })
+  }
+>
+  Add Ticket to Cart
+</Button>
+
+
     )}
   </Flex>
 )}

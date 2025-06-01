@@ -122,7 +122,7 @@ const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [filterText, setFilterText] = useState("");
-  const [searchBy, setSearchBy] = useState("name");
+  const [searchBy, setSearchBy] = useState("title");
   const [filterForSale, setFilterForSale] = useState("");
   const [sortOption, setSortOption] = useState("createdAt");
   const [availability, setAvailability] = useState([]);
@@ -169,15 +169,17 @@ useEffect(() => {
 
     updated = updated.filter((p) => {
       const matchSearch =
-      searchBy === "name"
-        ? p.name.toLowerCase().includes(filterText.toLowerCase())
-        : searchBy === "creator"
-        ? `${p.user?.firstName || ""} ${p.user?.lastName || ""}`
-            .toLowerCase()
-            .includes(filterText.toLowerCase())
-        : searchBy === "tags"
-        ? p.tags?.some((tag) => tag.toLowerCase().includes(filterText.toLowerCase()))
-        : true;
+  searchBy === "title"
+    ? (p.title || "").toLowerCase().includes(filterText.toLowerCase())
+    : searchBy === "creator"
+    ? (`${p.user?.firstName || ""} ${p.user?.lastName || ""}`)
+        .toLowerCase()
+        .includes(filterText.toLowerCase())
+    : searchBy === "tags"
+    ? (Array.isArray(p.tags) &&
+        p.tags.some((tag) => (tag || "").toLowerCase().includes(filterText.toLowerCase())))
+    : true;
+
     
 
       const matchSale =
@@ -245,17 +247,11 @@ useEffect(() => {
           ? (a.quantity || 0) - (b.quantity || 0)
           : (b.quantity || 0) - (a.quantity || 0)
       );
-    } else if (sortOption === "likes") {
+    } else if (sortOption === "title") {
       updated.sort((a, b) =>
         sortDirection === "asc"
-          ? (a.favoritedBy?.length || 0) - (b.favoritedBy?.length || 0)
-          : (b.favoritedBy?.length || 0) - (a.favoritedBy?.length || 0)
-      );
-    } else if (sortOption === "name") {
-      updated.sort((a, b) =>
-        sortDirection === "asc"
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name)
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title)
       );
     } else {
       updated.sort((a, b) =>
@@ -290,7 +286,7 @@ useEffect(() => {
     <Box p={4}>
        <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
              <Text fontWeight="bold" fontSize="2xl" textAlign="center">
-                All art pieces
+                All artworks
              </Text>
              <Flex position="absolute" right={4} gap={2}>
                <Circle size="30px" bg="yellow.400" />
@@ -301,7 +297,7 @@ useEffect(() => {
         <HStack spacing={4} mb={2}>
           <Text>Search by:</Text>
           <Select value={searchBy} onChange={(e) => setSearchBy(e.target.value)} w="180px">
-          <option value="name">Art piece name</option>
+          <option value="title">Artwork title</option>
             <option value="creator">Creator</option>
             <option value="tags">Tags</option> {/* ✅ ADĂUGAT */}
 
@@ -323,11 +319,10 @@ useEffect(() => {
   w="180px"
 >
   <option value="createdAt">Created</option>
-  <option value="name">Name</option>
+  <option value="title">Title</option>
   <option value="price">Price</option>
   <option value="rating">Rating</option>
   <option value="stock">Stock</option>
-  <option value="likes">Likes</option>
 </Select>
 
 
@@ -494,7 +489,7 @@ useEffect(() => {
           {loading ? (
             <Text>Loading...</Text>
           ) : paginatedProducts.length === 0 ? (
-            <Text>No art pieces found.</Text>
+            <Text>No artworks found.</Text>
           ) : (
             <>
               <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={5}>
@@ -521,7 +516,7 @@ useEffect(() => {
    {product.images?.[0] ? (
   <Image
     src={product.images[0]}
-    alt={product.name}
+    alt={product.title}
     w="100%"
     h="100%"
     objectFit="cover"
@@ -557,7 +552,7 @@ useEffect(() => {
     fontWeight="bold"
     fontSize="lg"
   >
-    {product.name}
+    {product.title}
   </Flex>
 )}
 
@@ -568,7 +563,7 @@ useEffect(() => {
                     </Box>
                 
 <Box textAlign="center" py={3}   minH="150px">
-                      <Text fontWeight="bold">{product.name}</Text>
+                      <Text fontWeight="bold">{product.title}</Text>
                       <Text color="gray.500" fontSize="sm">
                         <strong>Artist:</strong> {product.user?.firstName || "-"} {product.user?.lastName || ""}
                       </Text>
@@ -612,12 +607,7 @@ useEffect(() => {
                        <strong>Stock:</strong> {product.quantity} left
                       </Text>
                       )}
-                    
-                      {product.favoritedBy?.length > 0 && (
-                        <Text fontSize="sm" color="red.500">
-                          Likes: {product.favoritedBy.length}
-                        </Text>
-                      )}
+                 
 
                     </Box>
                   </Box>
@@ -632,7 +622,7 @@ useEffect(() => {
                 </Text>
                 <HStack spacing={2}>
                   <Button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} isDisabled={currentPage === 1}>
-                    Pagina anterioară
+                    Last page
                   </Button>
                   {[...Array(Math.min(3, totalPages)).keys()].map((i) => (
                     <Button
@@ -645,7 +635,7 @@ useEffect(() => {
                   ))}
                   {totalPages > 3 && <Text>...</Text>}
                   <Button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} isDisabled={currentPage === totalPages}>
-                    Pagina următoare
+                    Next page
                   </Button>
                 </HStack>
               </Flex>

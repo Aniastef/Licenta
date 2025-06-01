@@ -478,7 +478,7 @@ if (dateTo) {
                     >
                       <Box h="200px" bg="gray.300" mb={3}>
                         {event.coverImage ? (
-                          <Image src={event.coverImage} alt={event.name} objectFit="cover" w="100%" h="100%" objectFit="cover" />
+                          <Image src={event.coverImage} alt={event.name} objectFit="cover" w="100%" h="100%" />
                         ) : (
                           <Flex align="center" justify="center" h="100%" bg="gray.400">
                             <Text>No cover image</Text>

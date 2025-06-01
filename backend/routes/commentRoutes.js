@@ -5,6 +5,7 @@ import {
   addReply,
   addComment,
   getComments,
+  deleteComment,
 } from "../controllers/commentController.js";
 import protectRoute from "../middlewares/protectRoute.js";
 
@@ -15,5 +16,6 @@ router.post("/:id/dislike", protectRoute, dislikeUndislikeComment);
 router.post("/reply", protectRoute, addReply);
 router.post("/", protectRoute, addComment);
 router.get("/", getComments);
+router.delete("/:id", protectRoute, deleteComment);
 
 export default router;

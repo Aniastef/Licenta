@@ -219,12 +219,18 @@ const [reportDetails, setReportDetails] = useState("");
 
 
 
-  const handleSelectUser = (user) => {
-    setSelectedUser(user);
-    navigate(`/messages/${user._id}`);
-    setSearch("");
-    setSearchResults([]);
-  };
+const handleSelectUser = (user, e) => {
+  if (e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+ // 👈 evită redirect implicit
+  setSelectedUser(user);
+  navigate(`/messages/${user._id}`);
+  setSearch("");
+  setSearchResults([]);
+};
+
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() && selectedFiles.length === 0) return;
@@ -370,11 +376,11 @@ const handleSubmitReport = async () => {
     {searchResults.map((user) => (
       <HStack
         key={user._id}
+        onClick={(e) => handleSelectUser(user, e)}
         p={2}
         borderRadius="md"
         width="100%"
         _hover={{ backgroundColor: "gray.200" }}
-        onClick={() => handleSelectUser(user)}
         cursor="pointer"
       >
 <Avatar
@@ -397,7 +403,7 @@ const handleSubmitReport = async () => {
           borderRadius="md"
           width="100%"
           _hover={{ backgroundColor: "gray.100" }}
-          onClick={() => handleSelectUser(conv.user)}
+onClick={(e) => handleSelectUser(conv.user, e)}
           cursor="pointer"
           justify="space-between"
           align="flex-start"

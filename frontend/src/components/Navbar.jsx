@@ -74,7 +74,7 @@ const Navbar = () => {
         <HStack spacing={6} fontSize="lg" flexWrap="wrap">
         <Link to="/home"><Text _hover={{ textDecoration: "underline" }}>Home</Text></Link>
   <Link to="/galleries"><Text _hover={{ textDecoration: "underline" }}>Galleries</Text></Link>
-  <Link to="/products"><Text _hover={{ textDecoration: "underline" }}>Art Pieces</Text></Link>
+  <Link to="/products"><Text _hover={{ textDecoration: "underline" }}>Artworks</Text></Link>
   <Link to="/events"><Text _hover={{ textDecoration: "underline" }}>Events</Text></Link>
   <Link to="/articles"><Text _hover={{ textDecoration: "underline" }}>ARTicles</Text></Link>
   {user && (
@@ -83,7 +83,7 @@ const Navbar = () => {
       Create ▼
     </MenuButton>
     <MenuList>
-      <MenuItem as={Link} to="/create/product">➕ Art Piece</MenuItem>
+      <MenuItem as={Link} to="/create/product">➕ Artwork</MenuItem>
       <MenuItem as={Link} to="/create/gallery">➕ Gallery</MenuItem>
       <MenuItem as={Link} to="/create/event">➕ Event</MenuItem>
       <MenuItem as={Link} to="/create/article">➕ Article</MenuItem>
@@ -96,19 +96,18 @@ const Navbar = () => {
               <MenuButton
                 _hover={{ textDecoration: "underline" }}
               >
-                Profile ▼
+                Mine ▼
               </MenuButton>
               <MenuList>
                 <MenuItem as={Link} to={`/profile/${user.username}`}>
                   My profile
                 </MenuItem>
                 <MenuItem as={Link} to="/update">Edit profile</MenuItem>
-                <MenuItem as={Link} to="/messages">Messages</MenuItem>
 {user.role === "admin" && (
   <MenuItem as={Link} to="/admin-panel">Admin panel</MenuItem>
 )}
                 <MenuItem as={Link} to="/blocked-users">Blocked users</MenuItem>
-                <MenuItem as={Link} to={`${user.username}/all-products`}>My art pieces</MenuItem>
+                <MenuItem as={Link} to={`${user.username}/all-products`}>My artworks</MenuItem>
                 <MenuItem as={Link} to={`${user.username}/all-galleries`}>My galleries</MenuItem>
                 <MenuItem as={Link} to={`${user.username}/all-events`}>My events</MenuItem>
                 <MenuItem as={Link} to={`${user.username}/articles`}>My articles</MenuItem>

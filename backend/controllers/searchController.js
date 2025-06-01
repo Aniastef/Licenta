@@ -14,12 +14,12 @@ export const universalSearch = async (req, res) => {
   
     try {
       if (category === "all" || category === "products") {
-        const products = await Product.find({ name: regex }).limit(limit);
+        const products = await Product.find({ title: regex }).limit(limit);
         results.push(
           ...products.map((item) => ({
             _id: item._id,
             type: "product",
-            name: item.name,
+            name: item.title,
           }))
         );
       }
@@ -30,7 +30,7 @@ export const universalSearch = async (req, res) => {
           ...galleries.map((item) => ({
             _id: item._id,
             type: "gallery",
-            name: item.name,
+            name: item.title,
             username: item.owner.username, // 👈 pentru URL
           }))
         );
@@ -53,7 +53,7 @@ export const universalSearch = async (req, res) => {
             ...events.map((item) => ({
               _id: item._id,
               type: "event",
-              name: item.title, // acest "name" trebuie să fie titlul real
+              name: item.name, // acest "name" trebuie să fie titlul real
             }))
           );
           

@@ -66,7 +66,7 @@ owner: { $ne: user._id },
 
 	  // ⚠️ QUERY SEPARAT PENTRU PRODUSE (NU populate pe `products[]`)
 	  const products = await Product.find({ user: user._id })
-  .select("name price images videos tags createdAt category") // 🔄 adaugă și videos, category
+  .select("title price images videos tags createdAt category") // 🔄 adaugă și videos, category
   .sort({ createdAt: -1 });
 
 
@@ -194,7 +194,8 @@ if (isFirstUser) {
   if (adminCode === process.env.ADMIN_SECRET) {
     role = "admin";
   } else {
-    return res.status(403).json({ error: "Invalid admin access code" });
+   res.status(500).json({ error: err.message || "Signup failed" });
+
   }
 } else {
   role = "user";

@@ -57,7 +57,7 @@ const UserAllProductsPage = () => {
 
     if (searchTerm.trim()) {
       updated = updated.filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        p.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -121,7 +121,7 @@ const UserAllProductsPage = () => {
     <Box p={4} maxW="1200px" mx="auto">
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
   <Text fontWeight="bold" fontSize="2xl" textAlign="center">
-  {user ? `${user.firstName} ${user.lastName}'s art pieces` : `${username}'s Products`}
+  {user ? `${user.firstName} ${user.lastName}'s artworks` : `${username}'s Products`}
 </Text>
 
   <Flex position="absolute" right={4} gap={2}>
@@ -132,7 +132,7 @@ const UserAllProductsPage = () => {
     mb={4}
     onClick={() => window.location.href = "/create/product"}
   >
-    Create new art piece
+    Create new artwork
   </Button>
 )}
 
@@ -142,7 +142,7 @@ const UserAllProductsPage = () => {
 </Flex>
       <Flex mt={2} justify="space-between" align="center" mb={6} wrap="wrap" gap={4}>
         <Input
-          placeholder="Search art pieces..."
+          placeholder="Search artworks..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           maxW="300px"
@@ -211,7 +211,7 @@ const UserAllProductsPage = () => {
     {product.images?.[0] ? (
       <Image
         src={product.images[0]}
-        alt={product.name}
+        alt={product.title}
         w="100%"
         h="100%"
         objectFit="cover"
@@ -219,14 +219,14 @@ const UserAllProductsPage = () => {
     ) : (
       <Flex align="center" justify="center" h="100%">
         <Text fontWeight="bold" fontSize="lg" color="gray.600">
-          {product.name}
+          {product.title}
         </Text>
       </Flex>
     )}
   </Box>
 
   <Box py={3} px={2} textAlign="center">
-    <Text fontWeight="bold" noOfLines={1}>{product.name}</Text>
+    <Text fontWeight="bold" noOfLines={1}>{product.title}</Text>
 
     {product.forSale && (
       <Text fontSize="sm" color="green.600">
@@ -265,7 +265,7 @@ const UserAllProductsPage = () => {
 
       
               <Box textAlign="center" py={3} px={2}>
-                <Text fontWeight="bold" noOfLines={1}>{filteredProducts[0].name}</Text>
+                <Text fontWeight="bold" noOfLines={1}>{filteredProducts[0].title}</Text>
       
                 {filteredProducts[0].forSale && filteredProducts[0].price > 0 && (
                   <Text fontSize="sm" color="green.600">
@@ -326,7 +326,7 @@ const UserAllProductsPage = () => {
         {product.images?.[0] ? (
           <Image
             src={product.images[0]}
-            alt={product.name}
+            alt={product.title}
             w="100%"
             h="100%"
             objectFit="cover"
@@ -340,14 +340,14 @@ const UserAllProductsPage = () => {
             fontWeight="bold"
             fontSize="lg"
           >
-            {product.name}
+            {product.title}
           </Flex>
         )}
       </Box>
 
       {/* detalii + buton */}
       <Box textAlign="center" py={3} px={2}>
-        <Text fontWeight="bold" noOfLines={1}>{product.name}</Text>
+        <Text fontWeight="bold" noOfLines={1}>{product.title}</Text>
     {typeof product.price === "number" && product.price > 0 && (
   <Text fontSize="sm" color="green.600">
     Price: {product.price}

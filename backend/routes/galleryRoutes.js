@@ -23,7 +23,7 @@ const router = express.Router();
 router.post("/:galleryId/accept-invite", protectRoute, acceptGalleryInvite);
 router.post("/:galleryId/decline-invite", protectRoute, declineGalleryInvite);
 // 🔄 Obținere galerie după ID (folosită pentru editare)
-router.get("/:galleryId", protectRoute, getGallery);
+router.get("/:galleryId", getGallery);
 router.get("/user/:username", getAllUserGalleries);
 
 

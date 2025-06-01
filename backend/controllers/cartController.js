@@ -10,10 +10,13 @@ export const addToCart = async (req, res) => {
     const item = await itemModel.findById(itemId);
     if (!item) return res.status(404).json({ error: "Item not found" });
 
-    const user = await User.findById(userId).populate("cart.product");
+    const user = await User.findById(userId).populate({
+      path: "cart.product",
+      refPath: "cart.itemType", // ✅ cheia!
+      populate: { path: "user", model: "User" }
+    });
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // 🧹 Elimină item-urile invalide
     user.cart = user.cart.filter(i => i.product !== null);
 
     const existingItem = user.cart.find(
@@ -26,19 +29,17 @@ export const addToCart = async (req, res) => {
       user.cart.push({
         product: itemId,
         quantity,
-        itemType: itemType || "Product", // default fallback
+        itemType: itemType || "Product",
       });
     }
 
     await user.save();
 
- const updatedUser = await User.findById(userId).populate({
-  path: "cart.product",
-  refPath: "cart.itemType", // 🔧 Asta e cheia
-  populate: { path: "user", model: "User" }
-});
-
-
+    const updatedUser = await User.findById(userId).populate({
+      path: "cart.product",
+      refPath: "cart.itemType",
+      populate: { path: "user", model: "User" }
+    });
 
     res.json(updatedUser.cart);
   } catch (error) {
@@ -46,6 +47,7 @@ export const addToCart = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
 
   
   

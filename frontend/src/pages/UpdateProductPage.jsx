@@ -102,8 +102,8 @@ import {
 	};
   
 	const handleUpdate = async () => {
-	  if (!product.name) {
-		showToast("Error", "Name is required", "error");
+	  if (!product.title) {
+		showToast("Error", "Title is required", "error");
 		return;
 	  }
   const isAddingAudio = audioFiles.length > 0;
@@ -154,10 +154,10 @@ import {
 	return (
 	  <Container maxW="container.md">
 		<VStack spacing={8}>
-		  <Heading>Edit art piece</Heading>
+		  <Heading>Edit artwork</Heading>
 		  <Box w="full" p={6} rounded="lg" shadow="md">
 			<VStack spacing={4}>
-			  <Input value={product.name ?? ""} onChange={(e) => setProduct({ ...product, name: e.target.value })} />
+			  <Input value={product.title ?? ""} onChange={(e) => setProduct({ ...product, title: e.target.value })} />
 			  
 			  <FormControl>
 				<FormLabel>Description</FormLabel>

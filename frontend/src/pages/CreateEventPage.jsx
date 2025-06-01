@@ -150,78 +150,81 @@ useEffect(() => {
 		});
 	};
 
-	const handleAddEvent = async () => {
-		if (!newEvent.name || !newEvent.date) {
-  showToast("Error", "Please complete all required fields: name and date.", "error");
-  return;
-}
+const handleAddEvent = async () => {
+  if (!newEvent.name || !newEvent.date) {
+    showToast("Error", "Please complete all required fields: name and date.", "error");
+    return;
+  }
 
-if (!coverImage) {
-  showToast("Error", "Please upload a cover image.", "error");
-  return;
-}
+  if (!coverImage) {
+    showToast("Error", "Please upload a cover image.", "error");
+    return;
+  }
 
+  if (
+    newEvent.ticketType === "paid" &&
+    (!newEvent.capacity || Number(newEvent.capacity) <= 0)
+  ) {
+    showToast("Error", "Please specify a valid capacity for paid tickets.", "error");
+    return;
+  }
 
-if (newEvent.ticketType === "paid" && (!newEvent.capacity || Number(newEvent.capacity) <= 0)) {
-  showToast("Error", "Please specify a valid capacity for paid tickets.", "error");
-  return;
-}
+  setIsLoading(true);
+  try {
+    // 🔽 Cover image: folosește direct base64 dacă e deja crop-uită
+    let base64Image = null;
 
-		  
-	
-		setIsLoading(true);
-		try {
-			// 🔽 Compresie imagine cover (dacă există)
-			let base64Image = croppedCoverImage || null;
-			if (coverImage) {
-				const compressedCover = await compressImage(coverImage);
-				base64Image = await fileToBase64(compressedCover);
-			}
-	
-			// 🔽 Compresie imagini galerie
-			const compressedGallery = await Promise.all(
-				newGalleryFiles.map((file) => compressImage(file))
-			);
-			const galleryBase64 = await Promise.all(
-				compressedGallery.map(fileToBase64)
-			);
-	
-			// 🔼 Fisierele atașate (PDF, etc.) nu se comprimă
-			const attachmentsData = await Promise.all(
-				newAttachments.map(async (file) => ({
-					fileName: file.name,
-					fileData: await fileToBase64(file),
-				}))
-			);
-	
-			const res = await fetch("/api/events/create", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				credentials: "include",
-				body: JSON.stringify({
-					...newEvent,
-					coverImage: base64Image,
-					gallery: galleryBase64,
-					attachments: attachmentsData,
-				}),
-			});
-	
-			const data = await res.json();
-	
-			if (data.error) {
-				showToast("Error", data.error, "error");
-			} else {
-				setEvent(data);
-				showToast("Event created successfully", "", "success");
-				navigate(`/events/${data._id}`);
-			}
-		} catch (error) {
-			showToast("Error", error.message, "error");
-		} finally {
-			setIsLoading(false);
-		}
-	};
-	
+    if (coverImage?.startsWith("data:")) {
+      base64Image = coverImage; // deja base64 crop-uită
+    } else {
+      const compressedCover = await compressImage(coverImage);
+      base64Image = await fileToBase64(compressedCover);
+    }
+
+    // 🔽 Compresie imagini galerie
+    const compressedGallery = await Promise.all(
+      newGalleryFiles.map((file) => compressImage(file))
+    );
+    const galleryBase64 = await Promise.all(
+      compressedGallery.map(fileToBase64)
+    );
+
+    // 🔼 Fișiere atașate (PDF, etc.) – fără compresie
+    const attachmentsData = await Promise.all(
+      newAttachments.map(async (file) => ({
+        fileName: file.name,
+        fileData: await fileToBase64(file),
+      }))
+    );
+
+    const res = await fetch("/api/events/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        ...newEvent,
+        coverImage: base64Image,
+        gallery: galleryBase64,
+        attachments: attachmentsData,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showToast("Error", data.error, "error");
+    } else {
+      setEvent(data);
+      showToast("Event created successfully", "", "success");
+      navigate(`/events/${data._id}`);
+    }
+  } catch (error) {
+    showToast("Error", error.message, "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 	return (
 		<Container maxW="container.md" >
 			<VStack spacing={8}>
@@ -380,6 +383,8 @@ if (newEvent.ticketType === "paid" && (!newEvent.capacity || Number(newEvent.cap
   imageSrc={rawCoverImage}
   onCropComplete={(croppedBase64) => {
     setCroppedCoverImage(croppedBase64);
+	    setCoverImage(croppedBase64); // ✅ Adaugă această linie!
+
   }}
 />
 

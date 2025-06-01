@@ -168,6 +168,8 @@ const SignupCard = () => {
       localStorage.setItem("licenta", JSON.stringify(data));
       setUser(data);
       showToast("Success", "User signed up successfully", "success");
+      setAuthScreen("login"); // <--- ADAUGĂ ACEASTĂ LINIE AICI!
+
     } catch (error) {
       showToast("Error", "Something went wrong. Please try again.", "error");
     }

@@ -9,7 +9,7 @@ export const getAuditLogs = async (req, res) => {
 const logs = await AuditLog.find()
   .populate("performedBy", "firstName lastName email")
   .populate("targetUser", "firstName lastName email")
-  .populate("targetProduct", "name")
+  .populate("targetProduct", "title")
   .populate("targetEvent", "name")
   .populate("targetGallery", "name")
   .populate("targetArticle", "title");

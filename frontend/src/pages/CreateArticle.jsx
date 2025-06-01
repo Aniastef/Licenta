@@ -11,6 +11,7 @@ import {
     FormLabel,
     Stack,
     Select,
+    FormControl,
   } from "@chakra-ui/react";
   import { useState, useEffect } from "react";
   import { useNavigate, useParams } from "react-router-dom";
@@ -140,37 +141,43 @@ const ARTICLE_CATEGORIES = [
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
 />
-<Select
-  placeholder="Select category"
-  value={category}
-  onChange={(e) => setCategory(e.target.value)}
->
-  {ARTICLE_CATEGORIES.map((cat) => (
-    <option key={cat} value={cat}>
-      {cat}
-    </option>
-  ))}
-</Select>
+<FormControl>
+  <FormLabel htmlFor="article-category-select">Category</FormLabel> {/* Added FormLabel */}
+  <Select
+    id="article-category-select" // Link label to select using id
+    placeholder="Select category"
+    value={category}
+    onChange={(e) => setCategory(e.target.value)}
+  >
+    {ARTICLE_CATEGORIES.map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </Select>
+</FormControl>
 
 <Stack w="full">
-            <FormLabel>Cover image</FormLabel>
+    <FormLabel htmlFor="article-cover-image">Cover image</FormLabel> {/* Added htmlFor */}
 
-<Input
-  type="file"
-  accept="image/*"
-  mt={-3}
-  onChange={(e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setRawCoverImage(reader.result);
-        setIsCropModalOpen(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  }}
-/>
+    <Input
+      id="article-cover-image" // Added id to link with label
+      type="file"
+      accept="image/*"
+      mt={-3}
+      onChange={(e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setRawCoverImage(reader.result);
+            setIsCropModalOpen(true);
+          };
+          reader.readAsDataURL(file);
+        }
+      }}
+      data-testid="cover-image-input"
+    />
 </Stack>
 
 {croppedCoverImage && (

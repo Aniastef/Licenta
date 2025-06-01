@@ -11,7 +11,7 @@ import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul 
 
 export const createProduct = async (req, res) => {
 	try {
-const { name, description, writing, price, quantity, forSale, galleries, images = [], videos = [], audios = [], category } = req.body;
+const { title, description, writing, price, quantity, forSale, galleries, images = [], videos = [], audios = [], category } = req.body;
   
 	  if (!req.user) {
 		return res.status(403).json({ error: "User not authenticated" });
@@ -46,7 +46,7 @@ const { name, description, writing, price, quantity, forSale, galleries, images 
 	  }
   
 	  const newProduct = new Product({
-  name,
+  title,
   description: description?.trim() || "No description",
   price,
   quantity: quantity || 0,
@@ -70,7 +70,7 @@ if (forSale && price === undefined) {
   action: "create_product",
   performedBy: req.user._id,
   targetProduct: newProduct._id,
-  details: `Created product: ${newProduct.name}`
+  details: `Created product: ${newProduct.title}`
 });
 
 	  if (galleries && galleries.length > 0) {
@@ -140,7 +140,7 @@ export const getProduct = async (req, res) => {
   action: "delete_product",
   performedBy: req.user._id,
   targetProduct: product._id,
-  details: `Deleted product: ${product.name}`
+  details: `Deleted product: ${product.title}`
 });
 
 	  res.status(200).json({ message: "Product deleted successfully" });
@@ -161,7 +161,7 @@ export const updateProduct = async (req, res) => {
 try {
 	const { productId } = req.params;
 	const {
-  name,
+  title,
   description,
   price,
   quantity,
@@ -222,7 +222,7 @@ try {
 	}
 
 	// Update fields
-	product.name = name || product.name;
+	product.title = title || product.title;
 	product.description = description?.trim() || product.description || "No description";
 	product.price = price ?? product.price;
 	product.quantity = quantity ?? product.quantity;
@@ -241,7 +241,7 @@ try {
   action: "update_product",
   performedBy: req.user._id,
   targetProduct: product._id,
-  details: `Updated product: ${product.name}`
+  details: `Updated product: ${product.title}`
 });
 
 	res.status(200).json(product);
@@ -323,7 +323,7 @@ export const getAllUserProducts = async (req, res) => {
   
 	  const products = await Product.find({ user: user._id })
 		.populate("galleries", "name")
-		.select("name price  quantity forSale images videos audios writing galleries createdAt");
+		.select("title price  quantity forSale images videos audios writing galleries createdAt");
   
 	  res.status(200).json({ user, products }); // ✅ trimite și user
 	} catch (err) {
@@ -389,7 +389,7 @@ export const addToFavorites = async (req, res) => {
 			resourceType: "Product",
 			resourceId: product._id,
 			type: "favorite_product",
-			message: `${user.username} added your product "${product.name}" to favorites.`,
+			message: `${user.username} added your product "${product.title}" to favorites.`,
 		  });
 		}
   

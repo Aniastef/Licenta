@@ -16,6 +16,21 @@ import userAtom from "../atoms/userAtom";
 import useShowToast from "../hooks/useShowToast";
 import likeIcon from "../assets/like.svg";
 import dislikeIcon from "../assets/dislike.svg";
+import {
+  Menu, MenuButton, MenuList, MenuItem, IconButton
+} from "@chakra-ui/react";
+import { HamburgerIcon } from "@chakra-ui/icons";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Select,
+  useDisclosure,
+} from "@chakra-ui/react";
 
 
 
@@ -32,7 +47,42 @@ export default function CommentsSection({ resourceId, resourceType }) {
   const [activeReplyBox, setActiveReplyBox] = useState(null);
   const charCount = (text) => text.length;
   const [isLoading, setIsLoading] = useState(true);
+const { isOpen, onOpen, onClose } = useDisclosure();
+const [reportReason, setReportReason] = useState("");
+const [reportDetails, setReportDetails] = useState("");
+const [commentToReport, setCommentToReport] = useState(null);
 
+const handleSubmitReport = async () => {
+  if (!reportReason || !commentToReport) {
+    showToast("Error", "Please select a reason", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/reports", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+reportedUserId: commentToReport.userId?._id || commentToReport.userId,
+        reason: reportReason,
+        details: `Reported comment: "${commentToReport.content}"\n\nDetails: ${reportDetails}`,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to submit report");
+
+    showToast("Success", "Report submitted", "success");
+    setReportReason("");
+    setReportDetails("");
+    setCommentToReport(null);
+    onClose();
+  } catch (error) {
+    showToast("Error", error.message, "error");
+  }
+};
 
   const fetchComments = async () => {
     setIsLoading(true);
@@ -259,24 +309,30 @@ const handleAddComment = async () => {
 
               {/* Likes/Dislikes */}
               <HStack mt={2}>
-  <Button
-    size="sm"
-    variant="ghost"
-    onClick={() => handleLikeAndUnlike(comment._id)}
-    leftIcon={<Image src={likeIcon} w="16px" h="16px" />}
-  >
-    {Array.isArray(comment.likes) ? comment.likes.length : 0}
-  </Button>
-  <Button
-    size="sm"
-    variant="ghost"
-    onClick={() => handleDislikeAndUndislike(comment._id)}
-    leftIcon={<Image src={dislikeIcon} w="16px" h="16px" />}
-  >
-    {Array.isArray(comment.dislikes) ? comment.dislikes.length : 0}
-  </Button>
+  {user && (
+  <>
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={() => handleLikeAndUnlike(comment._id)}
+      leftIcon={<Image src={likeIcon} w="16px" h="16px" />}
+    >
+      {Array.isArray(comment.likes) ? comment.likes.length : 0}
+    </Button>
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={() => handleDislikeAndUndislike(comment._id)}
+      leftIcon={<Image src={dislikeIcon} w="16px" h="16px" />}
+    >
+      {Array.isArray(comment.dislikes) ? comment.dislikes.length : 0}
+    </Button>
+  </>
+)}
+
 
   {/* 🔥 Aici adaugi butonul de Reply */}
+  {user && (
   <Button
     size="sm"
     variant="ghost"
@@ -288,6 +344,37 @@ const handleAddComment = async () => {
   >
     Reply
   </Button>
+)}
+
+  {(user && (comment.userId?._id === user._id || user.role === "admin")) && (
+  <Button
+    size="xs"
+    colorScheme="red"
+    onClick={async () => {
+      const confirm = window.confirm("Are you sure you want to delete this comment?");
+      if (!confirm) return;
+
+      try {
+        const res = await fetch(`/api/comments/${comment._id}`, {
+          method: "DELETE",
+          credentials: "include"
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to delete");
+
+        showToast("Success", data.message, "success");
+        await fetchComments();
+      } catch (err) {
+        showToast("Error", err.message, "error");
+      }
+    }}
+  >
+    Delete
+  </Button>
+)}
+
+
 
   {/* 🔥 Aici adaugi butonul de Show/Hide Replies */}
   {comment.replies?.length > 0 && (
@@ -299,6 +386,20 @@ const handleAddComment = async () => {
       {showReplies[comment._id] ? "Hide replies" : `Show replies (${comment.replies.length})`}
     </Button>
   )}
+  {user && (
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={() => {
+      setCommentToReport(comment);
+      onOpen();
+    }}
+  >
+    Report
+  </Button>
+)}
+
+
 </HStack>
 
 
@@ -351,6 +452,42 @@ const handleAddComment = async () => {
           </Button>
         </Box>
       )}
+      <Modal isOpen={isOpen} onClose={onClose}>
+  <ModalOverlay />
+  <ModalContent>
+    <ModalHeader>Report Comment</ModalHeader>
+    <ModalCloseButton />
+    <ModalBody>
+      <Select
+        placeholder="Select a reason"
+        value={reportReason}
+        onChange={(e) => setReportReason(e.target.value)}
+        mb={3}
+      >
+        <option value="harassment">Harassment</option>
+        <option value="spam">Spam or advertising</option>
+        <option value="inappropriate">Inappropriate content</option>
+        <option value="impersonation">Impersonation</option>
+        <option value="other">Other</option>
+      </Select>
+      <Textarea
+        placeholder="Additional details (optional)"
+        value={reportDetails}
+        onChange={(e) => setReportDetails(e.target.value)}
+        rows={4}
+      />
+    </ModalBody>
+    <ModalFooter>
+      <Button onClick={onClose} mr={3}>
+        Cancel
+      </Button>
+      <Button colorScheme="red" onClick={handleSubmitReport}>
+        Submit Report
+      </Button>
+    </ModalFooter>
+  </ModalContent>
+</Modal>
+
     </Flex>
   );
 }

@@ -219,7 +219,7 @@ const ExploreGalleries = () => {
             w="200px"
           >
             <option value="name">Name</option>
-            <option value="products">Number of art pieces</option>
+            <option value="products">Number of artworks</option>
             <option value="date">Creation date</option>
 
           </Select>

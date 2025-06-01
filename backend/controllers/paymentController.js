@@ -40,7 +40,7 @@ export const handlePaymentSuccess = async (req, res) => {
         product = await Event.findById(item.product._id);
         if (!product || product.ticketType !== "paid") continue;
         if (product.capacity < item.quantity) {
-          return res.status(400).json({ error: `Not enough tickets for ${product.name}` });
+          return res.status(400).json({ error: `Not enough tickets for ${product.title}` });
         }
 
         product.capacity -= item.quantity;

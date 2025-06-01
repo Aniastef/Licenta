@@ -347,6 +347,37 @@ export const dislikeUndislikeComment = async (req, res) => {
   }
 };
 
+export const deleteComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const requestingUser = req.user;
+
+    const comment = await Comment.findById(id);
+
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    const isAdmin = requestingUser.role === "admin";
+    const isOwner = comment.userId.toString() === requestingUser._id.toString();
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ error: "You don't have permission to delete this comment" });
+    }
+
+    // Ștergem și toate răspunsurile asociate, dacă este un comentariu principal
+    if (!comment.parentId) {
+      await Comment.deleteMany({ parentId: comment._id });
+    }
+
+    await Comment.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Comment deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting comment:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
 
 

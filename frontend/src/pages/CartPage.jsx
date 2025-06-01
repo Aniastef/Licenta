@@ -9,6 +9,7 @@ import {
   IconButton,
   Input,
   Circle,
+  Heading,
 } from "@chakra-ui/react";
 import { useCart } from "../components/CartContext";
 import { useState } from "react";
@@ -66,9 +67,8 @@ const calculateTotal = () => {
     <Box p={8}>
       
       <Flex justify="space-between" align="center" >
-      <Text fontSize="3xl" fontWeight="bold" mb={2}>
-        My Cart
-      </Text>
+      <Heading mb={2} textAlign="center" w="full">My Cart</Heading>
+
        <Flex right={4} gap={2}>
        
           <Circle size="30px" bg="yellow.400" />
@@ -77,125 +77,132 @@ const calculateTotal = () => {
         </Flex>
       </Flex>
 
-      <VStack spacing={6} align="stretch">
-        {cart.map((item) => {
-          const isEvent = item.itemType === "Event";
-const unitPrice = Number(item.product.price);
-const totalPrice = (unitPrice * item.quantity).toFixed(2);
-const maxQty = isEvent ? item.product.capacity : item.product.quantity;
+<VStack spacing={6} align="center">
+  {cart.map((item) => {
+    const isEvent = item.itemType === "Event";
+    const unitPrice = Number(item.product.price);
+    const totalPrice = (unitPrice * item.quantity).toFixed(2);
+    const maxQty = isEvent ? item.product.capacity : item.product.quantity;
 
-          return (
+    return (
+      <Flex
+        key={item.product._id}
+        bg="gray.100"
+        borderRadius="xl"
+        p={4}
+        w="100%"
+        maxW="900px"
+        direction="row"
+        gap={4}
+        align="center"
+        justify="space-between"
+      >
+        {/* Imagine */}
+        {isEvent ? (
+          <Image
+            src={item.product.coverImage}
+            alt={item.product.name}
+            borderRadius="md"
+            objectFit="cover"
+            width="40%"
+            height="100px"
+          />
+        ) : (
+          item.product.images?.[0] ? (
+            <Image
+              src={item.product.images[0]}
+              alt={item.product.name}
+              boxSize="150px"
+              borderRadius="md"
+              objectFit="cover"
+            />
+          ) : (
             <Flex
-              key={item.product._id}
-              bg="gray.100"
-              borderRadius="xl"
-              p={4}
+              boxSize="150px"
+              borderRadius="md"
+              bg="gray.300"
+              justify="center"
               align="center"
-              justify="space-between"
-              position="relative"
+              textAlign="center"
+              p={2}
             >
-              
-           {item.product.images?.[0] || item.product.coverImage ? (
-  <Image
-    src={item.product.images?.[0] || item.product.coverImage}
-    alt={item.product.name}
-    boxSize="120px"
-    borderRadius="lg"
-    objectFit="cover"
-  />
-) : (
-  <Flex
-    boxSize="120px"
-    borderRadius="lg"
-    bg="gray.300"
-    justify="center"
-    align="center"
-    textAlign="center"
-    p={2}
-  >
-    <Text fontWeight="bold" fontSize="sm" color="gray.700">
-      {item.product.name}
-    </Text>
-  </Flex>
-)}
-
-
-              
-
-              <Box flex="1" mx={4}>
-<Link to={isEvent ? `/events/${item.product._id}` : `/products/${item.product._id}`}>
-                  <Text fontWeight="bold" fontSize="xl">
-                    {item.product.name}
-                  </Text>
-                  <Text fontSize="xs" color="gray.500" fontStyle="italic">
-  {isEvent ? "Event Ticket" : "Product"}
-</Text>
-
-                </Link>
-                {item.product.user && (
-  <Text fontSize="sm" color="gray.600" mt={1}>
-    by {item.product.user.firstName} {item.product.user.lastName}
-  </Text>
-)}
-
-
-                <Box mt={3}>
-                  <Text fontSize="xs" color="gray.600">
-                    Quantity
-                  </Text>
-                  <HStack spacing={2} maxW="160px" mt={1}>
-                    <Input
-                      size="sm"
-                      value={item.quantity}
-                      readOnly
-                      textAlign="center"
-                      width="50px"
-                      bg="white"
-                    />
-                    <Button size="sm" onClick={() => handleDecrease(item)}>
-                      -
-                    </Button>
-                    <Button
-  size="sm"
-  onClick={() => handleIncrease(item)}
-  isDisabled={item.quantity >= maxQty}
->
-  +
-</Button>
-
-                  </HStack>
-                  {stockLimitItemId === item.product._id && (
-                    <Text color="red.500" fontSize="sm" mt={1}>
-                      Ai atins limita de stoc disponibil
-                    </Text>
-                  )}
-                </Box>
-              </Box>
-
-              <VStack spacing={2} align="end">
-                <Text fontSize="lg" color="gray.600">
-{unitPrice} EUR × {item.quantity}
-                </Text>
-               <Text fontSize="2xl" color="green.600" fontWeight="bold">
-  {totalPrice} EUR
-</Text>
-
-                <IconButton
-                  icon={<CloseIcon />}
-                  colorScheme="red"
-                  variant="solid"
-                  borderRadius="12px"
-onClick={() => removeFromCart(item.product._id, item.itemType)}
-                  aria-label="Remove item"
-                />
-              </VStack>
+              <Text fontWeight="bold" fontSize="sm" color="gray.700">
+                {item.product.name}
+              </Text>
             </Flex>
-          );
-        })}
-      </VStack>
+          )
+        )}
 
-      {/* Totals */}
-      <Box mt={8} textAlign="right">
+        {/* Detalii + acțiuni */}
+        <Flex direction="column" flex="1" px={2}>
+          <Link to={isEvent ? `/events/${item.product._id}` : `/products/${item.product._id}`}>
+            <Text fontWeight="bold" fontSize="lg">
+              {item.product.name}
+            </Text>
+            <Text fontSize="sm" color={isEvent ? "blue.600" : "gray.500"} fontWeight="semibold">
+              {isEvent ? "🎟️ Event Ticket" : "🛍️ Product"}
+            </Text>
+          </Link>
+
+          {item.product.user && (
+            <Text fontSize="sm" color="gray.600" mt={1}>
+              by {item.product.user.firstName} {item.product.user.lastName}
+            </Text>
+          )}
+
+          <Text fontSize="xs" color="gray.600" mt={2}>
+            Quantity
+          </Text>
+          <HStack spacing={2} maxW="160px" mt={1}>
+            <Input
+              size="sm"
+              value={item.quantity}
+              readOnly
+              textAlign="center"
+              width="50px"
+              bg="white"
+            />
+            <Button size="sm" onClick={() => handleDecrease(item)}>
+              -
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handleIncrease(item)}
+              isDisabled={item.quantity >= maxQty}
+            >
+              +
+            </Button>
+          </HStack>
+          {stockLimitItemId === item.product._id && (
+            <Text color="red.500" fontSize="sm" mt={1}>
+              Ai atins limita de stoc disponibil
+            </Text>
+          )}
+        </Flex>
+
+        {/* Preț + ștergere */}
+        <VStack spacing={2} align="end" justify="space-between" h="100%">
+          <Text fontSize="sm" color="gray.600">
+            {unitPrice} EUR × {item.quantity}
+          </Text>
+          <Text fontSize="xl" color="green.600" fontWeight="bold">
+            {totalPrice} EUR
+          </Text>
+          <IconButton
+            icon={<CloseIcon />}
+            colorScheme="red"
+            variant="solid"
+            borderRadius="12px"
+            onClick={() => removeFromCart(item.product._id, item.itemType)}
+            aria-label="Remove item"
+            size="sm"
+          />
+        </VStack>
+      </Flex>
+    );
+  })}
+   {/* Totals */}
+      <Box mt={8} alignContent="center" textAlign="center">
        <Text fontSize="2xl" fontWeight="bold">
   Total:
 </Text>
@@ -217,6 +224,11 @@ onClick={() => removeFromCart(item.product._id, item.itemType)}
           </Button>
         )}
       </Box>
+</VStack>
+
+
+
+     
     </Box>
   );
 };

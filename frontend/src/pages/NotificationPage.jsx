@@ -156,7 +156,7 @@ const NotificationsPage = () => {
           All Notifications
         </Heading>
         <Button size="sm" onClick={markAllAsSeen} colorScheme="blue">
-          Mark all as seen
+          Mark all as read
         </Button>
       </Flex>
       <VStack align="stretch" spacing={4}>

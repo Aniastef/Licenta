@@ -72,7 +72,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     const searchText = e.target.value.toLowerCase();
     setFilterText(searchText);
     const filtered = availableProducts.filter((product) =>
-      product.name.toLowerCase().includes(searchText)
+      product.title.toLowerCase().includes(searchText)
     );
     setFilteredProducts(filtered);
   };
@@ -295,7 +295,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
 )}
 
       {canEdit && (
-          <Button colorScheme="orange" onClick={onOpen}>Add Existing Product</Button>
+          <Button colorScheme="orange" onClick={onOpen}>Add your artworks</Button>
          
       )}
       
@@ -395,7 +395,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       {p.images?.[0] ? (
   <Image
     src={p.images[0]}
-    alt={p.name}
+    alt={p.title}
     w="100%"
     h="250px"
     objectFit="cover"
@@ -415,7 +415,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
      <Box display="flex" flexDirection="column" alignItems="center" p={3}>
       {/* Afișăm prețul doar dacă e de vânzare */}
         <Text fontWeight="semibold" textAlign="center">
-    {p.name}
+    {p.title}
   </Text>
 <Text fontSize="sm" color="green.600" textAlign="center">
   {p.forSale && p.price != null
@@ -484,7 +484,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
           <ModalBody p={5}>
             <Heading size="md" mb={4}>Select a product to add</Heading>
             <Input
-              placeholder="Filter products by name"
+              placeholder="Filter artworks by name"
               value={filterText}
               onChange={handleFilterChange}
               mb={4}
@@ -510,13 +510,13 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       >
         <Image
           src={product.images[0] || "https://i.pravatar.cc/150"}
-          alt={product.name}
+          alt={product.title}
           w="100%"
           h="150px"
           objectFit="cover"
           borderRadius="md"
         />
-        <Heading size="sm" mt={2} textAlign="center">{product.name}</Heading>
+        <Heading size="sm" mt={2} textAlign="center">{product.title}</Heading>
         <Text fontSize="sm" color="gray.600" textAlign="center">
           {product.forSale && product.price != null ? `${product.price} EUR` : "Not for Sale"}
         </Text>

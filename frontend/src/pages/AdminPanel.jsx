@@ -6,7 +6,8 @@ import {
   FormControl,
   FormLabel,
   Switch,
-  Image
+  Image,
+  SimpleGrid
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver"; // ✅ Pentru descărcare fișiere
@@ -166,7 +167,7 @@ const pieData = Object.entries(categoryStats).map(([category, value]) => ({
 
 const getTargetInfo = (log) => {
   if (log.targetUser) return ` ${log.targetUser.firstName} ${log.targetUser.lastName}`;
-  if (log.targetProduct) return `${log.targetProduct.name}`;
+  if (log.targetProduct) return `${log.targetProduct.title}`;
   if (log.targetEvent) return `${log.targetEvent.name}`;
   if (log.targetGallery) return `Gallery: ${log.targetGallery.name}`;
   if (log.targetArticle) return ` ${log.targetArticle.title}`;
@@ -529,7 +530,7 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
   
     const csvData = Papa.unparse(products.map(prod => ({
       ID: prod._id,
-      Name: prod.name,
+      Title: prod.name,
       Price: prod.price,
       Category: prod.category,
       Creator: `${prod.user?.firstName} ${prod.user?.lastName}`,
@@ -780,7 +781,7 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
       (categoryFilter === "all" || product.category === categoryFilter) &&
       (saleFilter === "all" || (saleFilter === "forsale" ? product.forSale : !product.forSale)) &&
       (
-        product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+        product.title.toLowerCase().includes(productSearch.toLowerCase()) ||
         product.category.toLowerCase().includes(productSearch.toLowerCase()) ||
         `${product.user?.firstName || ""} ${product.user?.lastName || ""}`.toLowerCase().includes(productSearch.toLowerCase())
       )
@@ -888,7 +889,7 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
   colorScheme={activeTab === "products" ? "blue" : "gray"}
   onClick={() => setActiveTab("products")}
 >
-  Art pieces
+  Artworks
 </Button>
 <Button
   colorScheme={activeTab === "events" ? "blue" : "gray"}
@@ -949,11 +950,10 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
 
       </Box>
 
-       {activeTab === "dashboard" && (
+{activeTab === "dashboard" && (
   <Box>
-
-    {/* Statistici generale */}
-    <Flex wrap="wrap" gap={4} mb={6}>
+    {/* Statistici generale în grid */}
+    <SimpleGrid columns={[1, 2, 3]} spacing={4} mb={6}>
       <Box p={4} border="1px solid gray" borderRadius="md">Total Users: {users.length}</Box>
       <Box p={4} border="1px solid gray" borderRadius="md">Active Users: {activeUsers}</Box>
       <Box p={4} border="1px solid gray" borderRadius="md">Blocked Users: {blockedUsers}</Box>
@@ -961,96 +961,97 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
       <Box p={4} border="1px solid gray" borderRadius="md">Total Events: {events.length}</Box>
       <Box p={4} border="1px solid gray" borderRadius="md">Total Galleries: {galleries.length}</Box>
       <Box p={4} border="1px solid gray" borderRadius="md">Total Artworks: {products.length}</Box>
-    </Flex>
+    </SimpleGrid>
 
-    {/* Înregistrări lunare utilizatori */}
-    <Heading size="md" mb={4}>User Registrations Per Month</Heading>
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={registrationData}>
-        <XAxis dataKey="month" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="count" fill="#3182ce" />
-      </BarChart>
-    </ResponsiveContainer>
+    {/* Chart-uri în 2 coloane */}
+    <SimpleGrid columns={[1, null, 2]} spacing={6}>
+      <Box>
+        <Heading size="md" mb={4}>User Registrations Per Month</Heading>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={registrationData}>
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="count" fill="#3182ce" />
+          </BarChart>
+        </ResponsiveContainer>
+      </Box>
 
-    {/* Top contribuitori */}
-    <Heading size="md" mt={8} mb={2}>Top contributors (by artworks)</Heading>
-    <Table size="sm" mb={6}>
-      <Thead>
-        <Tr>
-          <Th>Name</Th>
-          <Th>Artworks</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {Object.entries(
-          products.reduce((acc, p) => {
-            const name = `${p.user?.firstName || ""} ${p.user?.lastName || ""}`.trim();
-            if (name) acc[name] = (acc[name] || 0) + 1;
-            return acc;
-          }, {})
-        )
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5)
-          .map(([name, count]) => (
-            <Tr key={name}>
-              <Td>{name}</Td>
-              <Td>{count}</Td>
-            </Tr>
-          ))}
-      </Tbody>
-    </Table>
+      <Box>
+        <Heading size="md" mb={4}>Artworks by Category</Heading>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={100}
+              label
+            >
+              {pieData.map((_, index) => (
+                <Cell key={`cell-${index}`} fill={`hsl(${index * 47}, 70%, 60%)`} />
+              ))}
+            </Pie>
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </Box>
+    </SimpleGrid>
 
-    {/* Distribuție artworks pe categorii */}
-    <Heading size="md" mb={2}>Artworks by category</Heading>
-    <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
-        <Pie
-          data={Object.entries(
-            products.reduce((acc, p) => {
-              acc[p.category] = (acc[p.category] || 0) + 1;
-              return acc;
-            }, {})
-          ).map(([name, value]) => ({ name, value }))}
-          dataKey="value"
-          nameKey="name"
-          outerRadius={100}
-          label
-        >
-          {products.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={`hsl(${index * 47}, 70%, 60%)`} />
-          ))}
-        </Pie>
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
+    {/* Top Contributors + Recent Users în grid */}
+    <SimpleGrid columns={[1, null, 2]} spacing={6} mt={8}>
+      <Box>
+        <Heading size="md" mb={2}>Top Contributors</Heading>
+        <Box maxH="300px" overflowY="auto">
+          <Table size="sm">
+            <Thead>
+              <Tr>
+                <Th>Name</Th>
+                <Th>Artworks</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {topContributors.map((contrib, index) => (
+                <Tr key={index}>
+                  <Td>{contrib.name}</Td>
+                  <Td>{contrib.artworks}</Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
+      </Box>
 
-    {/* Ultimii utilizatori */}
-    <Heading size="md" mt={8} mb={2}>🕒 Recent Users</Heading>
-    <Table size="sm">
-      <Thead>
-        <Tr>
-          <Th>Name</Th>
-          <Th>Email</Th>
-          <Th>Joined</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {users
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 5)
-          .map((user) => (
-            <Tr key={user._id}>
-              <Td>{user.firstName} {user.lastName}</Td>
-              <Td>{user.email}</Td>
-              <Td>{new Date(user.createdAt).toLocaleDateString()}</Td>
-            </Tr>
-          ))}
-      </Tbody>
-    </Table>
+      <Box>
+        <Heading size="md" mb={2}>🕒 Recent Users</Heading>
+        <Box maxH="300px" overflowY="auto">
+          <Table size="sm">
+            <Thead>
+              <Tr>
+                <Th>Name</Th>
+                <Th>Email</Th>
+                <Th>Joined</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {users
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 10)
+                .map((user) => (
+                  <Tr key={user._id}>
+                    <Td>{user.firstName} {user.lastName}</Td>
+                    <Td>{user.email}</Td>
+                    <Td>{new Date(user.createdAt).toLocaleDateString()}</Td>
+                  </Tr>
+                ))}
+            </Tbody>
+          </Table>
+        </Box>
+      </Box>
+    </SimpleGrid>
   </Box>
 )}
+
 
       {activeTab === "users" && (
         <>
@@ -1648,12 +1649,12 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
 
       {activeTab === "products" && (
   <Box>
-    <Heading textAlign="center" size="md" mb={4}>Manage art pieces</Heading>
+    <Heading textAlign="center" size="md" mb={4}>Manage artworks</Heading>
 
   
 
     <Input
-  placeholder="Search art pieces..."
+  placeholder="Search artworks..."
   value={productSearch}
   onChange={(e) => setProductSearch(e.target.value)}
   mb={4}
@@ -1683,7 +1684,7 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
     {productSortOrder === "asc" ? "⬆️ Ascending" : "⬇️ Descending"}
   </Button>
     <Button size={"sm"} colorScheme="blue" onClick={exportProductsToCSV}>
-      Export art pieces (CSV)
+      Export artworks (CSV)
     </Button>
 </Flex>
 
@@ -1694,7 +1695,7 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
   <Table width="100%" variant="simple">
         <Thead>
           <Tr>
-            <Th>Name</Th>
+            <Th>Title</Th>
             <Th>Category</Th>
             <Th>Creator</Th>
             <Th>Actions</Th>
@@ -1708,7 +1709,7 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
   onClick={() => navigate(`/products/${product._id}`)}
   style={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
 >
-  {product.name}
+  {product.title}
 </Td>
                 <Td>{product.category}</Td>
                 <Td>{product.user?.firstName} {product.user?.lastName}</Td>
@@ -1724,7 +1725,7 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
               </Tr>
             ))
           ) : (
-            <Tr><Td colSpan="6">No products found</Td></Tr>
+            <Tr><Td colSpan="6">No artworks found</Td></Tr>
           )}
         </Tbody>
       </Table>
@@ -1814,10 +1815,10 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
         <Flex direction="column" align="center" width="100%">
 
   <FormControl mb={3}>
-    <FormLabel>Name</FormLabel>
+    <FormLabel>Title</FormLabel>
     <Input
-      value={editProduct?.name || ""}
-      onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
+      value={editProduct?.title || ""}
+      onChange={(e) => setEditProduct({ ...editProduct, title: e.target.value })}
     />
   </FormControl>
 

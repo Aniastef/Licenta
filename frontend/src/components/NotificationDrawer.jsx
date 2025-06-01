@@ -142,7 +142,7 @@ const NotificationDrawer = () => {
         <DrawerHeader display="flex" justifyContent="space-between" alignItems="center">
   <Text fontSize="lg" fontWeight="bold">Notifications</Text>
   <Button size="sm" variant="outline" onClick={markAllAsSeen}>
-    Mark all as seen
+    Mark all as read
   </Button>
 </DrawerHeader>
 

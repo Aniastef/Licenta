@@ -376,7 +376,7 @@ const UserHeader = ({ user }) => {
 
       <Tabs variant="unstyled"  align="center">
         <TabList justifyContent="left" gap={100} flexWrap="wrap">
-          <Tab _selected={{ bg: "orange.400", color: "white" }}>Art pieces</Tab>
+          <Tab _selected={{ bg: "orange.400", color: "white" }}>Artworks</Tab>
           <Tab _selected={{ bg: "green.400", color: "white" }}>Galleries</Tab>
           <Tab _selected={{ bg: "purple.400", color: "white" }}>Events</Tab>
           <Tab _selected={{ bg: "blue.400", color: "white" }}>Articles</Tab>
@@ -396,7 +396,7 @@ const UserHeader = ({ user }) => {
           {product.images?.[0] ? (
   <Image
     src={product.images[0]}
-    alt={product.name}
+    alt={product.title}
     w="100%"
     h="100%"
     objectFit="cover"
@@ -425,19 +425,19 @@ const UserHeader = ({ user }) => {
     fontWeight="bold"
     fontSize="lg"
   >
-    {product.name}
+    {product.title}
   </Flex>
 )}
 
           </Box>
           <Box p={4}>
-            <Text fontWeight="bold" mb={1}>{product.name}</Text>
-      { product.price !== undefined && (
- <Text color="green.600" fontSize="sm">
-  Price: {product.price.toFixed(2)} EUR
-</Text>
-
+            <Text fontWeight="bold" mb={1}>{product.title}</Text>
+  {typeof product.price === "number" ? (
+  <Text>{product.price.toFixed(2)} EUR</Text>
+) : (
+  <Text color="gray.500">Not for sale</Text>
 )}
+
 
 {product.category && (
   <Text fontSize="xs" mt={1} color="gray.600">
@@ -462,7 +462,7 @@ const UserHeader = ({ user }) => {
         _hover={{ textDecoration: "underline" }}
         cursor="pointer"
       >
-        See all user's art pieces →
+        See all user's artworks →
       </Text>
     </Link>
   </Box>

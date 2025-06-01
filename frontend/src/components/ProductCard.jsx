@@ -139,7 +139,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
     });
     toast({
       title: "Product added!",
-      description: `${product.name} (x${quantity}) was added to your cart.`,
+      description: `${product.title} (x${quantity}) was added to your cart.`,
       status: "success",
       duration: 2000,
       isClosable: true,
@@ -216,7 +216,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
         setIsFavorite(!isFavorite);
         toast({
           title: isFavorite ? "Removed from Favorites" : "Added to Favorites",
-          description: `${product.name} was ${isFavorite ? "removed from" : "added to"} your favorites.`,
+          description: `${product.title} was ${isFavorite ? "removed from" : "added to"} your favorites.`,
           status: "success",
           duration: 2000,
           isClosable: true,
@@ -492,7 +492,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
   whiteSpace="normal"
   wordBreak="break-word"
 >
-  {product.name}
+  {product.title}
 </Text>
 {user && (
   <Button
@@ -574,7 +574,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
                 height="50px"
                 _hover={{ bg: "red.500" }}
               >
-                Edit art piece
+                Edit artwork
               </Button>
                <Button
                mt={2}
@@ -584,7 +584,7 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
                height="45px"
                onClick={handleDeleteProduct}
              >
-               Delete art piece
+               Delete artwork
              </Button>
              </>
             ) : (

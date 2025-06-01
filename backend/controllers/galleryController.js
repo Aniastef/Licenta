@@ -106,7 +106,7 @@ export const getGallery = async (req, res) => {
       .populate({
         path: "products.product",
         model: "Product",
-        select: "images name price quantity forSale description",
+        select: "images title price quantity forSale description",
       });
 
     if (!gallery) {
