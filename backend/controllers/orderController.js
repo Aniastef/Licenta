@@ -1,24 +1,71 @@
 import User from "../models/userModel.js";
 import Product from "../models/productModel.js";
+import Event from "../models/eventModel.js";
 
 /**
- * Obține comenzile unui utilizator
+ * Get user orders
  */
-
 export const getUserOrders = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId).populate("orders.products.product");
+    const user = await User.findById(userId).populate({
+      path: "orders.products.product",
+    });
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Poți să verifici aici dacă adresa este validă sau să o completezi cu "Adresa necunoscută" dacă este invalidă
-    user.orders.forEach(order => {
-      order.address = order.address && order.address !== "N/A" ? order.address : "Unknown address";
-      order.city = order.city && order.city !== "N/A" ? order.city : "N/A";
-      order.postalCode = order.postalCode && order.postalCode !== "N/A" ? order.postalCode : "N/A";
-    });
+    // Console log before display fallbacks for debugging
+    console.log("🔍 Backend (orderController): Fetched user orders BEFORE display fallbacks for user:", userId, JSON.parse(JSON.stringify(user.orders)));
+
+    for (const order of user.orders) {
+      if (Array.isArray(order.products)) {
+        for (let i = 0; i < order.products.length; i++) {
+          const item = order.products[i];
+          if (item.product && item.product._id) {
+            if (item.itemType === "Event") {
+              if (!item.product.coverImage) {
+                const eventDetails = await Event.findById(item.product._id);
+                if (eventDetails) {
+                  order.products[i].product = eventDetails;
+                }
+              }
+            } else { // Assume "Product"
+              if (!item.product.images || item.product.images.length === 0) {
+                const productDetails = await Product.findById(item.product._id);
+                if (productDetails) {
+                  order.products[i].product = productDetails;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      const isOrderOnlyTickets = Array.isArray(order.products) && order.products.every(p => p.itemType === "Event");
+
+      // Apply display fallbacks here based on saved value.
+      order.firstName = order.firstName || "N/A";
+      order.lastName = order.lastName || "N/A";
+
+      if (isOrderOnlyTickets) {
+        order.address = "N/A";
+        order.city = "N/A";
+        order.postalCode = "N/A";
+        order.phone = "N/A";
+      } else {
+        order.address = order.address || "Unknown address";
+        order.city = order.city || "Unknown city";
+        order.postalCode = order.postalCode || "Postal code not available";
+        order.phone = order.phone || "Phone not available";
+      }
+
+      order.paymentMethod = order.paymentMethod || "N/A";
+      order.deliveryMethod = order.deliveryMethod === "N/A" ? "N/A" : (order.deliveryMethod || "courier");
+    }
+
+    // Console log after display fallbacks for debugging
+    console.log("✅ Backend (orderController): Orders prepared for sending to frontend (after fallbacks):", JSON.parse(JSON.stringify(user.orders)));
 
     res.status(200).json({ orders: user.orders });
   } catch (error) {
@@ -28,13 +75,11 @@ export const getUserOrders = async (req, res) => {
 };
 
 
-
-
-
 /**
- * Adaugă o comandă nouă
+ * Add a new order
  */
 export const addOrder = async (req, res) => {
+  console.log("📩 Backend (orderController): Received req.body for addOrder:", req.body);
   try {
     const { userId } = req.params;
     const {
@@ -49,11 +94,10 @@ export const addOrder = async (req, res) => {
       phone,
     } = req.body;
 
-
-    
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
+    // Save exactly what's received.
     const newOrder = {
       products: products.map((p) => ({
         product: p._id,
@@ -64,14 +108,15 @@ export const addOrder = async (req, res) => {
       date: new Date(),
       paymentMethod: paymentMethod || "card",
       deliveryMethod: deliveryMethod || "courier",
-      firstName,
-      lastName,
-    address: address || "N/A",
-postalCode: postalCode || "N/A",
-city: city || "N/A",
-phone: phone || "N/A",
-
+      firstName: firstName || "",
+      lastName: lastName || "",
+      address: address || "",
+      postalCode: postalCode || "",
+      city: city || "",
+      phone: phone || "",
     };
+
+    console.log("📝 Backend (orderController): Preparing new order to save for user:", userId, "with data:", newOrder);
 
     user.orders.push(newOrder);
     await user.save();
@@ -84,15 +129,8 @@ phone: phone || "N/A",
 };
 
 
-
-
-
-
-
-  
-
 /**
- * Șterge o comandă specifică
+ * Delete a specific order
  */
 export const deleteOrder = async (req, res) => {
   try {
@@ -114,7 +152,9 @@ export const deleteOrder = async (req, res) => {
 };
 
 
-// ✅ Endpoint: anulare comandă (nu o șterge, doar îi schimbă statusul)
+/**
+ * Cancel an order (changes status, does not delete)
+ */
 export const cancelOrder = async (req, res) => {
   try {
     const { userId, orderId } = req.params;
@@ -135,13 +175,11 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
-// (aici rămân celelalte funcții pe care le ai deja, gen addOrder, getOrders etc.)
-
 
 // Admin - Get All Orders from All Users
 export const getAllOrders = async (req, res) => {
   try {
-    console.log("✅ getAllOrders triggered"); // ADĂUGĂ ASTA
+    console.log("✅ getAllOrders triggered");
 
     if (!req.user || req.user.role !== "admin") {
       return res.status(403).json({ error: "Access denied" });

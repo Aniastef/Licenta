@@ -161,7 +161,7 @@ const userSchema = new mongoose.Schema(
     },
     deliveryMethod: {
       type: String,
-      enum: ["courier", "easybox"],
+      enum: ["courier", "easybox", "N/A"], // Add "N/A" here
       default: "courier",
     },
     firstName: String,

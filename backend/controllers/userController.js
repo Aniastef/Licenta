@@ -138,118 +138,142 @@ owner: { $ne: user._id },
 	}
   };
 
-  export const signupUser = async (req, res) => {
-	try {
-	  const {
-		firstName,
-		lastName,
-		email,
-		username,
-		password,
-		confirmPassword,
-		gender,
-		pronouns,
-		address,
-		city,
-		country,
-		phone,
-		bio,
-		profilePicture,
-		role: requestedRole,
-		adminCode, // 🔐 opțional
-	  } = req.body;
-  
-	  if (password !== confirmPassword) {
-		return res.status(400).json({ error: "Passwords do not match" });
-	  }
-  
-	  const userExists = await User.findOne({ $or: [{ email }, { username }] });
-	  if (userExists) {
-		return res.status(400).json({ error: "User already exists" });
-	  }
-  
-	  const salt = await bcrypt.genSalt(10);
-	  const hashedPassword = await bcrypt.hash(password, salt);
-  
-	  let profilePictureUrl = null;
-	  if (profilePicture) {
-		if (profilePicture.startsWith("http")) {
-		  profilePictureUrl = profilePicture;
-		} else {
-		  const uploadedResponse = await cloudinary.uploader.upload(profilePicture, {
-			folder: "profiles",
-			resource_type: "auto",
-		  });
-		  profilePictureUrl = uploadedResponse.secure_url;
-		}
-	  }
-  
-	  const isFirstUser = (await User.countDocuments()) === 0;
+export const signupUser = async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      username,
+      password,
+      confirmPassword,
+      gender,
+      pronouns,
+      address,
+      city,
+      country,
+      phone,
+      bio,
+      profilePicture,
+      role: requestedRole,
+      adminCode, // 🔐 opțional
+    } = req.body;
 
-let role = "user";
+    // --- Backend Validation matching frontend rules ---
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
 
-if (isFirstUser) {
-  role = "admin";
-} else if (requestedRole === "admin") {
-  if (adminCode === process.env.ADMIN_SECRET) {
-    role = "admin";
-  } else {
-   res.status(500).json({ error: err.message || "Signup failed" });
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+    if (!/[A-Z]/.test(password)) {
+      return res.status(400).json({ error: "Password must contain at least one uppercase letter" });
+    }
+    if (!/[a-z]/.test(password)) {
+      return res.status(400).json({ error: "Password must contain at least one lowercase letter" });
+    }
+    if (!/[0-9]/.test(password)) {
+      return res.status(400).json({ error: "Password must contain at least one number" });
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      return res.status(400).json({ error: "Password must contain at least one special character" });
+    }
 
+    if (!username.trim()) {
+      return res.status(400).json({ error: "Username is required" });
+    } else if (/\s/.test(username)) {
+      return res.status(400).json({ error: "Username cannot contain spaces" });
+    }
+    // --- End Backend Validation ---
+
+
+    const userExists = await User.findOne({ $or: [{ email }, { username }] });
+    if (userExists) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    let profilePictureUrl = null;
+    if (profilePicture) {
+      if (profilePicture.startsWith("http")) {
+        profilePictureUrl = profilePicture;
+      } else {
+        const uploadedResponse = await cloudinary.uploader.upload(profilePicture, {
+          folder: "profiles",
+          resource_type: "auto",
+        });
+        profilePictureUrl = uploadedResponse.secure_url;
+      }
+    }
+
+    const isFirstUser = (await User.countDocuments()) === 0;
+
+    let role = "user";
+
+    if (isFirstUser) {
+      role = "admin";
+    } else if (requestedRole === "admin") {
+      if (adminCode === process.env.ADMIN_SECRET) {
+        role = "admin";
+      } else {
+        return res.status(403).json({ error: "Invalid admin access code." }); // Use 403 Forbidden for incorrect code
+      }
+    } else {
+      role = "user";
+    }
+
+
+    const newUser = new User({
+      firstName,
+      lastName,
+      email,
+      username,
+      password: hashedPassword,
+      gender,
+      pronouns,
+      address,
+      city,
+      country,
+      phone,
+      bio,
+      profilePicture: profilePictureUrl,
+      role,
+    });
+
+    await newUser.save();
+    await addAuditLog({
+      action: "signup",
+      performedBy: newUser._id,
+      targetUser: newUser._id,
+      details: `New account created: ${newUser.username}`
+    });
+
+    generateTokenAndSetCookie(newUser._id, res);
+
+    res.status(201).json({
+      _id: newUser._id,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      email: newUser.email,
+      username: newUser.username,
+      bio: newUser.bio,
+      profilePicture: newUser.profilePicture,
+      gender: newUser.gender,
+      pronouns: newUser.pronouns,
+      address: newUser.address,
+      city: newUser.city,
+      country: newUser.country,
+      phone: newUser.phone,
+      role: newUser.role,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+    console.log("Error while signing user up: ", err.message);
   }
-} else {
-  role = "user";
-}
-
-  
-	  const newUser = new User({
-		firstName,
-		lastName,
-		email,
-		username,
-		password: hashedPassword,
-		gender,
-		pronouns,
-		address,
-		city,
-		country,
-		phone,
-		bio,
-		profilePicture: profilePictureUrl,
-		role,
-	  });
-  
-	  await newUser.save();
-	  await addAuditLog({
-  action: "signup",
-  performedBy: newUser._id,
-  targetUser: newUser._id,
-  details: `New account created: ${newUser.username}`
-});
-
-	  generateTokenAndSetCookie(newUser._id, res);
-  
-	  res.status(201).json({
-		_id: newUser._id,
-		firstName: newUser.firstName,
-		lastName: newUser.lastName,
-		email: newUser.email,
-		username: newUser.username,
-		bio: newUser.bio,
-		profilePicture: newUser.profilePicture,
-		gender: newUser.gender,
-		pronouns: newUser.pronouns,
-		address: newUser.address,
-		city: newUser.city,
-		country: newUser.country,
-		phone: newUser.phone,
-		role: newUser.role,
-	  });
-	} catch (err) {
-	  res.status(500).json({ message: err.message });
-	  console.log("Error while signing user up: ", err.message);
-	}
-  };
+};
   
   export const updateUserByAdmin = async (req, res) => {
 	try {

@@ -1,63 +1,71 @@
 import React from "react";
-import { Box, Flex, Text, Circle, Image, HStack, Link } from "@chakra-ui/react";
+import { Box, Flex, Text, Image, HStack, Link } from "@chakra-ui/react";
 import phoneIcon from "../assets/phone.svg";
 import emailIcon from "../assets/email.svg";
 import facebookIcon from "../assets/facebook.svg";
 import instagramIcon from "../assets/instagram.svg";
-import navbarBg from "../assets/navbar.svg"; // imaginea decorativă
+import contactBarBg from "../assets/contactBar.svg";
 
 const ContactBar = () => {
   return (
-    <Box w="100%" mt={20} position="relative" overflow="visible">
-      
-      {/* Fundal inversat cu imaginea SVG */}
+    <Box
+      w="100%"
+      position="relative"
+      minH="300px" // Ajustează această înălțime dacă e nevoie
+      overflow="hidden"
+    >
+      {/* Fundal inversat cu imaginea SVG - poziționat absolut */}
       <Image
-        src={navbarBg}
+        src={contactBarBg}
         alt="contact shape"
         w="100%"
-        transform="rotate(180deg)"
+        h="100%"
+        objectFit="cover"
         position="absolute"
-        top="-76px"
+        top="0"
         left="0"
         zIndex={1}
         pointerEvents="none"
       />
 
-      {/* Conținut Contact */}
+      {/* Conținut Contact - poziționat absolut peste imagine */}
       <Flex
-        position="relative"
+        position="absolute"
+        bottom="0"
+        left="50%"
+        transform="translateX(-50%)"
         zIndex={2}
         direction="column"
         align="center"
         justify="center"
-        px={10}
-        py={10}
         textAlign="center"
+        w="100%"
+        p={4}
       >
-        <Text fontWeight="bold" fontSize="2xl" mt={0} mb={4}>
+        <Text fontWeight="bold" fontSize="2xl" mb={4} >
           Got any questions?
         </Text>
 
         <HStack spacing={3} mb={2}>
-          <Image src={phoneIcon} boxSize="20px" />
-          <Text>+40 723 123 456</Text>
+          <Image src={phoneIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
+          <Text >+40 723 123 456</Text>
         </HStack>
 
         <HStack spacing={3} mb={2}>
-          <Image src={emailIcon} boxSize="20px" />
-          <Text>contact@artcorner.com</Text>
+          <Image src={emailIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
+          <Text >contact@artcorner.com</Text>
         </HStack>
 
         <HStack spacing={3} mb={2}>
-          <Image src={facebookIcon} boxSize="20px" />
+          <Image src={facebookIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
           <Link href="https://facebook.com/artcorner" isExternal color="blue.700">
             facebook.com/artcorner
           </Link>
         </HStack>
 
         <HStack spacing={3}>
-          <Image src={instagramIcon} boxSize="20px" />
-          <Link href="https://instagram.com/artcorner" isExternal color="purple.600">
+          <Image src={instagramIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
+          <Link href="https://instagram.com/artcorner" isExternal color="purple.700">
             @artcorner
           </Link>
         </HStack>

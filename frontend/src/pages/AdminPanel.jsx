@@ -613,6 +613,8 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
         country: editUser.country,
         message: editUser.message,
         heart: editUser.heart,
+        quote: editUser.quote, // Adăugat câmpul quote
+
       };
       
 
@@ -1249,6 +1251,10 @@ const convertToBase64 = (file) => new Promise((resolve, reject) => {
     <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
   </FormControl>
 
+ <FormControl mb={3}>
+                      <FormLabel>Quote</FormLabel>
+                      <Input value={editUser.quote || ""} onChange={(e) => setEditUser({ ...editUser, quote: e.target.value })} />
+                    </FormControl>
   <FormControl mb={3}>
   <FormLabel>Profile Picture</FormLabel>
   <Input type="file" accept="image/*" onChange={handleUploadPicture} />

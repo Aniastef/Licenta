@@ -1,4 +1,4 @@
-// paymentController.js - Controler pentru plăți cu Stripe
+// paymentController.js - Controller for Stripe payments
 import Stripe from "stripe";
 import dotenv from "dotenv";
 dotenv.config();
@@ -11,24 +11,31 @@ import Event from "../models/eventModel.js";
 
 
 export const handlePaymentSuccess = async (req, res) => {
+  console.log("📩 Backend (paymentController): Received req.body for handlePaymentSuccess:", req.body);
   try {
     const { userId, cart, paymentMethod, deliveryMethod, firstName, lastName, address, postalCode, city, phone } = req.body;
 
     const user = await User.findById(userId).populate("cart.product");
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (!user.cart.length) return res.status(400).json({ error: "Cart is empty" });
-
+    // Important: The cart here is the one sent from localStorage by the frontend.
+    // We validate products based on this cart.
     const validProductsForOrder = [];
 
-    for (const item of user.cart) {
-      if (!item.product) continue;
+    for (const item of cart) { // Use `cart` from req.body, not `user.cart`
+      if (!item.product || !item.product._id) {
+         console.warn("Skipping invalid cart item in payment success:", item);
+         continue;
+      }
 
       let product = null;
 
       if (item.itemType === "Product") {
         product = await Product.findById(item.product._id);
-        if (!product || !product.forSale || product.user.toString() === userId.toString()) continue;
+        if (!product || !product.forSale || product.user.toString() === userId.toString()) {
+          console.warn(`Product ${item.product._id} not found, not for sale, or self-purchase detected. Skipping.`);
+          continue;
+        }
         if (product.quantity < item.quantity) {
           return res.status(400).json({ error: `Not enough stock for ${product.name}` });
         }
@@ -38,7 +45,10 @@ export const handlePaymentSuccess = async (req, res) => {
 
       } else if (item.itemType === "Event") {
         product = await Event.findById(item.product._id);
-        if (!product || product.ticketType !== "paid") continue;
+        if (!product || product.ticketType !== "paid") {
+          console.warn(`Event ${item.product._id} not found or not a paid ticket. Skipping.`);
+          continue;
+        }
         if (product.capacity < item.quantity) {
           return res.status(400).json({ error: `Not enough tickets for ${product.title}` });
         }
@@ -51,34 +61,32 @@ export const handlePaymentSuccess = async (req, res) => {
 
       validProductsForOrder.push({
         product: product._id,
-        price: product.price,
+        price: item.price,
         quantity: item.quantity,
         itemType: item.itemType || "Product",
       });
     }
 
     if (!validProductsForOrder.length) {
-      return res.status(400).json({ error: "No valid products available to order" });
+      return res.status(400).json({ error: "No valid products available to order or cart was empty initially." });
     }
 
-    const normalize = (val) => (typeof val === "string" && val.trim() !== "" ? val.trim() : "N/A");
+    // Save exactly what's received from the frontend.
+    user.orders.push({
+      products: validProductsForOrder,
+      status: "Pending",
+      date: new Date(),
+      paymentMethod: paymentMethod || "online",
+      deliveryMethod: deliveryMethod || "courier",
+      firstName: firstName?.trim() || "",
+      lastName: lastName?.trim() || "",
+      address: address?.trim() || "",
+      postalCode: postalCode?.trim() || "",
+      city: city?.trim() || "",
+      phone: phone?.trim() || "",
+    });
 
-user.orders.push({
-  products: validProductsForOrder,
-  status: "Pending",
-  date: new Date(),
-  paymentMethod: paymentMethod || "online",
-  deliveryMethod: deliveryMethod || "courier",
-  firstName: firstName?.trim() || user.firstName || "N/A",
-  lastName: lastName?.trim() || user.lastName || "N/A",
-address: address?.trim() || "Unknown address",
-postalCode: postalCode?.trim() || "Postal code not available",
-city: city?.trim() || "Unknown city",
-phone: phone?.trim() || "Phone not available",
-
-});
-
-    user.cart = [];
+    user.cart = []; // Clear the actual user's cart in DB
     await user.save();
 
     console.log("✅ Order placed successfully");
@@ -92,6 +100,8 @@ phone: phone?.trim() || "Phone not available",
 
 
 export const processPayment = async (req, res) => {
+  // This function is less critical for the current Stripe flow, but ensure consistency
+  console.log("📩 Backend (paymentController): Received req.body for processPayment:", req.body);
   try {
     const userId = req.user._id;
     const user = await User.findById(userId).populate("cart.product");
@@ -100,7 +110,7 @@ export const processPayment = async (req, res) => {
       return res.status(200).json({ message: "Cart already processed" });
     }
 
-    const order = new Order({
+    const order = new Order({ // Assuming Order model is imported or defined
       user: userId,
       products: user.cart.map(item => ({
         product: item.product._id,
@@ -123,6 +133,7 @@ export const processPayment = async (req, res) => {
 };
 
 export const createCheckoutSession = async (req, res) => {
+  console.log("📩 Backend (paymentController): Received req.body for createCheckoutSession:", req.body);
   try {
     const { items } = req.body;
 
@@ -130,12 +141,11 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(400).json({ error: "No items provided" });
     }
 
-   const currency = "eur"; // Folosește o monedă fixă
-
+   const currency = "eur";
 
     const lineItems = items.map((item) => ({
       price_data: {
-    currency: "eur", // valoare fixă
+    currency: "eur",
         product_data: { name: item.name },
         unit_amount: Math.round(item.price * 100),
       },
@@ -143,9 +153,9 @@ export const createCheckoutSession = async (req, res) => {
     }));
 
     const totalAmount = lineItems.reduce((total, item) => total + item.price_data.unit_amount * item.quantity, 0);
-    if (totalAmount < 200) {
+    if (totalAmount < 50) { // Stripe minimum charge is 0.50 EUR (50 cents)
       return res.status(400).json({
-        error: `Total must be at least 2 EUR}`,
+        error: `Total must be at least 0.50 EUR`,
       });
     }
 

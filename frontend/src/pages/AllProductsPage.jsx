@@ -137,8 +137,8 @@ const ProductsPage = () => {
   const [customMin, setCustomMin] = useState(0);
   const [customMax, setCustomMax] = useState(10000);
   const location = useLocation();
-const queryParams = new URLSearchParams(location.search);
-const initialCategory = queryParams.get("category");
+  const queryParams = new URLSearchParams(location.search);
+  const initialCategory = queryParams.get("category");
 
 useEffect(() => {
   if (initialCategory && ALL_CATEGORIES.includes(initialCategory)) {
@@ -169,18 +169,16 @@ useEffect(() => {
 
     updated = updated.filter((p) => {
       const matchSearch =
-  searchBy === "title"
-    ? (p.title || "").toLowerCase().includes(filterText.toLowerCase())
-    : searchBy === "creator"
-    ? (`${p.user?.firstName || ""} ${p.user?.lastName || ""}`)
-        .toLowerCase()
-        .includes(filterText.toLowerCase())
-    : searchBy === "tags"
-    ? (Array.isArray(p.tags) &&
-        p.tags.some((tag) => (tag || "").toLowerCase().includes(filterText.toLowerCase())))
-    : true;
-
-    
+        searchBy === "title"
+          ? (p.title || "").toLowerCase().includes(filterText.toLowerCase())
+          : searchBy === "creator"
+          ? (`${p.user?.firstName || ""} ${p.user?.lastName || ""}`)
+              .toLowerCase()
+              .includes(filterText.toLowerCase())
+          : searchBy === "tags"
+          ? (Array.isArray(p.tags) &&
+              p.tags.some((tag) => (tag || "").toLowerCase().includes(filterText.toLowerCase())))
+          : true;
 
       const matchSale =
         filterForSale === "forsale"
@@ -210,23 +208,22 @@ useEffect(() => {
       const matchRating =
         selectedRatings.length === 0 || selectedRatings.some((r) => Math.floor(p.averageRating || 0) === r);
 
-        const matchCategories =
-        selectedCategories.length === 0 || selectedCategories.includes(p.category);
-      
+      // MODIFICATION HERE: Handle category as an array
+      const matchCategories =
+        selectedCategories.length === 0 ||
+        (Array.isArray(p.category) && // Ensure p.category is an array
+        selectedCategories.some((selectedCat) => p.category.includes(selectedCat))); // Check if any of product's categories are in selectedCategories
 
-        
-
-        return (
-          matchSearch &&
-          matchSale &&
-          matchAvailability &&
-          matchMedia &&
-          matchPriceSlider &&
-          matchPriceFilters &&
-          matchRating &&
-          matchCategories // ✅ înlocuit din matchTags
-        );
-        
+      return (
+        matchSearch &&
+        matchSale &&
+        matchAvailability &&
+        matchMedia &&
+        matchPriceSlider &&
+        matchPriceFilters &&
+        matchRating &&
+        matchCategories
+      );
     });
 
     if (sortOption === "price") {
@@ -260,8 +257,6 @@ useEffect(() => {
           : new Date(b.createdAt) - new Date(a.createdAt)
       );
     }
-    
-    
 
     setFilteredProducts(updated);
     setCurrentPage(1);
@@ -299,8 +294,7 @@ useEffect(() => {
           <Select value={searchBy} onChange={(e) => setSearchBy(e.target.value)} w="180px">
           <option value="title">Artwork title</option>
             <option value="creator">Creator</option>
-            <option value="tags">Tags</option> {/* ✅ ADĂUGAT */}
-
+            <option value="tags">Tags</option>
           </Select>
           <Input
             placeholder={`Search this ${searchBy}...`}
@@ -309,34 +303,34 @@ useEffect(() => {
             w="250px"
           />
         </HStack>
-       
+
 
         <HStack spacing={2}>
-  <Text>Sort by:</Text>
-  <Select
-  value={sortOption}
-  onChange={(e) => setSortOption(e.target.value)}
-  w="180px"
->
-  <option value="createdAt">Created</option>
-  <option value="title">Title</option>
-  <option value="price">Price</option>
-  <option value="rating">Rating</option>
-  <option value="stock">Stock</option>
-</Select>
+          <Text>Sort by:</Text>
+          <Select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            w="180px"
+          >
+            <option value="createdAt">Created</option>
+            <option value="title">Title</option>
+            <option value="price">Price</option>
+            <option value="rating">Rating</option>
+            <option value="stock">Stock</option>
+          </Select>
 
 
-  <Button onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}>
-    {sortDirection === "asc" ? "↑" : "↓"}
-  </Button>
-</HStack>
+          <Button onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}>
+            {sortDirection === "asc" ? "↑" : "↓"}
+          </Button>
+        </HStack>
 
 
       </Flex>
 
       <Flex direction={{ base: "column", md: "row" }} gap={6}>
         <Box minW="260px" p={4} borderWidth={1} borderRadius="lg">
-        <Text fontWeight="bold">Price</Text>
+          <Text fontWeight="bold">Price</Text>
           <Stack spacing={1} mt={2}>
             {PRICE_RANGES.map((range) => (
               <Checkbox
@@ -351,55 +345,55 @@ useEffect(() => {
           <Divider my={4} />
           <Text fontWeight="bold">Price Range</Text>
           <RangeSlider
-  value={priceRange}
-  min={0}
-  max={10000}
-  step={100}
-  onChange={(val) => {
-    setPriceRange(val);
-    setCustomMin(val[0]);
-    setCustomMax(val[1]);
-  }}
->
-  <RangeSliderTrack>
-    <RangeSliderFilledTrack />
-  </RangeSliderTrack>
-  <RangeSliderThumb index={0} />
-  <RangeSliderThumb index={1} />
-</RangeSlider>
+            value={priceRange}
+            min={0}
+            max={10000}
+            step={100}
+            onChange={(val) => {
+              setPriceRange(val);
+              setCustomMin(val[0]);
+              setCustomMax(val[1]);
+            }}
+          >
+            <RangeSliderTrack>
+              <RangeSliderFilledTrack />
+            </RangeSliderTrack>
+            <RangeSliderThumb index={0} />
+            <RangeSliderThumb index={1} />
+          </RangeSlider>
 
-<Flex mt={2} gap={2} align="center">
-  <Input
-    size="sm"
-    type="text"
-    w="80px"
-    value={customMin}
-    onChange={(e) => {
-      const val = e.target.value;
-      if (/^\d*$/.test(val)) {
-        setCustomMin(val);
-        const parsed = parseInt(val || "0", 10);
-        setPriceRange([parsed, priceRange[1]]);
-      }
-    }}
-  />
-  <Text>-</Text>
-  <Input
-    size="sm"
-    type="text"
-    w="80px"
-    value={customMax}
-    onChange={(e) => {
-      const val = e.target.value;
-      if (/^\d*$/.test(val)) {
-        setCustomMax(val);
-        const parsed = parseInt(val || "0", 10);
-        setPriceRange([priceRange[0], parsed]);
-      }
-    }}
-  />
-</Flex>
-         
+          <Flex mt={2} gap={2} align="center">
+            <Input
+              size="sm"
+              type="text"
+              w="80px"
+              value={customMin}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^\d*$/.test(val)) {
+                  setCustomMin(val);
+                  const parsed = parseInt(val || "0", 10);
+                  setPriceRange([parsed, priceRange[1]]);
+                }
+              }}
+            />
+            <Text>-</Text>
+            <Input
+              size="sm"
+              type="text"
+              w="80px"
+              value={customMax}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^\d*$/.test(val)) {
+                  setCustomMax(val);
+                  const parsed = parseInt(val || "0", 10);
+                  setPriceRange([priceRange[0], parsed]);
+                }
+              }}
+            />
+          </Flex>
+
 
           <Divider my={4} />
 
@@ -453,34 +447,36 @@ useEffect(() => {
           <Divider my={4} />
 
           <Text fontWeight="bold">Categories</Text>
-<Wrap spacing={2} mt={2} maxW="240px">
-  {ALL_CATEGORIES.map((cat) => {
-    const isSelected = selectedCategories.includes(cat);
-    const bgColor = isSelected ? "#2B6CB0" : categoryColorMap[cat];
-    const textColor = isSelected ? "white" : "black";
+          <CheckboxGroup
+            colorScheme="green"
+            value={selectedCategories} // Use CheckboxGroup for multi-select
+            onChange={setSelectedCategories}
+          >
+            <Wrap spacing={2} mt={2} maxW="240px">
+              {ALL_CATEGORIES.map((cat) => {
+                const isSelected = selectedCategories.includes(cat);
+                const bgColor = isSelected ? "#2B6CB0" : categoryColorMap[cat];
+                const textColor = isSelected ? "white" : "black";
 
-    return (
-      <WrapItem key={cat}>
-        <Button
-          size="sm"
-          borderRadius="md"
-          bg={bgColor}
-          color={textColor}
-          _hover={{ opacity: 0.8 }}
-          onClick={() =>
-            setSelectedCategories((prev) =>
-              prev.includes(cat)
-                ? prev.filter((c) => c !== cat)
-                : [...prev, cat]
-            )
-          }
-        >
-          {cat}
-        </Button>
-      </WrapItem>
-    );
-  })}
-</Wrap>
+                return (
+                  <WrapItem key={cat}>
+                      <Checkbox value={cat}> {/* The checkbox itself controls the value */}
+                        <Button
+                          size="sm"
+                          borderRadius="md"
+                          bg={bgColor}
+                          color={textColor}
+                          _hover={{ opacity: 0.8 }}
+                          // Removed onClick here, as Checkbox onChange handles it
+                        >
+                          {cat}
+                        </Button>
+                      </Checkbox>
+                  </WrapItem>
+                );
+              })}
+            </Wrap>
+          </CheckboxGroup>
 
 
         </Box>
@@ -499,7 +495,7 @@ useEffect(() => {
                     p={0}
                     bg="gray.100"
                     borderRadius="md"
-                    boxShadow="0 10px 10px rgba(0, 0, 0, 0.1)" // sau folosește Chakra shortcut: boxShadow="md"
+                    boxShadow="0 10px 10px rgba(0, 0, 0, 0.1)"
                     overflow="hidden"
                     border="1px solid #ccc"
                     _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
@@ -513,88 +509,80 @@ useEffect(() => {
                        h="280px" bg="gray.100"
                        borderWidth="1px"
                     >
-   {product.images?.[0] ? (
-  <Image
-    src={product.images[0]}
-    alt={product.title}
-    w="100%"
-    h="100%"
-    objectFit="cover"
-  />
-) : product.videos?.[0] ? (
-  <Box
-    as="video"
-    src={product.videos[0]}
-    poster={
-      product.videos[0].includes("/upload/")
-        ? product.videos[0]
-            .replace("/upload/", "/upload/so_1/")
-            .replace(/\.(mp4|webm)$/, ".jpg")
-        : ""
-    }
-    muted
-    loop
-    autoPlay
-    playsInline
-    preload="none"
-    w="100%"
-    h="100%"
-    objectFit="cover"
-  />
-) : (
-  <Flex
-    align="center"
-    justify="center"
-    w="100%"
-    h="100%"
-    bg="gray.200"
-    color="gray.600"
-    fontWeight="bold"
-    fontSize="lg"
-  >
-    {product.title}
-  </Flex>
-)}
-
-
-
-
-
+                      {product.images?.[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.title}
+                          w="100%"
+                          h="100%"
+                          objectFit="cover"
+                        />
+                      ) : product.videos?.[0] ? (
+                        <Box
+                          as="video"
+                          src={product.videos[0]}
+                          poster={
+                            product.videos[0].includes("/upload/")
+                              ? product.videos[0]
+                                  .replace("/upload/", "/upload/so_1/")
+                                  .replace(/\.(mp4|webm)$/, ".jpg")
+                              : ""
+                          }
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                          preload="none"
+                          w="100%"
+                          h="100%"
+                          objectFit="cover"
+                        />
+                      ) : (
+                        <Flex
+                          align="center"
+                          justify="center"
+                          w="100%"
+                          h="100%"
+                          bg="gray.200"
+                          color="gray.600"
+                          fontWeight="bold"
+                          fontSize="lg"
+                        >
+                          {product.title}
+                        </Flex>
+                      )}
                     </Box>
-                
-<Box textAlign="center" py={3}   minH="150px">
+
+                    <Box textAlign="center" py={3}   minH="150px">
                       <Text fontWeight="bold">{product.title}</Text>
                       <Text color="gray.500" fontSize="sm">
                         <strong>Artist:</strong> {product.user?.firstName || "-"} {product.user?.lastName || ""}
                       </Text>
-                      {product.category && (
+                      {/* MODIFICATION HERE: Display multiple categories */}
+                     {/* MODIFICATION START */}
+{Array.isArray(product.category) && product.category.length > 0 && (
   <Text fontSize="sm" color="gray.600" mt={1}>
-    <strong>Category:</strong> {product.category}
+    <strong>Category:</strong>{" "}
+    {product.category.length === 1
+      ? product.category[0] // If only one category, display its name
+      : "More categories"} 
   </Text>
 )}
-                      {/* <Text fontSize="xs" color="gray.600">
-                        Created: {new Date(product.createdAt).toLocaleString("ro-RO", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </Text> */}
+{/* MODIFICATION END */}
 
-        {product.forSale && product.price > 0 && (
-  <Button
-    size="sm"
-    mt={1}
-    bg="green"
-    color="white"
-    borderRadius="20px"
-    _hover={{ bg: "#766a31" }}
-  >
-    Price: {product.price.toFixed(2)} EUR
-  </Button>
-)}
 
+                      {product.forSale && product.price > 0 && (
+                        <Button
+                          size="sm"
+                          mt={1}
+                          bg="green"
+                          color="white"
+                          borderRadius="20px"
+                          _hover={{ bg: "#766a31" }}
+                        >
+                          Price: {product.price.toFixed(2)} EUR
+                        </Button>
+                      )}
 
 
                       {product.averageRating > 0 && (
@@ -607,12 +595,12 @@ useEffect(() => {
                        <strong>Stock:</strong> {product.quantity} left
                       </Text>
                       )}
-                 
+
 
                     </Box>
                   </Box>
                 </Link>
-                
+
                 ))}
               </SimpleGrid>
 

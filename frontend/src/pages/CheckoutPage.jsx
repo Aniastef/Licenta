@@ -1,3 +1,4 @@
+// CheckoutPage.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -12,81 +13,91 @@ import {
 import { useCart } from "../components/CartContext";
 import { loadStripe } from "@stripe/stripe-js";
 import { useRecoilValue } from "recoil";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import userAtom from "../atoms/userAtom";
 
 const stripePromise = loadStripe("pk_test_51Qsp7AE2YvnJG5vYoqLfiAbuRiZY2BwF9Jh0Uc6RrQmGp3KcmTImPoFMic0JChEYbXPs1flUqZC728RWyPgjUVO200emlBMRwp");
 
 const CheckoutPage = () => {
-  const { cart, setCart, fetchCart } = useCart(); // 🆕 adăugat fetchCart
+  const { cart, setCart, fetchCart } = useCart();
   const user = useRecoilValue(userAtom);
   const toast = useToast();
   const navigate = useNavigate();
-const isOnlyTickets = cart.every(item => item.itemType === "Event");
+  const location = useLocation();
+
+  const isOnlyTickets = cart.every(item => item.itemType === "Event");
 
   const [paymentMethod, setPaymentMethod] = useState("online");
   const [deliveryMethod, setDeliveryMethod] = useState("courier");
 
+  // Initialize with user profile data, or empty string if not available
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
-  const [address, setAddress] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [city, setCity] = useState("");
-  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState(user?.address || "");
+  const [postalCode, setPostalCode] = useState(user?.postalCode || "");
+  const [city, setCity] = useState(user?.city || "");
+  const [phone, setPhone] = useState(user?.phone || "");
 
   const totalPrice = cart.reduce((acc, item) => acc + (item.product?.price || 0) * item.quantity, 0);
+
   useEffect(() => {
-    fetchCart(); // 💥 forțează actualizarea cart-ului la intrarea în pagină
+    fetchCart();
   }, []);
-  
-  const handlePaymentSuccess = async () => {
-    const validCart = cart.filter(item => item.product);
-  
-    // ✅ Verificăm local dacă ai produse cu stoc insuficient
-    const hasInvalidItems = validCart.some(item => {
-      return item.quantity > item.product.quantity;
+
+  // Modify handlePaymentSuccess to accept orderData (for Stripe callback scenario)
+  const handlePaymentSuccess = async (orderDataOverride = null) => {
+    let orderData = orderDataOverride;
+
+    if (!orderData) {
+      // If not called from Stripe callback, assume direct payment path
+      const validCart = cart.filter(item => item.product);
+      orderData = {
+        userId: user._id,
+        cart: validCart,
+        totalAmount: totalPrice,
+        paymentMethod,
+        deliveryMethod: isOnlyTickets ? "N/A" : deliveryMethod,
+        firstName: isOnlyTickets ? "" : firstName,
+        lastName: isOnlyTickets ? "" : lastName,
+        address: isOnlyTickets ? "" : address,
+        postalCode: isOnlyTickets ? "" : postalCode,
+        city: isOnlyTickets ? "" : city,
+        phone: isOnlyTickets ? "" : phone,
+      };
+    }
+
+    const hasInvalidItems = orderData.cart.some(item => {
+      const availableStock = item.itemType === "Event" ? item.product.capacity : item.product.quantity;
+      return item.quantity > availableStock;
     });
-  
+
     if (hasInvalidItems) {
       toast({
-        title: "Stoc insuficient",
-        description: "Unul sau mai multe produse nu mai au stoc suficient.",
+        title: "Out of stock",
+        description: "One or more items in your cart are out of stock.",
         status: "warning",
         duration: 4000,
         isClosable: true,
       });
-  
-      await fetchCart(); // 🔁 Sincronizează cart-ul
-      return; // ❌ Oprim aici
+      await fetchCart();
+      return;
     }
-  
+
+    console.log("👉 Frontend (CheckoutPage - handlePaymentSuccess): Attempting to send order data to backend:", orderData);
+
     try {
       const res = await fetch("/api/payment/payment-success", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-  userId: user._id,
-  cart: validCart,
-  totalAmount: totalPrice,
-  paymentMethod,
-  deliveryMethod,
-  firstName: isOnlyTickets ? undefined : firstName,
-  lastName: isOnlyTickets ? undefined : lastName,
-  address: isOnlyTickets ? undefined : address,
-  postalCode: isOnlyTickets ? undefined : postalCode,
-  city: isOnlyTickets ? undefined : city,
-  phone: isOnlyTickets ? undefined : phone,
-}),
-
+        body: JSON.stringify(orderData),
       });
-  
+
       const data = await res.json();
-  
+
       if (!res.ok) {
         const errorMessage = data?.error || "Failed to process order";
         console.error("❌ Payment processing failed", errorMessage);
-  
         toast({
           title: "Plata a eșuat",
           description: errorMessage,
@@ -94,90 +105,179 @@ const isOnlyTickets = cart.every(item => item.itemType === "Event");
           duration: 4000,
           isClosable: true,
         });
-  
-        await fetchCart(); // 🔁 Reîncarcă cart-ul dacă apare eroare de la server
+        await fetchCart();
         throw new Error(errorMessage);
       }
-  
-      toast({ title: "Plată reușită!", status: "success", duration: 3000 });
-      setCart([]);
-await fetchCart();
-navigate("/orders");
 
-  
+      toast({ title: "Payment succedeed!", status: "success", duration: 3000 });
+      setCart([]);
+      await fetchCart();
+      // Clear stored cart data after successful processing
+      localStorage.removeItem("pendingStripeOrder");
+      navigate("/orders");
+
     } catch (err) {
       console.error("❌ Payment processing failed", err);
       toast({
-        title: "Plata a eșuat",
+        title: "Payment failed",
         description: err.message,
         status: "error",
         duration: 3000,
       });
     }
   };
-  
-  
-  
 
   useEffect(() => {
-    const shouldProcess = localStorage.getItem("hasProcessed");
-    if (shouldProcess) {
-      handlePaymentSuccess().finally(() => {
-        localStorage.removeItem("hasProcessed");
+    const query = new URLSearchParams(location.search);
+    const isSuccess = query.get("success");
+    const isCanceled = query.get("canceled");
+
+    if (isSuccess === "true") {
+      console.log("Stripe payment successful!");
+      // Retrieve stored data from localStorage
+      const storedOrderData = localStorage.getItem("pendingStripeOrder");
+      if (storedOrderData) {
+        const orderData = JSON.parse(storedOrderData);
+        // Call handlePaymentSuccess with the stored data
+        handlePaymentSuccess(orderData);
+      } else {
+        console.warn("No pending order data found in localStorage after Stripe success. Cart may be empty.");
+        // Fallback for cases where data wasn't stored (e.g., direct access, or issue)
+        handlePaymentSuccess(); // This will use current (likely empty) cart state
+      }
+      navigate("/checkout", { replace: true });
+    } else if (isCanceled === "true") {
+      console.log("Stripe payment canceled!");
+      toast({
+        title: "Payment canceled",
+        description: "Your payment was canceled. You can try again.",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
       });
+      // Clear any pending order data on cancellation
+      localStorage.removeItem("pendingStripeOrder");
+      navigate("/checkout", { replace: true });
     }
-  }, []);
-
-const handlePayment = async () => {
-  if (paymentMethod !== "online") {
-    handleDeliveryOrder();
-    return;
-  }
-
-  const stripe = await stripePromise;
+  }, [location.search]);
 
 
-  // 🧾 3. Creează sesiunea Stripe
-  const checkoutItems = cart.map((item) => ({
-    name: item.product.name,
-    price: item.product.price,
-    quantity: item.quantity || 1,
-  }));
+  const handlePayment = async () => {
+    if (paymentMethod !== "online") {
+      handleDeliveryOrder(); // This path doesn't use Stripe, so it's okay.
+      return;
+    }
 
-  console.log("Sending checkout data:", { items: checkoutItems });
+    // Prepare data to store BEFORE redirecting to Stripe
+    const orderDataToStore = {
+      userId: user._id,
+      cart: cart.filter(item => item.product), // Store the actual cart content
+      totalAmount: totalPrice,
+      paymentMethod,
+      deliveryMethod: isOnlyTickets ? "N/A" : deliveryMethod,
+      firstName: isOnlyTickets ? "" : firstName,
+      lastName: isOnlyTickets ? "" : lastName,
+      address: isOnlyTickets ? "" : address,
+      postalCode: isOnlyTickets ? "" : postalCode,
+      city: isOnlyTickets ? "" : city,
+      phone: isOnlyTickets ? "" : phone,
+    };
+    localStorage.setItem("pendingStripeOrder", JSON.stringify(orderDataToStore));
+    console.log("Saving pending Stripe order to localStorage:", orderDataToStore);
 
-  const response = await fetch("/api/payment/create-checkout-session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ items: checkoutItems }),
-  });
 
-  const data = await response.json();
+    const stripe = await stripePromise;
 
-  if (!data.sessionId) {
-    console.error("❌ No sessionId received!", data);
-    toast({
-      title: "Payment error",
-      description: "Could not initiate Stripe session. Check console.",
-      status: "error",
-      duration: 5000,
-      isClosable: true,
+    console.log("Cart contents before processing for Stripe:", cart);
+
+    const checkoutItems = cart.map((item, index) => {
+      if (!item.product) {
+        console.error(`❌ Item ${index} is missing product data (item.product is null/undefined):`, item);
+        return null;
+      }
+      let itemName;
+      if (item.itemType === "Event") {
+        itemName = item.product.name;
+      } else {
+        itemName = item.product.title;
+      }
+      if (!itemName || itemName.trim() === "") {
+        console.error(`❌ Item ${index}: Product/Event name/title is missing or empty for item.product:`, item.product);
+        return null;
+      }
+      const itemPrice = Number(item.product.price);
+      if (isNaN(itemPrice) || itemPrice <= 0) {
+        console.error(`❌ Item ${index}: Invalid or non-positive price detected for item.product:`, item.product);
+        return null;
+      }
+      return {
+        name: itemName,
+        price: itemPrice,
+        quantity: item.quantity || 1,
+      };
+    }).filter(Boolean);
+
+    console.log("Filtered checkout items (ready to send to backend for Stripe session):", checkoutItems);
+
+    if (checkoutItems.length === 0) {
+      toast({
+        title: "Cart is empty or contains invalid items for payment.",
+        description: "Please add valid items to your cart before proceeding.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const totalAmountCents = checkoutItems.reduce((total, item) => total + Math.round(item.price * 100) * item.quantity, 0);
+    if (totalAmountCents < 50) {
+      toast({
+        title: "Minimum amount required",
+        description: "You need to have at least 0.50 EUR in your cart to proceed with online payment.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    console.log("Sending checkout data to backend:", { items: checkoutItems });
+
+    const response = await fetch("/api/payment/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ items: checkoutItems }),
     });
-    return;
-  }
 
-  localStorage.setItem("hasProcessed", "true");
-  await stripe.redirectToCheckout({ sessionId: data.sessionId });
-};
+    const data = await response.json();
+
+    if (!response.ok || !data.sessionId) {
+      console.error("❌ No sessionId received or backend error!", data);
+      toast({
+        title: "Payment error",
+        description: data.error || "Could not initiate Stripe session. Check console.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    await stripe.redirectToCheckout({ sessionId: data.sessionId });
+  };
 
 
   const validateDeliveryFields = () => {
+    if (isOnlyTickets) {
+      return true;
+    }
     return firstName && lastName && address && postalCode && city && phone;
   };
 
   const handleDeliveryOrder = async () => {
-    if (!validateDeliveryFields()) {
+    if (!isOnlyTickets && !validateDeliveryFields()) {
       toast({
         title: "Complete all delivery fields.",
         status: "warning",
@@ -186,44 +286,31 @@ const handlePayment = async () => {
       });
       return;
     }
-    console.log({
+    const payloadForDirectOrder = {
       userId: user._id,
       products: cart.map((item) => ({
         _id: item.product._id,
         price: item.product.price,
         quantity: item.quantity,
+        itemType: item.itemType,
       })),
       paymentMethod,
-      deliveryMethod,
-      firstName,
-      lastName,
-      address,
-      postalCode,
-      city,
-      phone,
-    });
-    
+      deliveryMethod: isOnlyTickets ? "N/A" : deliveryMethod,
+      firstName: isOnlyTickets ? "" : firstName,
+      lastName: isOnlyTickets ? "" : lastName,
+      address: isOnlyTickets ? "" : address,
+      postalCode: isOnlyTickets ? "" : postalCode,
+      city: isOnlyTickets ? "" : city,
+      phone: isOnlyTickets ? "" : phone,
+    };
+    console.log("🚀 Frontend (CheckoutPage): Sending to /api/orders/:userId:", payloadForDirectOrder);
+
     try {
       const response = await fetch(`/api/orders/${user._id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          products: cart.map((item) => ({
-            _id: item.product._id,
-            price: item.product.price,
-            quantity: item.quantity,
-          })),
-          paymentMethod,
-          deliveryMethod,
-          firstName,
-          lastName,
-          address,
-          postalCode,
-          city,
-          phone,
-        }),
-        
+        body: JSON.stringify(payloadForDirectOrder),
       });
 
       if (response.ok) {
@@ -251,69 +338,67 @@ const handlePayment = async () => {
   return (
     <VStack spacing={6} align="center" p={5}>
       <Text fontSize="2xl" fontWeight="bold">Checkout</Text>
-<Box textAlign="center">
-  <Text fontSize="lg" fontWeight="semibold" mb={1}>Total:</Text>
- <Text fontSize="lg">
-  {totalPrice.toFixed(2)}
-</Text>
-
-</Box>
-
-
+      <Box textAlign="center">
+        <Text fontSize="lg" fontWeight="semibold" mb={1}>Total:</Text>
+        <Text fontSize="lg">
+          {totalPrice.toFixed(2)} EUR
+        </Text>
+      </Box>
 
       <Select w="300px" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
         <option value="online">Pay online with card</option>
-        <option value="card_on_delivery">Pay with card at delivery</option>
-        <option value="cash">Pay cash at delivery</option>
+        <option value="card_on_delivery">Pay with card at delivery/physical event</option>
+        <option value="cash">Pay cash at delivery/physical</option>
       </Select>
 
-      <Select w="300px" value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value)}>
-        <option value="courier">Home delivery (courier)</option>
-        <option value="easybox">EasyBox locker</option>
-      </Select>
+      {/* Conditionally render delivery options and fields */}
+      {!isOnlyTickets && (
+        <>
+          <Select w="300px" value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value)}>
+            <option value="courier">Home delivery (courier)</option>
+            <option value="easybox">EasyBox locker</option>
+          </Select>
 
- {!isOnlyTickets && (
-  <VStack spacing={3} w="100%" maxW="500px">
-    <Input
-      placeholder="First Name"
-      value={firstName}
-      onChange={(e) => setFirstName(e.target.value)}
-    />
-    <Input
-      placeholder="Last Name"
-      value={lastName}
-      onChange={(e) => setLastName(e.target.value)}
-    />
-    <Input
-      placeholder={
-        deliveryMethod === "easybox"
-          ? "EasyBox Locker Address"
-          : "Full Home Address"
-      }
-      value={address}
-      onChange={(e) => setAddress(e.target.value)}
-    />
-    <HStack w="100%">
-      <Input
-        placeholder="Postal Code"
-        value={postalCode}
-        onChange={(e) => setPostalCode(e.target.value)}
-      />
-      <Input
-        placeholder="City"
-        value={city}
-        onChange={(e) => setCity(e.target.value)}
-      />
-    </HStack>
-    <Input
-      placeholder="Phone Number"
-      value={phone}
-      onChange={(e) => setPhone(e.target.value)}
-    />
-  </VStack>
-)}
-
-
+          <VStack spacing={3} w="100%" maxW="500px">
+            <Input
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+            <Input
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+            <Input
+              placeholder={
+                deliveryMethod === "easybox"
+                  ? "EasyBox Locker Address"
+                  : "Full Home Address"
+              }
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+            <HStack w="100%">
+              <Input
+                placeholder="Postal Code"
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+              />
+              <Input
+                placeholder="City"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
+            </HStack>
+            <Input
+              placeholder="Phone Number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </VStack>
+        </>
+      )}
 
       <Button colorScheme="green" onClick={handlePayment}>
         {paymentMethod === "online" ? "Pay with Stripe" : "Place Order"}

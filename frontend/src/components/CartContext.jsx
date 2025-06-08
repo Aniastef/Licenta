@@ -24,6 +24,7 @@ export const CartProvider = ({ children }) => {
 
     if (Array.isArray(data)) {
       setCart(data);
+      console.log("✅ Cart fetched successfully:", data); // Add this line
     } else {
       console.warn("⚠️ Cart response is not an array:", data);
       setCart([]); // fallback, previne cart.map error

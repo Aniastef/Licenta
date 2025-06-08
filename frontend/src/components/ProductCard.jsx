@@ -521,11 +521,23 @@ const otherModes = modes.filter((mode) => mode !== viewMode);
   </Text>
 )}
 
-        {product.category && (
-  <Text mt={1} color="gray.600">
-    Category: <b>{product.category}</b>
-  </Text>
-)}
+       {/* MODIFICATION HERE for category display */}
+        {product.category?.length > 0 && (
+            <Text mt={1} color="gray.600">
+                Category:{" "}
+                <b>
+                    {Array.isArray(product.category) // Ensure product.category is an array
+                        ? product.category.map((cat, index) => (
+                            <React.Fragment key={cat}>
+                                {cat}
+                                {index < product.category.length - 1 && ", "}
+                            </React.Fragment>
+                        ))
+                        : product.category // Fallback for single string if old data exists
+                    }
+                </b>
+            </Text>
+        )}
 
         {product.galleries?.length > 0 && (
   <Box mt={2}>

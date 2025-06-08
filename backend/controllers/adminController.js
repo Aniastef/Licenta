@@ -95,7 +95,7 @@ export const updateUserAdmin = async (req, res) => {
   const {
     firstName, lastName, email, username, role, password, bio, location,
     profession, age,profilePicture, phone, hobbies, gender, pronouns,
-    address, city, country
+    address, city, country,quote
   } = req.body;
   
   const userId = req.params.id;
@@ -130,6 +130,7 @@ export const updateUserAdmin = async (req, res) => {
     user.address = address || user.address;
     user.city = city || user.city;
     user.country = country || user.country;
+    user.quote = quote; // Asignăm valoarea citatului
     user.profilePicture = profilePicture || user.profilePicture;
 
     if (password) {
