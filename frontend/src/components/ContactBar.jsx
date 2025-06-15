@@ -1,10 +1,10 @@
-import React from "react";
-import { Box, Flex, Text, Image, HStack, Link } from "@chakra-ui/react";
-import phoneIcon from "../assets/phone.svg";
-import emailIcon from "../assets/email.svg";
-import facebookIcon from "../assets/facebook.svg";
-import instagramIcon from "../assets/instagram.svg";
-import contactBarBg from "../assets/contactBar.svg";
+import React from 'react';
+import { Box, Flex, Text, Image, HStack, Link } from '@chakra-ui/react';
+import phoneIcon from '../assets/phone.svg';
+import emailIcon from '../assets/email.svg';
+import facebookIcon from '../assets/facebook.svg';
+import instagramIcon from '../assets/instagram.svg';
+import contactBarBg from '../assets/contactBar.svg';
 
 const ContactBar = () => {
   return (
@@ -42,31 +42,31 @@ const ContactBar = () => {
         w="100%"
         p={4}
       >
-        <Text fontWeight="bold" fontSize="2xl" mb={4} >
+        <Text fontWeight="bold" fontSize="2xl" mb={4}>
           Got any questions?
         </Text>
 
         <HStack spacing={3} mb={2}>
           <Image src={phoneIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
-          <Text >+40 723 123 456</Text>
+          <Text>+40 723 123 456</Text>
         </HStack>
 
         <HStack spacing={3} mb={2}>
           <Image src={emailIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
-          <Text >contact@artcorner.com</Text>
+          <Text>contact@art-corner.com</Text>
         </HStack>
 
         <HStack spacing={3} mb={2}>
           <Image src={facebookIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
-          <Link href="https://facebook.com/artcorner" isExternal color="blue.700">
-            facebook.com/artcorner
+          <Link href="https://facebook.com/art-corner" isExternal color="blue.700">
+            facebook.com/art-corner
           </Link>
         </HStack>
 
         <HStack spacing={3}>
           <Image src={instagramIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
-          <Link href="https://instagram.com/artcorner" isExternal color="purple.700">
-            @artcorner
+          <Link href="https://instagram.com/art-corner" isExternal color="purple.700">
+            @art-corner
           </Link>
         </HStack>
       </Flex>

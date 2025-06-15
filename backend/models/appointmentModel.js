@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const appointmentSchema = new mongoose.Schema(
   {
@@ -8,7 +8,7 @@ const appointmentSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      default: "",
+      default: '',
     },
     date: {
       type: Date,
@@ -20,29 +20,29 @@ const appointmentSchema = new mongoose.Schema(
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     participant: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       default: null, // Dacă este un appointment personal, poate fi null
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
-      default: "pending",
+      enum: ['pending', 'confirmed', 'cancelled'],
+      default: 'pending',
     },
     notifications: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Notification",
+        ref: 'Notification',
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const Appointment = mongoose.model("Appointment", appointmentSchema);
+const Appointment = mongoose.model('Appointment', appointmentSchema);
 
 export default Appointment;

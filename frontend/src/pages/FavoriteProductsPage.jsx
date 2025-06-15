@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Box,
   Heading,
@@ -12,27 +12,27 @@ import {
   Flex,
   Spinner,
   useToast, // ✅ Importăm useToast
-} from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
+} from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
 
 export default function FavoriteProductsPage() {
   const { username } = useParams();
   const toast = useToast(); // ✅ Inițializăm toast-ul
   const [favoriteProducts, setFavoriteProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterText, setFilterText] = useState("");
-  const [sortOption, setSortOption] = useState("");
+  const [filterText, setFilterText] = useState('');
+  const [sortOption, setSortOption] = useState('');
 
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
         const res = await fetch(`/api/users/favorites/${username}`, {
-          credentials: "include", // ✅ Adaugă asta
+          credentials: 'include', // ✅ Adaugă asta
         });
-                const data = await res.json();
+        const data = await res.json();
         setFavoriteProducts(data);
       } catch (error) {
-        console.error("Error fetching favorite products:", error);
+        console.error('Error fetching favorite products:', error);
       } finally {
         setLoading(false);
       }
@@ -44,16 +44,16 @@ export default function FavoriteProductsPage() {
   const handleRemoveFavorite = async (productId) => {
     try {
       const res = await fetch(`/api/products/favorites/${productId}`, {
-        method: "DELETE",
+        method: 'DELETE',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        credentials: "include", // ✅ Adaugă asta
+        credentials: 'include', // ✅ Adaugă asta
       });
 
       if (!res.ok) {
-        throw new Error("Failed to remove product from favorites");
+        throw new Error('Failed to remove product from favorites');
       }
 
       // Obținem produsul eliminat pentru notificare
@@ -61,44 +61,44 @@ export default function FavoriteProductsPage() {
 
       // ✅ Afișăm notificarea (Toast)
       toast({
-        title: "Removed from Favorites",
-        description: `${removedProduct?.name || "Product"} was removed from your favorites.`,
-        status: "warning",
+        title: 'Removed from Favorites',
+        description: `${removedProduct?.name || 'Product'} was removed from your favorites.`,
+        status: 'warning',
         duration: 2000,
         isClosable: true,
-        position: "top-right",
+        position: 'top-right',
       });
 
       // Actualizează lista eliminând produsul
       setFavoriteProducts((prevProducts) =>
-        prevProducts.filter((product) => product._id !== productId)
+        prevProducts.filter((product) => product._id !== productId),
       );
 
       console.log(`Product ${productId} removed from favorites`);
     } catch (error) {
-      console.error("Error removing product from favorites:", error);
+      console.error('Error removing product from favorites:', error);
 
       // ❌ Afișăm o notificare de eroare dacă eliminarea eșuează
       toast({
-        title: "Error",
-        description: "Failed to remove product from favorites.",
-        status: "error",
+        title: 'Error',
+        description: 'Failed to remove product from favorites.',
+        status: 'error',
         duration: 2000,
         isClosable: true,
-        position: "top-right",
+        position: 'top-right',
       });
     }
   };
 
   // Funcție de filtrare după nume
   const filteredProducts = favoriteProducts.filter((product) =>
-    product.name.toLowerCase().includes(filterText.toLowerCase())
+    product.name.toLowerCase().includes(filterText.toLowerCase()),
   );
 
   // Funcție de sortare
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortOption === "price-asc") return a.price - b.price;
-    if (sortOption === "price-desc") return b.price - a.price;
+    if (sortOption === 'price-asc') return a.price - b.price;
+    if (sortOption === 'price-desc') return b.price - a.price;
     return 0;
   });
 
@@ -106,7 +106,9 @@ export default function FavoriteProductsPage() {
 
   return (
     <Box p={6}>
-      <Heading size="lg" mb={4}>Favorite Products</Heading>
+      <Heading size="lg" mb={4}>
+        Favorite Products
+      </Heading>
 
       {/* 🛠️ Căutare și Filtrare */}
       <Flex mb={4} gap={4}>
@@ -136,25 +138,26 @@ export default function FavoriteProductsPage() {
             <Box key={product._id} border="1px solid gray" borderRadius="md" p={3}>
               <RouterLink to={`/products/${product._id}`}>
                 <Image
-                  src={product.images?.[0] || "/placeholder.jpg"}
+                  src={product.images?.[0] || '/placeholder.jpg'}
                   alt={product.name}
                   borderRadius="md"
                   w="100%"
                   h="150px"
                   objectFit="cover"
                 />
-                <Text mt={2} fontWeight="bold">{product.name}</Text>
+                <Text mt={2} fontWeight="bold">
+                  {product.name}
+                </Text>
                 <Text fontSize="sm">{product.price} EUR</Text>
               </RouterLink>
-                <Button
-                    colorScheme="red"
-                    size="sm"
-                    mt={2}
-                    onClick={() => handleRemoveFavorite(product._id)}
-                    >
-                    Remove from Favorites
-                 </Button>
-
+              <Button
+                colorScheme="red"
+                size="sm"
+                mt={2}
+                onClick={() => handleRemoveFavorite(product._id)}
+              >
+                Remove from Favorites
+              </Button>
             </Box>
           ))}
         </Grid>

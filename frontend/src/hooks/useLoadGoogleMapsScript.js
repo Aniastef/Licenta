@@ -6,7 +6,7 @@ const useLoadGoogleMapsScript = (apiKey) => {
 
   useEffect(() => {
     if (window.google) {
-      setIsLoaded(true); // Dacă Google Maps a fost deja încărcat
+      setIsLoaded(true); 
       return;
     }
 
@@ -16,7 +16,7 @@ const useLoadGoogleMapsScript = (apiKey) => {
     script.defer = true;
 
     script.onload = () => setIsLoaded(true);
-    script.onerror = () => setError("Error loading Google Maps API");
+    script.onerror = () => setError('Error loading Google Maps API');
 
     document.head.appendChild(script);
   }, [apiKey]);

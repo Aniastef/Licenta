@@ -1,27 +1,36 @@
-import AuditLog from "../models/auditLogModel.js";
+import AuditLog from '../models/auditLogModel.js';
 
 export const getAuditLogs = async (req, res) => {
-    try {
-      if (!req.user || (req.user.role !== "admin")) {
-        return res.status(403).json({ error: "Access denied" });
-      }
-  
-const logs = await AuditLog.find()
-  .populate("performedBy", "firstName lastName email")
-  .populate("targetUser", "firstName lastName email")
-  .populate("targetProduct", "title")
-  .populate("targetEvent", "name")
-  .populate("targetGallery", "name")
-  .populate("targetArticle", "title");
-
-      res.json(logs);
-    } catch (err) {
-      console.error("Error fetching audit logs:", err);
-      res.status(500).json({ error: "Server error" });
+  try {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
     }
-  };
-  
-export const addAuditLog = async ({ action, performedBy, details = "", targetUser = null, targetProduct = null, targetEvent = null, targetGallery = null, targetArticle = null }) => {
+
+    const logs = await AuditLog.find()
+      .populate('performedBy', 'firstName lastName email')
+      .populate('targetUser', 'firstName lastName email')
+      .populate('targetProduct', 'title')
+      .populate('targetEvent', 'name')
+      .populate('targetGallery', 'name')
+      .populate('targetArticle', 'title');
+
+    res.json(logs);
+  } catch (err) {
+    console.error('Error fetching audit logs:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const addAuditLog = async ({
+  action,
+  performedBy,
+  details = '',
+  targetUser = null,
+  targetProduct = null,
+  targetEvent = null,
+  targetGallery = null,
+  targetArticle = null,
+}) => {
   try {
     await AuditLog.create({
       action,
@@ -31,9 +40,11 @@ export const addAuditLog = async ({ action, performedBy, details = "", targetUse
       targetEvent,
       targetGallery,
       targetArticle,
-      details
+      details,
     });
   } catch (err) {
-    console.error("Error saving audit log:", err);
+    console.error('Error saving audit log:', err);
   }
 };
+
+

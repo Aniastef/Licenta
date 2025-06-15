@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Heading,
@@ -8,8 +8,8 @@ import {
   Text,
   Button,
   Spinner,
-  useToast
-} from "@chakra-ui/react";
+  useToast,
+} from '@chakra-ui/react';
 
 const BlockedUsersPage = () => {
   const [blockedUsers, setBlockedUsers] = useState([]);
@@ -18,13 +18,13 @@ const BlockedUsersPage = () => {
 
   const fetchBlockedUsers = async () => {
     try {
-      const res = await fetch("/api/users/blocked", {
-        credentials: "include",
+      const res = await fetch('/api/users/blocked', {
+        credentials: 'include',
       });
       const data = await res.json();
       setBlockedUsers(data.blockedUsers || []);
     } catch (err) {
-      console.error("Error fetching blocked users:", err);
+      console.error('Error fetching blocked users:', err);
     } finally {
       setLoading(false);
     }
@@ -33,28 +33,28 @@ const BlockedUsersPage = () => {
   const handleUnblock = async (userId) => {
     try {
       const res = await fetch(`/api/users/unblock/${userId}`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
       });
 
       if (res.ok) {
         toast({
-          title: "User unblocked",
-          status: "success",
+          title: 'User unblocked',
+          status: 'success',
           duration: 3000,
           isClosable: true,
         });
         fetchBlockedUsers(); // Refresh lista
       } else {
         toast({
-          title: "Failed to unblock user",
-          status: "error",
+          title: 'Failed to unblock user',
+          status: 'error',
           duration: 3000,
           isClosable: true,
         });
       }
     } catch (err) {
-      console.error("Unblock error:", err);
+      console.error('Unblock error:', err);
     }
   };
 
@@ -75,7 +75,9 @@ const BlockedUsersPage = () => {
             <HStack key={user._id} justify="space-between">
               <HStack>
                 <Avatar src={user.profilePicture} name={`${user.firstName} ${user.lastName}`} />
-                <Text>{user.firstName} {user.lastName}</Text>
+                <Text>
+                  {user.firstName} {user.lastName}
+                </Text>
               </HStack>
               <Button colorScheme="green" onClick={() => handleUnblock(user._id)}>
                 Unblock

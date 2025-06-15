@@ -1,13 +1,13 @@
-import mongoose from "mongoose";
-import Gallery from "../models/galleryModel.js";
-import dotenv from "dotenv";
+import mongoose from 'mongoose';
+import Gallery from '../models/galleryModel.js';
+import dotenv from 'dotenv';
 
 dotenv.config(); // încarcă .env cu MONGO_URI
 
 const migrateGalleries = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("Connected to DB");
+    console.log('Connected to DB');
 
     const galleries = await Gallery.find();
 
@@ -15,7 +15,7 @@ const migrateGalleries = async () => {
       // dacă produsele sunt array de ObjectId (nu obiecte)
       if (
         gallery.products.length > 0 &&
-        typeof gallery.products[0] === "object" &&
+        typeof gallery.products[0] === 'object' &&
         !gallery.products[0].product
       ) {
         const updatedProducts = gallery.products.map((productId, index) => ({
@@ -29,10 +29,10 @@ const migrateGalleries = async () => {
       }
     }
 
-    console.log("✅ Migration complete.");
+    console.log('✅ Migration complete.');
     process.exit(0);
   } catch (err) {
-    console.error("Migration failed:", err.message);
+    console.error('Migration failed:', err.message);
     process.exit(1);
   }
 };

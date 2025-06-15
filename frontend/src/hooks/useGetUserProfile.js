@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 const useGetUserProfile = () => {
   const [user, setUser] = useState(null);
@@ -9,31 +9,31 @@ const useGetUserProfile = () => {
   useEffect(() => {
     const getUser = async () => {
       try {
-        setLoading(true); // 🟡 Începe încărcarea
+        setLoading(true); 
         const res = await fetch(`/api/users/profile/${username}`, {
-          credentials: "include",
+          credentials: 'include',
         });
 
         const data = await res.json();
 
         if (data.error) {
-          console.error("Error:", data.error);
+          console.error('Error:', data.error);
           setUser(null);
         } else {
           setUser(data);
         }
       } catch (error) {
-        console.error("Error:", error.message);
+        console.error('Error:', error.message);
         setUser(null);
       } finally {
-        setLoading(false); // ✅ Gata încărcarea
+        setLoading(false); 
       }
     };
 
     if (username) getUser();
   }, [username]);
 
-  return { user, loading }; // ✅ Returnează și `loading`
+  return { user, loading }; 
 };
 
 export default useGetUserProfile;

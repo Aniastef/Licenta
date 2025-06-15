@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Text,
@@ -14,18 +14,18 @@ import {
   Button,
   SimpleGrid,
   Circle,
-} from "@chakra-ui/react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import userAtom from "../atoms/userAtom";
+} from '@chakra-ui/react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
+import userAtom from '../atoms/userAtom';
 
 const UserAllProductsPage = () => {
   const { username } = useParams();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState("latest");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOption, setSortOption] = useState('latest');
   const [selectedMediaTypes, setSelectedMediaTypes] = useState([]);
   const [saleStatuses, setSaleStatuses] = useState([]); // ["forSale", "notForSale"]
   const [user, setUser] = useState(null); // nouă stare
@@ -39,14 +39,14 @@ const UserAllProductsPage = () => {
   const fetchUserProducts = async () => {
     try {
       const res = await fetch(`/api/products/user/${username}`, {
-        credentials: "include",
+        credentials: 'include',
       });
       const data = await res.json();
       setProducts(data.products || []);
       setFilteredProducts(data.products || []);
       if (data.user) setUser(data.user); // salvează obiectul user
     } catch (err) {
-      console.error("Error fetching user products:", err);
+      console.error('Error fetching user products:', err);
     } finally {
       setLoading(false);
     }
@@ -56,14 +56,12 @@ const UserAllProductsPage = () => {
     let updated = [...products];
 
     if (searchTerm.trim()) {
-      updated = updated.filter((p) =>
-        p.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      updated = updated.filter((p) => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
     }
 
-    if (sortOption === "price-asc") {
+    if (sortOption === 'price-asc') {
       updated.sort((a, b) => (a.price || 0) - (b.price || 0));
-    } else if (sortOption === "price-desc") {
+    } else if (sortOption === 'price-desc') {
       updated.sort((a, b) => (b.price || 0) - (a.price || 0));
     } else {
       updated.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -72,74 +70,72 @@ const UserAllProductsPage = () => {
     if (selectedMediaTypes.length > 0) {
       updated = updated.filter((p) => {
         return selectedMediaTypes.every((type) => {
-          if (type === "images") return Array.isArray(p.images) && p.images.length > 0;
-          if (type === "videos") return Array.isArray(p.videos) && p.videos.length > 0;
-          if (type === "audios") return Array.isArray(p.audios) && p.audios.length > 0;
-          if (type === "writing") return Array.isArray(p.writing) && p.writing.length > 0;
+          if (type === 'images') return Array.isArray(p.images) && p.images.length > 0;
+          if (type === 'videos') return Array.isArray(p.videos) && p.videos.length > 0;
+          if (type === 'audios') return Array.isArray(p.audios) && p.audios.length > 0;
+          if (type === 'writing') return Array.isArray(p.writing) && p.writing.length > 0;
           return false;
         });
       });
     }
-    
+
     if (saleStatuses.length > 0) {
       updated = updated.filter((p) => {
         const isForSale = p.price > 0;
         return (
-          (isForSale && saleStatuses.includes("forSale")) ||
-          (!isForSale && saleStatuses.includes("notForSale"))
+          (isForSale && saleStatuses.includes('forSale')) ||
+          (!isForSale && saleStatuses.includes('notForSale'))
         );
       });
     }
-    
-    
 
     setFilteredProducts(updated);
   }, [searchTerm, sortOption, selectedMediaTypes, saleStatuses, products]);
 
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
-  
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
+
     try {
       const res = await fetch(`/api/products/${productId}`, {
-        method: "DELETE",
-        credentials: "include",
+        method: 'DELETE',
+        credentials: 'include',
       });
-  
+
       const data = await res.json();
       if (res.ok) {
         setProducts((prev) => prev.filter((p) => p._id !== productId));
       } else {
-        alert(data.error || "Failed to delete product");
+        alert(data.error || 'Failed to delete product');
       }
     } catch (err) {
-      console.error("Error deleting product:", err.message);
-      alert("Error deleting product.");
+      console.error('Error deleting product:', err.message);
+      alert('Error deleting product.');
     }
   };
-  
+
   return (
     <Box p={4} maxW="1200px" mx="auto">
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
-  <Text fontWeight="bold" fontSize="2xl" textAlign="center">
-  {user ? `${user.firstName} ${user.lastName}'s artworks` : `${username}'s Products`}
-</Text>
+        <Text fontWeight="bold" fontSize="2xl" textAlign="center">
+          {user ? `${user.firstName} ${user.lastName}'s artworks` : `${username}'s Products`}
+        </Text>
 
-  <Flex position="absolute" right={4} gap={2}>
-  {currentUser?.username?.toLowerCase() === username?.toLowerCase() && (
-  <Button
-    colorScheme="orange"
-    ml={5}
-    mb={4}
-    onClick={() => window.location.href = "/create/product"}
-  >
-    Create new artwork
-  </Button>
-)}
+        <Flex position="absolute" right={4} gap={2}>
+          {currentUser?.username?.toLowerCase() === username?.toLowerCase() && (
+            <Button
+              colorScheme="orange"
+              ml={5}
+              mb={4}
+              onClick={() => (window.location.href = '/create/product')}
+            >
+              Create new artwork
+            </Button>
+          )}
 
-    <Circle size="30px" bg="yellow.400" />
-    <Circle size="30px" bg="green.400" />
-  </Flex>
-</Flex>
+          <Circle size="30px" bg="yellow.400" />
+          <Circle size="30px" bg="green.400" />
+        </Flex>
+      </Flex>
       <Flex mt={2} justify="space-between" align="center" mb={6} wrap="wrap" gap={4}>
         <Input
           placeholder="Search artworks..."
@@ -147,27 +143,19 @@ const UserAllProductsPage = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           maxW="300px"
         />
-        <Select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-          maxW="200px"
-        >
+        <Select value={sortOption} onChange={(e) => setSortOption(e.target.value)} maxW="200px">
           <option value="latest">Newest</option>
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
-        
         </Select>
         <CheckboxGroup value={saleStatuses} onChange={setSaleStatuses}>
-  <Stack direction="row" spacing={4}>
-    <Checkbox value="forSale">For Sale</Checkbox>
-    <Checkbox value="notForSale">Not For Sale</Checkbox>
-  </Stack>
-</CheckboxGroup>
+          <Stack direction="row" spacing={4}>
+            <Checkbox value="forSale">For Sale</Checkbox>
+            <Checkbox value="notForSale">Not For Sale</Checkbox>
+          </Stack>
+        </CheckboxGroup>
 
-        <CheckboxGroup
-          value={selectedMediaTypes}
-          onChange={setSelectedMediaTypes}
-        >
+        <CheckboxGroup value={selectedMediaTypes} onChange={setSelectedMediaTypes}>
           <Stack direction="row" spacing={4}>
             <Checkbox value="images">Image</Checkbox>
             <Checkbox value="videos">Video</Checkbox>
@@ -181,7 +169,7 @@ const UserAllProductsPage = () => {
         <Flex justify="center">
           <Spinner size="xl" />
         </Flex>
-      ) :filteredProducts.length === 1 ? (
+      ) : filteredProducts.length === 1 ? (
         <Flex justify="center">
           <Link to={`/products/${filteredProducts[0]._id}`}>
             <Box
@@ -190,206 +178,201 @@ const UserAllProductsPage = () => {
               boxShadow="md"
               overflow="hidden"
               border="1px solid #ccc"
-              _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+              _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
               transition="all 0.2s"
               cursor="pointer"
               w="300px"
             >
-       <Box
-  w="270px"
-  bg="gray.100"
-  borderRadius="md"
-  boxShadow="md"
-  overflow="hidden"
-  border="1px solid #ccc"
-  _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-  transition="all 0.2s"
-  cursor="pointer"
-  onClick={() => navigate(`/products/${product._id}`)}
->
-  <Box h="270px" bg="gray.200">
-    {product.images?.[0] ? (
-      <Image
-        src={product.images[0]}
-        alt={product.title}
-        w="100%"
-        h="100%"
-        objectFit="cover"
-      />
-    ) : (
-      <Flex align="center" justify="center" h="100%">
-        <Text fontWeight="bold" fontSize="lg" color="gray.600">
-          {product.title}
-        </Text>
-      </Flex>
-    )}
-  </Box>
+              <Box
+                w="270px"
+                bg="gray.100"
+                borderRadius="md"
+                boxShadow="md"
+                overflow="hidden"
+                border="1px solid #ccc"
+                _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
+                transition="all 0.2s"
+                cursor="pointer"
+                onClick={() => navigate(`/products/${product._id}`)}
+              >
+                <Box h="270px" bg="gray.200">
+                  {product.images?.[0] ? (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.title}
+                      w="100%"
+                      h="100%"
+                      objectFit="cover"
+                    />
+                  ) : (
+                    <Flex align="center" justify="center" h="100%">
+                      <Text fontWeight="bold" fontSize="lg" color="gray.600">
+                        {product.title}
+                      </Text>
+                    </Flex>
+                  )}
+                </Box>
 
-  <Box py={3} px={2} textAlign="center">
-    <Text fontWeight="bold" noOfLines={1}>{product.title}</Text>
+                <Box py={3} px={2} textAlign="center">
+                  <Text fontWeight="bold" noOfLines={1}>
+                    {product.title}
+                  </Text>
 
-    {product.forSale && (
-      <Text fontSize="sm" color="green.600">
-        {product.price} 
-      </Text>
-    )}
+                  {product.forSale && (
+                    <Text fontSize="sm" color="green.600">
+                      {product.price}
+                    </Text>
+                  )}
 
-    {product.quantity > 0 && (
-      <Text fontSize="sm" color="gray.600">
-        Stock: {product.quantity}
-      </Text>
-    )}
+                  {product.quantity > 0 && (
+                    <Text fontSize="sm" color="gray.600">
+                      Stock: {product.quantity}
+                    </Text>
+                  )}
 
-    {product.galleries?.length > 0 && (
-      <Text fontSize="xs" color="purple.500">
-        Gallery: {product.galleries[0].name}
-      </Text>
-    )}
+                  {product.galleries?.length > 0 && (
+                    <Text fontSize="xs" color="purple.500">
+                      Gallery: {product.galleries[0].name}
+                    </Text>
+                  )}
 
-    {currentUser?._id === user?._id && (
-      <Button
-        mt={2}
-        size="sm"
-        colorScheme="red"
-        onClick={(e) => {
-          e.stopPropagation(); // prevenim navigarea
-          handleDeleteProduct(product._id);
-        }}
-      >
-        Delete
-      </Button>
-    )}
-  </Box>
-</Box>
+                  {currentUser?._id === user?._id && (
+                    <Button
+                      mt={2}
+                      size="sm"
+                      colorScheme="red"
+                      onClick={(e) => {
+                        e.stopPropagation(); // prevenim navigarea
+                        handleDeleteProduct(product._id);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </Box>
+              </Box>
 
-
-      
               <Box textAlign="center" py={3} px={2}>
-                <Text fontWeight="bold" noOfLines={1}>{filteredProducts[0].title}</Text>
-      
+                <Text fontWeight="bold" noOfLines={1}>
+                  {filteredProducts[0].title}
+                </Text>
+
                 {filteredProducts[0].forSale && filteredProducts[0].price > 0 && (
                   <Text fontSize="sm" color="green.600">
                     For Sale: {filteredProducts[0].price} EUR
                   </Text>
                 )}
-      
+
                 {filteredProducts[0].forSale && filteredProducts[0].price > 0 && (
                   <Text fontSize="sm" color="gray.600">
                     Stock: {filteredProducts[0].quantity}
                   </Text>
                 )}
-      
+
                 {filteredProducts[0].galleries?.length > 0 && (
                   <Text fontSize="xs" color="purple.500" mt={1}>
-                    Gallery: {filteredProducts[0].galleries[0].name || "-"}
+                    Gallery: {filteredProducts[0].galleries[0].name || '-'}
                   </Text>
                 )}
-              
-              {currentUser?._id === product.user?._id && (
-  <Button
-  mt={2}
-  size="sm"
-  colorScheme="red"
-  variant="solid"
-  onClick={() => handleDeleteProduct(product._id)}
->
-  Delete
-</Button>
 
-)}
-
-
-
+                {currentUser?._id === product.user?._id && (
+                  <Button
+                    mt={2}
+                    size="sm"
+                    colorScheme="red"
+                    variant="solid"
+                    onClick={() => handleDeleteProduct(product._id)}
+                  >
+                    Delete
+                  </Button>
+                )}
               </Box>
             </Box>
           </Link>
         </Flex>
       ) : (
         <Flex wrap="wrap" justify="center" gap={4}>
-      <Flex wrap="wrap" justify="center" gap={4}>
-  {filteredProducts.map((product) => (
-    <Box
-      key={product._id}
-      w="270px"
-      bg="gray.100"
-      borderRadius="md"
-      boxShadow="md"
-      overflow="hidden"
-      border="1px solid #ccc"
-      _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-      transition="all 0.2s"
-      cursor="pointer"
-      onClick={() => navigate(`/products/${product._id}`)}
-    >
-      {/* imagine */}
-      <Box h="270px" bg="gray.200">
-        {product.images?.[0] ? (
-          <Image
-            src={product.images[0]}
-            alt={product.title}
-            w="100%"
-            h="100%"
-            objectFit="cover"
-          />
-        ) : (
-          <Flex
-            align="center"
-            justify="center"
-            h="100%"
-            color="gray.600"
-            fontWeight="bold"
-            fontSize="lg"
-          >
-            {product.title}
+          <Flex wrap="wrap" justify="center" gap={4}>
+            {filteredProducts.map((product) => (
+              <Box
+                key={product._id}
+                w="270px"
+                bg="gray.100"
+                borderRadius="md"
+                boxShadow="md"
+                overflow="hidden"
+                border="1px solid #ccc"
+                _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
+                transition="all 0.2s"
+                cursor="pointer"
+                onClick={() => navigate(`/products/${product._id}`)}
+              >
+                {/* imagine */}
+                <Box h="270px" bg="gray.200">
+                  {product.images?.[0] ? (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.title}
+                      w="100%"
+                      h="100%"
+                      objectFit="cover"
+                    />
+                  ) : (
+                    <Flex
+                      align="center"
+                      justify="center"
+                      h="100%"
+                      color="gray.600"
+                      fontWeight="bold"
+                      fontSize="lg"
+                    >
+                      {product.title}
+                    </Flex>
+                  )}
+                </Box>
+
+                {/* detalii + buton */}
+                <Box textAlign="center" py={3} px={2}>
+                  <Text fontWeight="bold" noOfLines={1}>
+                    {product.title}
+                  </Text>
+                  {typeof product.price === 'number' && product.price > 0 && (
+                    <Text fontSize="sm" color="green.600">
+                      Price: {product.price}
+                    </Text>
+                  )}
+
+                  {product.forSale && product.price > 0 && (
+                    <Text fontSize="sm" color="gray.600">
+                      Stock: {product.quantity}
+                    </Text>
+                  )}
+                  {product.galleries?.length > 0 && (
+                    <Text fontSize="xs" color="purple.500" mt={1}>
+                      Gallery: {product.galleries[0].name || '-'}
+                    </Text>
+                  )}
+
+                  {/* buton delete vizibil doar pentru owner */}
+                  {currentUser?._id === user?._id && (
+                    <Button
+                      mt={2}
+                      size="sm"
+                      colorScheme="red"
+                      onClick={(e) => {
+                        e.stopPropagation(); // oprește navigarea spre produs
+                        handleDeleteProduct(product._id);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            ))}
           </Flex>
-        )}
-      </Box>
-
-      {/* detalii + buton */}
-      <Box textAlign="center" py={3} px={2}>
-        <Text fontWeight="bold" noOfLines={1}>{product.title}</Text>
-    {typeof product.price === "number" && product.price > 0 && (
-  <Text fontSize="sm" color="green.600">
-    Price: {product.price}
-  </Text>
-)}
-
-
-        {product.forSale && product.price > 0 && (
-          <Text fontSize="sm" color="gray.600">
-            Stock: {product.quantity}
-          </Text>
-        )}
-        {product.galleries?.length > 0 && (
-          <Text fontSize="xs" color="purple.500" mt={1}>
-            Gallery: {product.galleries[0].name || "-"}
-          </Text>
-        )}
-
-        {/* buton delete vizibil doar pentru owner */}
-        {currentUser?._id === user?._id && (
-          <Button
-            mt={2}
-            size="sm"
-            colorScheme="red"
-            onClick={(e) => {
-              e.stopPropagation(); // oprește navigarea spre produs
-              handleDeleteProduct(product._id);
-            }}
-          >
-            Delete
-          </Button>
-        )}
-      </Box>
-    </Box>
-  ))}
-</Flex>
-
-
-      </Flex>
-      
+        </Flex>
       )}
-      
     </Box>
   );
 };

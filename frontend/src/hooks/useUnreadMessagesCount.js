@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 const useUnreadMessagesCount = () => {
   const [count, setCount] = useState(0);
 
   const fetchConversations = async () => {
     try {
-      const res = await fetch("/api/messages/conversations", {
-        credentials: "include",
+      const res = await fetch('/api/messages/conversations', {
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -15,7 +15,7 @@ const useUnreadMessagesCount = () => {
         setCount(unread);
       }
     } catch (err) {
-      console.error("Error fetching unread messages count", err);
+      console.error('Error fetching unread messages count', err);
     }
   };
 

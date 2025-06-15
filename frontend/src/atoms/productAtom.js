@@ -1,8 +1,8 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
 
 const productAtom = atom({
-	key: "productAtom",
-	default: [],
+  key: 'productAtom',
+  default: [],
 });
 
 export default productAtom;

@@ -43,16 +43,15 @@ import CreateOrEditArticlePage from './pages/createArticle';
 import AllArticlesPage from './pages/AllArticlesPage';
 import { AnimatePresence } from 'framer-motion';
 import PageWrapper from './components/PageWrapper';
+import MessagesPage from './pages/MessagesPage';
 
 function App() {
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
-  // ⚠️ Atenție la expunerea API key-ului în frontend!
-  const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs'; 
+  const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs';
   const { isLoaded } = useLoadGoogleMapsScript(apiKey);
   const location = useLocation();
 
-  // Verificăm dacă ruta curentă începe cu '/messages'
   const isMessagesRoute = location.pathname.startsWith('/messages');
 
   return (
@@ -60,59 +59,329 @@ function App() {
       <Box minH="100vh">
         <Navbar />
 
-        {/* Condiționăm aplicarea AnimatePresence */}
         {isMessagesRoute ? (
-          // Dacă este o rută de mesaje, MessagesPage este randată fără AnimatePresence
-          // și fără key={location.pathname} pentru a preveni remount-ul.
-          <Routes location={location}> {/* location prop is still useful here */}
-            <Route path='/messages' element={<PageWrapper><MessagesPage /></PageWrapper>} />
-            <Route path='/messages/:userId' element={<PageWrapper><MessagesPage /></PageWrapper>} />
-            {/* Deoarece rutele de mesaje sunt gestionate într-un bloc <Routes> separat,
-              ruta catch-all ('*') nu va funcționa în acest context pentru a redirecta.
-              Vom asigura că toate rutele non-mesaje sunt în celălalt bloc <Routes>.
-            */}
+
+          <Routes location={location}>
+            {' '}
+            <Route
+              path="/messages"
+              element={
+                <PageWrapper>
+                  <MessagesPage />
+                </PageWrapper>
+              }
+            />
+            <Route
+              path="/messages/:userId"
+              element={
+                <PageWrapper>
+                  <MessagesPage />
+                </PageWrapper>
+              }
+            />
+
           </Routes>
         ) : (
-          // Pentru toate celelalte rute, AnimatePresence este aplicată pentru animații.
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
-              <Route path='/home' element={<PageWrapper><HomePage /></PageWrapper>} />
-              <Route path='/auth' element={!user ? <PageWrapper><AuthPage /></PageWrapper> : <Navigate to='/' />} />
-              <Route path='/profile/:username' element={<PageWrapper><UserPage /></PageWrapper>} />
-              <Route path='/update' element={user ? <PageWrapper><UpdateProfilePage /></PageWrapper> : <Navigate to='/auth' />} />
-              <Route path='/create/product' element={<PageWrapper><CreateProductPage /></PageWrapper>} />
-              <Route path='/products' element={<PageWrapper><ProductsPage /></PageWrapper>} />
-              <Route path='/products/:id' element={<PageWrapper><ProductPage /></PageWrapper>} />
-              <Route path='/create/event' element={user ? <PageWrapper><CreateEventPage /></PageWrapper> : <Navigate to='/auth' />} />
-              <Route path='/events/:id' element={<PageWrapper><EventPage /></PageWrapper>} />
-              <Route path='/events' element={<PageWrapper><EventsPage /></PageWrapper>} />
-              <Route path='/articles' element={<PageWrapper><AllArticlesPage /></PageWrapper>} />
-              <Route path='/art' element={<PageWrapper><UserArtGallery /></PageWrapper>} />
-              {/* Ruta catch-all trebuie să fie aici, deoarece nu e pe rutele de mesaje */}
-              <Route path='*' element={<Navigate to='/home' />} /> 
-              <Route path='/galleries' element={<PageWrapper><ExploreGalleries /></PageWrapper>} />
-              <Route path='/create/gallery' element={<PageWrapper><CreateGalleryPage /></PageWrapper>} />
-              <Route path='/galleries/:galleryId' element={<PageWrapper><GalleryPage /></PageWrapper>} />
-              <Route path='/notifications' element={user ? <PageWrapper><NotificationsPage /></PageWrapper> : <Navigate to='/auth' />} />
-              <Route path='/cart' element={<PageWrapper><CartPage /></PageWrapper>} />
-              <Route path='/checkout' element={<PageWrapper><CheckoutPage /></PageWrapper>} />
-              <Route path='/orders' element={<PageWrapper><OrdersPage /></PageWrapper>} />
-              <Route path='/admin-panel' element={<PageWrapper><AdminPanel /></PageWrapper>} />
-              <Route path='/:username/favorites' element={<PageWrapper><FavoriteProductsPage /></PageWrapper>} />
-              <Route path='/:username/all-products' element={<PageWrapper><UserAllProductsPage /></PageWrapper>} />
-              <Route path='/:username/all-galleries' element={<PageWrapper><UserAllGalleriesPage /></PageWrapper>} />
-              <Route path='/:username/all-events' element={<PageWrapper><UserAllEventsPage /></PageWrapper>} />
-              <Route path='/update/product/:id' element={<PageWrapper><UpdateProductPage /></PageWrapper>} />
-              <Route path='/blocked-users' element={<PageWrapper><BlockedUsersPage /></PageWrapper>} />
-              <Route path='/edit/event/:eventId' element={<PageWrapper><EditEventPage /></PageWrapper>} />
-              <Route path='/edit-gallery/:galleryId' element={<PageWrapper><EditGalleryPage /></PageWrapper>} />
-              <Route path='/:username/articles' element={<PageWrapper><UserArticlesPage /></PageWrapper>} />
-              <Route path='/articles/:articleId' element={<PageWrapper><ArticlePage /></PageWrapper>} />
-              <Route path='/:username/calendar' element={<PageWrapper><CalendarPage /></PageWrapper>} />
-              <Route path='/login' element={<PageWrapper><LoginCard /></PageWrapper>} />
-              <Route path='/favorites/:username' element={<PageWrapper><FavoritesPage /></PageWrapper>} />
-              <Route path='/create/article' element={<PageWrapper><CreateOrEditArticlePage /></PageWrapper>} />
-              <Route path='/update/article/:id' element={<PageWrapper><CreateOrEditArticlePage /></PageWrapper>} />
+              <Route
+                path="/home"
+                element={
+                  <PageWrapper>
+                    <HomePage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/auth"
+                element={
+                  !user ? (
+                    <PageWrapper>
+                      <AuthPage />
+                    </PageWrapper>
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
+              <Route
+                path="/profile/:username"
+                element={
+                  <PageWrapper>
+                    <UserPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/update"
+                element={
+                  user ? (
+                    <PageWrapper>
+                      <UpdateProfilePage />
+                    </PageWrapper>
+                  ) : (
+                    <Navigate to="/auth" />
+                  )
+                }
+              />
+              <Route
+                path="/create/product"
+                element={
+                  <PageWrapper>
+                    <CreateProductPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/products"
+                element={
+                  <PageWrapper>
+                    <ProductsPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/products/:id"
+                element={
+                  <PageWrapper>
+                    <ProductPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/create/event"
+                element={
+                  user ? (
+                    <PageWrapper>
+                      <CreateEventPage />
+                    </PageWrapper>
+                  ) : (
+                    <Navigate to="/auth" />
+                  )
+                }
+              />
+              <Route
+                path="/events/:id"
+                element={
+                  <PageWrapper>
+                    <EventPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/events"
+                element={
+                  <PageWrapper>
+                    <EventsPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/articles"
+                element={
+                  <PageWrapper>
+                    <AllArticlesPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/art"
+                element={
+                  <PageWrapper>
+                    <UserArtGallery />
+                  </PageWrapper>
+                }
+              />
+
+              <Route path="*" element={<Navigate to="/home" />} />
+              <Route
+                path="/galleries"
+                element={
+                  <PageWrapper>
+                    <ExploreGalleries />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/create/gallery"
+                element={
+                  <PageWrapper>
+                    <CreateGalleryPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/galleries/:galleryId"
+                element={
+                  <PageWrapper>
+                    <GalleryPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  user ? (
+                    <PageWrapper>
+                      <NotificationsPage />
+                    </PageWrapper>
+                  ) : (
+                    <Navigate to="/auth" />
+                  )
+                }
+              />
+              <Route
+                path="/cart"
+                element={
+                  <PageWrapper>
+                    <CartPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/checkout"
+                element={
+                  <PageWrapper>
+                    <CheckoutPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/orders"
+                element={
+                  <PageWrapper>
+                    <OrdersPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/admin-panel"
+                element={
+                  <PageWrapper>
+                    <AdminPanel />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/:username/favorites"
+                element={
+                  <PageWrapper>
+                    <FavoriteProductsPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/:username/all-products"
+                element={
+                  <PageWrapper>
+                    <UserAllProductsPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/:username/all-galleries"
+                element={
+                  <PageWrapper>
+                    <UserAllGalleriesPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/:username/all-events"
+                element={
+                  <PageWrapper>
+                    <UserAllEventsPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/update/product/:id"
+                element={
+                  <PageWrapper>
+                    <UpdateProductPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/blocked-users"
+                element={
+                  <PageWrapper>
+                    <BlockedUsersPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/edit/event/:eventId"
+                element={
+                  <PageWrapper>
+                    <EditEventPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/edit-gallery/:galleryId"
+                element={
+                  <PageWrapper>
+                    <EditGalleryPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/:username/articles"
+                element={
+                  <PageWrapper>
+                    <UserArticlesPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/articles/:articleId"
+                element={
+                  <PageWrapper>
+                    <ArticlePage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/:username/calendar"
+                element={
+                  <PageWrapper>
+                    <CalendarPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <PageWrapper>
+                    <LoginCard />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/favorites/:username"
+                element={
+                  <PageWrapper>
+                    <FavoritesPage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/create/article"
+                element={
+                  <PageWrapper>
+                    <CreateOrEditArticlePage />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/update/article/:id"
+                element={
+                  <PageWrapper>
+                    <CreateOrEditArticlePage />
+                  </PageWrapper>
+                }
+              />
             </Routes>
           </AnimatePresence>
         )}

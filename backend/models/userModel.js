@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
   {
@@ -25,184 +25,184 @@ const userSchema = new mongoose.Schema(
       minLength: 6,
       required: true,
     },
-    blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     profilePicture: {
       type: String,
-      default: "",
+      default: '',
     },
     favoriteGalleries: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Gallery", // Referință către galerii
+        ref: 'Gallery', // Referință către galerii
       },
-    ],    
+    ],
     bio: {
       type: String,
-      default: "",
+      default: '',
     },
-    age: {
-      type: Number,
+   dateOfBirth: {
+      type: Date,
       required: false,
     },
     profession: {
       type: String,
-      default: "",
+      default: '',
     },
     gender: {
       type: String,
-      default: "",
+      default: '',
     },
     pronouns: {
       type: String,
-      default: "",
+      default: '',
     },
     address: {
       type: String,
-      default: "",
+      default: '',
     },
     city: {
       type: String,
-      default: "",
+      default: '',
     },
     quote: {
       type: String,
-      default: "", 
+      default: '',
     },
-    
+
     country: {
       type: String,
-      default: "",
+      default: '',
     },
     location: {
       type: String,
-      default: "",
+      default: '',
     },
     facebook: {
       type: String,
-      default: "",
+      default: '',
     },
     instagram: {
       type: String,
-      default: "",
+      default: '',
     },
     webpage: {
       type: String,
-      default: "",
+      default: '',
     },
     soundcloud: {
       type: String,
-      default: "",
+      default: '',
     },
     spotify: {
       type: String,
-      default: "",
+      default: '',
     },
     linkedin: {
       type: String,
-      default: "",
+      default: '',
     },
     phone: {
       type: String,
-      default: "",
+      default: '',
     },
     hobbies: {
       type: String,
-      default: "",
+      default: '',
     },
     cart: [
-  {
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      refPath: 'cart.itemType' // ✅ corect: suportă dinamic Product sau Event
-    },
-    quantity: { type: Number, default: 1 },
-    itemType: {
-      type: String,
-      enum: ['Product', 'Event'],
-      default: 'Product'
-    }
-  }
-],
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          refPath: 'cart.itemType', // ✅ corect: suportă dinamic Product sau Event
+        },
+        quantity: { type: Number, default: 1 },
+        itemType: {
+          type: String,
+          enum: ['Product', 'Event'],
+          default: 'Product',
+        },
+      },
+    ],
 
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Product", // Referință către produsele utilizatorului
+        ref: 'Product', // Referință către produsele utilizatorului
       },
     ],
     orders: [
-  {
-    products: [
       {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          refPath: 'orders.products.itemType', // 👈 dinamic: Product sau Event
-          required: true,
-        },
-        itemType: {
+        products: [
+          {
+            product: {
+              type: mongoose.Schema.Types.ObjectId,
+              refPath: 'orders.products.itemType', // 👈 dinamic: Product sau Event
+              required: true,
+            },
+            itemType: {
+              type: String,
+              enum: ['Product', 'Event'],
+              default: 'Product',
+            },
+            price: Number,
+            quantity: { type: Number, default: 1 },
+          },
+        ],
+        status: {
           type: String,
-          enum: ["Product", "Event"],
-          default: "Product",
+          enum: ['Pending', 'Delivered', 'Cancelled'],
+          default: 'Pending',
         },
-        price: Number,
-        quantity: { type: Number, default: 1 },
-      }
+        date: { type: Date, default: Date.now },
+        paymentMethod: {
+          type: String,
+          enum: ['online', 'cash', 'card_on_delivery'],
+          default: 'online',
+        },
+        deliveryMethod: {
+          type: String,
+          enum: ['courier', 'easybox', 'N/A'], // Add "N/A" here
+          default: 'courier',
+        },
+        firstName: String,
+        lastName: String,
+        address: String,
+        postalCode: String,
+        city: String,
+        phone: String,
+      },
     ],
-    status: {
-      type: String,
-      enum: ["Pending", "Delivered", "Cancelled"],
-      default: "Pending",
-    },
-    date: { type: Date, default: Date.now },
-    paymentMethod: {
-      type: String,
-      enum: ["online", "cash", "card_on_delivery"],
-      default: "online",
-    },
-    deliveryMethod: {
-      type: String,
-      enum: ["courier", "easybox", "N/A"], // Add "N/A" here
-      default: "courier",
-    },
-    firstName: String,
-    lastName: String,
-    address: String,
-    postalCode: String,
-    city: String,
-    phone: String,
-  }
-],
 
     events: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Event",
+        ref: 'Event',
       },
     ],
     galleries: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Gallery", // Referință la galerii
+        ref: 'Gallery', // Referință la galerii
       },
     ],
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+        ref: 'Product',
       },
     ],
-    favoriteArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
+    favoriteArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article' }],
 
     eventsMarkedInterested: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Event", // Evenimente marcate ca "interested"
+        ref: 'Event', // Evenimente marcate ca "interested"
       },
     ],
     eventsMarkedGoing: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Event", // Evenimente marcate ca "going"
+        ref: 'Event', // Evenimente marcate ca "going"
       },
     ],
     resetPasswordToken: {
@@ -215,23 +215,22 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"], // ✅ Mai multe roluri
-      default: "user",
+      enum: ['user', 'admin'], // ✅ Mai multe roluri
+      default: 'user',
     },
     isVerified: { type: Boolean, default: false }, // ✅ Verificare email
     verificationToken: { type: String }, // ✅ Token pentru activare
     isBlocked: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
   },
   {
     timestamps: true,
     optimisticConcurrency: true,
-  }
+  },
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema);
 
 export default User;

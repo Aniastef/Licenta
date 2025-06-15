@@ -12,118 +12,128 @@ import {
   Tab,
   TabPanel,
   Button,
-} from "@chakra-ui/react";
-import { useRecoilValue } from "recoil";
-import { useRef, useState } from "react";
-import userAtom from "../atoms/userAtom";
-import sticky from "../assets/sticky.svg";
-import editIcon from "../assets/editIcon.svg";
-import soundcloudIcon from "../assets/soundcloud.svg";
-import spotifyIcon from "../assets/spotify.svg";
-import linkedinIcon from "../assets/linkedin.svg";
-import instagramIcon from "../assets/instagram.svg";
-import facebookIcon from "../assets/facebook.svg";
-import webpageIcon from "../assets/webpage.svg";
-import emailIcon from "../assets/email.svg";
-import phoneIcon from "../assets/phone.svg";
-import messageIcon from "../assets/message.svg";
-import heartIcon from "../assets/heart.svg";
-import ageIcon from "../assets/age.svg";
-import professionIcon from "../assets/profession.svg";
-import locationIcon from "../assets/location.svg";
-import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+} from '@chakra-ui/react';
+import { useRecoilValue } from 'recoil';
+import { useRef, useState } from 'react';
+import userAtom from '../atoms/userAtom';
+import sticky from '../assets/sticky.svg';
+import editIcon from '../assets/editIcon.svg';
+import soundcloudIcon from '../assets/soundcloud.svg';
+import spotifyIcon from '../assets/spotify.svg';
+import linkedinIcon from '../assets/linkedin.svg';
+import instagramIcon from '../assets/instagram.svg';
+import facebookIcon from '../assets/facebook.svg';
+import webpageIcon from '../assets/webpage.svg';
+import emailIcon from '../assets/email.svg';
+import phoneIcon from '../assets/phone.svg'; // Corrected if it was 'phone.svg'
+import messageIcon from '../assets/message.svg';
+import heartIcon from '../assets/heart.svg';
+import ageIcon from '../assets/age.svg';
+import professionIcon from '../assets/profession.svg';
+import locationIcon from '../assets/location.svg';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
- const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    const day = date.toLocaleDateString("en-US", { day: "2-digit" });
-    const month = date.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
-    const year = date.toLocaleDateString("en-US", { year: "numeric" });
-    return { day, month, year };
-  };
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  const day = date.toLocaleDateString('en-US', { day: '2-digit' });
+  const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+  const year = date.toLocaleDateString('en-US', { year: 'numeric' });
+  return { day, month, year };
+};
+
+// Add this utility function to calculate age
+const calculateAge = (dateOfBirth) => {
+  if (!dateOfBirth) return null;
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
+
 const UserHeader = ({ user }) => {
   const currentUser = useRecoilValue(userAtom);
   const [isEditing, setIsEditing] = useState(false);
-  const [quote, setQuote] = useState(user.quote || "");
+  const [quote, setQuote] = useState(user.quote || '');
   const textareaRef = useRef(null);
   const CHAR_LIMIT = 400;
   const LINE_LIMIT = 12;
   const LINE_HEIGHT = 18;
   const toast = useToast();
-  const latestProducts = user.products?.slice(0, 8);
-  const navigate = useNavigate(); // sus în componentă
+  // MODIFIED: Changed from 8 to 6 for products
+  const latestProducts = user.products?.slice(0, 6);
+  const navigate = useNavigate();
 
-  
-  const [activeGalleryFilter, setActiveGalleryFilter] = useState("owning");
+  const [activeGalleryFilter, setActiveGalleryFilter] = useState('owning');
 
-  const ownedGalleries = user.galleries?.filter(g => g.owner === user._id);
-  const collaboratedGalleries = user.galleries?.filter(g => g.owner !== user._id);
+  const ownedGalleries = user.galleries?.filter((g) => g.owner === user._id);
+  const collaboratedGalleries = user.galleries?.filter((g) => g.owner !== user._id);
   const favoriteGalleries = []; // aici pui logica ta dacă ai favorite
   const createdEvents = user.events || [];
   const goingEvents = user.eventsMarkedGoing || [];
   const interestedEvents = user.eventsMarkedInterested || [];
-  console.log("Created events:", createdEvents);
-  console.log("Going events:", goingEvents);
-  console.log("Interested events:", interestedEvents);
- 
-  
-  const [galleryFilter, setGalleryFilter] = useState("owning");
-  const [eventFilter, setEventFilter] = useState("created");
+  console.log('Created events:', createdEvents);
+  console.log('Going events:', goingEvents);
+  console.log('Interested events:', interestedEvents);
+
+  const [galleryFilter, setGalleryFilter] = useState('owning');
+  const [eventFilter, setEventFilter] = useState('created');
   const filteredGalleries =
-    activeGalleryFilter === "owning"
+    activeGalleryFilter === 'owning'
       ? ownedGalleries
-      : activeGalleryFilter === "collaborating"
+      : activeGalleryFilter === 'collaborating'
       ? collaboratedGalleries
       : favoriteGalleries;
-  
+
   const handleSave = () => {
     setIsEditing(false);
     toast({
-      title: "Quote saved.",
-      status: "success",
+      title: 'Quote saved.',
+      status: 'success',
       duration: 2000,
       isClosable: true,
     });
   };
-  
+
   const saveQuote = async () => {
     try {
-      const response = await fetch("/api/users/quote", {
-        method: "POST",
+      const response = await fetch('/api/users/quote', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include", // ⬅️ super important pentru cookie JWT
-        body: JSON.stringify({ quote }), // trimitem citatul
+        credentials: 'include',
+        body: JSON.stringify({ quote }),
       });
-  
+
       if (!response.ok) {
-        throw new Error("Failed to save quote");
+        throw new Error('Failed to save quote');
       }
-  
+
       const data = await response.json();
       toast({
-        title: data.message || "Quote saved successfully",
-        status: "success",
+        title: data.message || 'Quote saved successfully',
+        status: 'success',
         duration: 2000,
         isClosable: true,
       });
     } catch (error) {
-      console.error("Error saving quote:", error);
+      console.error('Error saving quote:', error);
       toast({
-        title: "Error saving quote",
-        status: "error",
+        title: 'Error saving quote',
+        status: 'error',
         duration: 2000,
         isClosable: true,
       });
     } finally {
-      setIsEditing(false); // ieși din modul edit
+      setIsEditing(false);
     }
   };
-  
-  
-  
-  
+
   const handleChange = (e) => {
     const value = e.target.value;
     if (value.length > CHAR_LIMIT) return;
@@ -134,10 +144,9 @@ const UserHeader = ({ user }) => {
     }
     setQuote(value);
   };
-  
 
   const contactItems = [
-    { icon: messageIcon, label: "Message me", alwaysVisible: true },
+    { icon: messageIcon, label: 'Message me', alwaysVisible: true },
     { icon: phoneIcon, label: user.phone },
     { icon: emailIcon, label: user.email },
     { icon: facebookIcon, label: user.facebook },
@@ -147,54 +156,69 @@ const UserHeader = ({ user }) => {
     { icon: spotifyIcon, label: user.spotify },
     { icon: soundcloudIcon, label: user.soundcloud },
   ];
-  
+
+  // Calculate age here before using it in aboutMeItemsLeft
+  const userAge = calculateAge(user.dateOfBirth);
 
   const aboutMeItemsLeft = [
-    { icon: ageIcon, label: user.age && `${user.age}` },
+    { icon: ageIcon, label: userAge ? `${userAge} years old` : null }, // Modified line
     { icon: professionIcon, label: user.profession },
   ];
-  
+
+  // Logic to concatenate city and country for location display
+  const displayLocation = (() => {
+    const parts = [];
+    if (user.city) {
+      parts.push(user.city);
+    }
+    if (user.country) {
+      parts.push(user.country);
+    }
+    // Prioritize combined city/country. If only a general location exists, use that.
+    if (parts.length > 0) {
+      return parts.join(', ');
+    }
+    return user.location || 'Not specified'; // Fallback
+  })();
+
   const aboutMeItemsRight = [
-    { icon: locationIcon, label: user.location },
+    { icon: locationIcon, label: displayLocation }, // Combined city and country here
     { icon: heartIcon, label: user.hobbies },
   ];
-  
-  
 
   return (
-    <Flex direction="column" px={6} py={12} maxW="1300px" mx="auto" >
+    <Flex direction="column" px={6} py={12} maxW="1300px" mx="auto">
       {/* Header Section */}
 
-      <Flex justify="space-between" align="flex-start" gap={10}>
+      <Flex justify="space-between" align="flex-start" gap={15}>
         {/* Avatar & Contact */}
         <Flex direction="column" align="center" gap={2}>
-  <Box
-    borderRadius="full"
-    w="300px"
-    h="300px"
-    overflow="hidden"
-    bg="gray.100"
-    display="flex"
-    alignItems="center"
-    justifyContent="center"
-    fontSize="5xl"
-    fontWeight="bold"
-    color="gray.600"
-  >
-    {user.profilePicture ? (
-      <Image
-        src={user.profilePicture}
-        alt={`${user.firstName} ${user.lastName}`}
-        w="100%"
-        h="100%"
-        objectFit="cover"
-      />
-    ) : (
-      `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase()
-    )}
-  </Box>
-</Flex>
-
+          <Box
+            borderRadius="full"
+            w="300px"
+            h="300px"
+            overflow="hidden"
+            bg="gray.100"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            fontSize="5xl"
+            fontWeight="bold"
+            color="gray.600"
+          >
+            {user.profilePicture ? (
+              <Image
+                src={user.profilePicture}
+                alt={`${user.firstName} ${user.lastName}`}
+                w="100%"
+                h="100%"
+                objectFit="cover"
+              />
+            ) : (
+              `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()
+            )}
+          </Box>
+        </Flex>
 
         {/* Bio */}
         <Flex direction="column" flex={1} maxW="450px">
@@ -206,524 +230,568 @@ const UserHeader = ({ user }) => {
               </Text>
             </Text>
           </Flex>
-          <Text fontSize="sm" lineHeight="1.7" whiteSpace="pre-wrap">
-            {user.bio || "No biography provided."}
+          <Text mb="10px" fontSize="sm" lineHeight="1.7" whiteSpace="pre-wrap">
+            {user.bio || 'No biography provided.'}
           </Text>
         </Flex>
 
-        <Box position="relative" w="390px" h="310px" textAlign="left" display="flex" flexDirection="column" alignItems="center">
-  {/* Sticky note image */}
-  <Image mt={1} src={sticky} w="100%" h="auto" />
-
-  {/* Textarea absolută deasupra sticky note-ului */}
-  <Box position="absolute" top="45px" px={9} w="100%">
-    <Textarea
-      ref={textareaRef}
-      value={quote}
-      onChange={handleChange}
-      fontStyle="italic"
-      fontSize="sm"
-      resize="none"
-      rows={12}
-      maxW="305px"
-      bg="transparent"
-      border="none"
-      lineHeight="1.2"
-      overflow="hidden"
-      _focus={{ outline: "none", boxShadow: "none" }}
-    />
-    <Text
-      fontSize="xs"
-      color={
-        quote.length >= CHAR_LIMIT - 20 ||
-        quote.split("\n").length >= LINE_LIMIT
-          ? "red.500"
-          : "gray.500"
-      }
-      textAlign="right"
-    >
-      {quote.length}/{CHAR_LIMIT} characters · {quote.split("\n").length}/{LINE_LIMIT} lines
-    </Text>
-  </Box>
-
-  {/* Butonul de editare */}
-  <IconButton
-  icon={isEditing ? <Text fontSize="xs" fontWeight="semibold">Save</Text> : <Image src={editIcon} w="16px" h="16px" />}
-  position="absolute"
-  bottom="20px"
-  left="50px"
-  size="xs"
-  bg="whiteAlpha.700"
-  _hover={{ bg: "whiteAlpha.900" }}
-  borderRadius="full"
-  onClick={() => {
-    if (isEditing) saveQuote();
-    else setIsEditing(true);
-  }}
-  aria-label={isEditing ? "Save quote" : "Edit quote"}
-  zIndex={2}
-/>
-
-</Box>
-
-
-      </Flex>
-
-      {/* /////////////////////////////////////       */}
-
-<Flex   align="flex-start" gap={10} >
-
-      <Flex   ml={20} direction="column" align="start" gap={3} >
-      <Text fontWeight="bold" fontSize="2xl">@{user.username}</Text>
-      {contactItems.map((item, idx) => {
-  const isMessage = item.label === "Message me";
-  const isUrl = typeof item.label === "string" && item.label.startsWith("http");
-  const isEmail = typeof item.label === "string" && item.label.includes("@");
-  const isWeb = item.icon === webpageIcon;
-
-  const extractUsername = (url) => {
-    try {
-      const parsed = new URL(url);
-      return parsed.hostname.replace(/^www\./, ''); // ← doar domeniul
-    } catch {
-      return url;
-    }
-  };
-  
-
-  const displayLabel = isUrl
-    ? extractUsername(item.label)
-    : item.label;
-
-  return isMessage ? (
-    <Flex key={idx} align="center" gap={3}>
-      <Image src={item.icon} w="18px" h="18px" />
-      <Text
-  fontSize="sm"
-  color="blue.500"
-  cursor="pointer"
-  _hover={{ textDecoration: "underline" }}
-  onClick={() => navigate(`/messages/${user._id}`)}
->
-  {item.label}
-</Text>
-
-    </Flex>
-  ) : item.label ? (
-    <Flex key={idx} align="center" gap={3}>
-      <Image src={item.icon} w="18px" h="18px" />
-      {isEmail ? (
-        <a href={`mailto:${item.label}`}>
-          <Text fontSize="sm" color="blue.500" _hover={{ textDecoration: "underline" }}>
-            {item.label}
-          </Text>
-        </a>
-      ) : isUrl ? (
-        <a href={item.label} target="_blank" rel="noopener noreferrer">
-          <Text fontSize="sm" color="blue.500" _hover={{ textDecoration: "underline" }}>
-            {displayLabel}
-          </Text>
-        </a>
-      ) : (
-        <Text fontSize="sm">{item.label}</Text>
-      )}
-    </Flex>
-  ) : null;
-})}
-
-
-
-        </Flex>
-
-      {/* About Me */}
-      <Flex  direction={"column"}  ml={20} textAlign="center">
-
-      <Text textAlign="left" fontWeight="bold" fontSize="lg" mb={2}>About me</Text>
-
-    {/* Colectăm elementele vizibile */}
-  <Flex gap={10}>
-    {aboutMeItemsLeft.some((item) => item.label) && (
-      <Flex gap={2} direction="column">
-        {aboutMeItemsLeft.map(
-          (item, idx) =>
-            item.label && (
-              <Flex key={idx} gap={2} align="center">
-                <Image src={item.icon} w="16px" h="16px" />
-                <Text>{item.label}</Text>
-              </Flex>
-            )
-        )}
-      </Flex>
-    )}
-
-    {aboutMeItemsRight.some((item) => item.label) && (
-      <Flex gap={2} direction="column">
-        {aboutMeItemsRight.map(
-          (item, idx) =>
-            item.label && (
-              <Flex key={idx} gap={2} align="center">
-                <Image src={item.icon} w="16px" h="16px" />
-                <Text>{item.label}</Text>
-              </Flex>
-            )
-        )}
-      </Flex>
-    )}
-  </Flex>
-   
-      
-      <Flex mt={23} gap={20} direction={"column"} textAlign="center">
-
-      <Tabs variant="unstyled"  align="center">
-        <TabList justifyContent="left" gap={100} flexWrap="wrap">
-          <Tab _selected={{ bg: "orange.400", color: "white" }}>Artworks</Tab>
-          <Tab _selected={{ bg: "green.400", color: "white" }}>Galleries</Tab>
-          <Tab _selected={{ bg: "purple.400", color: "white" }}>Events</Tab>
-          <Tab _selected={{ bg: "blue.400", color: "white" }}>Articles</Tab>
-        </TabList>
-
-        
-        <TabPanels>
-        <TabPanel>
-  {/* Grila de produse */}
-  <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="left">
-    {latestProducts && latestProducts.length > 0 ? (
-      latestProducts.map((product) => (
-        <Box    _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-        transition="all 0.2s" cursor="pointer"
-        onClick={() => navigate(`/products/${product._id}`)} key={product._id} w="200px" borderWidth="1px" borderRadius="md" overflow="hidden">
-          <Box h="200px" bg="purple.200">
-          {product.images?.[0] ? (
-  <Image
-    src={product.images[0]}
-    alt={product.title}
-    w="100%"
-    h="100%"
-    objectFit="cover"
-  />
-) : product.videos?.[0] ? (
-  <Box
-    as="video"
-    src={product.videos[0]}
-    muted
-    loop
-    autoPlay
-    playsInline
-    preload="metadata"
-    w="100%"
-    h="100%"
-    objectFit="cover"
-  />
-) : (
-  <Flex
-    align="center"
-    justify="center"
-    w="100%"
-    h="100%"
-    bg="gray.200"
-    color="gray.600"
-    fontWeight="bold"
-    fontSize="lg"
-  >
-    {product.title}
-  </Flex>
-)}
-
-          </Box>
-          <Box p={4}>
-            <Text fontWeight="bold" mb={1}>{product.title}</Text>
-  {typeof product.price === "number" ? (
-  <Text>{product.price.toFixed(2)} EUR</Text>
-) : (
-  <Text color="gray.500">Not for sale</Text>
-)}
-
-
-{product.category && (
-  <Text fontSize="xs" mt={1} color="gray.600">
-    Category: {product.category}
-  </Text>
-)}
-            <Text fontSize="xs" mt={2}>{product.tags?.join(", ")}</Text>
-          </Box>
-        </Box>
-      ))
-    ) : (
-      <Text>No products found.</Text>
-    )}
-  </Flex>
-
-  {/* Butonul separat sub produse */}
-  <Box mt={6} textAlign="center">
-    <Link to={`/${user.username}/all-products`}>
-      <Text
-        fontWeight="bold"
-        color="blue.500"
-        _hover={{ textDecoration: "underline" }}
-        cursor="pointer"
-      >
-        See all user's artworks →
-      </Text>
-    </Link>
-  </Box>
-</TabPanel>
-
-
- {/* Logica Galleries */}
-<TabPanel>
- 
-  <Flex direction="column" align="center" gap={4} maxW="800px" mx="auto">
-    {/* Filtre */}
-    <Flex gap={4}>
-      <Button
-        bg={activeGalleryFilter === "owning" ? "yellow.400" : "yellow.200"}
-        onClick={() => setActiveGalleryFilter("owning")}
-        borderRadius="full"
-      >
-        Owning
-      </Button>
-      <Button
-        bg={activeGalleryFilter === "collaborating" ? "yellow.400" : "yellow.200"}
-        onClick={() => setActiveGalleryFilter("collaborating")}
-        borderRadius="full"
-      >
-        Collaborating
-      </Button>
-     
-    </Flex>
-
-    {/* Galerii */}
-    <Flex direction="column" gap={4} w="500px">
-  {filteredGalleries.length > 0 ? (
-filteredGalleries.slice(0, 2).map((gallery) => (
-  <Box
-        key={gallery._id}
-        borderWidth="1px"
-        borderRadius="md"
-        overflow="hidden"
-        _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-        transition="all 0.2s"
-        cursor="pointer"
-        onClick={() => navigate(`/galleries/${gallery._id}`)}
+        <Box
+          position="relative"
+          w="390px"
+          h="310px"
+          textAlign="left"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
         >
-        {/* Cover Photo */}
-        <Box h="150px" overflow="hidden" bg="blue.400" display="flex" alignItems="center" justifyContent="center">
-  {gallery.coverPhoto ? (
-    <Image
-      src={gallery.coverPhoto}
-      alt={gallery.name}
-      w="400px"
-      h="100%"
-      objectFit="cover"
-    />
-  ) : (
-    <Text fontWeight="bold" color="white" fontSize="lg" textAlign="center" px={2}>
-      {gallery.name}
-    </Text>
-  )}
-</Box>
+          <Image mt={1} src={sticky} w="100%" h="auto" />
 
+          <Box position="absolute" top="45px" px={9} w="100%">
+            <Textarea
+              ref={textareaRef}
+              value={quote}
+              onChange={handleChange}
+              fontStyle="italic"
+              fontSize="sm"
+              resize="none"
+              rows={12}
+              maxW="305px"
+              bg="transparent"
+              border="none"
+              lineHeight="1.2"
+              overflow="hidden"
+              _focus={{ outline: 'none', boxShadow: 'none' }}
+            />
+            <Text
+              fontSize="xs"
+              color={
+                quote.length >= CHAR_LIMIT - 20 || quote.split('\n').length >= LINE_LIMIT
+                  ? 'red.500'
+                  : 'gray.500'
+              }
+              textAlign="right"
+            >
+              {quote.length}/{CHAR_LIMIT} characters · {quote.split('\n').length}/{LINE_LIMIT} lines
+            </Text>
+          </Box>
 
-        {/* Gallery details */}
-        <Box p={4}>
-          <Text fontWeight="bold" fontSize="md" mb={1}>
-            {gallery.name}
-          </Text>
-          <Text fontSize="sm" color="gray.600" mb={1}>
-            {gallery.category || "No category specified"}
-          </Text>
-          <Text fontSize="xs" color="gray.500">
-          {Array.isArray(gallery.tags) && gallery.tags.length > 0
-  ? gallery.tags.join(", ")
-  : "No tags"}
-          </Text>
+          <IconButton
+            icon={
+              isEditing ? (
+                <Text fontSize="xs" fontWeight="semibold">
+                  Save
+                </Text>
+              ) : (
+                <Image src={editIcon} w="16px" h="16px" />
+              )
+            }
+            position="absolute"
+            bottom="20px"
+            left="50px"
+            size="xs"
+            bg="whiteAlpha.700"
+            _hover={{ bg: 'whiteAlpha.900' }}
+            borderRadius="full"
+            onClick={() => {
+              if (isEditing) saveQuote();
+              else setIsEditing(true);
+            }}
+            aria-label={isEditing ? 'Save quote' : 'Edit quote'}
+            zIndex={2}
+          />
         </Box>
-      </Box>
-    ))
-  ) : (
-    <Text>No galleries found.</Text>
-  )}
-</Flex>
+      </Flex>
 
+      {/* /////////////////////////////////////       */}
 
-    {/* Butonul "See all galleries" */}
-    <Box mt={4}>
-      <Link to={`/${user.username}/all-galleries`}>
-        <Text fontWeight="bold" color="blue.500" _hover={{ textDecoration: "underline" }}>
-          See all user's galleries →
-        </Text>
-      </Link>
-    </Box>
-  </Flex>
-</TabPanel>
+      <Flex align="flex-start" gap={10}>
+        <Flex ml={70} direction="column" align="start" gap={3}>
+          <Text fontWeight="bold" fontSize="2xl">
+            @{user.username}
+          </Text>
+          {contactItems.map((item, idx) => {
+            const isMessage = item.label === 'Message me';
+            const isUrl = typeof item.label === 'string' && item.label.startsWith('http');
+            const isEmail = typeof item.label === 'string' && item.label.includes('@');
+            const isWeb = item.icon === webpageIcon;
 
-<TabPanel>
-              <Flex justifyContent="center" gap={5} mb={5} wrap="wrap">
-                <Button onClick={() => setEventFilter("created")} bg={eventFilter === "created" ? "yellow.400" : "yellow.200"}>Created events</Button>
-                <Button onClick={() => setEventFilter("going")} bg={eventFilter === "going" ? "yellow.400" : "yellow.200"}>Events marked going</Button>
-                <Button onClick={() => setEventFilter("interested")} bg={eventFilter === "interested" ? "yellow.400" : "yellow.200"}>Events marked interested</Button>
+            const extractUsername = (url) => {
+              try {
+                const parsed = new URL(url);
+                return parsed.hostname.replace(/^www\./, ''); // ← doar domeniul
+              } catch {
+                return url;
+              }
+            };
+
+            const displayLabel = isUrl ? extractUsername(item.label) : item.label;
+
+            return isMessage ? (
+              <Flex key={idx} align="center" gap={3}>
+                <Image src={item.icon} w="18px" h="18px" />
+                <Text
+                  fontSize="sm"
+                  color="blue.500"
+                  cursor="pointer"
+                  _hover={{ textDecoration: 'underline' }}
+                  onClick={() => navigate(`/messages/${user._id}`)}
+                >
+                  {item.label}
+                </Text>
               </Flex>
-            <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="center">
-  {(eventFilter === "created" ? createdEvents : eventFilter === "going" ? goingEvents : interestedEvents)
-    ?.slice(0, 6) // Limitează la 6 evenimente
-    .map((event) => {
-      const { day, month, year } = formatDate(event.date);
-      return (
-        <Link to={`/events/${event._id}`} key={event._id}>
-  <Box
-    w="340px"
-    borderWidth="1px"
-    borderRadius="md"
-    overflow="hidden"
-    _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-    transition="all 0.2s"
-  >
-
-<Box h="150px" overflow="hidden">
-  {event.coverImage ? (
-    <Image 
-      src={event.coverImage} 
-      alt={event.name} 
-      w="100%" 
-      h="100%" 
-      objectFit="cover"
-    />
-  ) : (
-    <Box
-      w="100%"
-      h="100%"
-      bg="orange.300"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-    >
-      <Text
-        fontWeight="bold"
-        color="white"
-        fontSize="lg"
-        textAlign="center"
-        px={2}
-      >
-        {event.name}
-      </Text>
-    </Box>
-  )}
-</Box>
-
-
-
-
-
-          <Flex p={4} gap={3} align="center">
-            {/* Data pe stânga */}
-            <Flex direction="column" align="center" minW="50px">
-              <Text fontWeight="bold" fontSize="lg">{day}</Text>
-              <Text fontWeight="bold" fontSize="sm">{month}</Text>
-              <Text fontWeight="bold" fontSize="sm">{year}</Text>
-            </Flex>
-
-            {/* Detalii eveniment */}
-            <Box textAlign="left">
-              <Text fontSize="md" fontWeight="bold" isTruncated>{event.name || "Nume eveniment"}</Text>
-              {event.category && (
-  <Text fontSize="sm" >
-   Category: {event.category}
-  </Text>
-)}
-              <Text fontSize="sm" isTruncated>{event.location || "TBA"}</Text>
-              <Text fontSize="xs">{event.time || "TBA"}</Text>
-            </Box>
-          </Flex>
-          </Box></Link>
-      );
-    })}
-</Flex>
-
-
-              <Box mt={6} textAlign="center">
-                <Link to={`/${user.username}/all-events`}>
-                  <Text fontWeight="bold" color="blue.500" _hover={{ textDecoration: "underline" }} cursor="pointer">
-                    See all user's events →
-                  </Text>
-                </Link>
-              </Box>
-            </TabPanel>
-
-            <TabPanel>
-      <Flex direction="column" align="center" gap={6}>
-        <Flex direction="column" w="100%" maxW="800px" gap={4}>
-          {user.articles?.length > 0 ? (
-            user.articles.map((article) => (
-              <Box
-  key={article._id}
-  p={4}
-  borderWidth="1px"
-  borderRadius="md"
-  shadow="md"
-  _hover={{ boxShadow: "lg", transform: "scale(1.01)" }}
-  transition="all 0.2s"
-  cursor="pointer"
-  onClick={() => navigate(`/articles/${article._id}`)}
-  bg="white"
-  px={6}
-  py={12}
-  sx={{
-    backgroundImage: `
-      repeating-linear-gradient(to bottom, transparent, transparent 29px, #cbd5e0  30px),
-      linear-gradient(to right, #dc2626 1px, transparent 2px)
-    `,
-    backgroundSize: "100% 30px, 1px 100%",
-    backgroundPosition: "left 40px top, left 40px top",
-    backgroundRepeat: "repeat-y, no-repeat",
-  }}
->
-  
-  <Text fontWeight="bold" fontSize="xl" mb={1}>
-    {article.title}
-  </Text>
-  {article.subtitle && (
-    <Text fontSize="md" color="gray.600">
-      {article.subtitle}
-    </Text>
-  )}
-   {article.category && (
-    <Text fontSize="sm" color="teal.600">
-      Category: {article.category}
-    </Text>
-  )}
-  {/* 🔽 Fragment din content fără taguri HTML */}
-  <Text fontSize="sm" color="gray.500" mt={2}>
-  {article.content ? article.content.replace(/<[^>]+>/g, "").slice(0, 50) + "..." : ""}
-  </Text>
-</Box>
-
-            ))
-          ) : (
-            <Text>No articles yet.</Text>
-          )}
+            ) : item.label ? (
+              <Flex key={idx} align="center" gap={3}>
+                <Image src={item.icon} w="18px" h="18px" />
+                {isEmail ? (
+                  <a href={`mailto:${item.label}`}>
+                    <Text fontSize="sm" color="blue.500" _hover={{ textDecoration: 'underline' }}>
+                      {item.label}
+                    </Text>
+                  </a>
+                ) : isUrl ? (
+                  <a href={item.label} target="_blank" rel="noopener noreferrer">
+                    <Text fontSize="sm" color="blue.500" _hover={{ textDecoration: 'underline' }}>
+                      {displayLabel}
+                    </Text>
+                  </a>
+                ) : (
+                  <Text fontSize="sm">{item.label}</Text>
+                )}
+              </Flex>
+            ) : null;
+          })}
         </Flex>
 
-        <Box mt={4}>
-          <Link to={`/${user.username}/articles`}>
-            <Text
-              fontWeight="bold"
-              color="blue.500"
-              _hover={{ textDecoration: "underline" }}
-            >
-              See all articles →
-            </Text>
-          </Link>
-        </Box>
-      </Flex>
-    </TabPanel>
+        {/* About Me */}
+        <Flex direction={'column'} ml={50} textAlign="center">
+          <Text textAlign="left" fontWeight="bold" fontSize="lg" mb={2}>
+            About me
+          </Text>
 
-        </TabPanels>
-      </Tabs>
+          {/* Colectăm elementele vizibile */}
+          <Flex gap={10}>
+            {aboutMeItemsLeft.some((item) => item.label) && (
+              <Flex gap={2} direction="column">
+                {aboutMeItemsLeft.map(
+                  (item, idx) =>
+                    item.label && (
+                      <Flex key={idx} gap={2} align="center">
+                        <Image src={item.icon} w="16px" h="16px" />
+                        <Text>{item.label}</Text>
+                      </Flex>
+                    ),
+                )}
+              </Flex>
+            )}
 
+            {aboutMeItemsRight.some((item) => item.label) && (
+              <Flex gap={2} direction="column">
+                {aboutMeItemsRight.map(
+                  (item, idx) =>
+                    item.label && (
+                      <Flex key={idx} gap={2} align="center">
+                        <Image src={item.icon} w="16px" h="16px" />
+                        <Text>{item.label}</Text>
+                      </Flex>
+                    ),
+                )}
+              </Flex>
+            )}
+          </Flex>
+
+          <Flex mt={23} gap={20} direction={'column'} textAlign="center">
+            <Tabs variant="unstyled" align="center">
+              <TabList justifyContent="left" gap={100} flexWrap="wrap">
+                <Tab _selected={{ bg: 'orange.400', color: 'white' }}>Artworks</Tab>
+                <Tab _selected={{ bg: 'green.400', color: 'white' }}>Galleries</Tab>
+                <Tab _selected={{ bg: 'purple.400', color: 'white' }}>Events</Tab>
+                <Tab _selected={{ bg: 'blue.400', color: 'white' }}>Articles</Tab>
+              </TabList>
+
+              <TabPanels>
+                <TabPanel>
+                  <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="left">
+                    {latestProducts && latestProducts.length > 0 ? (
+                      latestProducts.map((product) => (
+                        <Box
+                          _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
+                          transition="all 0.2s"
+                          cursor="pointer"
+                          onClick={() => navigate(`/products/${product._id}`)}
+                          key={product._id}
+                          w="200px"
+                          borderWidth="1px"
+                          borderRadius="md"
+                          overflow="hidden"
+                        >
+                          <Box h="200px" bg="purple.200">
+                            {product.images?.[0] ? (
+                              <Image
+                                src={product.images[0]}
+                                alt={product.title}
+                                w="100%"
+                                h="100%"
+                                objectFit="cover"
+                              />
+                            ) : product.videos?.[0] ? (
+                              <Box
+                                as="video"
+                                src={product.videos[0]}
+                                muted
+                                loop
+                                autoPlay
+                                playsInline
+                                preload="metadata"
+                                w="100%"
+                                h="100%"
+                                objectFit="cover"
+                              />
+                            ) : (
+                              <Flex
+                                align="center"
+                                justify="center"
+                                w="100%"
+                                h="100%"
+                                bg="gray.200"
+                                color="gray.600"
+                                fontWeight="bold"
+                                fontSize="lg"
+                              >
+                                {product.title}
+                              </Flex>
+                            )}
+                          </Box>
+                          <Box p={4}>
+                            <Text fontWeight="bold" mb={1}>
+                              {product.title}
+                            </Text>
+                            {typeof product.price === 'number' ? (
+                              <Text>{product.price.toFixed(2)} EUR</Text>
+                            ) : (
+                              <Text color="gray.500">Not for sale</Text>
+                            )}
+                            {product.category && (
+                              <Text fontSize="xs" mt={1} color="gray.600">
+                                Category: {product.category}
+                              </Text>
+                            )}
+                            <Text fontSize="xs" mt={2}>
+                              {product.tags?.join(', ')}
+                            </Text>
+                          </Box>
+                        </Box>
+                      ))
+                    ) : (
+                      <Text>No artworks found.</Text>
+                    )}
+                  </Flex>
+                  <Box mt={6} textAlign="center">
+                    <Link to={`/${user.username}/all-products`}>
+                      <Text
+                        fontWeight="bold"
+                        color="blue.500"
+                        _hover={{ textDecoration: 'underline' }}
+                        cursor="pointer"
+                      >
+                        See all user's artworks →
+                      </Text>
+                    </Link>
+                  </Box>
+                </TabPanel>
+
+                {/* Logica Galleries */}
+                <TabPanel>
+                  <Flex direction="column" align="center" gap={4} maxW="800px" mx="auto">
+                    {/* Filtre */}
+                    <Flex gap={4}>
+                      <Button
+                        bg={activeGalleryFilter === 'owning' ? 'yellow.400' : 'yellow.200'}
+                        onClick={() => setActiveGalleryFilter('owning')}
+                        borderRadius="full"
+                      >
+                        Owning
+                      </Button>
+                      <Button
+                        bg={activeGalleryFilter === 'collaborating' ? 'yellow.400' : 'yellow.200'}
+                        onClick={() => setActiveGalleryFilter('collaborating')}
+                        borderRadius="full"
+                      >
+                        Collaborating
+                      </Button>
+                    </Flex>
+
+                    {/* Galerii */}
+                    <Flex direction="column" gap={4} w="500px">
+                      {/* MODIFIED: Changed from slice(0, 2) to slice(0, 4) for galleries */}
+                      {filteredGalleries.length > 0 ? (
+                        filteredGalleries.slice(0, 4).map((gallery) => (
+                          <Box
+                            key={gallery._id}
+                            borderWidth="1px"
+                            borderRadius="md"
+                            overflow="hidden"
+                            _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
+                            transition="all 0.2s"
+                            cursor="pointer"
+                            onClick={() => navigate(`/galleries/${gallery._id}`)}
+                          >
+                            <Box
+                              h="150px"
+                              overflow="hidden"
+                              bg="blue.400"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                            >
+                              {gallery.coverPhoto ? (
+                                <Image
+                                  src={gallery.coverPhoto}
+                                  alt={gallery.name}
+                                  w="400px"
+                                  h="100%"
+                                  objectFit="cover"
+                                />
+                              ) : (
+                                <Text
+                                  fontWeight="bold"
+                                  color="white"
+                                  fontSize="lg"
+                                  textAlign="center"
+                                  px={2}
+                                >
+                                  {gallery.name}
+                                </Text>
+                              )}
+                            </Box>
+
+                            <Box p={4}>
+                              <Text fontWeight="bold" fontSize="md" mb={1}>
+                                {gallery.name}
+                              </Text>
+                              <Text fontSize="sm" color="gray.600" mb={1}>
+                                {gallery.category || 'No category specified'}
+                              </Text>
+                              <Text fontSize="xs" color="gray.500">
+                                {Array.isArray(gallery.tags) && gallery.tags.length > 0
+                                  ? gallery.tags.join(', ')
+                                  : 'No tags'}
+                              </Text>
+                            </Box>
+                          </Box>
+                        ))
+                      ) : (
+                        <Text>No galleries found.</Text>
+                      )}
+                    </Flex>
+
+                    {/* Butonul "See all galleries" */}
+                    <Box mt={4}>
+                      <Link to={`/${user.username}/all-galleries`}>
+                        <Text
+                          fontWeight="bold"
+                          color="blue.500"
+                          _hover={{ textDecoration: 'underline' }}
+                        >
+                          See all user's galleries →
+                        </Text>
+                      </Link>
+                    </Box>
+                  </Flex>
+                </TabPanel>
+
+                <TabPanel>
+                  <Flex justifyContent="center" gap={5} mb={5} wrap="wrap">
+                    <Button
+                      onClick={() => setEventFilter('created')}
+                      bg={eventFilter === 'created' ? 'yellow.400' : 'yellow.200'}
+                    >
+                      Created events
+                    </Button>
+                    <Button
+                      onClick={() => setEventFilter('going')}
+                      bg={eventFilter === 'going' ? 'yellow.400' : 'yellow.200'}
+                    >
+                      Events marked going
+                    </Button>
+                    <Button
+                      onClick={() => setEventFilter('interested')}
+                      bg={eventFilter === 'interested' ? 'yellow.400' : 'yellow.200'}
+                    >
+                      Events marked interested
+                    </Button>
+                  </Flex>
+                  <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="center">
+                    {(eventFilter === 'created'
+                      ? createdEvents
+                      : eventFilter === 'going'
+                      ? goingEvents
+                      : interestedEvents
+                    )
+                      ?.slice(0, 4) // MODIFIED: Changed from 6 to 4 for events
+                      .map((event) => {
+                        const { day, month, year } = formatDate(event.date);
+                        return (
+                          <Link to={`/events/${event._id}`} key={event._id}>
+                            <Box
+                              w="340px"
+                              borderWidth="1px"
+                              borderRadius="md"
+                              overflow="hidden"
+                              _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
+                              transition="all 0.2s"
+                            >
+                              <Box h="150px" overflow="hidden">
+                                {event.coverImage ? (
+                                  <Image
+                                    src={event.coverImage}
+                                    alt={event.name}
+                                    w="100%"
+                                    h="100%"
+                                    objectFit="cover"
+                                  />
+                                ) : (
+                                  <Box
+                                    w="100%"
+                                    h="100%"
+                                    bg="orange.300"
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                  >
+                                    <Text
+                                      fontWeight="bold"
+                                      color="white"
+                                      fontSize="lg"
+                                      textAlign="center"
+                                      px={2}
+                                    >
+                                      {event.name}
+                                    </Text>
+                                  </Box>
+                                )}
+                              </Box>
+
+                              <Flex p={4} gap={3} align="center">
+                                {/* Data pe stânga */}
+                                <Flex direction="column" align="center" minW="50px">
+                                  <Text fontWeight="bold" fontSize="lg">
+                                    {day}
+                                  </Text>
+                                  <Text fontWeight="bold" fontSize="sm">
+                                    {month}
+                                  </Text>
+                                  <Text fontWeight="bold" fontSize="sm">
+                                    {year}
+                                  </Text>
+                                </Flex>
+
+                                {/* Detalii eveniment */}
+                                <Box textAlign="left">
+                                  <Text fontSize="md" fontWeight="bold" isTruncated>
+                                    {event.name || 'Nume eveniment'}
+                                  </Text>
+                                  {event.category && (
+                                    <Text fontSize="sm">Category: {event.category}</Text>
+                                  )}
+                                  <Text fontSize="sm" isTruncated>
+                                    {event.location || 'TBA'}
+                                  </Text>
+                                  <Text fontSize="xs">{event.time || 'TBA'}</Text>
+                                </Box>
+                              </Flex>
+                            </Box>
+                          </Link>
+                        );
+                      })}
+                  </Flex>
+
+                  <Box mt={6} textAlign="center">
+                    <Link to={`/${user.username}/all-events`}>
+                      <Text
+                        fontWeight="bold"
+                        color="blue.500"
+                        _hover={{ textDecoration: 'underline' }}
+                        cursor="pointer"
+                      >
+                        See all user's events →
+                      </Text>
+                    </Link>
+                  </Box>
+                </TabPanel>
+
+                <TabPanel>
+                  <Flex direction="column" align="center" gap={6}>
+                    <Flex direction="column" w="100%" maxW="800px" gap={4}>
+                      {user.articles?.length > 0 ? (
+                        user.articles.map((article) => (
+                          <Box
+                            key={article._id}
+                            p={4}
+                            borderWidth="1px"
+                            borderRadius="md"
+                            shadow="md"
+                            _hover={{ boxShadow: 'lg', transform: 'scale(1.01)' }}
+                            transition="all 0.2s"
+                            cursor="pointer"
+                            onClick={() => navigate(`/articles/${article._id}`)}
+                            bg="white"
+                            px={6}
+                            py={12}
+                            sx={{
+                              backgroundImage: `
+    repeating-linear-gradient(to bottom, transparent, transparent 29px, #cbd5e0 30px),
+    linear-gradient(to right, #dc2626 1px, transparent 2px)
+  `,
+                              backgroundSize: '100% 30px, 1px 100%',
+                              backgroundPosition: 'left 40px top, left 40px top',
+                              backgroundRepeat: 'repeat-y, no-repeat',
+                            }}
+                          >
+                            <Text fontWeight="bold" fontSize="xl" mb={1}>
+                              {article.title}
+                            </Text>
+                            {article.subtitle && (
+                              <Text fontSize="md" color="gray.600">
+                                {article.subtitle}
+                              </Text>
+                            )}
+                            {article.category && (
+                              <Text fontSize="sm" color="teal.600">
+                                Category: {article.category}
+                              </Text>
+                            )}
+                            {/* 🔽 Fragment din content fără taguri HTML */}
+                            <Text fontSize="sm" color="gray.500" mt={2}>
+                              {article.content
+                                ? article.content.replace(/<[^>]+>/g, '').slice(0, 50) + '...'
+                                : ''}
+                            </Text>
+                          </Box>
+                        ))
+                      ) : (
+                        <Text>No articles yet.</Text>
+                      )}
+                    </Flex>
+
+                    <Box mt={4}>
+                      <Link to={`/${user.username}/articles`}>
+                        <Text
+                          fontWeight="bold"
+                          color="blue.500"
+                          _hover={{ textDecoration: 'underline' }}
+                        >
+                          See all articles →
+                        </Text>
+                      </Link>
+                    </Box>
+                  </Flex>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </Flex>
+        </Flex>
       </Flex>
-      </Flex>
-      </Flex>
-      </Flex>
+    </Flex>
   );
 };
 

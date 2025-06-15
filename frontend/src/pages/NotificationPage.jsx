@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Heading,
@@ -10,8 +10,8 @@ import {
   Flex,
   HStack,
   useToast,
-} from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+} from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -21,14 +21,14 @@ const NotificationsPage = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch("/api/notifications", {
-        credentials: "include",
+      const res = await fetch('/api/notifications', {
+        credentials: 'include',
       });
       const data = await res.json();
-      console.log("📬 Notifications:", JSON.stringify(data, null, 2));
+      console.log('📬 Notifications:', JSON.stringify(data, null, 2));
       setNotifications(data);
     } catch (err) {
-      console.error("Error fetching notifications", err);
+      console.error('Error fetching notifications', err);
     } finally {
       setLoading(false);
     }
@@ -36,55 +36,55 @@ const NotificationsPage = () => {
 
   const markAllAsSeen = async () => {
     try {
-      await fetch("/api/notifications/mark-all-seen", {
-        method: "POST",
-        credentials: "include",
+      await fetch('/api/notifications/mark-all-seen', {
+        method: 'POST',
+        credentials: 'include',
       });
       toast({
-        title: "All notifications marked as seen.",
-        status: "success",
+        title: 'All notifications marked as seen.',
+        status: 'success',
         duration: 3000,
         isClosable: true,
       });
       fetchNotifications();
     } catch (err) {
-      console.error("Failed to mark all as seen", err);
+      console.error('Failed to mark all as seen', err);
     }
   };
 
   const acceptInvite = async (galleryId) => {
     if (!galleryId) {
       toast({
-        title: "Missing gallery ID",
+        title: 'Missing gallery ID',
         description: "This invite doesn't contain a valid gallery reference.",
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
       return;
     }
-    console.log("✅ Accepting invite to:", galleryId);
+    console.log('✅ Accepting invite to:', galleryId);
     try {
       const res = await fetch(`/api/galleries/${galleryId}/accept-invite`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to accept invite");
+      if (!res.ok) throw new Error(data.error || 'Failed to accept invite');
 
       toast({
-        title: "Invite accepted",
-        status: "success",
+        title: 'Invite accepted',
+        status: 'success',
         duration: 3000,
         isClosable: true,
       });
       fetchNotifications();
     } catch (err) {
-      console.error("Failed to accept invite", err);
+      console.error('Failed to accept invite', err);
       toast({
-        title: "Error",
+        title: 'Error',
         description: err.message,
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -94,36 +94,36 @@ const NotificationsPage = () => {
   const declineInvite = async (galleryId) => {
     if (!galleryId) {
       toast({
-        title: "Missing gallery ID",
+        title: 'Missing gallery ID',
         description: "This invite doesn't contain a valid gallery reference.",
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
       return;
     }
-    console.log("❌ Declining invite to:", galleryId);
+    console.log('❌ Declining invite to:', galleryId);
     try {
       const res = await fetch(`/api/galleries/${galleryId}/decline-invite`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to decline invite");
+      if (!res.ok) throw new Error(data.error || 'Failed to decline invite');
 
       toast({
-        title: "Invite declined",
-        status: "info",
+        title: 'Invite declined',
+        status: 'info',
         duration: 3000,
         isClosable: true,
       });
       fetchNotifications();
     } catch (err) {
-      console.error("Failed to decline invite", err);
+      console.error('Failed to decline invite', err);
       toast({
-        title: "Error",
+        title: 'Error',
         description: err.message,
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -133,13 +133,13 @@ const NotificationsPage = () => {
   const handleNavigate = async (n) => {
     try {
       await fetch(`/api/notifications/${n._id}/mark-seen`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
       });
     } catch (err) {
-      console.error("Failed to mark as seen", err);
+      console.error('Failed to mark as seen', err);
     } finally {
-      navigate(n.link || "/");
+      navigate(n.link || '/');
     }
   };
 
@@ -168,7 +168,7 @@ const NotificationsPage = () => {
               key={n._id}
               p={4}
               rounded="md"
-              bg={n.seen ? "gray.100" : "blue.50"}
+              bg={n.seen ? 'gray.100' : 'blue.50'}
               borderWidth={1}
             >
               <Flex justify="space-between" align="center" mb={2}>
@@ -179,7 +179,7 @@ const NotificationsPage = () => {
                 {new Date(n.createdAt).toLocaleString()}
               </Text>
 
-              {n.type === "invite" && n.meta?.galleryId ? (
+              {n.type === 'invite' && n.meta?.galleryId ? (
                 <GalleryInviteActions
                   galleryId={n.meta.galleryId}
                   onAccept={() => acceptInvite(n.meta.galleryId)}
@@ -214,7 +214,7 @@ const GalleryInviteActions = ({ galleryId, onAccept, onDecline }) => {
     const check = async () => {
       try {
         const res = await fetch(`/api/galleries/${galleryId}`, {
-          credentials: "include",
+          credentials: 'include',
         });
         const data = await res.json();
         const currentUserId = data?.currentUserId || null;
@@ -224,7 +224,7 @@ const GalleryInviteActions = ({ galleryId, onAccept, onDecline }) => {
           setAlreadyCollaborator(isCollab);
         }
       } catch (e) {
-        console.warn("Error checking collaborator status", e.message);
+        console.warn('Error checking collaborator status', e.message);
       } finally {
         setLoading(false);
       }
@@ -234,7 +234,11 @@ const GalleryInviteActions = ({ galleryId, onAccept, onDecline }) => {
 
   if (loading) return <Text fontSize="xs">Checking access...</Text>;
   if (alreadyCollaborator)
-    return <Text fontSize="sm" color="green.600">✅ You're already a collaborator</Text>;
+    return (
+      <Text fontSize="sm" color="green.600">
+        ✅ You're already a collaborator
+      </Text>
+    );
 
   return (
     <HStack>

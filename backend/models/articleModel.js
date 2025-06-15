@@ -1,4 +1,3 @@
-// --- models/articleModel.js ---
 import mongoose from 'mongoose';
 
 const articleSchema = new mongoose.Schema(
@@ -9,30 +8,79 @@ const articleSchema = new mongoose.Schema(
     },
     subtitle: {
       type: String,
-      default: "",
-    },    
+      default: '',
+    },
     content: {
       type: String,
       required: true,
     },
     coverImage: {
-      type: String, // base64 or Cloudinary URL
+      type: String,
     },
     category: {
       type: String,
       enum: [
-        "Personal", "Opinion", "Review", "Tutorial", "Poetry", "Reflection",
-        "News", "Interview", "Tech", "Art", "Photography","Research", "Journal", "Story"
+        'Personal',
+        'Opinion',
+        'Review',
+        'Tutorial',
+        'Poetry',
+        'Reflection',
+        'News',
+        'Interview',
+        'Tech',
+        'Art',
+        'Photography',
+        'Research',
+        'Lifestyle',
+        'Travel',
+        'Health',
+        'Education',
+        'Business',
+        'Finance',
+        'Environment',
+        'Politics',
+        'Culture',
+        'History',
+        'Science',
+        'Entertainment',
+        'Sports',
+        'Food',
+        'Fashion',
+        'Gaming',
+        'Music',
+        'DIY',
+        'Crafts',
+        'Wellness',
+        'Mental Health',
+        'Parenting',
+        'Relationships',
+        'Self-Improvement',
+        'Motivation',
+        'Inspiration',
+        'Community',
+        'Social Issues',
+        'Technology',
+        'Innovation',
+        'Web Development',
+        'Mobile Development',
+        'Software Development',
+        'Data Science',
+        'Artificial Intelligence',
+        'Machine Learning',
+        'Journal',
+        'Story',
       ],
       required: true,
-        },
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model('Article', articleSchema);
+

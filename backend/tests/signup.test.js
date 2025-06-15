@@ -15,11 +15,14 @@ jest.mock('bcryptjs', () => ({
 jest.mock('cloudinary', () => ({
   v2: {
     uploader: {
-      upload: jest.fn(() => Promise.resolve({ secure_url: 'http://mock-cloudinary.com/profile.jpg' })),
+      upload: jest.fn(() =>
+        Promise.resolve({ secure_url: 'http://mock-cloudinary.com/profile.jpg' }),
+      ),
     },
   },
 }));
-jest.mock('../../controllers/auditLogController', () => ({ // Adjust path as needed
+jest.mock('../../controllers/auditLogController', () => ({
+  // Adjust path as needed
   addAuditLog: jest.fn(),
 }));
 
@@ -71,9 +74,7 @@ describe('POST /api/users/signup', () => {
   };
 
   it('should register a new user successfully with valid data and return 201', async () => {
-    const res = await request(app)
-      .post('/api/users/signup')
-      .send(validUserData);
+    const res = await request(app).post('/api/users/signup').send(validUserData);
 
     expect(res.statusCode).toEqual(201);
     expect(res.body).toHaveProperty('_id');
@@ -82,10 +83,12 @@ describe('POST /api/users/signup', () => {
     expect(res.body).toHaveProperty('role', 'user'); // Should be 'user' for non-first user
     expect(generateTokenAndSetCookie).toHaveBeenCalledTimes(1);
     expect(addAuditLog).toHaveBeenCalledTimes(1);
-    expect(addAuditLog).toHaveBeenCalledWith(expect.objectContaining({
-      action: 'signup',
-      details: 'New account created: testuser'
-    }));
+    expect(addAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'signup',
+        details: 'New account created: testuser',
+      }),
+    );
 
     // Verify user in DB
     const userInDb = await User.findById(res.body._id);
@@ -97,9 +100,7 @@ describe('POST /api/users/signup', () => {
 
   it('should assign "admin" role if it is the first user registered', async () => {
     // No users in DB initially due to beforeEach cleanup
-    const res = await request(app)
-      .post('/api/users/signup')
-      .send(validUserData); // This user should become admin
+    const res = await request(app).post('/api/users/signup').send(validUserData); // This user should become admin
 
     expect(res.statusCode).toEqual(201);
     expect(res.body).toHaveProperty('role', 'admin');
@@ -107,7 +108,9 @@ describe('POST /api/users/signup', () => {
 
   it('should allow admin registration with correct admin code when not the first user', async () => {
     // Register a regular user first
-    await request(app).post('/api/users/signup').send({ ...validUserData, username: 'firstregularuser', email: 'first@example.com' });
+    await request(app)
+      .post('/api/users/signup')
+      .send({ ...validUserData, username: 'firstregularuser', email: 'first@example.com' });
 
     // Register a second user as admin with the code
     const res = await request(app)
@@ -128,7 +131,9 @@ describe('POST /api/users/signup', () => {
 
   it('should return 403 if admin registration attempted with incorrect admin code', async () => {
     // Register a regular user first to ensure it's not the first user scenario
-    await request(app).post('/api/users/signup').send({ ...validUserData, username: 'anotherregularuser', email: 'another@example.com' });
+    await request(app)
+      .post('/api/users/signup')
+      .send({ ...validUserData, username: 'anotherregularuser', email: 'another@example.com' });
 
     const res = await request(app)
       .post('/api/users/signup')
@@ -193,9 +198,7 @@ describe('POST /api/users/signup', () => {
       throw new Error('Forced database write error');
     });
 
-    const res = await request(app)
-      .post('/api/users/signup')
-      .send(validUserData);
+    const res = await request(app).post('/api/users/signup').send(validUserData);
 
     expect(res.statusCode).toEqual(500);
     expect(res.body).toHaveProperty('message', 'Forced database write error');

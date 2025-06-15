@@ -601,4 +601,3 @@ export const updateProductOrder = async (req, res) => {
       res.status(500).json({ error: "Failed to fetch user galleries" });
     }
   };
-  

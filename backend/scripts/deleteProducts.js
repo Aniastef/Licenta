@@ -1,8 +1,8 @@
 // run: node scripts/deleteProducts.js from backend folder in the terminal to delete all products from the database
 
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import Product from "../models/productModel.js";
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import Product from '../models/productModel.js';
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URI, {
@@ -13,10 +13,10 @@ mongoose.connect(process.env.MONGO_URI, {
 const deleteAllProducts = async () => {
   try {
     await Product.deleteMany({});
-    console.log("✅ All products have been deleted.");
+    console.log('✅ All products have been deleted.');
     mongoose.connection.close();
   } catch (err) {
-    console.error("❌ Error deleting products:", err);
+    console.error('❌ Error deleting products:', err);
   }
 };
 

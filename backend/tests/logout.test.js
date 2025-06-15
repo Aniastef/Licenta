@@ -6,8 +6,7 @@ jest.mock('../../utils/generateTokenAndSetCookie', () => jest.fn());
 
 describe('POST /api/users/logout', () => {
   it('should log out a user successfully and clear the cookie', async () => {
-    const res = await request(app)
-      .post('/api/users/logout'); // Assuming your logout route is /api/users/logout
+    const res = await request(app).post('/api/users/logout'); // Assuming your logout route is /api/users/logout
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('message', 'User logged out successfully');
@@ -17,11 +16,11 @@ describe('POST /api/users/logout', () => {
     expect(res.headers['set-cookie']).toEqual(
       expect.arrayContaining([
         // The exact date might vary slightly, but the key parts are the empty value and past expiration
-        expect.stringContaining('jwt=; Path=/; Expires=')
-      ])
+        expect.stringContaining('jwt=; Path=/; Expires='),
+      ]),
     );
     // You can also check if the expiration date is truly in the past
-    const cookieHeader = res.headers['set-cookie'].find(c => c.startsWith('jwt='));
+    const cookieHeader = res.headers['set-cookie'].find((c) => c.startsWith('jwt='));
     const expiresMatch = cookieHeader.match(/Expires=([^;]+)/);
     if (expiresMatch && expiresMatch[1]) {
       const expiryDate = new Date(expiresMatch[1]);
@@ -37,8 +36,7 @@ describe('POST /api/users/logout', () => {
       throw new Error('Simulated cookie setting error');
     });
 
-    const res = await request(app)
-      .post('/api/users/logout');
+    const res = await request(app).post('/api/users/logout');
 
     expect(res.statusCode).toEqual(500);
     expect(res.body).toHaveProperty('error', 'Simulated cookie setting error');

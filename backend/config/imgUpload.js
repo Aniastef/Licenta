@@ -1,6 +1,6 @@
-import multer from "multer";
-import { v2 as cloudinary } from "cloudinary";
-import dotenv from "dotenv";
+import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -18,16 +18,15 @@ const upload = multer({ storage });
 
 export const uploadToCloudinary = async (file) => {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
-      { folder: "products" },
-      (error, result) => {
+    cloudinary.uploader
+      .upload_stream({ folder: 'products' }, (error, result) => {
         if (error) {
           reject(error);
         } else {
           resolve(result.secure_url);
         }
-      }
-    ).end(file.buffer);
+      })
+      .end(file.buffer);
   });
 };
 

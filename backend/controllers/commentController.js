@@ -1,23 +1,23 @@
-import Comment from "../models/commentModel.js";
-import User from "../models/userModel.js";
-import Product from "../models/productModel.js";
-import Event from "../models/eventModel.js";
-import mongoose from "mongoose";
-import Notification from "../models/notificationModel.js";
-import Gallery from "../models/galleryModel.js";
-import Article from "../models/articleModel.js"
+import Comment from '../models/commentModel.js';
+import User from '../models/userModel.js';
+import Product from '../models/productModel.js';
+import Event from '../models/eventModel.js';
+import mongoose from 'mongoose';
+import Notification from '../models/notificationModel.js';
+import Gallery from '../models/galleryModel.js';
+import Article from '../models/articleModel.js';
 
 export const addComment = async (req, res) => {
   try {
     const { content, userId, resourceId, resourceType } = req.body;
 
     if (!content || !userId || !resourceId || !resourceType) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const validResourceTypes = ["Product", "User", "Event", "Gallery", "Article"];
+    const validResourceTypes = ['Product', 'User', 'Event', 'Gallery', 'Article'];
     if (!validResourceTypes.includes(resourceType)) {
-      return res.status(400).json({ error: "Invalid resourceType" });
+      return res.status(400).json({ error: 'Invalid resourceType' });
     }
 
     const newComment = new Comment({
@@ -29,31 +29,29 @@ export const addComment = async (req, res) => {
 
     await newComment.save();
 
-    const user = await User.findById(userId).select("firstName lastName username");
-    const fullName = `${user?.firstName || "Someone"} ${user?.lastName || ""}`.trim();
+    const user = await User.findById(userId).select('firstName lastName username');
+    const fullName = `${user?.firstName || 'Someone'} ${user?.lastName || ''}`.trim();
 
     let ownerId = null;
-    let link = "/";
+    let link = '/';
 
-    if (resourceType === "Product") {
+    if (resourceType === 'Product') {
       const product = await Product.findById(resourceId);
       ownerId = product?.user?.toString();
       link = `/products/${resourceId}#comment-${newComment._id}`;
-    }
-    
-    else if (resourceType === "Event") {
+    } else if (resourceType === 'Event') {
       const event = await Event.findById(resourceId);
       ownerId = event?.user?.toString();
       link = `/events/${resourceId}#comment-${newComment._id}`;
-    } else if (resourceType === "Gallery") {
-      const gallery = await Gallery.findById(resourceId).populate("owner", "username");
+    } else if (resourceType === 'Gallery') {
+      const gallery = await Gallery.findById(resourceId).populate('owner', 'username');
       ownerId = gallery?.owner?._id?.toString();
       link = `/galleries/${gallery?.owner?.username}/${gallery?.name}#comment-${newComment._id}`;
-    } else if (resourceType === "Article") {
-      const article = await Article.findById(resourceId).populate("user", "_id");
+    } else if (resourceType === 'Article') {
+      const article = await Article.findById(resourceId).populate('user', '_id');
       ownerId = article?.user?._id?.toString();
       link = `/articles/${resourceId}#comment-${newComment._id}`;
-    } else if (resourceType === "User") {
+    } else if (resourceType === 'User') {
       const profileOwner = await User.findById(resourceId);
       ownerId = profileOwner?._id?.toString();
       link = `/profile/${profileOwner?.username}#comment-${newComment._id}`;
@@ -65,31 +63,31 @@ export const addComment = async (req, res) => {
         fromUser: userId,
         resourceType,
         resourceId,
-        type: "new_comment",
+        type: 'new_comment',
         link,
         message:
-          resourceType === "User"
+          resourceType === 'User'
             ? `${fullName} left a comment on your profile.`
             : `${fullName} commented on your ${resourceType.toLowerCase()}.`,
       });
     }
 
     res.status(201).json({
-      message: "Comment added successfully",
+      message: 'Comment added successfully',
       comment: {
         ...newComment.toObject(),
-        createdAtFormatted: new Date(newComment.createdAt).toLocaleString("en-US", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
+        createdAtFormatted: new Date(newComment.createdAt).toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
         }),
       },
     });
   } catch (err) {
-    console.error("Error while adding comment:", err.message);
-    res.status(500).json({ message: "Failed to add comment" });
+    console.error('Error while adding comment:', err.message);
+    res.status(500).json({ message: 'Failed to add comment' });
   }
 };
 
@@ -98,12 +96,12 @@ export const addReply = async (req, res) => {
     const { content, parentId } = req.body;
 
     if (!content || !parentId) {
-      return res.status(400).json({ message: "Content and parentId are required" });
+      return res.status(400).json({ message: 'Content and parentId are required' });
     }
 
     const parentComment = await Comment.findById(parentId);
     if (!parentComment) {
-      return res.status(404).json({ message: "Parent comment not found" });
+      return res.status(404).json({ message: 'Parent comment not found' });
     }
 
     const reply = new Comment({
@@ -120,21 +118,21 @@ export const addReply = async (req, res) => {
     await parentComment.save();
 
     if (parentComment.userId.toString() !== req.user._id.toString()) {
-      const fromUser = await User.findById(req.user._id).select("firstName lastName");
-      const fullName = `${fromUser?.firstName || "Someone"} ${fromUser?.lastName || ""}`.trim();
+      const fromUser = await User.findById(req.user._id).select('firstName lastName');
+      const fullName = `${fromUser?.firstName || 'Someone'} ${fromUser?.lastName || ''}`.trim();
 
-      let link = "/";
+      let link = '/';
       const type = parentComment.resourceType;
       const id = parentComment.resourceId;
 
-      if (type === "Product") link = `/products/${id}#comment-${reply._id}`;
-      else if (type === "Event") link = `/events/${id}#comment-${reply._id}`;
-      else if (type === "Article") link = `/articles/${id}#comment-${reply._id}`;
-      else if (type === "User") {
+      if (type === 'Product') link = `/products/${id}#comment-${reply._id}`;
+      else if (type === 'Event') link = `/events/${id}#comment-${reply._id}`;
+      else if (type === 'Article') link = `/articles/${id}#comment-${reply._id}`;
+      else if (type === 'User') {
         const user = await User.findById(id);
-        link = `/profile/${user?.username || ""}#comment-${reply._id}`;
-      } else if (type === "Gallery") {
-        const gallery = await Gallery.findById(id).populate("owner", "username");
+        link = `/profile/${user?.username || ''}#comment-${reply._id}`;
+      } else if (type === 'Gallery') {
+        const gallery = await Gallery.findById(id).populate('owner', 'username');
         link = `/galleries/${gallery?.owner?.username}/${gallery?.name}#comment-${reply._id}`;
       }
 
@@ -143,94 +141,81 @@ export const addReply = async (req, res) => {
         fromUser: req.user._id,
         resourceType: type,
         resourceId: id,
-        type: "new_reply",
+        type: 'new_reply',
         link,
         message: `${fullName} replied to your comment.`,
       });
     }
 
-    const populatedReply = await reply.populate("userId", "username profilePicture");
+    const populatedReply = await reply.populate('userId', 'username profilePicture');
 
     res.status(201).json({
-      message: "Reply added successfully",
+      message: 'Reply added successfully',
       reply: {
         ...populatedReply.toObject(),
-        createdAtFormatted: new Date(reply.createdAt).toLocaleString("en-US", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
+        createdAtFormatted: new Date(reply.createdAt).toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
         }),
-        updatedAtFormatted: new Date(reply.updatedAt).toLocaleString("en-US", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
+        updatedAtFormatted: new Date(reply.updatedAt).toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
         }),
       },
     });
   } catch (err) {
-    console.error("Error while adding reply:", err.message);
-    res.status(500).json({ message: "Failed to add reply", error: err.message });
+    console.error('Error while adding reply:', err.message);
+    res.status(500).json({ message: 'Failed to add reply', error: err.message });
   }
 };
-
-
-
 
 export const getComments = async (req, res) => {
   try {
     const { resourceId, resourceType } = req.query;
 
     if (!resourceId || !resourceType) {
-      return res.status(400).json({ error: "resourceId and resourceType are required" });
+      return res.status(400).json({ error: 'resourceId and resourceType are required' });
     }
 
-    const validResourceTypes = ["Product", "User", "Event", "Gallery", "Article"];
+    const validResourceTypes = ['Product', 'User', 'Event', 'Gallery', 'Article'];
     if (!validResourceTypes.includes(resourceType)) {
-      return res.status(400).json({ error: "Invalid resourceType" });
+      return res.status(400).json({ error: 'Invalid resourceType' });
     }
 
-    // 1️⃣ Obținem toate comentariile pentru resursa respectivă
     const allComments = await Comment.find({ resourceId, resourceType })
-      .populate("userId", "username firstName lastName profilePicture")
-      .populate("replies", "content userId createdAt updatedAt")
-      .lean(); // Convertim documentele în obiecte JSON manipulabile
+      .populate('userId', 'username firstName lastName profilePicture')
+      .populate('replies', 'content userId createdAt updatedAt')
+      .lean(); 
 
-    // 2️⃣ Construim o structură de date pentru organizarea corectă a reply-urilor
     const commentMap = {};
     allComments.forEach((comment) => {
-      comment.replies = []; // Inițializăm array-ul de reply-uri
+      comment.replies = []; 
       commentMap[comment._id] = comment;
     });
 
-    // 3️⃣ Organizăm comentariile principale și reply-urile în ierarhie
     const topLevelComments = [];
     allComments.forEach((comment) => {
       if (comment.parentId) {
-        // Dacă este un reply, îl adăugăm la array-ul replies al comentariului părinte
         if (commentMap[comment.parentId]) {
           commentMap[comment.parentId].replies.push(comment);
         }
       } else {
-        // Dacă nu are parentId, este un comentariu principal
         topLevelComments.push(comment);
       }
     });
-
-    // 4️⃣ Returnăm doar comentariile principale, fiecare conținând array-ul său de replies
+    
     res.status(200).json(topLevelComments);
   } catch (err) {
-    console.error("Error fetching comments:", err.message);
-    res.status(500).json({ error: "Failed to fetch comments" });
+    console.error('Error fetching comments:', err.message);
+    res.status(500).json({ error: 'Failed to fetch comments' });
   }
 };
-
-
-
-
 
 export const likeUnlikeComment = async (req, res) => {
   try {
@@ -240,7 +225,7 @@ export const likeUnlikeComment = async (req, res) => {
     const comment = await Comment.findById(commentId);
 
     if (!comment) {
-      return res.status(404).json({ message: "Comment not found" });
+      return res.status(404).json({ message: 'Comment not found' });
     }
 
     const userLiked = comment.likes.includes(userId);
@@ -259,33 +244,33 @@ export const likeUnlikeComment = async (req, res) => {
     await comment.save();
 
     res.status(200).json({
-      message: userLiked ? "Like removed" : "Liked successfully",
+      message: userLiked ? 'Like removed' : 'Liked successfully',
       likes: comment.likes.length,
       dislikes: comment.dislikes.length,
     });
   } catch (err) {
-    console.error("Error in like/unlike:", err.message);
-    res.status(500).json({ message: "Failed to process like/unlike", error: err.message });
+    console.error('Error in like/unlike:', err.message);
+    res.status(500).json({ message: 'Failed to process like/unlike', error: err.message });
   }
 };
 
 const handleLikeAndUnlike = async (commentId) => {
   if (!user) {
-    showToast("Error", "You must be logged in to like or unlike a comment", "error");
+    showToast('Error', 'You must be logged in to like or unlike a comment', 'error');
     return;
   }
 
   try {
     const res = await fetch(`/api/comments/${commentId}/like`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include", // Include autentificarea
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Include autentificarea
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      showToast("Error", data.message || "Failed to like/unlike the comment", "error");
+      showToast('Error', data.message || 'Failed to like/unlike the comment', 'error');
       return;
     }
 
@@ -298,17 +283,16 @@ const handleLikeAndUnlike = async (commentId) => {
               likes: Array.isArray(comment.likes) ? data.likes : comment.likes,
               dislikes: Array.isArray(comment.dislikes) ? data.dislikes : comment.dislikes,
             }
-          : comment
-      )
+          : comment,
+      ),
     );
 
-    showToast("Success", data.message, "success");
+    showToast('Success', data.message, 'success');
   } catch (err) {
-    console.error("Error in like/unlike:", err.message);
-    showToast("Error", "Failed to process your request", "error");
+    console.error('Error in like/unlike:', err.message);
+    showToast('Error', 'Failed to process your request', 'error');
   }
 };
-
 
 export const dislikeUndislikeComment = async (req, res) => {
   try {
@@ -318,7 +302,7 @@ export const dislikeUndislikeComment = async (req, res) => {
     const comment = await Comment.findById(commentId);
 
     if (!comment) {
-      return res.status(404).json({ message: "Comment not found" });
+      return res.status(404).json({ message: 'Comment not found' });
     }
 
     const userDisliked = comment.dislikes.includes(userId);
@@ -337,13 +321,13 @@ export const dislikeUndislikeComment = async (req, res) => {
     await comment.save();
 
     res.status(200).json({
-      message: userDisliked ? "Dislike removed" : "Disliked successfully",
+      message: userDisliked ? 'Dislike removed' : 'Disliked successfully',
       likes: comment.likes.length,
       dislikes: comment.dislikes.length,
     });
   } catch (err) {
-    console.error("Error in dislike/undislike:", err.message);
-    res.status(500).json({ message: "Failed to process dislike/dislike", error: err.message });
+    console.error('Error in dislike/undislike:', err.message);
+    res.status(500).json({ message: 'Failed to process dislike/dislike', error: err.message });
   }
 };
 
@@ -355,10 +339,10 @@ export const deleteComment = async (req, res) => {
     const comment = await Comment.findById(id);
 
     if (!comment) {
-      return res.status(404).json({ error: "Comment not found" });
+      return res.status(404).json({ error: 'Comment not found' });
     }
 
-    const isAdmin = requestingUser.role === "admin";
+    const isAdmin = requestingUser.role === 'admin';
     const isOwner = comment.userId.toString() === requestingUser._id.toString();
 
     if (!isAdmin && !isOwner) {
@@ -372,15 +356,9 @@ export const deleteComment = async (req, res) => {
 
     await Comment.findByIdAndDelete(id);
 
-    res.status(200).json({ message: "Comment deleted successfully" });
+    res.status(200).json({ message: 'Comment deleted successfully' });
   } catch (err) {
-    console.error("Error deleting comment:", err.message);
-    res.status(500).json({ error: "Server error" });
+    console.error('Error deleting comment:', err.message);
+    res.status(500).json({ error: 'Server error' });
   }
 };
-
-
-
-
-
-

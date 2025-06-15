@@ -13,33 +13,30 @@ export default function EventPage() {
   const [error, setError] = useState(null);
   const currentUser = useRecoilValue(userAtom);
 
-
   const fetchEvent = async () => {
     try {
-       const res = await fetch(`/api/events/${id}`, { credentials: "include" });
-       if (!res.ok) throw new Error("Failed to fetch event details");
-       const data = await res.json();
-       console.log("Event data received:", data);
-       setEvent(data.event);
+      const res = await fetch(`/api/events/${id}`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch event details');
+      const data = await res.json();
+      console.log('Event data received:', data);
+      setEvent(data.event);
     } catch (err) {
-       setError(err.message);
+      setError(err.message);
     } finally {
-       setIsLoading(false);
+      setIsLoading(false);
     }
- };
- 
+  };
+
   useEffect(() => {
     if (id) fetchEvent();
   }, [id]);
 
   return (
     <Flex direction="column">
-<EventCard event={event} currentUserId={currentUser?._id} fetchEvent={fetchEvent} />
-<Divider my={4} />
-<CommentsSection  resourceId={id} resourceType="Event"/>
-<Divider my={4} />
-
+      <EventCard event={event} currentUserId={currentUser?._id} fetchEvent={fetchEvent} />
+      <Divider my={4} />
+      <CommentsSection resourceId={id} resourceType="Event" />
+      <Divider my={4} />
     </Flex>
-      
   );
 }

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import WaveSurfer from "wavesurfer.js";
-import { Box, Button } from "@chakra-ui/react";
+import React, { useEffect, useRef, useState } from 'react';
+import WaveSurfer from 'wavesurfer.js';
+import { Box, Button } from '@chakra-ui/react';
 
 const WaveformPlayer = ({ url }) => {
   const waveformRef = useRef(null);
@@ -12,8 +12,8 @@ const WaveformPlayer = ({ url }) => {
 
     wavesurferRef.current = WaveSurfer.create({
       container: waveformRef.current,
-      waveColor: "#ccc",
-      progressColor: "#f43f5e",
+      waveColor: '#ccc',
+      progressColor: '#f43f5e',
       height: 80,
       barWidth: 2,
       responsive: true,
@@ -37,7 +37,7 @@ const WaveformPlayer = ({ url }) => {
     <Box>
       <Box ref={waveformRef} w="100%" mb={2} />
       <Button size="sm" onClick={togglePlay} colorScheme="yellow" mt={2}>
-        {isPlaying ? "||" : "▶"}
+        {isPlaying ? '||' : '▶'}
       </Button>
     </Box>
   );

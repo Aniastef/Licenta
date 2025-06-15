@@ -1,67 +1,71 @@
-import User from "../models/userModel.js";
-import bcrypt from "bcryptjs";
-import { uploadToCloudinary } from "../config/imgUpload.js";
-import { addAuditLog } from "./auditLogController.js";
+import User from '../models/userModel.js';
+import bcrypt from 'bcryptjs';
+import { uploadToCloudinary } from '../config/imgUpload.js';
+import { addAuditLog } from './auditLogController.js';
 
 export const getAllUsers = async (req, res) => {
   try {
-
-    if (!req.user || (req.user.role !== "admin")) {
-      return res.status(403).json({ error: "Access denied" });
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
-    const users = await User.find().select("-password");
+    const users = await User.find().select('-password');
     res.status(200).json(users);
   } catch (err) {
-    console.error("Error fetching users:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error('Error fetching users:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
 export const deleteUser = async (req, res) => {
   try {
-    if (!req.user || (req.user.role !== "admin" )) {
-      return res.status(403).json({ error: "Access denied" });
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.role === "admin") {
-      return res.status(400).json({ error: "admin cannot be deleted" });
+    if (user.role === 'admin') {
+      return res.status(400).json({ error: 'admin cannot be deleted' });
     }
 
     await User.findByIdAndDelete(req.params.id);
 
     // ✅ Salvează log-ul acțiunii
-    await addAuditLog("User deleted", req.user._id, user._id, `Deleted user: ${user.email}`);
+    await addAuditLog('User deleted', req.user._id, user._id, `Deleted user: ${user.email}`);
 
-    res.json({ message: "User deleted successfully" });
+    res.json({ message: 'User deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
 export const updateAdminRole = async (req, res) => {
   try {
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ error: "Only admins can update roles" });
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can update roles' });
     }
 
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.role === "admin" && req.body.role !== "admin") {
-      return res.status(400).json({ error: "admin cannot be downgraded" });
+    if (user.role === 'admin' && req.body.role !== 'admin') {
+      return res.status(400).json({ error: 'admin cannot be downgraded' });
     }
 
     user.role = req.body.role;
     await user.save();
 
     // ✅ Salvează log-ul acțiunii
-    await addAuditLog("Admin role updated", req.user._id, user._id, `Changed role to: ${user.role}`);
+    await addAuditLog(
+      'Admin role updated',
+      req.user._id,
+      user._id,
+      `Changed role to: ${user.role}`,
+    );
 
-    res.json({ message: "User role updated", user });
+    res.json({ message: 'User role updated', user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -72,45 +76,66 @@ export const toggleBlockUser = async (req, res) => {
     const requestingUser = req.user;
     const user = await User.findById(req.params.id);
 
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.role === "admin") {
-      return res.status(403).json({ error: "admins cannot be blocked" });
+    if (user.role === 'admin') {
+      return res.status(403).json({ error: 'admins cannot be blocked' });
     }
 
     user.isBlocked = !user.isBlocked;
     await user.save();
 
     // ✅ Salvează log-ul acțiunii
-    await addAuditLog("User blocked/unblocked", req.user._id, user._id, `User ${user.isBlocked ? "blocked" : "unblocked"}`);
+    await addAuditLog(
+      'User blocked/unblocked',
+      req.user._id,
+      user._id,
+      `User ${user.isBlocked ? 'blocked' : 'unblocked'}`,
+    );
 
-    res.json({ message: `User ${user.isBlocked ? "blocked" : "unblocked"} successfully` });
+    res.json({ message: `User ${user.isBlocked ? 'blocked' : 'unblocked'} successfully` });
   } catch (err) {
-    console.error("Error in toggleBlockUser:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error('Error in toggleBlockUser:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
 export const updateUserAdmin = async (req, res) => {
   const {
-    firstName, lastName, email, username, role, password, bio, location,
-    profession, age,profilePicture, phone, hobbies, gender, pronouns,
-    address, city, country,quote
+    firstName,
+    lastName,
+    email,
+    username,
+    role,
+    password,
+    bio,
+    location,
+    profession,
+    age,
+    profilePicture,
+    phone,
+    hobbies,
+    gender,
+    pronouns,
+    address,
+    city,
+    country,
+    quote,
   } = req.body;
-  
+
   const userId = req.params.id;
   const requestingUser = req.user;
 
   try {
     let user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.role === "admin" && requestingUser.role === "admin") {
-      return res.status(403).json({ error: "admin cannot modify another admin" });
+    if (user.role === 'admin' && requestingUser.role === 'admin') {
+      return res.status(403).json({ error: 'admin cannot modify another admin' });
     }
 
-    if (role && user.role === "admin" && requestingUser.role !== "admin") {
-      return res.status(403).json({ error: "Only admins can change admin roles" });
+    if (role && user.role === 'admin' && requestingUser.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can change admin roles' });
     }
 
     const oldData = { ...user._doc };
@@ -141,11 +166,16 @@ export const updateUserAdmin = async (req, res) => {
     await user.save();
 
     // ✅ Salvează log-ul acțiunii
-    await addAuditLog("User updated", req.user._id, user._id, `Updated fields: ${JSON.stringify(req.body)}`);
+    await addAuditLog(
+      'User updated',
+      req.user._id,
+      user._id,
+      `Updated fields: ${JSON.stringify(req.body)}`,
+    );
 
-    res.status(200).json({ message: "User updated successfully" });
+    res.status(200).json({ message: 'User updated successfully' });
   } catch (err) {
-    console.error("❌ Error in updateUserAdmin:", err); // ← adaugă asta
+    console.error('❌ Error in updateUserAdmin:', err); // ← adaugă asta
 
     res.status(500).json({ error: err.message });
   }
@@ -154,11 +184,11 @@ export const updateUserAdmin = async (req, res) => {
 export const uploadProfilePicture = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
     const imageUrl = await uploadToCloudinary(req.file);
 
@@ -166,12 +196,17 @@ export const uploadProfilePicture = async (req, res) => {
     await user.save();
 
     // ✅ Salvează log-ul acțiunii
-    await addAuditLog("Profile picture updated", req.user._id, user._id, `Updated profile picture for user: ${user.email}`);
+    await addAuditLog(
+      'Profile picture updated',
+      req.user._id,
+      user._id,
+      `Updated profile picture for user: ${user.email}`,
+    );
 
-    res.status(200).json({ message: "Profile picture updated", url: imageUrl });
+    res.status(200).json({ message: 'Profile picture updated', url: imageUrl });
   } catch (err) {
-    console.error("Error uploading profile picture:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error('Error uploading profile picture:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -180,28 +215,28 @@ export const handleRoleChange = async (req, res) => {
     const { role } = req.body;
     const requestingUser = req.user;
 
-    if (!requestingUser || requestingUser.role !== "admin") {
-      return res.status(403).json({ error: "Only admins can update roles" });
+    if (!requestingUser || requestingUser.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can update roles' });
     }
 
-    if (!["user", "admin"].includes(role)) {
-      return res.status(400).json({ error: "Invalid role" });
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
     }
 
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.role === "admin" && role !== "admin") {
-      return res.status(400).json({ error: "admin cannot be downgraded" });
+    if (user.role === 'admin' && role !== 'admin') {
+      return res.status(400).json({ error: 'admin cannot be downgraded' });
     }
 
     user.role = role;
     await user.save();
 
     // ✅ Salvează log-ul acțiunii
-    await addAuditLog("Role changed", req.user._id, user._id, `Changed role to: ${role}`);
+    await addAuditLog('Role changed', req.user._id, user._id, `Changed role to: ${role}`);
 
-    res.json({ message: "User role updated successfully", user });
+    res.json({ message: 'User role updated successfully', user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

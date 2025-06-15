@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+// galleryModel.js
+import mongoose from 'mongoose';
 
 const gallerySchema = new mongoose.Schema(
   {
@@ -8,86 +9,86 @@ const gallerySchema = new mongoose.Schema(
     },
     isPublic: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     category: {
-      type: String,
+      type: [String], // Change to an array of strings
       enum: [
-        "General",
-        "Photography",
-        "Painting",
-        "Drawing",
-        "Sketch",
-        "Illustration",
-        "Digital Art",
-        "Pixel Art",
-        "3D Art",
-        "Animation",
-        "Graffiti",
-        "Calligraphy",
-        "Typography",
-        "Collage",
-        "Mixed Media",
-        "Sculpture",
-        "Installation",
-        "Fashion",
-        "Textile",
-        "Architecture",
-        "Interior Design",
-        "Product Design",
-        "Graphic Design",
-        "UI/UX",
-        "Music",
-        "Instrumental",
-        "Vocal",
-        "Rap",
-        "Spoken Word",
-        "Podcast",
-        "Sound Design",
-        "Film",
-        "Short Film",
-        "Documentary",
-        "Cinematography",
-        "Video Art",
-        "Performance",
-        "Dance",
-        "Theatre",
-        "Acting",
-        "Poetry",
-        "Writing",
-        "Essay",
-        "Prose",
-        "Fiction",
-        "Non-fiction",
-        "Journal",
-        "Comics",
-        "Manga",
-        "Zine",
-        "Fantasy Art",
-        "Surrealism",
-        "Realism",
-        "Abstract",
-        "Minimalism",
-        "Expressionism",
-        "Pop Art",
-        "Concept Art",
-        "AI Art",
-        "Experimental",
-        "Political Art",
-        "Activist Art",
-        "Environmental Art"
+        'General',
+        'Photography',
+        'Painting',
+        'Drawing',
+        'Sketch',
+        'Illustration',
+        'Digital Art',
+        'Pixel Art',
+        '3D Art',
+        'Animation',
+        'Graffiti',
+        'Calligraphy',
+        'Typography',
+        'Collage',
+        'Mixed Media',
+        'Sculpture',
+        'Installation',
+        'Fashion',
+        'Textile',
+        'Architecture',
+        'Interior Design',
+        'Product Design',
+        'Graphic Design',
+        'UI/UX',
+        'Music',
+        'Instrumental',
+        'Vocal',
+        'Rap',
+        'Spoken Word',
+        'Podcast',
+        'Sound Design',
+        'Film',
+        'Short Film',
+        'Documentary',
+        'Cinematography',
+        'Video Art',
+        'Performance',
+        'Dance',
+        'Theatre',
+        'Acting',
+        'Poetry',
+        'Writing',
+        'Essay',
+        'Prose',
+        'Fiction',
+        'Non-fiction',
+        'Journal',
+        'Comics',
+        'Manga',
+        'Zine',
+        'Fantasy Art',
+        'Surrealism',
+        'Realism',
+        'Abstract',
+        'Minimalism',
+        'Expressionism',
+        'Pop Art',
+        'Concept Art',
+        'AI Art',
+        'Experimental',
+        'Political Art',
+        'Activist Art',
+        'Environmental Art',
       ],
-      default: "General",
+      default: ['General'], // Default to an array with "General"
     },
-    
+
     description: {
       type: String,
-      default: "",
+      default: '',
     },
     coverPhoto: {
       type: String,
-      default: "",
+      default: '',
     },
     tags: [
       {
@@ -96,29 +97,31 @@ const gallerySchema = new mongoose.Schema(
     ],
     products: [
       {
-        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-        order: { type: Number, default: 0 }
-      }
-    ],    
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+        order: { type: Number, default: 0 },
+      },
+    ],
     owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Proprietarul galeriei
+      ref: 'User', // Proprietarul galeriei
       required: true,
     },
     collaborators: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-      }
-    ],  
-    pendingCollaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  
+        ref: 'User',
+      },
+    ],
+    pendingCollaborators: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true },
 );
 
-const Gallery = mongoose.model("Gallery", gallerySchema);
+const Gallery = mongoose.model('Gallery', gallerySchema);
 
 export default Gallery;

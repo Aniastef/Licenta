@@ -1,25 +1,38 @@
-import Product from "../models/productModel.js";
-import { v2 as cloudinary } from "cloudinary";
-import mongoose from "mongoose";
-import Comment from "../models/commentModel.js";
-import Event from "../models/eventModel.js";
-import User from "../models/userModel.js";
-import Notification from "../models/notificationModel.js"
-import axios from 'axios';  // To make an API request to the geocoding service
-import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul dacă e diferit
-
+import Product from '../models/productModel.js';
+import { v2 as cloudinary } from 'cloudinary';
+import mongoose from 'mongoose';
+import Comment from '../models/commentModel.js';
+import Event from '../models/eventModel.js';
+import User from '../models/userModel.js';
+import Notification from '../models/notificationModel.js';
+import axios from 'axios'; // To make an API request to the geocoding service
+import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul dacă e diferit
 
 export const createEvent = async (req, res) => {
   try {
     const {
-      name, description, date, time, tags, coverImage, location, coordinates: clientCoordinates,
-      capacity, category, price, ticketType, language, collaborators, gallery, attachments,
-      visibility, isDraft
+      name,
+      description,
+      date,
+      time,
+      tags,
+      coverImage,
+      location,
+      coordinates: clientCoordinates,
+      capacity,
+      category,
+      price,
+      ticketType,
+      language,
+      collaborators,
+      gallery,
+      attachments,
+      visibility,
+      isDraft,
     } = req.body;
-    
 
     if (!name) {
-      return res.status(400).json({ error: "Name is required" });
+      return res.status(400).json({ error: 'Name is required' });
     }
 
     let coordinates = { lat: null, lng: null };
@@ -28,7 +41,7 @@ export const createEvent = async (req, res) => {
     }
 
     let coverImageUrl = coverImage || null;
-    if (coverImage && coverImage.startsWith("data:")) {
+    if (coverImage && coverImage.startsWith('data:')) {
       const uploaded = await cloudinary.uploader.upload(coverImage);
       coverImageUrl = uploaded.secure_url;
     }
@@ -36,7 +49,7 @@ export const createEvent = async (req, res) => {
     let galleryUrls = [];
     if (gallery?.length > 0) {
       for (let img of gallery) {
-        if (img.startsWith("data:")) {
+        if (img.startsWith('data:')) {
           const uploaded = await cloudinary.uploader.upload(img);
           galleryUrls.push(uploaded.secure_url);
         }
@@ -46,10 +59,10 @@ export const createEvent = async (req, res) => {
     let attachmentUrls = [];
     if (attachments?.length > 0) {
       for (let att of attachments) {
-        if (att.fileData?.startsWith("data:")) {
+        if (att.fileData?.startsWith('data:')) {
           const uploaded = await cloudinary.uploader.upload(att.fileData, {
-            resource_type: "raw",
-            folder: "event_attachments",
+            resource_type: 'raw',
+            folder: 'event_attachments',
           });
           attachmentUrls.push({ fileName: att.fileName, fileUrl: uploaded.secure_url });
         }
@@ -62,12 +75,12 @@ export const createEvent = async (req, res) => {
       date,
       time,
       coverImage: coverImageUrl,
-      tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
+      tags: tags ? tags.split(',').map((tag) => tag.trim()) : [],
       user: req.user._id,
       location,
       coordinates,
-      capacity,               // <--- nou
-      category,               // <--- nou
+      capacity, // <--- nou
+      category, // <--- nou
       price,
       ticketType,
       language,
@@ -77,48 +90,40 @@ export const createEvent = async (req, res) => {
       visibility,
       isDraft,
     });
-    
 
     await newEvent.save();
-await addAuditLog({
-  action: "create_event",
-  performedBy: req.user._id,
-  targetEvent: newEvent._id,
-  details: `Created event: ${newEvent.name}`,
-});
+    await addAuditLog({
+      action: 'create_event',
+      performedBy: req.user._id,
+      targetEvent: newEvent._id,
+      details: `Created event: ${newEvent.name}`,
+    });
 
     // Adaugă evenimentul la utilizator
-await User.findByIdAndUpdate(
-  req.user._id,
-  { $push: { events: newEvent._id } }
-);
+    await User.findByIdAndUpdate(req.user._id, { $push: { events: newEvent._id } });
 
     res.status(201).json(newEvent);
   } catch (err) {
-    console.error("Error while creating event:", err.message);
+    console.error('Error while creating event:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
-
-
-
 
 export const getEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
 
     if (!eventId) {
-      return res.status(400).json({ error: "Event ID is required" });
+      return res.status(400).json({ error: 'Event ID is required' });
     }
 
     const event = await Event.findById(eventId)
-  .populate("user", "username firstName lastName")
-  .populate("goingParticipants", "firstName lastName profilePicture _id")
-  .populate("interestedParticipants", "firstName lastName profilePicture _id");
+      .populate('user', 'username firstName lastName')
+      .populate('goingParticipants', 'firstName lastName profilePicture _id')
+      .populate('interestedParticipants', 'firstName lastName profilePicture _id');
 
-      
     if (!event) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(404).json({ error: 'Event not found' });
     }
 
     res.status(200).json({
@@ -127,48 +132,42 @@ export const getEvent = async (req, res) => {
       goingParticipants: event.goingParticipants,
     });
   } catch (err) {
-    console.error("Error while fetching event:", err.message);
+    console.error('Error while fetching event:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
 
-// Update the markGoing function
+
 export const markGoing = async (req, res) => {
   try {
     const { eventId } = req.params;
 
     if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized access" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(eventId)) {
-      return res.status(400).json({ error: "Invalid event ID" });
+      return res.status(401).json({ error: 'Unauthorized access' });
     }
 
     const event = await Event.findById(eventId);
     if (!event) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(404).json({ error: 'Event not found' });
     }
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     if (event.goingParticipants.includes(req.user._id)) {
       event.goingParticipants = event.goingParticipants.filter(
-        (id) => id.toString() !== req.user._id.toString()
+        (id) => id.toString() !== req.user._id.toString(),
       );
-      user.eventsMarkedGoing = user.eventsMarkedGoing.filter(
-        (id) => id.toString() !== eventId
-      );
+      user.eventsMarkedGoing = user.eventsMarkedGoing.filter((id) => id.toString() !== eventId);
     } else {
       event.goingParticipants.push(req.user._id);
       event.interestedParticipants = event.interestedParticipants.filter(
-        (id) => id.toString() !== req.user._id.toString()
+        (id) => id.toString() !== req.user._id.toString(),
       );
       user.eventsMarkedInterested = user.eventsMarkedInterested.filter(
-        (id) => id.toString() !== eventId
+        (id) => id.toString() !== eventId,
       );
       user.eventsMarkedGoing.push(eventId);
 
@@ -176,9 +175,9 @@ export const markGoing = async (req, res) => {
         await Notification.create({
           user: event.user,
           fromUser: req.user._id,
-          resourceType: "Event",
+          resourceType: 'Event',
           resourceId: event._id,
-          type: "event_going",
+          type: 'event_going',
           message: `${user.username} is going to your event "${event.name}"`,
         });
       }
@@ -188,16 +187,15 @@ export const markGoing = async (req, res) => {
     await user.save();
 
     res.status(200).json({
-      message: "Successfully updated going status",
+      message: 'Successfully updated going status',
       interestedParticipants: event.interestedParticipants,
       goingParticipants: event.goingParticipants,
     });
   } catch (err) {
-    console.error("Error in markGoing:", err.stack || err.message);
-    res.status(500).json({ error: "Internal server error" });
+    console.error('Error in markGoing:', err.stack || err.message);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 // Updated markInterested with notification
 export const markInterested = async (req, res) => {
@@ -205,47 +203,45 @@ export const markInterested = async (req, res) => {
     const { eventId } = req.params;
 
     if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized access" });
+      return res.status(401).json({ error: 'Unauthorized access' });
     }
 
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
-      return res.status(400).json({ error: "Invalid event ID" });
+      return res.status(400).json({ error: 'Invalid event ID' });
     }
 
     const event = await Event.findById(eventId);
     if (!event) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(404).json({ error: 'Event not found' });
     }
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     if (event.interestedParticipants.includes(req.user._id)) {
       event.interestedParticipants = event.interestedParticipants.filter(
-        (id) => id.toString() !== req.user._id.toString()
+        (id) => id.toString() !== req.user._id.toString(),
       );
       user.eventsMarkedInterested = user.eventsMarkedInterested.filter(
-        (id) => id.toString() !== eventId
+        (id) => id.toString() !== eventId,
       );
     } else {
       event.interestedParticipants.push(req.user._id);
       event.goingParticipants = event.goingParticipants.filter(
-        (id) => id.toString() !== req.user._id.toString()
+        (id) => id.toString() !== req.user._id.toString(),
       );
-      user.eventsMarkedGoing = user.eventsMarkedGoing.filter(
-        (id) => id.toString() !== eventId
-      );
+      user.eventsMarkedGoing = user.eventsMarkedGoing.filter((id) => id.toString() !== eventId);
       user.eventsMarkedInterested.push(eventId);
 
       if (event.user.toString() !== req.user._id.toString()) {
         await Notification.create({
           user: event.user,
           fromUser: req.user._id,
-          resourceType: "Event",
+          resourceType: 'Event',
           resourceId: event._id,
-          type: "event_interested",
+          type: 'event_interested',
           message: `${user.username} is interested in your event "${event.name}"`,
         });
       }
@@ -255,18 +251,15 @@ export const markInterested = async (req, res) => {
     await user.save();
 
     res.status(200).json({
-      message: "Successfully updated interested status",
+      message: 'Successfully updated interested status',
       interestedParticipants: event.interestedParticipants,
       goingParticipants: event.goingParticipants,
     });
   } catch (err) {
-    console.error("Error in markInterested:", err.stack || err.message);
-    res.status(500).json({ error: "Internal server error" });
+    console.error('Error in markInterested:', err.stack || err.message);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-
 
 export const deleteEvent = async (req, res) => {
   try {
@@ -274,47 +267,60 @@ export const deleteEvent = async (req, res) => {
     const event = await Event.findById(eventId);
 
     if (!event) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(404).json({ error: 'Event not found' });
     }
 
     if (event.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ error: "Unauthorized action" });
+      return res.status(403).json({ error: 'Unauthorized action' });
     }
 
     await event.deleteOne();
     await addAuditLog({
-  action: "delete_event",
-  performedBy: req.user._id,
-  targetEvent: event._id,
-  details: `Deleted event: ${event.name}`,
-});
+      action: 'delete_event',
+      performedBy: req.user._id,
+      targetEvent: event._id,
+      details: `Deleted event: ${event.name}`,
+    });
 
-    res.status(200).json({ message: "Event deleted successfully" });
+    res.status(200).json({ message: 'Event deleted successfully' });
   } catch (err) {
-    console.error("Error deleting event: ", err.message);
+    console.error('Error deleting event: ', err.message);
     res.status(500).json({ error: err.message });
   }
 };
-
 
 export const updateEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const {
-      name, description, date, time, coverImage, tags, location, capacity, price,
-      ticketType, language, collaborators, gallery, attachments,
-      visibility, isDraft, coordinates, category
+      name,
+      description,
+      date,
+      time,
+      coverImage,
+      tags,
+      location,
+      capacity,
+      price,
+      ticketType,
+      language,
+      collaborators,
+      gallery,
+      attachments,
+      visibility,
+      isDraft,
+      coordinates,
+      category,
     } = req.body;
-    
 
     const event = await Event.findById(eventId);
-    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (!event) return res.status(404).json({ error: 'Event not found' });
     if (event.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ error: "Unauthorized action" });
+      return res.status(403).json({ error: 'Unauthorized action' });
     }
 
     let coverImageUrl = coverImage || event.coverImage;
-    if (coverImage && coverImage.startsWith("data:")) {
+    if (coverImage && coverImage.startsWith('data:')) {
       const uploaded = await cloudinary.uploader.upload(coverImage);
       coverImageUrl = uploaded.secure_url;
     }
@@ -322,7 +328,7 @@ export const updateEvent = async (req, res) => {
     let galleryUrls = [];
     if (gallery?.length > 0) {
       for (let img of gallery) {
-        if (img.startsWith("data:")) {
+        if (img.startsWith('data:')) {
           const uploaded = await cloudinary.uploader.upload(img);
           galleryUrls.push(uploaded.secure_url);
         } else {
@@ -334,10 +340,10 @@ export const updateEvent = async (req, res) => {
     let finalAttachments = [];
     if (attachments?.length > 0) {
       for (let att of attachments) {
-        if (att.fileData?.startsWith("data:")) {
+        if (att.fileData?.startsWith('data:')) {
           const uploaded = await cloudinary.uploader.upload(att.fileData, {
-            resource_type: "raw",
-            folder: "event_attachments",
+            resource_type: 'raw',
+            folder: 'event_attachments',
           });
           finalAttachments.push({ fileName: att.fileName, fileUrl: uploaded.secure_url });
         } else if (att.fileUrl) {
@@ -367,39 +373,38 @@ export const updateEvent = async (req, res) => {
 
     await event.save();
     await addAuditLog({
-  action: "update_event",
-  performedBy: req.user._id,
-  targetEvent: event._id,
-  details: `Updated event: ${event.name}`,
-});
+      action: 'update_event',
+      performedBy: req.user._id,
+      targetEvent: event._id,
+      details: `Updated event: ${event.name}`,
+    });
 
     res.status(200).json(event);
   } catch (err) {
     res.status(500).json({ error: err.message });
-    console.error("Error updating event: ", err.message);
+    console.error('Error updating event: ', err.message);
   }
 };
 
 const getEventStatus = (eventDate) => {
   const today = new Date();
   const eventDay = new Date(eventDate);
-  if (eventDay.toDateString() === today.toDateString()) return "ongoing";
-  return eventDay > today ? "upcoming" : "completed";
+  if (eventDay.toDateString() === today.toDateString()) return 'ongoing';
+  return eventDay > today ? 'upcoming' : 'completed';
 };
-
 
 export const getAllEvents = async (req, res) => {
   try {
     const events = await Event.find()
-      .populate("user", "firstName lastName profilePicture")
-      .populate("interestedParticipants", "firstName lastName profilePicture")
-      .populate("goingParticipants", "firstName lastName profilePicture")
+      .populate('user', 'firstName lastName profilePicture')
+      .populate('interestedParticipants', 'firstName lastName profilePicture')
+      .populate('goingParticipants', 'firstName lastName profilePicture')
       .sort({ date: 1 });
 
     res.status(200).json({ events });
   } catch (err) {
-    console.error("Error fetching all events:", err.message);
-    res.status(500).json({ error: "Failed to fetch events" });
+    console.error('Error fetching all events:', err.message);
+    res.status(500).json({ error: 'Failed to fetch events' });
   }
 };
 
@@ -408,21 +413,18 @@ export const getAllUserEvents = async (req, res) => {
     const { username } = req.params;
 
     const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
     const events = await Event.find({
-      $or: [
-        { user: user._id },
-        { collaborators: user._id },
-      ],
+      $or: [{ user: user._id }, { collaborators: user._id }],
     })
-      .populate("user", "firstName lastName username")
-      .populate("collaborators", "firstName lastName username")
+      .populate('user', 'firstName lastName username')
+      .populate('collaborators', 'firstName lastName username')
       .sort({ date: 1 });
 
     res.status(200).json({ events, user });
   } catch (err) {
-    console.error("Error fetching user events:", err.message);
-    res.status(500).json({ error: "Failed to fetch user events" });
+    console.error('Error fetching user events:', err.message);
+    res.status(500).json({ error: 'Failed to fetch user events' });
   }
 };

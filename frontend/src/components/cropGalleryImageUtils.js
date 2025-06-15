@@ -1,13 +1,13 @@
-import { createImage } from "./createImage";
+import { createImage } from './createImage';
 
 export default async function getCroppedGalleryImg(imageSrc, pixelCrop) {
   const image = await createImage(imageSrc);
 
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
 
   ctx.drawImage(
     image,
@@ -18,7 +18,7 @@ export default async function getCroppedGalleryImg(imageSrc, pixelCrop) {
     0,
     0,
     pixelCrop.width,
-    pixelCrop.height
+    pixelCrop.height,
   );
 
   return new Promise((resolve) => {
@@ -26,6 +26,6 @@ export default async function getCroppedGalleryImg(imageSrc, pixelCrop) {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
       reader.readAsDataURL(blob);
-    }, "image/jpeg");
+    }, 'image/jpeg');
   });
 }

@@ -1,12 +1,12 @@
-import React from "react";
-import { Box, Text } from "@chakra-ui/react";
+import React from 'react';
+import { Box, Text } from '@chakra-ui/react';
 
 const RectangleShape = ({
   bgColor,
   title,
-  minW = "400px",
+  minW = '400px',
   maxW,
-  minH= "60px",
+  minH = '60px',
   textAlign,
   rotation,
   left,
@@ -29,13 +29,8 @@ const RectangleShape = ({
       right={right}
       display="flex" // Activează layout-ul Flexbox
       alignItems="center" // Aliniere pe verticală
-      
     >
-      {title && (
-        <Text  fontSize="lg">
-          {title}
-        </Text>
-      )}
+      {title && <Text fontSize="lg">{title}</Text>}
     </Box>
   );
 };

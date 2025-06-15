@@ -1,15 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const reviewSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: 'Product',
       required: true,
     },
     rating: {
@@ -20,17 +20,17 @@ const reviewSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      default: "",
+      default: '',
     },
   },
   {
-    timestamps: true, // Creează câmpuri createdAt și updatedAt
-  }
+    timestamps: true,
+  },
 );
 
-// Asigură că un utilizator poate lăsa un singur review per produs
 reviewSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
-const Review = mongoose.model("Review", reviewSchema);
+const Review = mongoose.model('Review', reviewSchema);
 
 export default Review;
+

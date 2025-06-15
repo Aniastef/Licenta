@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import Cropper from "react-easy-crop";
+import React, { useState, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
 import {
   Modal,
   ModalOverlay,
@@ -14,8 +14,8 @@ import {
   SliderThumb,
   Button,
   Box,
-} from "@chakra-ui/react";
-import getCroppedGalleryImg from "./cropGalleryImageUtils";
+} from '@chakra-ui/react';
+import getCroppedGalleryImg from './cropGalleryImageUtils';
 const GalleryImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -38,14 +38,7 @@ const GalleryImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }) =>
         <ModalHeader>Crop Gallery Cover</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Box
-            position="relative"
-            width="100%"
-            maxW="900px"
-            height="500px"
-            mx="auto"
-            bg="gray.900"
-          >
+          <Box position="relative" width="100%" maxW="900px" height="500px" mx="auto" bg="gray.900">
             <Cropper
               image={imageSrc}
               crop={crop}
@@ -62,14 +55,7 @@ const GalleryImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }) =>
             />
           </Box>
 
-          <Slider
-            mt={6}
-            min={1}
-            max={3}
-            step={0.01}
-            value={zoom}
-            onChange={setZoom}
-          >
+          <Slider mt={6} min={1} max={3} step={0.01} value={zoom} onChange={setZoom}>
             <SliderTrack>
               <SliderFilledTrack />
             </SliderTrack>

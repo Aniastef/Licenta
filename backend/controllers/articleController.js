@@ -1,6 +1,6 @@
 // --- articleController.js ---
 import Article from '../models/articleModel.js';
-import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul dacă e diferit
+import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul dacă e diferit
 
 export const createArticle = async (req, res) => {
   try {
@@ -18,11 +18,11 @@ export const createArticle = async (req, res) => {
 
     await article.save();
     await addAuditLog({
-  action: "create_article",
-  performedBy: req.user._id,
-  targetArticle: article._id,
-  details: `Created article: ${article.title}`,
-});
+      action: 'create_article',
+      performedBy: req.user._id,
+      targetArticle: article._id,
+      details: `Created article: ${article.title}`,
+    });
 
     res.status(201).json(article);
   } catch (err) {
@@ -30,16 +30,12 @@ export const createArticle = async (req, res) => {
   }
 };
 
-
-
 export const getArticlesByUser = async (req, res) => {
   try {
     const { username } = req.params;
-    const articles = await Article.find()
-      .populate('user', 'username')
-      .sort({ createdAt: -1 });
+    const articles = await Article.find().populate('user', 'username').sort({ createdAt: -1 });
 
-    const filtered = articles.filter(a => a.user.username === username);
+    const filtered = articles.filter((a) => a.user.username === username);
     res.status(200).json(filtered);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -58,15 +54,15 @@ export const getMyArticles = async (req, res) => {
 // GET /api/articles?search=abc&from=2024-01-01&to=2024-12-31
 export const getAllArticlesFiltered = async (req, res) => {
   try {
-    const { search = "", from, to } = req.query;
+    const { search = '', from, to } = req.query;
 
     const filter = {};
 
     if (search) {
       filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { subtitle: { $regex: search, $options: "i" } },
-        { content: { $regex: search, $options: "i" } },
+        { title: { $regex: search, $options: 'i' } },
+        { subtitle: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -77,16 +73,14 @@ export const getAllArticlesFiltered = async (req, res) => {
     }
 
     const articles = await Article.find(filter)
-    .populate("user", "firstName lastName username") // 🔥 adaugă toate câmpurile necesare
-    .sort({ createdAt: -1 });
-  
+      .populate('user', 'firstName lastName username') // 🔥 adaugă toate câmpurile necesare
+      .sort({ createdAt: -1 });
 
     res.status(200).json(articles);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 export const getArticleById = async (req, res) => {
   try {
@@ -117,11 +111,11 @@ export const updateArticle = async (req, res) => {
 
     await article.save();
     await addAuditLog({
-  action: "update_article",
-  performedBy: req.user._id,
-  targetArticle: article._id,
-  details: `Updated article: ${article.title}`,
-});
+      action: 'update_article',
+      performedBy: req.user._id,
+      targetArticle: article._id,
+      details: `Updated article: ${article.title}`,
+    });
 
     res.status(200).json(article);
   } catch (err) {
@@ -140,11 +134,11 @@ export const deleteArticle = async (req, res) => {
 
     await Article.findByIdAndDelete(id);
     await addAuditLog({
-  action: "delete_article",
-  performedBy: req.user._id,
-  targetArticle: article._id,
-  details: `Deleted article: ${article.title}`,
-});
+      action: 'delete_article',
+      performedBy: req.user._id,
+      targetArticle: article._id,
+      details: `Deleted article: ${article.title}`,
+    });
 
     res.status(200).json({ message: 'Article deleted' });
   } catch (err) {
@@ -156,13 +150,12 @@ export const deleteArticle = async (req, res) => {
 export const getAllArticles = async (req, res) => {
   try {
     const articles = await Article.find()
-      .populate("user", "firstName lastName")
+      .populate('user', 'firstName lastName')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ articles }); // ✅ răspunsul corect către frontend
   } catch (err) {
-    console.error("Error fetching articles:", err.message);
-    res.status(500).json({ error: "Failed to fetch articles" });
+    console.error('Error fetching articles:', err.message);
+    res.status(500).json({ error: 'Failed to fetch articles' });
   }
 };
-

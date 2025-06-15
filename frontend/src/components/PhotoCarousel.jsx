@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Box, Button, Flex, Image, Text, VStack } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Box, Button, Flex, Image, Text, VStack } from '@chakra-ui/react';
+import { Link } from 'react-router-dom';
 
 const Carousel = () => {
   const [topRated, setTopRated] = useState([]);
@@ -8,29 +8,29 @@ const Carousel = () => {
   useEffect(() => {
     const fetchTopRated = async () => {
       try {
-        const res = await fetch("/api/products", {
-          credentials: "include",
+        const res = await fetch('/api/products', {
+          credentials: 'include',
         });
         const data = await res.json();
         const sorted = data.products
-          .filter(p => p.images && p.images.length > 0)
+          .filter((p) => p.images && p.images.length > 0)
           .sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
           .slice(0, 10);
         setTopRated(sorted);
       } catch (err) {
-        console.error("Error loading top-rated products:", err);
+        console.error('Error loading top-rated products:', err);
       }
     };
     fetchTopRated();
   }, []);
 
   const scrollLeft = () => {
-    const carousel = document.getElementById("carousel");
+    const carousel = document.getElementById('carousel');
     carousel.scrollLeft -= 200;
   };
 
   const scrollRight = () => {
-    const carousel = document.getElementById("carousel");
+    const carousel = document.getElementById('carousel');
     carousel.scrollLeft += 200;
   };
 
@@ -45,9 +45,9 @@ const Carousel = () => {
         zIndex="2"
         bg="white"
         boxShadow="md"
-        _hover={{ bg: "gray.100" }}
+        _hover={{ bg: 'gray.100' }}
       >
-        {"<"}
+        {'<'}
       </Button>
 
       <Flex
@@ -76,9 +76,13 @@ const Carousel = () => {
                 borderRadius="md"
               />
             </Link>
-            <Text fontWeight="semibold" noOfLines={1}>{product.name}</Text>
+            <Text fontWeight="semibold" noOfLines={1}>
+              {product.name}
+            </Text>
             <Text color="yellow.500" fontSize="sm">
-              {"★".repeat(Math.round(product.averageRating)) + "☆".repeat(5 - Math.round(product.averageRating))} ({product.averageRating}/5)
+              {'★'.repeat(Math.round(product.averageRating)) +
+                '☆'.repeat(5 - Math.round(product.averageRating))}{' '}
+              ({product.averageRating}/5)
             </Text>
           </VStack>
         ))}
@@ -93,9 +97,9 @@ const Carousel = () => {
         zIndex="2"
         bg="white"
         boxShadow="md"
-        _hover={{ bg: "gray.100" }}
+        _hover={{ bg: 'gray.100' }}
       >
-        {">"}
+        {'>'}
       </Button>
     </Box>
   );

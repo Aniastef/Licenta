@@ -17,15 +17,21 @@ jest.mock('../config/connectDB');
 // MOCK FOR generateTokenAndSetCookie:
 // This mock ensures that generateTokenAndSetCookie is a Jest mock function.
 // The actual cookie setting will be asserted via the 'mockResCookie' spy on res.cookie.
-jest.mock('../utils/generateTokenAndSetCookie', () => jest.fn((userId, res) => {
-  // Although we are spying on res.cookie, for some versions/configurations,
-  // the mock here might need to call res.cookie to ensure it's recorded correctly.
-  // We'll simplify this to just call res.cookie as if it were the real function,
-  // trusting the spy on `express.response.cookie` to capture it.
-  // The important part is that `res.cookie` is invoked.
-  res.cookie('jwt', 'dummy_token', { maxAge: 1, httpOnly: true, sameSite: 'strict', secure: false });
-}));
-
+jest.mock('../utils/generateTokenAndSetCookie', () =>
+  jest.fn((userId, res) => {
+    // Although we are spying on res.cookie, for some versions/configurations,
+    // the mock here might need to call res.cookie to ensure it's recorded correctly.
+    // We'll simplify this to just call res.cookie as if it were the real function,
+    // trusting the spy on `express.response.cookie` to capture it.
+    // The important part is that `res.cookie` is invoked.
+    res.cookie('jwt', 'dummy_token', {
+      maxAge: 1,
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: false,
+    });
+  }),
+);
 
 // Mock other route files
 jest.mock('../routes/productRoutes', () => require('express').Router());
@@ -50,7 +56,6 @@ jest.mock('../routes/reportRoutes', () => require('express').Router());
 
 // 💥💥💥 CORRECTED MOCK FOR generateTokenAndSetCookie (VERY SIMPLE) 💥💥💥
 jest.mock('../utils/generateTokenAndSetCookie', () => jest.fn()); // Just a plain mock function
-
 
 // ... (rest of your other mocks)
 
@@ -95,17 +100,20 @@ beforeEach(async () => {
   // 🔑🔑🔑 IMPORTANT: SPY ON res.cookie method, AND MAKE IT MOCK IMPLEMENTATION DO THE WORK 🔑🔑🔑
   // We mock this to capture the call, but *also* to simulate what the real res.cookie does
   // for Supertest's header tracking.
-  mockResCookie = jest.spyOn(require('express').response, 'cookie').mockImplementation((name, value, options) => {
-    // This part simulates the header setting. Supertest will then pick this up.
-    if (!this.headers) { // 'this' refers to the response object in the context of Express's response.cookie
-      this.headers = {};
-    }
-    if (!this.headers['set-cookie']) {
-      this.headers['set-cookie'] = [];
-    }
-    // Very basic cookie string for testing. A real cookie string is more complex.
-    this.headers['set-cookie'].push(`${name}=${value}; Path=/`);
-  });
+  mockResCookie = jest
+    .spyOn(require('express').response, 'cookie')
+    .mockImplementation((name, value, options) => {
+      // This part simulates the header setting. Supertest will then pick this up.
+      if (!this.headers) {
+        // 'this' refers to the response object in the context of Express's response.cookie
+        this.headers = {};
+      }
+      if (!this.headers['set-cookie']) {
+        this.headers['set-cookie'] = [];
+      }
+      // Very basic cookie string for testing. A real cookie string is more complex.
+      this.headers['set-cookie'].push(`${name}=${value}; Path=/`);
+    });
 });
 
 afterAll(async () => {
@@ -114,7 +122,6 @@ afterAll(async () => {
 });
 
 describe('POST /api/users/login', () => {
-
   it('should log in a user successfully with correct credentials and return 200', async () => {
     const res = await request(app)
       .post('/api/users/login')
@@ -129,24 +136,21 @@ describe('POST /api/users/login', () => {
     // (This now refers to the simple jest.fn() mock)
     expect(generateTokenAndSetCookie).toHaveBeenCalledTimes(1);
     expect(generateTokenAndSetCookie).toHaveBeenCalledWith(
-        expect.any(mongoose.Types.ObjectId),
-        expect.anything() // The Express 'res' object
+      expect.any(mongoose.Types.ObjectId),
+      expect.anything(),
     );
 
-    // 🔑🔑🔑 THIS IS THE KEY ASSERTION FOR COOKIE SETTING 🔑🔑🔑
-    // Assert that the `res.cookie` method was called on the response object
     expect(mockResCookie).toHaveBeenCalledTimes(1);
     expect(mockResCookie).toHaveBeenCalledWith(
       'jwt',
-      expect.any(String), // Token string
-      expect.objectContaining({ // Cookie options
+      expect.any(String),
+      expect.objectContaining({
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: 'strict',
         maxAge: expect.any(Number),
         secure: expect.any(Boolean),
-      })
+      }),
     );
-    // Now that `mockResCookie` implementation adds headers, Supertest should see them.
     expect(res.headers['set-cookie']).toBeDefined();
     expect(res.headers['set-cookie'][0]).toContain('jwt=');
   });
@@ -182,7 +186,10 @@ describe('POST /api/users/login', () => {
       .send({ username: 'loginuser', password: 'correctPassword1!' });
 
     expect(res.statusCode).toEqual(403);
-    expect(res.body).toHaveProperty('error', 'Your account has been blocked. Contact support for assistance.');
+    expect(res.body).toHaveProperty(
+      'error',
+      'Your account has been blocked. Contact support for assistance.',
+    );
     expect(generateTokenAndSetCookie).not.toHaveBeenCalled();
     expect(mockResCookie).not.toHaveBeenCalled();
   });

@@ -30,7 +30,7 @@ import p5 from '../assets/p5.jpg';
 import p6 from '../assets/p6.jpg';
 import p7 from '../assets/p7.jpg';
 import p8 from '../assets/p8.jpg';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 const LoginCard = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,15 +43,23 @@ const LoginCard = () => {
   const navigate = useNavigate();
 
   const [inputs, setInputs] = useState({
-    username: "",
-    password: "",
+    username: '',
+    password: '',
   });
-  const [rememberMe, setRememberMe] = useState(false); // State for the checkbox
+  
+  const [rememberMe, setRememberMe] = useState(false);
 
-  // Slideshow effect - remains unchanged
+  useEffect(() => {
+    const rememberedUsername = localStorage.getItem('rememberedUsername');
+    if (rememberedUsername) {
+      setInputs((prevInputs) => ({ ...prevInputs, username: rememberedUsername }));
+      setRememberMe(true); 
+    }
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide(prev => {
+      setCurrentSlide((prev) => {
         let next;
         do {
           next = getRandomIndex();
@@ -63,62 +71,45 @@ const LoginCard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Effect to load "remembered" username on component mount
-  useEffect(() => {
-    const rememberedUsername = localStorage.getItem("rememberedUsername");
-    if (rememberedUsername) {
-      setInputs(prevInputs => ({ ...prevInputs, username: rememberedUsername }));
-      setRememberMe(true); // Also check the "Remember Me" checkbox
-    }
-  }, []); // Run once on mount
-
   const handleLogin = async () => {
     try {
-      const res = await fetch("/api/users/login", {
-        method: "POST",
+      const res = await fetch('/api/users/login', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include", // Ensure cookies are sent
+        credentials: 'include',
         body: JSON.stringify(inputs),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
-        showToast("Error", data.error || "Login failed", "error");
+        showToast('Error', data.error || 'Login failed', 'error');
         return;
       }
-
-      // If "Remember Me" is checked, store only the username
       if (rememberMe) {
-        localStorage.setItem("rememberedUsername", inputs.username);
+        localStorage.setItem('rememberedUsername', inputs.username);
       } else {
-        // If not checked, clear any previously remembered username
-        localStorage.removeItem("rememberedUsername");
+        localStorage.removeItem('rememberedUsername');
       }
-
-      // Store full user data in localStorage only for active session or if desired
-      // For a persistent login, relies on HTTP-only cookie.
-      // If you still want to cache user details for faster loading, keep this.
-      localStorage.setItem("licenta", JSON.stringify(data));
-      setUser(data); // Update Recoil state with logged-in user data
-
-      showToast("Success", "Login successful!", "success");
-      navigate("/"); // Redirect to home/dashboard after successful login
-
+      localStorage.setItem('art-corner', JSON.stringify(data));
+      setUser(data);
+      showToast('Success', 'Login successful!', 'success');
+      navigate('/');
     } catch (error) {
-      showToast("Error", "Server error. Please try again later.", "error");
-      console.error("Login error:", error);
+      showToast('Error', 'Server error. Please try again later.', 'error');
+      console.error('Login error:', error);
     }
   };
+
+
 
   // Periodic check for user status (remains similar, but focuses on session validity)
   useEffect(() => {
     const checkUserSessionStatus = async () => {
       try {
-        const res = await fetch("/api/users/profile", {
-          credentials: "include",
+        const res = await fetch('/api/users/profile', {
+          credentials: 'include',
         });
 
         const data = await res.json();
@@ -127,9 +118,10 @@ const LoginCard = () => {
           // If session is invalid or user is blocked, clear current user state
           setUser(null);
           // Only show toast if user was previously logged in
-          if (localStorage.getItem("licenta")) { // Check if user was in localStorage
-            showToast("Info", "Your session has expired or your account has been blocked.", "info");
-            localStorage.removeItem("licenta"); // Clear cached user data
+          if (localStorage.getItem('art-corner')) {
+            // Check if user was in localStorage
+            showToast('Info', 'Your session has expired or your account has been blocked.', 'info');
+            localStorage.removeItem('art-corner'); // Clear cached user data
           }
           // No need to navigate here, assume routing handles unauthenticated state
           // e.g., a protected route will redirect to /auth
@@ -138,12 +130,12 @@ const LoginCard = () => {
           setUser(data);
         }
       } catch (error) {
-        console.error("Error checking user status during interval:", error);
+        console.error('Error checking user status during interval:', error);
         // In case of a network error, consider session invalid
         setUser(null);
-        if (localStorage.getItem("licenta")) {
-          showToast("Error", "Lost connection to server. Please log in again.", "error");
-          localStorage.removeItem("licenta");
+        if (localStorage.getItem('art-corner')) {
+          showToast('Error', 'Lost connection to server. Please log in again.', 'error');
+          localStorage.removeItem('art-corner');
         }
       }
     };
@@ -190,32 +182,18 @@ const LoginCard = () => {
                   onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
                 />
                 <InputRightElement>
-                  <Button
-                    h="1.75rem"
-                    size="sm"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+                  <Button h="1.75rem" size="sm" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? 'Hide' : 'Show'}
                   </Button>
                 </InputRightElement>
               </InputGroup>
             </FormControl>
             <HStack justify="space-between">
-              <Checkbox
-                isChecked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-              >
+              <Checkbox isChecked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}>
                 Remember Me
               </Checkbox>
-              <Button variant="link" color="blue.500">
-                Forgot Password?
-              </Button>
             </HStack>
-            <Button
-              colorScheme="orange"
-              w="full"
-              onClick={handleLogin}
-            >
+            <Button colorScheme="orange" w="full" onClick={handleLogin}>
               Login
             </Button>
             <Spacer />
@@ -225,22 +203,25 @@ const LoginCard = () => {
                 variant="link"
                 color="blue.400"
                 onClick={() => {
-                  setAuthScreen("signup");
-                  navigate("/auth"); // Navigates to /auth, then component renders based on authScreenAtom
+                  setAuthScreen('signup');
+                  navigate('/auth');
                 }}
               >
                 Sign up
               </Button>
             </Text>
             <Button
-              variant="link" color="gray.700" fontWeight="bold" fontSize="md"
+              variant="link"
+              color="gray.700"
+              fontWeight="bold"
+              fontSize="md"
               onClick={() => {
-                setUser(null); // Clear any user in Recoil
-                localStorage.removeItem("licenta"); // Clear any cached user data
-                localStorage.removeItem("rememberedUsername"); // Also clear remembered username for guest
-                setRememberMe(false); // Uncheck remember me
-                navigate("/"); // Go to home page as guest
-                showToast("Info", "Continuing as guest.", "info");
+                setUser(null); 
+                localStorage.removeItem('art-corner');
+                localStorage.removeItem('rememberedUsername'); 
+                setRememberMe(false); 
+                navigate('/');
+                showToast('Info', 'Continuing as guest.', 'info');
               }}
             >
               Continue as Guest
@@ -248,7 +229,13 @@ const LoginCard = () => {
           </VStack>
         </Box>
 
-        <Box flex="1" display="flex" alignItems="center" justifyContent="center" flexDirection="column">
+        <Box
+          flex="1"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          flexDirection="column"
+        >
           <Box position="relative" w="380px" h="380px">
             <Image
               src={slideshowImages[currentSlide]}

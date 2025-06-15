@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Flex,
@@ -11,35 +11,42 @@ import {
   Avatar,
   Spinner,
   useToast,
-   Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton,
-  ModalBody, ModalFooter, Textarea, Select, useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Textarea,
+  Select,
+  useDisclosure,
   Spacer,
-  Image
-} from "@chakra-ui/react";
-import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import searchIcon from "../assets/searchIcon.png";
-import attachIcon from "../assets/attach.png";
+  Image,
+} from '@chakra-ui/react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import searchIcon from '../assets/searchIcon.png';
+import attachIcon from '../assets/attach.png';
 const MotionBox = motion(Box);
 
 const MessagesPage = () => {
   const { userId } = useParams(); // This will reflect the URL's userId
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [conversations, setConversations] = useState([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null); // This state will drive the chat display
   const [currentUser, setCurrentUser] = useState(null);
   const fileInputRef = useRef();
 
   const [isBlocked, setIsBlocked] = useState(false);
-const { isOpen, onOpen, onClose } = useDisclosure();
-const [reportReason, setReportReason] = useState("");
-const [reportDetails, setReportDetails] = useState("");
-
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [reportReason, setReportReason] = useState('');
+  const [reportDetails, setReportDetails] = useState('');
 
   const currentUserId = currentUser?._id;
   const messagesEndRef = useRef(null);
@@ -48,20 +55,19 @@ const [reportDetails, setReportDetails] = useState("");
 
   const toast = useToast();
 
-// MessagesPage.jsx
-const scrollToBottom = () => {
-  if (messagesContainerRef.current) { 
-    setTimeout(() => {
-      // Re-check inside the timeout to ensure it's still valid
-      if (messagesContainerRef.current) { //
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight; //
-      }
-    }, 100);
-  }
-};
+  // MessagesPage.jsx
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      setTimeout(() => {
+        // Re-check inside the timeout to ensure it's still valid
+        if (messagesContainerRef.current) {
+          //
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight; //
+        }
+      }, 100);
+    }
+  };
 
-  
-  
   const toBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -69,14 +75,12 @@ const scrollToBottom = () => {
       reader.onload = () => resolve(reader.result);
       reader.onerror = (error) => reject(error);
     });
-  
 
   useEffect(() => {
     if (!loading) {
       scrollToBottom();
     }
   }, [messages, loading]);
-  
 
   useEffect(() => {
     fetchConversations();
@@ -85,31 +89,32 @@ const scrollToBottom = () => {
 
   // 🔥 IMPORTANT: This useEffect will now react to changes in userId from useParams
   // AND will set the selectedUser and fetch messages.
- // MessagesPage.jsx
-useEffect(() => {
-  if (userId) { // If there's a userId in the URL
-    // Try to find the user in existing conversations
-    const userFromConversations = conversations.find((conv) => conv.user._id === userId);
-    if (userFromConversations) {
-      setSelectedUser(userFromConversations.user);
+  // MessagesPage.jsx
+  useEffect(() => {
+    if (userId) {
+      // If there's a userId in the URL
+      // Try to find the user in existing conversations
+      const userFromConversations = conversations.find((conv) => conv.user._id === userId);
+      if (userFromConversations) {
+        setSelectedUser(userFromConversations.user);
+      } else {
+        // If not in conversations, it means it's likely a new chat from search,
+        // or a direct link to a user not yet in the conversation list.
+        // In this case, ensure selectedUser is set from the userId directly if possible,
+        // or fetch user details if necessary.
+        // For now, fetchMessages(userId) will handle it, but setting selectedUser
+        // explicitly here (e.g., by fetching user details by userId) could make UI smoother.
+        // Example: fetchUserDetails(userId).then(data => setSelectedUser(data))
+      }
+      fetchMessages(userId); // Always fetch messages for the current userId from URL
     } else {
-      // If not in conversations, it means it's likely a new chat from search,
-      // or a direct link to a user not yet in the conversation list.
-      // In this case, ensure selectedUser is set from the userId directly if possible,
-      // or fetch user details if necessary.
-      // For now, fetchMessages(userId) will handle it, but setting selectedUser
-      // explicitly here (e.g., by fetching user details by userId) could make UI smoother.
-      // Example: fetchUserDetails(userId).then(data => setSelectedUser(data))
+      // If no userId in URL (e.g., /messages), clear selected user and messages
+      setSelectedUser(null);
+      setMessages([]);
     }
-    fetchMessages(userId); // Always fetch messages for the current userId from URL
-  } else {
-    // If no userId in URL (e.g., /messages), clear selected user and messages
-    setSelectedUser(null);
-    setMessages([]);
-  }
-}, [userId, conversations]);
+  }, [userId, conversations]);
 
-// Added conversations to dependency array
+  // Added conversations to dependency array
   useEffect(() => {
     if (userId && currentUser) {
       const found = conversations.find((conv) => conv.user._id === userId);
@@ -117,83 +122,77 @@ useEffect(() => {
     }
   }, [currentUser]); // No longer directly dependent on userId here to avoid redundancy with the above useEffect
 
-
   const fetchCurrentUser = async () => {
     try {
-      const res = await fetch("/api/users/me", {
+      const res = await fetch('/api/users/me', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        credentials: "include",
+        credentials: 'include',
       });
-  
+
       const data = await res.json();
       setCurrentUser(data);
-  
+
       // 🧠 Setăm corect isBlocked — comparăm .toString()
       if (userId && data.blockedUsers) {
-        const isBlocked = data.blockedUsers.some(
-          (u) => String(u._id || u) === String(userId)
-        );
+        const isBlocked = data.blockedUsers.some((u) => String(u._id || u) === String(userId));
         setIsBlocked(isBlocked);
       }
     } catch (error) {
-      console.error("Failed to fetch current user", error);
+      console.error('Failed to fetch current user', error);
     }
   };
-  
 
   const handleToggleBlock = async () => {
     try {
-      const route = isBlocked ? "unblock" : "block";
-  
+      const route = isBlocked ? 'unblock' : 'block';
+
       const res = await fetch(`/api/users/${route}/${userId}`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
       });
-  
+
       if (res.ok) {
         const updatedUser = await res.json();
         setCurrentUser(updatedUser);
-  
+
         const isBlockedNow = updatedUser.blockedUsers.some(
-          (u) => String(u._id || u) === String(userId)
+          (u) => String(u._id || u) === String(userId),
         );
         setIsBlocked(isBlockedNow);
-  
+
         toast({
-          title: route === "unblock" ? "User unblocked" : "User blocked",
-          status: route === "unblock" ? "success" : "warning",
+          title: route === 'unblock' ? 'User unblocked' : 'User blocked',
+          status: route === 'unblock' ? 'success' : 'warning',
           duration: 3000,
           isClosable: true,
         });
       } else {
         toast({
-          title: "Failed to update block status",
-          status: "error",
+          title: 'Failed to update block status',
+          status: 'error',
           duration: 3000,
           isClosable: true,
         });
       }
     } catch (err) {
-      console.error("Block/unblock error:", err.message);
+      console.error('Block/unblock error:', err.message);
     }
   };
-  
-  
-  
+
   const fetchConversations = async () => {
     try {
-      const response = await fetch("/api/messages/conversations", {
+      const response = await fetch('/api/messages/conversations', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        credentials: "include",
+        credentials: 'include',
       });
       const data = await response.json();
       setConversations(data.conversations || []);
     } catch (error) {
-      console.error("Error fetching conversations:", error);
+      console.error('Error fetching conversations:', error);
     }
   };
 
@@ -203,12 +202,12 @@ useEffect(() => {
     setLoading(true);
     try {
       const response = await fetch(`/api/messages/${targetUserId}`, {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        credentials: "include",
+        credentials: 'include',
       });
 
       const data = await response.json();
@@ -217,17 +216,17 @@ useEffect(() => {
         setMessages(data.messages || []);
         // Mark messages as seen for the targetUserId
         await fetch(`/api/messages/seen/${targetUserId}`, {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-          credentials: "include",
+          credentials: 'include',
         });
       } else {
-        console.error("Error fetching messages:", data);
+        console.error('Error fetching messages:', data);
       }
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      console.error('Error fetching messages:', error);
     } finally {
       setLoading(false);
     }
@@ -235,317 +234,303 @@ useEffect(() => {
 
   const handleSearch = async () => {
     if (!search.trim()) {
-        setSearchResults([]); // Clear results if search is empty
-        return;
+      setSearchResults([]); // Clear results if search is empty
+      return;
     }
 
     try {
       const response = await fetch(`/api/users/search?query=${search}`, {
-        credentials: "include",
+        credentials: 'include',
       });
       const data = await response.json();
       setSearchResults(data.users || []);
     } catch (error) {
-      console.error("Error searching users:", error);
+      console.error('Error searching users:', error);
     }
   };
 
+  // 🔥 Modified handleSelectUser to ensure `selectedUser` and `userId` are in sync and trigger fetch
+  // 🔥 Modified handleSelectUser to ensure `selectedUser` and `userId` are in sync and trigger fetch
+  // MessagesPage.jsx
+  // MessagesPage.jsx
+  const handleSelectUser = (user, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-// 🔥 Modified handleSelectUser to ensure `selectedUser` and `userId` are in sync and trigger fetch
-// 🔥 Modified handleSelectUser to ensure `selectedUser` and `userId` are in sync and trigger fetch
-// MessagesPage.jsx
-// MessagesPage.jsx
-const handleSelectUser = (user, e) => {
-  if (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
+    // If the user clicked is already the selected user, do nothing (or just close search if open)
+    if (selectedUser && selectedUser._id === user._id && userId === user._id) {
+      setSearch(''); // Clear search results if already on the same user
+      setSearchResults([]);
+      return; // Don't re-navigate or re-fetch if already displaying this user
+    }
 
-  // If the user clicked is already the selected user, do nothing (or just close search if open)
-  if (selectedUser && selectedUser._id === user._id && userId === user._id) {
-    setSearch(""); // Clear search results if already on the same user
+    // 1. Immediately set the selected user state. This makes the UI reactive.
+    setSelectedUser(user);
+    setSearch(''); // Clear search results immediately
     setSearchResults([]);
-    return; // Don't re-navigate or re-fetch if already displaying this user
-  }
 
-  // 1. Immediately set the selected user state. This makes the UI reactive.
-  setSelectedUser(user); 
-  setSearch(""); // Clear search results immediately
-  setSearchResults([]);
+    // 2. Navigate to the user's chat. This updates the URL and `userId` from `useParams`.
+    //    This is crucial for direct links and browser history.
+    navigate(`/messages/${user._id}`);
 
-  // 2. Navigate to the user's chat. This updates the URL and `userId` from `useParams`.
-  //    This is crucial for direct links and browser history.
-  navigate(`/messages/${user._id}`); 
+    // 3. Crucially, explicitly call fetchMessages for the selected user's ID.
+    //    This ensures messages are fetched right away, bypassing potential race conditions
+    //    with the useEffect that monitors `userId` from useParams.
+    fetchMessages(user._id);
 
-  // 3. Crucially, explicitly call fetchMessages for the selected user's ID.
-  //    This ensures messages are fetched right away, bypassing potential race conditions
-  //    with the useEffect that monitors `userId` from useParams.
-  fetchMessages(user._id); 
-  
-  // Also, update isBlocked state for the newly selected user
-  if (currentUser && currentUser.blockedUsers) {
-    const isBlockedNow = currentUser.blockedUsers.some(
-      (u) => String(u._id || u) === String(user._id)
-    );
-    setIsBlocked(isBlockedNow);
-  }
-};
+    // Also, update isBlocked state for the newly selected user
+    if (currentUser && currentUser.blockedUsers) {
+      const isBlockedNow = currentUser.blockedUsers.some(
+        (u) => String(u._id || u) === String(user._id),
+      );
+      setIsBlocked(isBlockedNow);
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() && selectedFiles.length === 0) return;
-    if (!userId) { // Ensure there's a user selected to send message to
-        toast({
-            title: "No recipient selected.",
-            status: "warning",
-            duration: 3000,
-            isClosable: true,
-        });
-        return;
+    if (!userId) {
+      toast({
+        title: 'No recipient selected.',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
     }
-  
+
     try {
       let attachmentsData = [];
-if (selectedFiles.length > 0) {
-  attachmentsData = await Promise.all(
-    selectedFiles.map(async (file) => {
-      let type;
-      if (file.type.startsWith("image")) type = "image";
-      else if (file.type.startsWith("video")) type = "video";
-      else if (file.type.startsWith("audio")) type = "audio";
-      else if (file.type === "application/pdf") type = "application";
-      else type = "other";
+      if (selectedFiles.length > 0) {
+        attachmentsData = await Promise.all(
+          selectedFiles.map(async (file) => {
+            let type;
+            if (file.type.startsWith('image')) type = 'image';
+            else if (file.type.startsWith('video')) type = 'video';
+            else if (file.type.startsWith('audio')) type = 'audio';
+            else if (file.type === 'application/pdf') type = 'application';
+            else type = 'other';
 
-      return {
-        url: await toBase64(file),
-        type,
-      };
-    })
-  );
-}
+            return {
+              url: await toBase64(file),
+              type,
+            };
+          }),
+        );
+      }
 
-      
-  
-      const response = await fetch("/api/messages/send", {
-        method: "POST",
+      const response = await fetch('/api/messages/send', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify({
-          receiverId: userId, // Use the userId from useParams for sending
+          receiverId: userId, 
           content: newMessage,
           attachments: attachmentsData,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.status === 403) {
         toast({
-          title: "You were blocked.",
-          description: data.error || "You cannot message this user.",
-          status: "error",
+          title: 'You were blocked.',
+          description: data.error || 'You cannot message this user.',
+          status: 'error',
           duration: 3000,
           isClosable: true,
         });
         return;
       }
-  
+
       if (response.ok) {
         const completeMessage = {
           ...data.data,
           sender: currentUser,
         };
         setMessages([...messages, completeMessage]);
-        setNewMessage("");
+        setNewMessage('');
         setSelectedFiles([]);
-        fetchConversations(); // Re-fetch conversations to update last message/unread status
+        fetchConversations(); 
       }
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error('Error sending message:', error);
     }
   };
-  
-  
-  
-  
+
   const getLastSeenMessage = () => {
     const sentMessages = messages.filter(
-      (msg) => String(msg.sender?._id) === String(currentUserId) && msg.isRead && msg.readAt
+      (msg) => String(msg.sender?._id) === String(currentUserId) && msg.isRead && msg.readAt,
     );
-    return sentMessages.length > 0
-      ? sentMessages[sentMessages.length - 1]
-      : null;
+    return sentMessages.length > 0 ? sentMessages[sentMessages.length - 1] : null;
   };
 
   // Removed redundant useEffect for selectedUser based on currentUser.
   // The main useEffect listening to `userId` from `useParams` and `conversations`
   // should handle setting `selectedUser` now.
-  
-const handleSubmitReport = async () => {
-  if (!reportReason) {
-    toast({ title: "Please select a reason", status: "warning" });
-    return;
-  }
 
-  try {
-    const response = await fetch("/api/report", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        reportedUserId: userId,
-        reason: reportReason,
-        details: reportDetails,
-      }),
-    });
+  const handleSubmitReport = async () => {
+    if (!reportReason) {
+      toast({ title: 'Please select a reason', status: 'warning' });
+      return;
+    }
 
-    if (!response.ok) throw new Error("Failed to send report");
+    try {
+      const response = await fetch('/api/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          reportedUserId: userId,
+          reason: reportReason,
+          details: reportDetails,
+        }),
+      });
 
-    toast({ title: "Report submitted", status: "success" });
-    setReportReason("");
-    setReportDetails("");
-    onClose();
-  } catch (error) {
-    toast({ title: error.message, status: "error" });
-  }
-};
+      if (!response.ok) throw new Error('Failed to send report');
+
+      toast({ title: 'Report submitted', status: 'success' });
+      setReportReason('');
+      setReportDetails('');
+      onClose();
+    } catch (error) {
+      toast({ title: error.message, status: 'error' });
+    }
+  };
 
   return (
     <Flex height="100vh">
       {/* Sidebar */}
-      <Box  width="25%" p={4} borderRight="1px solid #ddd">
-      <Heading size="md" mb={3}>Chats</Heading>
+      <Box width="25%" p={4} borderRight="1px solid #ddd">
+        <Heading size="md" mb={3}>
+          Chats
+        </Heading>
 
-<Flex mb={3} align="center">
-  <Input
-    placeholder="Search users..."
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-    flex="1"
-    borderRadius="full"
-  />
-  <Button ml={2} onClick={handleSearch} bg="transparent" _hover={{ bg: "gray.200" }}>
-    <img src={searchIcon} alt="Search" width="20px" height="20px" />
-  </Button>
-</Flex>
+        <Flex mb={3} align="center">
+          <Input
+            placeholder="Search users..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            flex="1"
+            borderRadius="full"
+          />
+          <Button ml={2} onClick={handleSearch} bg="transparent" _hover={{ bg: 'gray.200' }}>
+            <img src={searchIcon} alt="Search" width="20px" height="20px" />
+          </Button>
+        </Flex>
 
-{searchResults.length > 0 ? (
-  <VStack mt={2} align="start" spacing={1} bg="gray.100" p={2} borderRadius="md">
-    {searchResults.map((user) => (
-      <HStack
-        key={user._id}
-        onClick={(e) => handleSelectUser(user, e)}
-        p={2}
-        borderRadius="md"
-        width="100%"
-        _hover={{ backgroundColor: "gray.200" }}
-        cursor="pointer"
-      >
-<Avatar
-  size="sm"
-  name={`${user.firstName} ${user.lastName}`}
-  src={user.profilePicture || undefined}
-/>
+        {searchResults.length > 0 ? (
+          <VStack mt={2} align="start" spacing={1} bg="gray.100" p={2} borderRadius="md">
+            {searchResults.map((user) => (
+              <HStack
+                key={user._id}
+                onClick={(e) => handleSelectUser(user, e)}
+                p={2}
+                borderRadius="md"
+                width="100%"
+                _hover={{ backgroundColor: 'gray.200' }}
+                cursor="pointer"
+              >
+                <Avatar
+                  size="sm"
+                  name={`${user.firstName} ${user.lastName}`}
+                  src={user.profilePicture || undefined}
+                />
 
-        <Text>{user.firstName} {user.lastName}</Text>
-      </HStack>
-    ))}
-  </VStack>
-) : (
-<Box mt={4} maxHeight="calc(100vh - 180px)" overflowY="auto">
-<VStack align="start" spacing={2}>
-      {conversations.map((conv) => (
-        <HStack
-          key={conv.user._id}
-          p={3}
-          borderRadius="md"
-          width="100%"
-          _hover={{ backgroundColor: "gray.100" }}
-onClick={(e) => handleSelectUser(conv.user, e)}
-          cursor="pointer"
-          justify="space-between"
-          align="flex-start"
-        >
-          <HStack align="flex-start">
-          <Avatar
-  size="sm"
-  name={`${conv.user.firstName} ${conv.user.lastName}`}
-  src={conv.user.profilePicture || undefined}
-/>
+                <Text>
+                  {user.firstName} {user.lastName}
+                </Text>
+              </HStack>
+            ))}
+          </VStack>
+        ) : (
+          <Box mt={4} maxHeight="calc(100vh - 180px)" overflowY="auto">
+            <VStack align="start" spacing={2}>
+              {conversations.map((conv) => (
+                <HStack
+                  key={conv.user._id}
+                  p={3}
+                  borderRadius="md"
+                  width="100%"
+                  _hover={{ backgroundColor: 'gray.100' }}
+                  onClick={(e) => handleSelectUser(conv.user, e)}
+                  cursor="pointer"
+                  justify="space-between"
+                  align="flex-start"
+                >
+                  <HStack align="flex-start">
+                    <Avatar
+                      size="sm"
+                      name={`${conv.user.firstName} ${conv.user.lastName}`}
+                      src={conv.user.profilePicture || undefined}
+                    />
 
-            <Box>
-              <Text fontWeight="bold">
-                {conv.user.firstName} {conv.user.lastName}
-              </Text>
-              <Text fontSize="sm" color="gray.500" noOfLines={1} maxW="150px">
-  {
-    conv.lastMessage
-      ? conv.lastMessage.content?.trim()
-        ? conv.lastMessage.content
-        : (conv.lastMessage.attachments && conv.lastMessage.attachments.length > 0 
-          ? "Attachment sent."
-          : "No messages yet.")
-      : "No messages yet."
-  }
-</Text>
-
-
-            </Box>
-          </HStack>
-          {conv.isUnread && (
-            <Box w="10px" h="10px" borderRadius="full" bg="red.400" mt={1} />
-          )}
-        </HStack>
-      ))}
-    </VStack>
-  </Box>
-)}
-
-
+                    <Box>
+                      <Text fontWeight="bold">
+                        {conv.user.firstName} {conv.user.lastName}
+                      </Text>
+                      <Text fontSize="sm" color="gray.500" noOfLines={1} maxW="150px">
+                        {conv.lastMessage
+                          ? conv.lastMessage.content?.trim()
+                            ? conv.lastMessage.content
+                            : conv.lastMessage.attachments &&
+                                conv.lastMessage.attachments.length > 0
+                              ? 'Attachment sent.'
+                              : 'No messages yet.'
+                          : 'No messages yet.'}
+                      </Text>
+                    </Box>
+                  </HStack>
+                  {conv.isUnread && (
+                    <Box w="10px" h="10px" borderRadius="full" bg="red.400" mt={1} />
+                  )}
+                </HStack>
+              ))}
+            </VStack>
+          </Box>
+        )}
       </Box>
-  
+
       {/* Chat Window */}
       <Box width="70%" p={5}>
         {selectedUser ? ( // Render chat window only if selectedUser is set
           <>
             <VStack mb={4} align="start" spacing={3}>
-            <HStack spacing={4} align="center" width="100%">
-            <Avatar
-  name={`${selectedUser.firstName} ${selectedUser.lastName}`}
-  src={selectedUser.profilePicture || undefined}
-  size="lg"
-/>
+              <HStack spacing={4} align="center" width="100%">
+                <Avatar
+                  name={`${selectedUser.firstName} ${selectedUser.lastName}`}
+                  src={selectedUser.profilePicture || undefined}
+                  size="lg"
+                />
+                <Heading size="lg">
+                  {selectedUser.firstName} {selectedUser.lastName}
+                </Heading>
+                <Spacer /> {/* 🔥 Mută butoanele în dreapta */}
+                {selectedUser && currentUser && (
+                  <HStack spacing={2}>
+                    <Button colorScheme="red" variant="outline" onClick={onOpen}>
+                      Report User
+                    </Button>
 
-  <Heading size="lg">
-    {selectedUser.firstName} {selectedUser.lastName}
-  </Heading>
-  <Spacer /> {/* 🔥 Mută butoanele în dreapta */}
-  {selectedUser && currentUser && (
-    <HStack spacing={2}>
-      <Button colorScheme="red" variant="outline" onClick={onOpen}>
-  Report User
-</Button>
-
-      <Button
-        colorScheme={isBlocked ? "green" : "red"}
-        onClick={handleToggleBlock}
-      >
-        {isBlocked ? "Unblock User" : "Block User"}
-      </Button>
-    </HStack>
-  )}
-</HStack>
-
+                    <Button colorScheme={isBlocked ? 'green' : 'red'} onClick={handleToggleBlock}>
+                      {isBlocked ? 'Unblock User' : 'Block User'}
+                    </Button>
+                  </HStack>
+                )}
+              </HStack>
             </VStack>
-  
+
             <Box
-                ref={messagesContainerRef} // 👈 aici
+              ref={messagesContainerRef} // 👈 aici
               border="1px solid #ddd"
               borderRadius="md"
               p={4}
@@ -562,118 +547,139 @@ onClick={(e) => handleSelectUser(conv.user, e)}
                 <Text>No messages yet.</Text>
               ) : (
                 <VStack spacing={5} align="stretch">
-                {messages.map((msg, index) => {
-                  const isCurrentUser = String(msg.sender?._id) === String(currentUser?._id);
-              
-                  // 🔥 Determină dacă e prima dată când apare această zi
-                  const currentDate = new Date(msg.timestamp).toDateString();
-                  const prevDate = index > 0 ? new Date(messages[index - 1].timestamp).toDateString() : null;
-                  const showDate = currentDate !== prevDate;
-              
-                  const lastSeen = getLastSeenMessage();
-                  const isLastSeen = lastSeen && lastSeen._id === msg._id;
-              
-                  return (
-                    <React.Fragment key={index}>
-                      {showDate && (
-                        <Flex justify="center" my={2}>
-                          <Text fontSize="sm" color="gray.500">
-                            {currentDate}
-                          </Text>
+                  {messages.map((msg, index) => {
+                    const isCurrentUser = String(msg.sender?._id) === String(currentUser?._id);
+
+                    // 🔥 Determină dacă e prima dată când apare această zi
+                    const currentDate = new Date(msg.timestamp).toDateString();
+                    const prevDate =
+                      index > 0 ? new Date(messages[index - 1].timestamp).toDateString() : null;
+                    const showDate = currentDate !== prevDate;
+
+                    const lastSeen = getLastSeenMessage();
+                    const isLastSeen = lastSeen && lastSeen._id === msg._id;
+
+                    return (
+                      <React.Fragment key={index}>
+                        {showDate && (
+                          <Flex justify="center" my={2}>
+                            <Text fontSize="sm" color="gray.500">
+                              {currentDate}
+                            </Text>
+                          </Flex>
+                        )}
+                        <Flex
+                          direction="column"
+                          align={isCurrentUser ? 'flex-end' : 'flex-start'}
+                          mb={2}
+                        >
+                          <Flex align="flex-end" gap={2}>
+                            {!isCurrentUser && ( // Avatar pentru alt user
+                              <Avatar
+                                size="sm"
+                                name={`${msg.sender?.firstName || ''} ${msg.sender?.lastName || ''}`}
+                                src={msg.sender?.profilePicture || undefined}
+                              />
+                            )}
+                            {isCurrentUser && ( // 🔥 Ora în stânga pentru mesajele portocalii
+                              <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
+                                {new Date(msg.timestamp).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </Text>
+                            )}
+                            <MotionBox
+                              bg={isCurrentUser ? 'orange.200' : 'green.200'}
+                              px={6}
+                              py={4}
+                              fontSize="lg"
+                              borderRadius="2xl"
+                              maxWidth="80%"
+                              wordBreak="break-word"
+                              boxShadow="md"
+                              initial={{ opacity: 0, y: 5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              {!isCurrentUser && (
+                                <Text fontWeight="bold" fontSize="md" mb={1}>
+                                  {msg.sender?.firstName}
+                                </Text>
+                              )}
+                              {msg.content && (
+                                <Text fontSize="md" whiteSpace="pre-wrap">
+                                  {msg.content}
+                                </Text>
+                              )}
+
+                              {msg.attachments &&
+                                msg.attachments.map((att, idx) => {
+                                  if (att.type === 'image')
+                                    return (
+                                      <Image
+                                        key={idx}
+                                        src={att.url}
+                                        maxW="300px"
+                                        maxH="300px"
+                                        minW="150px"
+                                        minH="150px"
+                                        borderRadius="md"
+                                        objectFit="contain"
+                                      />
+                                    );
+
+                                  if (att.type === 'video')
+                                    return (
+                                      <video
+                                        key={idx}
+                                        src={att.url}
+                                        controls
+                                        style={{ maxWidth: '300px' }}
+                                      />
+                                    );
+                                  if (att.type === 'audio')
+                                    return <audio key={idx} src={att.url} controls />;
+                                  return (
+                                    <a
+                                      key={idx}
+                                      href={att.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      Download File
+                                    </a>
+                                  );
+                                })}
+                            </MotionBox>
+                            {!isCurrentUser && ( // 🔥 Ora în dreapta pentru mesajele verzi
+                              <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
+                                {new Date(msg.timestamp).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </Text>
+                            )}
+                          </Flex>
+
+                          {/* 🔥 Seen sub mesaj, aliniat cu bubble-ul */}
+                          {isCurrentUser && isLastSeen && (
+                            <Flex justify="flex-start" mt={1} pr={6}>
+                              <Text fontSize="xs" color="gray.500">
+                                Seen at{' '}
+                                {new Date(msg.readAt).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </Text>
+                            </Flex>
+                          )}
                         </Flex>
-                      )}
-             <Flex
-  direction="column"
-  align={isCurrentUser ? "flex-end" : "flex-start"}
-  mb={2}
->
-  <Flex align="flex-end" gap={2}>
-    {!isCurrentUser && ( // Avatar pentru alt user
-     <Avatar
-     size="sm"
-     name={`${msg.sender?.firstName || ""} ${msg.sender?.lastName || ""}`}
-     src={msg.sender?.profilePicture || undefined}
-   />
-   
-    )}
-    {isCurrentUser && ( // 🔥 Ora în stânga pentru mesajele portocalii
-      <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
-        {new Date(msg.timestamp).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </Text>
-    )}
-    <MotionBox
-      bg={isCurrentUser ? "orange.200" : "green.200"}
-      px={6}
-      py={4}
-      fontSize="lg"
-      borderRadius="2xl"
-      maxWidth="80%"
-      wordBreak="break-word"
-      boxShadow="md"
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      {!isCurrentUser && (
-        <Text fontWeight="bold" fontSize="md" mb={1}>
-          {msg.sender?.firstName}
-        </Text>
-      )}
-{msg.content && (
-  <Text fontSize="md" whiteSpace="pre-wrap">{msg.content}</Text>
-)}
-
-{msg.attachments && msg.attachments.map((att, idx) => {
- if (att.type === "image") return (
-  <Image 
-    key={idx} 
-    src={att.url} 
-    maxW="300px" 
-    maxH="300px" 
-    minW="150px"
-    minH="150px"
-    borderRadius="md" 
-    objectFit="contain" 
-  />
-);
-
-  if (att.type === "video") return <video key={idx} src={att.url} controls style={{ maxWidth: "300px" }} />;
-  if (att.type === "audio") return <audio key={idx} src={att.url} controls />;
-  return <a key={idx} href={att.url} target="_blank" rel="noopener noreferrer">Download File</a>;
-})}
-    </MotionBox>
-    {!isCurrentUser && ( // 🔥 Ora în dreapta pentru mesajele verzi
-      <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
-        {new Date(msg.timestamp).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </Text>
-    )}
-  </Flex>
-
-  {/* 🔥 Seen sub mesaj, aliniat cu bubble-ul */}
-  {isCurrentUser && isLastSeen && (
-    <Flex justify="flex-start" mt={1} pr={6}>
-      <Text fontSize="xs" color="gray.500">
-        Seen at {new Date(msg.readAt).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </Text>
-    </Flex>
-  )}
-</Flex>
-
-                    </React.Fragment>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </VStack>
-              
+                      </React.Fragment>
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
+                </VStack>
               )}
             </Box>
 
@@ -683,28 +689,23 @@ onClick={(e) => handleSelectUser(conv.user, e)}
                   placeholder="Type a message..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                   flex={1}
                   fontSize="lg"
                   py={3}
                 />
-                <Flex align="center" gap={2} >
-                <Button 
-  variant="ghost" 
-  onClick={() => fileInputRef.current.click()}
->
-  <Image src={attachIcon} alt="Attach" boxSize="25px" />
-</Button>
-<Input
-  type="file"
-  ref={fileInputRef}
-  multiple
-  display="none"
-  onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
-/>
-
-</Flex>
-
+                <Flex align="center" gap={2}>
+                  <Button variant="ghost" onClick={() => fileInputRef.current.click()}>
+                    <Image src={attachIcon} alt="Attach" boxSize="25px" />
+                  </Button>
+                  <Input
+                    type="file"
+                    ref={fileInputRef}
+                    multiple
+                    display="none"
+                    onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
+                  />
+                </Flex>
 
                 <Button ml={2} colorScheme="blue" onClick={handleSendMessage} px={6} fontSize="lg">
                   Send
@@ -717,46 +718,48 @@ onClick={(e) => handleSelectUser(conv.user, e)}
             )}
           </>
         ) : (
-          <Heading size="lg" mb={2}>Messages</Heading>
+          <Heading size="lg" mb={2}>
+            Messages
+          </Heading>
         )}
       </Box>
       <Modal isOpen={isOpen} onClose={onClose}>
-  <ModalOverlay />
-  <ModalContent>
-    <ModalHeader>Report {selectedUser?.firstName}</ModalHeader>
-    <ModalCloseButton />
-    <ModalBody>
-      <Select
-        placeholder="Select a reason"
-        value={reportReason}
-        onChange={(e) => setReportReason(e.target.value)}
-        mb={3}
-      >
-        <option value="harassment">Harassment</option>
-        <option value="spam">Spam or advertising</option>
-        <option value="inappropriate">Inappropriate content</option>
-        <option value="impersonation">Impersonation</option>
-        <option value="other">Other</option>
-      </Select>
-      <Textarea
-        placeholder="Additional details (optional)"
-        value={reportDetails}
-        onChange={(e) => setReportDetails(e.target.value)}
-        rows={4}
-      />
-    </ModalBody>
-    <ModalFooter>
-      <Button onClick={onClose} mr={3}>Cancel</Button>
-      <Button colorScheme="red" onClick={handleSubmitReport}>
-        Submit Report
-      </Button>
-    </ModalFooter>
-  </ModalContent>
-</Modal>
-
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Report {selectedUser?.firstName}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Select
+              placeholder="Select a reason"
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              mb={3}
+            >
+              <option value="harassment">Harassment</option>
+              <option value="spam">Spam or advertising</option>
+              <option value="inappropriate">Inappropriate content</option>
+              <option value="impersonation">Impersonation</option>
+              <option value="other">Other</option>
+            </Select>
+            <Textarea
+              placeholder="Additional details (optional)"
+              value={reportDetails}
+              onChange={(e) => setReportDetails(e.target.value)}
+              rows={4}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose} mr={3}>
+              Cancel
+            </Button>
+            <Button colorScheme="red" onClick={handleSubmitReport}>
+              Submit Report
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Flex>
   );
-}
-  
+};
 
 export default MessagesPage;

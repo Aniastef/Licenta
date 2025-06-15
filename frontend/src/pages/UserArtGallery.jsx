@@ -1,10 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Box, Flex, Heading, Text, Image, Select, Input, Spinner, VStack, Divider } from "@chakra-ui/react";
-import GalleryCard from "../components/GalleryCard";
-import CommentsSection from "../components/CommentsSection";
-import { useRecoilValue } from "recoil";
-import userAtom from "../atoms/userAtom";
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import {
+  Box,
+  Flex,
+  Heading,
+  Text,
+  Image,
+  Select,
+  Input,
+  Spinner,
+  VStack,
+  Divider,
+} from '@chakra-ui/react';
+import GalleryCard from '../components/GalleryCard';
+import CommentsSection from '../components/CommentsSection';
+import { useRecoilValue } from 'recoil';
+import userAtom from '../atoms/userAtom';
 
 export default function GalleryPage() {
   const { galleryId } = useParams();
@@ -18,13 +29,13 @@ export default function GalleryPage() {
   const fetchGallery = async () => {
     try {
       const response = await fetch(`/api/galleries/${galleryId}`, {
-        credentials: "include", // 🔐 pentru autentificare cu sesiune
+        credentials: 'include', // 🔐 pentru autentificare cu sesiune
       });
-            if (!response.ok) throw new Error("Failed to fetch gallery");
+      if (!response.ok) throw new Error('Failed to fetch gallery');
       const data = await response.json();
       setGallery(data);
     } catch (err) {
-      console.error("Error fetching gallery:", err);
+      console.error('Error fetching gallery:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -32,10 +43,9 @@ export default function GalleryPage() {
   };
 
   useEffect(() => {
-  console.log("➡️ galleryId from params:", galleryId);
-  fetchGallery();
-}, [galleryId]);
-
+    console.log('➡️ galleryId from params:', galleryId);
+    fetchGallery();
+  }, [galleryId]);
 
   if (isLoading) return <Spinner size="xl" />;
   if (error) return <Text>Error: {error}</Text>;
@@ -43,16 +53,15 @@ export default function GalleryPage() {
 
   return (
     <Flex direction="column">
-<GalleryCard
-  gallery={gallery}
-  currentUserId={currentUser?._id} // ← folosim optional chaining
-  fetchGallery={fetchGallery}
-/>
-<Divider my={4} />
+      <GalleryCard
+        gallery={gallery}
+        currentUserId={currentUser?._id} // ← folosim optional chaining
+        fetchGallery={fetchGallery}
+      />
+      <Divider my={4} />
 
-<CommentsSection resourceId={gallery._id} resourceType="Gallery" />
-<Divider my={4} />
-
+      <CommentsSection resourceId={gallery._id} resourceType="Gallery" />
+      <Divider my={4} />
     </Flex>
   );
 }

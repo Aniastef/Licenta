@@ -1,4 +1,4 @@
-import { Box, Grid, Image, Heading, Text } from "@chakra-ui/react";
+import { Box, Grid, Image, Heading, Text } from '@chakra-ui/react';
 
 const EventsSection = ({ title, events }) => {
   return (
@@ -9,9 +9,9 @@ const EventsSection = ({ title, events }) => {
       {events?.length > 0 ? (
         <Grid
           templateColumns={{
-            base: "repeat(1, 1fr)", // Un eveniment pe rând pentru ecrane mici
-            md: "repeat(2, 1fr)", // Două evenimente pe rând pentru ecrane medii
-            lg: "repeat(3, 1fr)", // Trei evenimente pe rând pentru ecrane mari
+            base: 'repeat(1, 1fr)', // Un eveniment pe rând pentru ecrane mici
+            md: 'repeat(2, 1fr)', // Două evenimente pe rând pentru ecrane medii
+            lg: 'repeat(3, 1fr)', // Trei evenimente pe rând pentru ecrane mari
           }}
           gap={6}
         >
@@ -24,12 +24,12 @@ const EventsSection = ({ title, events }) => {
               href={`/events/${event._id}`}
               borderRadius="md"
               overflow="hidden"
-              _hover={{ transform: "scale(1.02)", transition: "0.2s" }}
+              _hover={{ transform: 'scale(1.02)', transition: '0.2s' }}
             >
               {/* Imaginea de copertă */}
               <Box h="200px" width="100%" overflow="hidden">
                 <Image
-                  src={event.coverImage || "https://via.placeholder.com/600x150"}
+                  src={event.coverImage || 'https://via.placeholder.com/600x150'}
                   alt={event.name}
                   objectFit="cover"
                   w="100%"
@@ -43,17 +43,13 @@ const EventsSection = ({ title, events }) => {
                   {event.name}
                 </Heading>
                 <Text fontSize="sm" color="gray.500">
-                  Location: {event.location || "Unknown yet"}
+                  Location: {event.location || 'Unknown yet'}
                 </Text>
                 <Text fontSize="sm" color="gray.500">
-                  Creator: {event.user?.firstName || "Unknown"}{" "}
-                  {event.user?.lastName || ""}
+                  Creator: {event.user?.firstName || 'Unknown'} {event.user?.lastName || ''}
                 </Text>
                 <Text fontSize="sm" color="gray.500">
-                  Date:{" "}
-                  {event.date
-                    ? new Date(event.date).toLocaleDateString()
-                    : "Unknown date"}
+                  Date: {event.date ? new Date(event.date).toLocaleDateString() : 'Unknown date'}
                 </Text>
               </Box>
             </Box>
