@@ -1,6 +1,9 @@
 // --- articleController.js ---
 import Article from '../models/articleModel.js';
 import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul dacă e diferit
+import User from '../models/userModel.js'; // <-- ADAUGĂ ACEASTĂ LINIE
+
+// în articleController.js
 
 export const createArticle = async (req, res) => {
   try {
@@ -17,6 +20,10 @@ export const createArticle = async (req, res) => {
     });
 
     await article.save();
+
+    // NOU: Actualizează documentul utilizatorului adăugând ID-ul noului articol
+    await User.findByIdAndUpdate(req.user._id, { $push: { articles: article._id } });
+
     await addAuditLog({
       action: 'create_article',
       performedBy: req.user._id,
@@ -123,6 +130,8 @@ export const updateArticle = async (req, res) => {
   }
 };
 
+// în articleController.js
+
 export const deleteArticle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -132,7 +141,11 @@ export const deleteArticle = async (req, res) => {
     if (article.user.toString() !== req.user._id.toString())
       return res.status(403).json({ error: 'Unauthorized' });
 
+    // NOU: Șterge referința din documentul utilizatorului înainte de a șterge articolul
+    await User.findByIdAndUpdate(article.user, { $pull: { articles: article._id } });
+
     await Article.findByIdAndDelete(id);
+    
     await addAuditLog({
       action: 'delete_article',
       performedBy: req.user._id,

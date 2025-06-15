@@ -8,6 +8,8 @@ import User from '../models/userModel.js';
 import Notification from '../models/notificationModel.js';
 import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul dacă e diferit
 
+// în productController.js
+
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -28,6 +30,7 @@ export const createProduct = async (req, res) => {
       return res.status(403).json({ error: 'User not authenticated' });
     }
 
+    // ... codul existent pentru upload-ul imaginilor/video/audio ...
     const uploadedImages = [];
     const uploadedVideos = [];
     const uploadedAudios = [];
@@ -48,7 +51,7 @@ export const createProduct = async (req, res) => {
 
     for (const audio of audios) {
       if (audio.startsWith('data:')) {
-        const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'video' }); 
+        const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'video' });
         uploadedAudios.push(uploadRes.secure_url);
       }
     }
@@ -73,6 +76,10 @@ export const createProduct = async (req, res) => {
     }
 
     await newProduct.save();
+
+    // NOU: Actualizează documentul utilizatorului adăugând ID-ul noului produs
+    await User.findByIdAndUpdate(req.user._id, { $push: { products: newProduct._id } });
+
     await addAuditLog({
       action: 'create_product',
       performedBy: req.user._id,
@@ -117,6 +124,8 @@ export const getProduct = async (req, res) => {
   }
 };
 
+// în productController.js
+
 export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -132,13 +141,16 @@ export const deleteProduct = async (req, res) => {
 
     if (
       product.user.toString() !== req.user._id.toString() &&
-      req.user.role !== 'admin' &&
       req.user.role !== 'admin'
     ) {
       return res.status(403).json({ error: 'Unauthorized action' });
     }
 
-    await product.deleteOne(); // ✅ Acesta este pasul lipsă
+    // NOU: Șterge referința din documentul utilizatorului
+    await User.findByIdAndUpdate(product.user, { $pull: { products: product._id } });
+
+    await product.deleteOne();
+
     await addAuditLog({
       action: 'delete_product',
       performedBy: req.user._id,

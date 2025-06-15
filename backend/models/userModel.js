@@ -123,6 +123,12 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    articles: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Article',
+  },
+],
 
     products: [
       {

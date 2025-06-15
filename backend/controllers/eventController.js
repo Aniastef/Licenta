@@ -415,11 +415,10 @@ export const getAllUserEvents = async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const events = await Event.find({
-      $or: [{ user: user._id }, { collaborators: user._id }],
-    })
-      .populate('user', 'firstName lastName username')
-      .populate('collaborators', 'firstName lastName username')
+    // AM MODIFICAT AICI: Căutăm doar evenimentele unde utilizatorul este creatorul
+    const events = await Event.find({ user: user._id })
+      .populate('user', 'firstName lastName username') // Populează creatorul
+      // .populate('collaborators', 'firstName lastName username') // <-- ELIMINAT
       .sort({ date: 1 });
 
     res.status(200).json({ events, user });

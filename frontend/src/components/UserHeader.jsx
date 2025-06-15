@@ -25,7 +25,7 @@ import instagramIcon from '../assets/instagram.svg';
 import facebookIcon from '../assets/facebook.svg';
 import webpageIcon from '../assets/webpage.svg';
 import emailIcon from '../assets/email.svg';
-import phoneIcon from '../assets/phone.svg'; // Corrected if it was 'phone.svg'
+import phoneIcon from '../assets/phone.svg';
 import messageIcon from '../assets/message.svg';
 import heartIcon from '../assets/heart.svg';
 import ageIcon from '../assets/age.svg';
@@ -42,7 +42,6 @@ const formatDate = (dateStr) => {
   return { day, month, year };
 };
 
-// Add this utility function to calculate age
 const calculateAge = (dateOfBirth) => {
   if (!dateOfBirth) return null;
   const today = new Date();
@@ -64,7 +63,6 @@ const UserHeader = ({ user }) => {
   const LINE_LIMIT = 12;
   const LINE_HEIGHT = 18;
   const toast = useToast();
-  // MODIFIED: Changed from 8 to 6 for products
   const latestProducts = user.products?.slice(0, 6);
   const navigate = useNavigate();
 
@@ -72,7 +70,7 @@ const UserHeader = ({ user }) => {
 
   const ownedGalleries = user.galleries?.filter((g) => g.owner === user._id);
   const collaboratedGalleries = user.galleries?.filter((g) => g.owner !== user._id);
-  const favoriteGalleries = []; // aici pui logica ta dacă ai favorite
+  const favoriteGalleries = [];
   const createdEvents = user.events || [];
   const goingEvents = user.eventsMarkedGoing || [];
   const interestedEvents = user.eventsMarkedInterested || [];
@@ -98,6 +96,7 @@ const UserHeader = ({ user }) => {
       isClosable: true,
     });
   };
+  console.log('Date COMPLETE primite pentru utilizator:', user); // <--- ADAUGĂ ACEASTĂ LINIE
 
   const saveQuote = async () => {
     try {
@@ -157,15 +156,13 @@ const UserHeader = ({ user }) => {
     { icon: soundcloudIcon, label: user.soundcloud },
   ];
 
-  // Calculate age here before using it in aboutMeItemsLeft
   const userAge = calculateAge(user.dateOfBirth);
 
   const aboutMeItemsLeft = [
-    { icon: ageIcon, label: userAge ? `${userAge} years old` : null }, // Modified line
+    { icon: ageIcon, label: userAge ? `${userAge} years old` : null },
     { icon: professionIcon, label: user.profession },
   ];
 
-  // Logic to concatenate city and country for location display
   const displayLocation = (() => {
     const parts = [];
     if (user.city) {
@@ -174,22 +171,20 @@ const UserHeader = ({ user }) => {
     if (user.country) {
       parts.push(user.country);
     }
-    // Prioritize combined city/country. If only a general location exists, use that.
     if (parts.length > 0) {
       return parts.join(', ');
     }
-    return user.location || 'Not specified'; // Fallback
+    return user.location || 'Not specified';
   })();
 
   const aboutMeItemsRight = [
-    { icon: locationIcon, label: displayLocation }, // Combined city and country here
+    { icon: locationIcon, label: displayLocation },
     { icon: heartIcon, label: user.hobbies },
   ];
 
   return (
     <Flex direction="column" px={6} py={12} maxW="1300px" mx="auto">
       {/* Header Section */}
-
       <Flex justify="space-between" align="flex-start" gap={15}>
         {/* Avatar & Contact */}
         <Flex direction="column" align="center" gap={2}>
@@ -302,7 +297,7 @@ const UserHeader = ({ user }) => {
         </Box>
       </Flex>
 
-      {/* /////////////////////////////////////       */}
+      {/* ///////////////////////////////////// */}
 
       <Flex align="flex-start" gap={10}>
         <Flex ml={70} direction="column" align="start" gap={3}>
@@ -318,7 +313,7 @@ const UserHeader = ({ user }) => {
             const extractUsername = (url) => {
               try {
                 const parsed = new URL(url);
-                return parsed.hostname.replace(/^www\./, ''); // ← doar domeniul
+                return parsed.hostname.replace(/^www\./, '');
               } catch {
                 return url;
               }
@@ -362,13 +357,12 @@ const UserHeader = ({ user }) => {
           })}
         </Flex>
 
-        {/* About Me */}
+        {/* About Me & Tabs Section */}
         <Flex direction={'column'} ml={50} textAlign="center">
           <Text textAlign="left" fontWeight="bold" fontSize="lg" mb={2}>
             About me
           </Text>
 
-          {/* Colectăm elementele vizibile */}
           <Flex gap={10}>
             {aboutMeItemsLeft.some((item) => item.label) && (
               <Flex gap={2} direction="column">
@@ -379,7 +373,7 @@ const UserHeader = ({ user }) => {
                         <Image src={item.icon} w="16px" h="16px" />
                         <Text>{item.label}</Text>
                       </Flex>
-                    ),
+                    )
                 )}
               </Flex>
             )}
@@ -393,7 +387,7 @@ const UserHeader = ({ user }) => {
                         <Image src={item.icon} w="16px" h="16px" />
                         <Text>{item.label}</Text>
                       </Flex>
-                    ),
+                    )
                 )}
               </Flex>
             )}
@@ -409,6 +403,7 @@ const UserHeader = ({ user }) => {
               </TabList>
 
               <TabPanels>
+                {/* Artworks Panel */}
                 <TabPanel>
                   <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="left">
                     {latestProducts && latestProducts.length > 0 ? (
@@ -461,24 +456,24 @@ const UserHeader = ({ user }) => {
                               </Flex>
                             )}
                           </Box>
-                          <Box p={4}>
-                            <Text fontWeight="bold" mb={1}>
-                              {product.title}
-                            </Text>
-                            {typeof product.price === 'number' ? (
-                              <Text>{product.price.toFixed(2)} EUR</Text>
-                            ) : (
-                              <Text color="gray.500">Not for sale</Text>
-                            )}
-                            {product.category && (
-                              <Text fontSize="xs" mt={1} color="gray.600">
-                                Category: {product.category}
-                              </Text>
-                            )}
-                            <Text fontSize="xs" mt={2}>
-                              {product.tags?.join(', ')}
-                            </Text>
-                          </Box>
+                         <Box p={4}>
+  <Text fontWeight="bold" mb={1} isTruncated>
+    {product.title}
+  </Text>
+  {typeof product.price === 'number' ? (
+    <Text>{product.price.toFixed(2)} EUR</Text>
+  ) : (
+    <Text color="gray.500">Not for sale</Text>
+  )}
+  {product.category && (
+    <Text fontSize="xs" mt={1} color="gray.600" isTruncated>
+      Category: {product.category}
+    </Text>
+  )}
+  <Text fontSize="xs" mt={2} isTruncated>
+    {product.tags?.join(', ')}
+  </Text>
+</Box>
                         </Box>
                       ))
                     ) : (
@@ -499,10 +494,9 @@ const UserHeader = ({ user }) => {
                   </Box>
                 </TabPanel>
 
-                {/* Logica Galleries */}
+                {/* Galleries Panel */}
                 <TabPanel>
                   <Flex direction="column" align="center" gap={4} maxW="800px" mx="auto">
-                    {/* Filtre */}
                     <Flex gap={4}>
                       <Button
                         bg={activeGalleryFilter === 'owning' ? 'yellow.400' : 'yellow.200'}
@@ -520,9 +514,7 @@ const UserHeader = ({ user }) => {
                       </Button>
                     </Flex>
 
-                    {/* Galerii */}
                     <Flex direction="column" gap={4} w="500px">
-                      {/* MODIFIED: Changed from slice(0, 2) to slice(0, 4) for galleries */}
                       {filteredGalleries.length > 0 ? (
                         filteredGalleries.slice(0, 4).map((gallery) => (
                           <Box
@@ -563,20 +555,19 @@ const UserHeader = ({ user }) => {
                                 </Text>
                               )}
                             </Box>
-
-                            <Box p={4}>
-                              <Text fontWeight="bold" fontSize="md" mb={1}>
-                                {gallery.name}
-                              </Text>
-                              <Text fontSize="sm" color="gray.600" mb={1}>
-                                {gallery.category || 'No category specified'}
-                              </Text>
-                              <Text fontSize="xs" color="gray.500">
-                                {Array.isArray(gallery.tags) && gallery.tags.length > 0
-                                  ? gallery.tags.join(', ')
-                                  : 'No tags'}
-                              </Text>
-                            </Box>
+                           <Box p={4}>
+  <Text fontWeight="bold" fontSize="md" mb={1} isTruncated>
+    {gallery.name}
+  </Text>
+  <Text fontSize="sm" color="gray.600" mb={1} isTruncated>
+    {gallery.category || 'No category specified'}
+  </Text>
+  <Text fontSize="xs" color="gray.500" isTruncated>
+    {Array.isArray(gallery.tags) && gallery.tags.length > 0
+      ? gallery.tags.join(', ')
+      : 'No tags'}
+  </Text>
+</Box>
                           </Box>
                         ))
                       ) : (
@@ -584,7 +575,6 @@ const UserHeader = ({ user }) => {
                       )}
                     </Flex>
 
-                    {/* Butonul "See all galleries" */}
                     <Box mt={4}>
                       <Link to={`/${user.username}/all-galleries`}>
                         <Text
@@ -599,6 +589,9 @@ const UserHeader = ({ user }) => {
                   </Flex>
                 </TabPanel>
 
+                {/* ========================================================= */}
+                {/* ===== SECȚIUNEA EVENTS A FOST MUTATĂ AICI (LOCUL CORECT) ===== */}
+                {/* ========================================================= */}
                 <TabPanel>
                   <Flex justifyContent="center" gap={5} mb={5} wrap="wrap">
                     <Button
@@ -620,6 +613,7 @@ const UserHeader = ({ user }) => {
                       Events marked interested
                     </Button>
                   </Flex>
+
                   <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="center">
                     {(eventFilter === 'created'
                       ? createdEvents
@@ -627,7 +621,7 @@ const UserHeader = ({ user }) => {
                       ? goingEvents
                       : interestedEvents
                     )
-                      ?.slice(0, 4) // MODIFIED: Changed from 6 to 4 for events
+                      ?.slice(0, 4)
                       .map((event) => {
                         const { day, month, year } = formatDate(event.date);
                         return (
@@ -670,9 +664,7 @@ const UserHeader = ({ user }) => {
                                   </Box>
                                 )}
                               </Box>
-
                               <Flex p={4} gap={3} align="center">
-                                {/* Data pe stânga */}
                                 <Flex direction="column" align="center" minW="50px">
                                   <Text fontWeight="bold" fontSize="lg">
                                     {day}
@@ -684,9 +676,7 @@ const UserHeader = ({ user }) => {
                                     {year}
                                   </Text>
                                 </Flex>
-
-                                {/* Detalii eveniment */}
-                                <Box textAlign="left">
+                                <Box textAlign="left" flex="1" overflow="hidden">
                                   <Text fontSize="md" fontWeight="bold" isTruncated>
                                     {event.name || 'Nume eveniment'}
                                   </Text>
@@ -719,6 +709,7 @@ const UserHeader = ({ user }) => {
                   </Box>
                 </TabPanel>
 
+                {/* Articles Panel */}
                 <TabPanel>
                   <Flex direction="column" align="center" gap={6}>
                     <Flex direction="column" w="100%" maxW="800px" gap={4}>
@@ -760,7 +751,6 @@ const UserHeader = ({ user }) => {
                                 Category: {article.category}
                               </Text>
                             )}
-                            {/* 🔽 Fragment din content fără taguri HTML */}
                             <Text fontSize="sm" color="gray.500" mt={2}>
                               {article.content
                                 ? article.content.replace(/<[^>]+>/g, '').slice(0, 50) + '...'

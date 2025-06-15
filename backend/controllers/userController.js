@@ -6,9 +6,10 @@ import { v2 as cloudinary } from 'cloudinary';
 import mongoose from 'mongoose';
 import Gallery from '../models/galleryModel.js';
 import Product from '../models/productModel.js';
-import Article from '../models/articleModel.js'; // Asigură-te că e importat
-import Notification from '../models/notificationModel.js'; // asigură-te că e importat
-import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul dacă e diferit
+import Article from '../models/articleModel.js';
+import Notification from '../models/notificationModel.js';
+import { addAuditLog } from './auditLogController.js';
+
 
 export const getUserProfile = async (req, res) => {
   try {
@@ -20,14 +21,12 @@ export const getUserProfile = async (req, res) => {
 
     const isSelfProfile = currentUserId && user._id.toString() === currentUserId;
 
-    // 1. Galeriile create de acest user
     const ownedGalleries = await Gallery.find({ owner: user._id })
-      .populate('collaborators', '_id') // Added population for collaborators
+      .populate('collaborators', '_id')
       .select(
         'name isPublic owner collaborators pendingCollaborators coverPhoto category tags',
       );
 
-    // 2. Galeriile unde acest user e colaborator (deținute de alții)
     const collaboratedGalleries = await Gallery.find({
       collaborators: user._id,
       owner: { $ne: user._id },
@@ -37,12 +36,6 @@ export const getUserProfile = async (req, res) => {
         'name isPublic owner collaborators pendingCollaborators coverPhoto category tags',
       );
 
-    // Conține atât galeriile proprii, cât și cele la care este colaborator
-    // Nu mai filtrați `visibleGalleries` aici, lăsați popularea pentru `user.galleries`
-    // în model dacă e necesar, sau returnați-le separat în răspuns.
-    // user.galleries = visibleGalleries; // Această linie poate cauza probleme dacă user.galleries nu este un array de ObjectId-uri
-
-    // Populare pentru events
     await user.populate([
       {
         path: 'eventsMarkedInterested',
@@ -61,48 +54,41 @@ export const getUserProfile = async (req, res) => {
       },
     ]);
 
-    // 3. Produsele create de acest user
-    // Aici ar trebui să fie `owner: user._id` dacă Product are un câmp `owner`
-    const products = await Product.find({ owner: user._id })
+    // 3. Produsele create de acest user - LINIE CORECTATĂ
+    const products = await Product.find({ user: user._id }) // <-- Schimbat din 'owner' în 'user'
       .select('title price images videos tags createdAt category')
       .sort({ createdAt: -1 });
 
-    // 4. Articolele scrise de acest user
-    // Aici ar trebui să fie `author: user._id` dacă Article are un câmp `author`
-    const articles = await Article.find({ author: user._id })
+    // 4. Articolele scrise de acest user - LINIE CORECTATĂ
+    const articles = await Article.find({ user: user._id }) // <-- Schimbat din 'author' în 'user'
       .select('title subtitle category createdAt content')
       .sort({ createdAt: -1 })
       .limit(3);
 
-    // 5. Galeriile favorite ale user-ului (folosim User.findById pentru a popula direct)
     const favoriteGalleries = await User.findById(user._id)
       .select('favoriteGalleries')
       .populate('favoriteGalleries', 'name coverPhoto owner products category tags')
-      .lean(); // Folosim .lean() pentru a obține obiecte JavaScript simple
+      .lean();
 
-    // 6. Produse favorite
     const favoriteProducts = await User.findById(user._id)
       .select('favorites')
       .populate('favorites', 'title images price forSale quantity')
       .lean();
 
-    // 7. Articole favorite
     const favoriteArticles = await User.findById(user._id)
       .select('favoriteArticles')
       .populate('favoriteArticles', 'title coverImage')
       .lean();
 
-
-    const userObject = user.toObject(); // Convertesc din Mongoose Document în obiect simplu
-    // Atașăm produsele și articolele, precum și galeriile deținute/colaborate
-    userObject.ownedGalleries = ownedGalleries;
-    userObject.collaboratedGalleries = collaboratedGalleries;
+    const userObject = user.toObject();
+    
     userObject.products = products;
     userObject.articles = articles;
     userObject.favoriteGalleries = favoriteGalleries ? favoriteGalleries.favoriteGalleries : [];
     userObject.favoriteProducts = favoriteProducts ? favoriteProducts.favorites : [];
     userObject.favoriteArticles = favoriteArticles ? favoriteArticles.favoriteArticles : [];
 
+    userObject.galleries = [...ownedGalleries, ...collaboratedGalleries];
 
     return res.status(200).json(userObject);
   } catch (err) {
@@ -132,18 +118,16 @@ export const addArticleToFavorites = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Folosește `some` și `equals` pentru a verifica dacă ID-ul există deja
     const articleIdObj = new mongoose.Types.ObjectId(articleId);
     if (!user.favoriteArticles.some(favId => favId.equals(articleIdObj))) {
-      user.favoriteArticles.push(articleIdObj); // Asigură-te că adaugi un ObjectId
+      user.favoriteArticles.push(articleIdObj);
       await user.save();
 
-      // Trimite notificare autorului dacă nu e chiar utilizatorul curent
-      const article = await Article.findById(articleId).populate('author', 'username'); // Am schimbat 'user' cu 'author'
+      const article = await Article.findById(articleId).populate('author', 'username');
       if (article && article.author._id.toString() !== req.user._id.toString()) {
         await Notification.create({
-          user: article.author._id, // destinatar
-          fromUser: req.user._id, // cel care a dat favorite
+          user: article.author._id,
+          fromUser: req.user._id,
           resourceType: 'Article',
           resourceId: article._id,
           type: 'favorite_article',
@@ -300,7 +284,7 @@ export const updateUserByAdmin = async (req, res) => {
       location,
       profession,
       age,
-      dateOfBirth, // <--- ADDED dateOfBirth here
+      dateOfBirth,
       instagram,
       facebook,
       webpage,
@@ -319,7 +303,6 @@ export const updateUserByAdmin = async (req, res) => {
       country,
     } = req.body;
 
-    // Upload imagine dacă este în base64
     if (profilePicture && profilePicture.startsWith('data:image')) {
       const uploaded = await cloudinary.uploader.upload(profilePicture, {
         folder: 'profiles',
@@ -330,14 +313,13 @@ export const updateUserByAdmin = async (req, res) => {
       user.profilePicture = profilePicture;
     }
 
-    // Actualizează alte câmpuri
     user.firstName = firstName ?? user.firstName;
     user.lastName = lastName ?? user.lastName;
     user.email = email ?? user.email;
     user.bio = bio ?? user.bio;
     user.location = location ?? user.location;
     user.profession = profession ?? user.profession;
-    user.dateOfBirth = dateOfBirth ?? user.dateOfBirth; // This line will now work
+    user.dateOfBirth = dateOfBirth ?? user.dateOfBirth;
     user.instagram = instagram ?? user.instagram;
     user.facebook = facebook ?? user.facebook;
     user.webpage = webpage ?? user.webpage;
@@ -429,7 +411,7 @@ export const searchUsers = async (req, res) => {
         { lastName: new RegExp(query, 'i') },
         { username: new RegExp(query, 'i') },
       ],
-    }).select('_id firstName lastName username profilePicture'); // 👈 Aici lipsește profilePicture
+    }).select('_id firstName lastName username profilePicture');
 
     res.status(200).json({ users });
   } catch (err) {
@@ -459,7 +441,7 @@ export const updateUser = async (req, res) => {
     bio,
     location,
     profession,
-    dateOfBirth, // <--- ADDED dateOfBirth here
+    dateOfBirth,
     instagram,
     facebook,
     webpage,
@@ -471,11 +453,11 @@ export const updateUser = async (req, res) => {
     message,
     heart,
     profilePicture,
-    gender, // <--- ADDED gender here
-    pronouns, // <--- ADDED pronouns here
-    address, // <--- ADDED address here
-    city, // <--- ADDED city here
-    country, // <--- ADDED country here
+    gender,
+    pronouns,
+    address,
+    city,
+    country,
   } = req.body;
 
   const userId = req.user._id;
@@ -488,7 +470,6 @@ export const updateUser = async (req, res) => {
       return res.status(403).json({ error: "You cannot update another user's profile" });
     }
 
-    // 🔁 Upload imagine dacă este în base64
     if (profilePicture) {
       const isBase64 = profilePicture.startsWith('data:image');
 
@@ -499,11 +480,10 @@ export const updateUser = async (req, res) => {
         });
         user.profilePicture = uploadedResponse.secure_url;
       } else {
-        user.profilePicture = profilePicture; // Dacă este deja un URL valid
+        user.profilePicture = profilePicture;
       }
     }
 
-    // 🔧 Actualizare câmpuri generale
     if (firstName !== undefined) user.firstName = firstName;
     if (lastName !== undefined) user.lastName = lastName;
     if (email !== undefined) user.email = email;
@@ -511,9 +491,7 @@ export const updateUser = async (req, res) => {
     if (bio !== undefined) user.bio = bio;
     if (location !== undefined) user.location = location;
     if (profession !== undefined) user.profession = profession;
-    if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth; // This line will now work
-
-    // 🔧 Rețele sociale și date personale
+    if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
     if (instagram !== undefined) user.instagram = instagram;
     if (facebook !== undefined) user.facebook = facebook;
     if (webpage !== undefined) user.webpage = webpage;
@@ -530,7 +508,6 @@ export const updateUser = async (req, res) => {
     if (city !== undefined) user.city = city;
     if (country !== undefined) user.country = country;
 
-    // 🔐 Parolă
     if (password) {
       if (!oldPassword) {
         return res.status(400).json({ error: 'Old password required' });
@@ -544,7 +521,6 @@ export const updateUser = async (req, res) => {
 
     await user.save();
 
-    // ✅ Trimite user-ul actualizat înapoi
     res.status(200).json({
       message: 'Profile updated successfully',
       user: {
@@ -581,19 +557,16 @@ export const updateUser = async (req, res) => {
   }
 };
 
-// În userController.js (sau controllerul corespunzător)
 export const saveQuote = async (req, res) => {
   try {
-    const { quote } = req.body; // Citatul din request body
-    const userId = req.user._id; // ID-ul utilizatorului logat
+    const { quote } = req.body;
+    const userId = req.user._id;
 
-    // Verifică dacă utilizatorul există
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Actualizează citatul utilizatorului
     user.quote = quote;
     await user.save();
 
@@ -607,7 +580,7 @@ export const saveQuote = async (req, res) => {
 export const addGalleryToFavorites = async (req, res) => {
   try {
     const { galleryId } = req.body;
-    const userId = req.user._id; // Get user ID from the authenticated user
+    const userId = req.user._id;
 
     if (!mongoose.Types.ObjectId.isValid(galleryId)) {
       return res.status(400).json({ error: 'Invalid gallery ID' });
@@ -618,17 +591,16 @@ export const addGalleryToFavorites = async (req, res) => {
 
     const galleryIdObj = new mongoose.Types.ObjectId(galleryId);
 
-    // Folosește `some` și `equals` pentru a verifica dacă ID-ul există deja
     if (!user.favoriteGalleries.some(favId => favId.equals(galleryIdObj))) {
-      user.favoriteGalleries.push(galleryIdObj); // Asigură-te că adaugi un ObjectId
+      user.favoriteGalleries.push(galleryIdObj);
       await user.save();
 
       const gallery = await Gallery.findById(galleryId).populate('owner', 'username');
 
       if (gallery && gallery.owner._id.toString() !== userId.toString()) {
         await Notification.create({
-          user: gallery.owner._id, // destinatarul
-          fromUser: userId, // cine a dat favorite
+          user: gallery.owner._id,
+          fromUser: userId,
           resourceType: 'Gallery',
           resourceId: gallery._id,
           type: 'favorite_gallery',
@@ -648,9 +620,8 @@ export const addGalleryToFavorites = async (req, res) => {
 
 export const getUserFavorites = async (req, res) => {
   try {
-    // This function uses username from params, which is good for public profiles
     const user = await User.findOne({ username: req.params.username })
-      .populate('favorites') // Assuming 'favorites' is for products
+      .populate('favorites')
       .populate('favoriteArticles', 'title subtitle createdAt')
       .populate({
         path: 'favoriteGalleries',
@@ -676,7 +647,7 @@ export const getUserFavorites = async (req, res) => {
 export const getUserWithGalleries = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate('galleries', 'name _id') // Populează galeriile utilizatorului
+      .populate('galleries', 'name _id')
       .select('galleries');
 
     if (!user) {
@@ -693,9 +664,7 @@ export const getUserWithGalleries = async (req, res) => {
 export const removeGalleryFromFavorites = async (req, res) => {
   try {
     const userId = req.user._id;
-    // galleryId should come from params for a DELETE request
-    // Change from req.body to req.params
-    const { galleryId } = req.params; // <--- CHANGE IS HERE
+    const { galleryId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(galleryId)) {
         return res.status(400).json({ error: 'Invalid gallery ID' });
@@ -706,7 +675,6 @@ export const removeGalleryFromFavorites = async (req, res) => {
 
     const galleryIdObj = new mongoose.Types.ObjectId(galleryId);
 
-    // Filtrează folosind .equals() pentru comparația corectă a ObjectId-urilor
     user.favoriteGalleries = user.favoriteGalleries.filter(
       (favId) => !favId.equals(galleryIdObj)
     );
@@ -725,19 +693,17 @@ export const removeGalleryFromFavorites = async (req, res) => {
 
 export const moveToFavorites = async (req, res) => {
   try {
-    const userId = req.user._id; // ← ia userId din token
+    const userId = req.user._id;
     const { productId } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Asigură-te că adaugi un ObjectId
     const productIdObj = new mongoose.Types.ObjectId(productId);
     if (!user.favorites.some(favId => favId.equals(productIdObj))) {
       user.favorites.push(productIdObj);
     }
 
-    // Filtrează folosind .equals()
     user.cart = user.cart.filter((item) => !item.product.equals(productIdObj));
 
     await user.save();
@@ -753,34 +719,28 @@ export const deleteUser = async (req, res) => {
     const { id } = req.params;
     const currentUserId = req.user._id;
 
-    // Găsim utilizatorul curent care face cererea
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Verificăm dacă utilizatorul este administrator
     if (!currentUser.isAdmin) {
       return res.status(403).json({ error: 'Only admins can delete users' });
     }
 
-    // Verificăm dacă utilizatorul curent încearcă să-și șteargă propriul profil
     if (id === currentUserId.toString()) {
       return res.status(400).json({ error: 'You cannot delete your own profile!' });
     }
 
-    // Găsim utilizatorul care urmează să fie șters
     const userToDelete = await User.findById(id);
     if (!userToDelete) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Ștergem avatarul și imaginea de copertă de pe Cloudinary, dacă există
     if (userToDelete.profilePicture) {
       await cloudinary.uploader.destroy(userToDelete.profilePicture.split('/').pop().split('.')[0]);
     }
 
-    // Ștergem utilizatorul din baza de date
     await User.findByIdAndDelete(id);
     await addAuditLog({
       action: 'delete_user',
@@ -812,7 +772,6 @@ export const blockUser = async (req, res) => {
     const userToBlock = req.params.userId;
     const currentUser = await User.findById(req.user._id);
 
-    // Asigură-te că adaugi un ObjectId
     const userToBlockObj = new mongoose.Types.ObjectId(userToBlock);
     if (!currentUser.blockedUsers.some(blockedId => blockedId.equals(userToBlockObj))) {
       currentUser.blockedUsers.push(userToBlockObj);
@@ -834,7 +793,6 @@ export const unblockUser = async (req, res) => {
     user.blockedUsers = user.blockedUsers.filter((id) => !id.equals(userIdToUnblockObj));
     await user.save();
 
-    // ✅ Trimite user-ul actualizat înapoi
     res.status(200).json(user);
   } catch (err) {
     console.error('Unblock error:', err);
@@ -849,7 +807,8 @@ export const getBlockedUsers = async (req, res) => {
       'firstName lastName profilePicture',
     );
     res.status(200).json({ blockedUsers: user.blockedUsers });
-  } catch (err) {
+  } catch (err)
+ {
     console.error('Get blocked users error:', err);
     res.status(500).json({ error: 'Failed to get blocked users' });
   }
@@ -899,7 +858,7 @@ export const getRandomUsers = async (req, res) => {
         $project: {
           firstName: 1,
           lastName: 1,
-          username: 1, // 👈 ADĂUGĂ
+          username: 1,
           profilePicture: 1,
           profession: 1,
         },
@@ -928,10 +887,10 @@ export const getUserFavoriteArticles = async (req, res) => {
 export const toggleFavoriteGallery = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { galleryId } = req.body; // For POST (add)
-    let idFromParams = req.params.galleryId; // For DELETE (remove)
+    const { galleryId } = req.body;
+    let idFromParams = req.params.galleryId;
 
-    const actualGalleryId = galleryId || idFromParams; // Use body for POST, params for DELETE
+    const actualGalleryId = galleryId || idFromParams;
 
     if (!mongoose.Types.ObjectId.isValid(actualGalleryId)) {
       return res.status(400).json({ error: 'Invalid gallery ID' });
@@ -956,11 +915,9 @@ export const toggleFavoriteGallery = async (req, res) => {
         (favId) => !favId.equals(galleryIdObj)
       );
       message = 'Gallery removed from favorites';
-      // Add audit log here if applicable
     } else {
       user.favoriteGalleries.push(galleryIdObj);
       message = 'Gallery added to favorites';
-      // Add audit log here if applicable
     }
 
     await user.save();
@@ -974,14 +931,13 @@ export const toggleFavoriteGallery = async (req, res) => {
 
 export const getUserFavoriteGalleries = async (req, res) => {
   try {
-    const userId = req.user._id; // Assuming user ID is available from auth middleware
+    const userId = req.user._id;
 
-    const user = await User.findById(userId).populate('favoriteGalleries', '_id'); // Only fetch IDs for efficiency
+    const user = await User.findById(userId).populate('favoriteGalleries', '_id');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Extract just the _ids from the populated favoriteGalleries
     const favoriteGalleryIds = user.favoriteGalleries.map(gallery => gallery._id.toString());
 
     res.status(200).json(favoriteGalleryIds);

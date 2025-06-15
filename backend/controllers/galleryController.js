@@ -10,7 +10,34 @@ import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul 
 
 export const createGallery = async (req, res) => {
   try {
-    const { name, category, description, tags, collaborators, isPublic } = req.body;
+    const { name, description, collaborators, isPublic } = req.body; // Remove category and tags from destructuring here
+    let { category, tags } = req.body; // Declare them as mutable
+
+    // --- FIX 1: Parse category from JSON string ---
+    if (typeof category === 'string') {
+      try {
+        category = JSON.parse(category);
+      } catch (e) {
+        console.error("Error parsing category JSON:", e);
+        return res.status(400).json({ error: "Invalid category format." });
+      }
+    }
+    if (!Array.isArray(category)) {
+      category = []; // Ensure it's an array if parsing failed or it wasn't an array initially
+    }
+    // Set a default if it's empty after parsing
+    if (category.length === 0) {
+      category = ['General'];
+    }
+
+    // --- FIX 2: Parse tags from comma-separated string ---
+    if (typeof tags === 'string') {
+      tags = tags.split(",").map(tag => tag.trim()).filter(Boolean); // Filter(Boolean) removes empty strings
+    } else if (!Array.isArray(tags)) {
+      tags = []; // Ensure it's an array
+    }
+
+
     if (!name) {
       return res.status(400).json({ error: "Gallery name is required" });
     }
@@ -18,11 +45,13 @@ export const createGallery = async (req, res) => {
     let coverPhotoUrl = null;
     if (req.file) {
       coverPhotoUrl = await uploadToCloudinary(req.file);
+    } else if (req.body.coverPhoto === 'null') { // Handle explicit removal
+      coverPhotoUrl = '';
     }
+
 
     const currentUserId = req.user._id.toString();
 
-    // ✅ Parsează ID-urile de colaboratori (indiferent de format)
     let parsedCollaborators = [];
     try {
       const raw = typeof collaborators === "string" ? JSON.parse(collaborators) : collaborators;
@@ -34,9 +63,9 @@ export const createGallery = async (req, res) => {
         : [];
     } catch (e) {
       parsedCollaborators = [];
+      console.error("Error parsing collaborators:", e.message); // Added console.error
     }
 
-    // ✅ Elimină duplicări: ownerul și colaboratori existenți
     const uniquePendingCollaborators = [
       ...new Set(
         parsedCollaborators.filter((id) => id.toString() !== currentUserId)
@@ -45,10 +74,10 @@ export const createGallery = async (req, res) => {
 
     const newGallery = new Gallery({
       name,
-      category,
+      category, // Use the parsed category
       description,
       coverPhoto: coverPhotoUrl,
-      tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
+      tags, // Use the parsed tags
       owner: currentUserId,
       pendingCollaborators: uniquePendingCollaborators,
       isPublic: isPublic === "true" || isPublic === true,
@@ -56,11 +85,11 @@ export const createGallery = async (req, res) => {
 
     await newGallery.save();
     await addAuditLog({
-  action: "create_gallery",
-  performedBy: req.user._id,
-  targetGallery: newGallery._id,
-  details: `Created gallery: ${newGallery.name}`,
-});
+      action: "create_gallery",
+      performedBy: req.user._id,
+      targetGallery: newGallery._id,
+      details: `Created gallery: ${newGallery.name}`,
+    });
 
     await newGallery.populate("owner", "username");
 
@@ -70,7 +99,6 @@ export const createGallery = async (req, res) => {
       { new: true }
     );
 
-    // ✅ Trimite notificări doar colaboratorilor adăugați efectiv
     for (const userId of uniquePendingCollaborators) {
       await createNotification({
         userId,
@@ -83,15 +111,10 @@ export const createGallery = async (req, res) => {
 
     res.status(201).json(newGallery);
   } catch (err) {
-    console.error("Error creating gallery:", err.message);
+    console.error("Error creating gallery:", err.message); // Log the specific error message
     res.status(500).json({ message: err.message });
   }
 };
-
-
-
-
-
   
 
 export const getGallery = async (req, res) => {
@@ -192,10 +215,12 @@ export const deleteGallery = async (req, res) => {
   }
 };
 
+
 export const updateGallery = async (req, res) => {
   try {
     const { galleryId } = req.params;
-    const { name, category, description, tags, collaborators, isPublic } = req.body;
+    const { name, description, collaborators, isPublic } = req.body; // Remove category and tags from destructuring
+    let { category, tags } = req.body; // Declare them as mutable
 
     const gallery = await Gallery.findById(galleryId);
     if (!gallery) return res.status(404).json({ error: "Gallery not found" });
@@ -206,13 +231,37 @@ export const updateGallery = async (req, res) => {
     ) {
       return res.status(403).json({ error: "Unauthorized action" });
     }
-    
+
+    // --- FIX 1: Parse category from JSON string ---
+    if (typeof category === 'string') {
+      try {
+        category = JSON.parse(category);
+      } catch (e) {
+        console.error("Error parsing category JSON for update:", e);
+        return res.status(400).json({ error: "Invalid category format for update." });
+      }
+    }
+    // If category is not provided in update, retain existing. If it's an empty array, it will be saved as such.
+    if (!Array.isArray(category)) {
+      category = gallery.category || ['General'];
+    }
+
+
+    // --- FIX 2: Parse tags from comma-separated string ---
+    if (typeof tags === 'string') {
+      tags = tags.split(",").map((t) => t.trim()).filter(Boolean);
+    } else if (tags === undefined) { // If tags field is completely omitted, retain existing
+        tags = gallery.tags;
+    } else if (!Array.isArray(tags)) { // If it's not a string and not undefined, ensure it's an array
+        tags = [];
+    }
+
 
     // 🔄 Actualizări de bază
     gallery.name = name || gallery.name;
-    gallery.category = category || gallery.category;
+    gallery.category = category; // Use the parsed category
     gallery.description = description || gallery.description;
-    gallery.tags = tags ? tags.split(",").map((t) => t.trim()) : gallery.tags;
+    gallery.tags = tags; // Use the parsed tags
     gallery.isPublic = isPublic === "true" || isPublic === true;
 
     // ✅ Parsează colaboratori din request
@@ -227,6 +276,7 @@ export const updateGallery = async (req, res) => {
         : [];
     } catch (err) {
       parsedCollaborators = [];
+      console.error("Error parsing collaborators for update:", err.message); // Added console.error
     }
 
     // ✅ Curățăm listele
@@ -234,37 +284,94 @@ export const updateGallery = async (req, res) => {
     const newCollaborators = new Set();
     const newPending = new Set();
 
+    // Existing collaborators and pending collaborators as strings for easy comparison
+    const existingCollaboratorStrings = gallery.collaborators.map(c => c.toString());
+    const existingPendingStrings = gallery.pendingCollaborators.map(p => p.toString());
+
+    // Determine who should be a collaborator or pending based on the new list
     for (const id of parsedCollaborators) {
       const idStr = id.toString();
-      if (idStr === currentUserId) continue; // nu adăuga ownerul
+      if (idStr === currentUserId) continue;
 
-      if (gallery.collaborators.map((c) => c.toString()).includes(idStr)) {
-        newCollaborators.add(idStr); // rămâne colaborator
-      } else {
-        newPending.add(idStr); // invitat nou
+      if (existingCollaboratorStrings.includes(idStr)) {
+        newCollaborators.add(idStr); // Remains a collaborator
+      } else if (!existingPendingStrings.includes(idStr)) {
+        newPending.add(idStr); // New invite, not already pending
       }
     }
 
-    // ✅ Setăm listele
-    gallery.collaborators = Array.from(newCollaborators);
-    gallery.pendingCollaborators = Array.from(newPending);
+    // Identify collaborators to remove (no longer in parsedCollaborators)
+    const collaboratorsToRemove = existingCollaboratorStrings.filter(
+        id => !newCollaborators.has(id) && !newPending.has(id)
+    );
+
+    // Identify pending invites to remove (no longer in parsedCollaborators)
+    const pendingToRemove = existingPendingStrings.filter(
+        id => !newCollaborators.has(id) && !newPending.has(id)
+    );
+
+
+    // Update gallery's collaborators and pendingCollaborators
+    gallery.collaborators = Array.from(newCollaborators).map(id => new mongoose.Types.ObjectId(id));
+    gallery.pendingCollaborators = Array.from(newPending).map(id => new mongoose.Types.ObjectId(id));
+
+    // Remove old notifications for declined/removed invites
+    if (pendingToRemove.length > 0) {
+      await Notification.deleteMany({
+        recipient: { $in: pendingToRemove.map(id => new mongoose.Types.ObjectId(id)) },
+        type: "invite",
+        "meta.galleryId": galleryId,
+      });
+      // Optionally notify users that their invite was rescinded
+      for (const userId of pendingToRemove) {
+        await createNotification({
+          userId: userId,
+          type: "info",
+          message: `Your invitation to collaborate on "${gallery.name}" was withdrawn.`,
+          link: `/galleries`, // Or relevant page
+          meta: { galleryId: gallery._id },
+        });
+        addAuditLog(currentUserId, `Withdrew collaboration invite for ${userId} from gallery "${gallery.name}"`);
+      }
+    }
+
+    // Notify users who were removed as collaborators
+    if (collaboratorsToRemove.length > 0) {
+      await Notification.deleteMany({ // Clear any old notifications for them related to this gallery
+        recipient: { $in: collaboratorsToRemove.map(id => new mongoose.Types.ObjectId(id)) },
+        type: { $in: ["invite", "info"] }, // Maybe other types too
+        "meta.galleryId": galleryId,
+      });
+      for (const userId of collaboratorsToRemove) {
+        await createNotification({
+          userId: userId,
+          type: "info",
+          message: `You have been removed as a collaborator from "${gallery.name}".`,
+          link: `/galleries`, // Or relevant page
+          meta: { galleryId: gallery._id },
+        });
+        addAuditLog(currentUserId, `Removed collaborator ${userId} from gallery "${gallery.name}"`);
+      }
+    }
+
 
     // ✅ Trimitere notificări DOAR celor noi în pending
     for (const userId of newPending) {
       const alreadyNotified = await Notification.findOne({
-        user: userId,
+        userId: userId, // Corrected to userId
         type: "invite",
         "meta.galleryId": gallery._id,
       });
 
       if (!alreadyNotified) {
         await createNotification({
-          userId,
+          userId: userId, // Corrected to userId
           type: "invite",
           message: `${req.user.firstName} ${req.user.lastName} invited you to collaborate on gallery "${gallery.name}"`,
           link: `/galleries/${gallery._id}`,
           meta: { galleryId: gallery._id },
         });
+        addAuditLog(currentUserId, `Sent collaboration invite to ${userId} for gallery "${gallery.name}"`);
       }
     }
 
@@ -285,28 +392,24 @@ export const updateGallery = async (req, res) => {
     }
 
     await gallery.save();
-    await addAuditLog({
-  action: "delete_gallery",
-  performedBy: req.user._id,
-  targetGallery: gallery._id,
-  details: `Deleted gallery: ${gallery.name}`,
-});
 
+    // Fix: The audit log for "delete_gallery" should not be here in updateGallery.
+    // Ensure you log "update_gallery" only once and correctly.
     await addAuditLog({
-  action: "update_gallery",
-  performedBy: req.user._id,
-  targetGallery: gallery._id,
-  details: `Updated gallery: ${gallery.name}`,
-});
+      action: "update_gallery",
+      performedBy: req.user._id,
+      targetGallery: gallery._id,
+      details: `Updated gallery: ${gallery.name}`,
+    });
 
-    await gallery.populate("owner", "username"); // 🔥 adaugă această linie
+    await gallery.populate("owner", "username");
     res.status(200).json(gallery);
   } catch (err) {
-    console.error("Error updating gallery:", err.message);
+    console.error("Error updating gallery:", err.message); // Log the specific error message
     res.status(500).json({ error: err.message });
   }
 };
-
+// ... rest of your controller
 
 
 

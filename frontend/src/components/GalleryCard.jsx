@@ -388,29 +388,29 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               ))}
             </Flex>
           )}
-          {gallery.description && (
-            <>
-              {gallery.description.length > 300 ? (
-                <>
-                  <Collapse startingHeight={100} in={isDescriptionExpanded}>
-                    <Text whiteSpace="pre-wrap">{gallery.description}</Text>
-                  </Collapse>
-                  <Button
-                    variant="link"
-                    colorScheme="blue"
-                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                  >
-                    {isDescriptionExpanded ? 'see less' : 'see more'}
-                  </Button>
-                </>
-              ) : (
-                <Box
-                  className="quill-content"
-                  dangerouslySetInnerHTML={{ __html: gallery.description }}
-                />
-              )}
-            </>
-          )}
+              {gallery.description && (
+            <>
+              {gallery.description.length > 300 ? (
+                <>
+                  <Collapse startingHeight={100} in={isDescriptionExpanded}>
+                    <Text whiteSpace="pre-wrap" dangerouslySetInnerHTML={{ __html: gallery.description }} /> {/* MODIFIED */}
+                  </Collapse>
+                  <Button
+                    variant="link"
+                    colorScheme="blue"
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  >
+                    {isDescriptionExpanded ? 'see less' : 'see more'}
+                  </Button>
+                </>
+              ) : (
+                <Box
+                  className="quill-content"
+                  dangerouslySetInnerHTML={{ __html: gallery.description }}
+                />
+              )}
+            </>
+          )}
           <Flex direction={'row'} gap={2} mt={gallery.description?.length > 900 ? 4 : 2}></Flex>
 
           <ReactSortable

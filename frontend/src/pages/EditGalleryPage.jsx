@@ -7,7 +7,7 @@ import {
   VStack,
   Stack,
   HStack,
-  Select,
+  // Select, // Remove Select as we are using CheckboxGroup
   Avatar,
   Text,
   Flex,
@@ -17,6 +17,9 @@ import {
   IconButton,
   FormControl,
   FormLabel,
+  CheckboxGroup, // Add CheckboxGroup
+  Wrap, // Add Wrap for better layout of checkboxes
+  WrapItem, // Add WrapItem
 } from '@chakra-ui/react';
 import { CloseIcon } from '@chakra-ui/icons';
 import { useEffect, useState } from 'react';
@@ -119,8 +122,16 @@ const EditGalleryPage = () => {
         });
         const data = await res.json();
         if (res.ok) {
-          setGalleryData(data);
+          // Ensure category is an array
+          const categories = Array.isArray(data.category)
+            ? data.category
+            : data.category ? [data.category] : ['General']; // Default to ['General'] if no category or not an array
+          setGalleryData({ ...data, category: categories });
           setCollaborators(data.collaborators || []);
+          // Set preview URL if coverPhoto exists
+          if (data.coverPhoto) {
+            setPreviewUrl(data.coverPhoto);
+          }
         } else {
           showToast('Error', data.error || 'Failed to fetch gallery', 'error');
         }
@@ -131,7 +142,7 @@ const EditGalleryPage = () => {
       }
     };
     fetchGallery();
-  }, [galleryId]);
+  }, [galleryId, showToast]); // Added showToast to dependencies
 
   const handleSearchUsers = async () => {
     if (!searchText.trim()) return;
@@ -191,11 +202,17 @@ const EditGalleryPage = () => {
       return;
     }
 
+    // Ensure at least one category is selected
+    if (galleryData.category.length === 0) {
+      showToast('Error', 'Please select at least one category', 'error');
+      return;
+    }
+
     setIsSaving(true);
     try {
       const formData = new FormData();
       formData.append('name', galleryData.name);
-      formData.append('category', galleryData.category);
+      formData.append('category', JSON.stringify(galleryData.category)); // Stringify the array
       formData.append('description', galleryData.description);
       formData.append('tags', galleryData.tags);
       formData.append('collaborators', JSON.stringify(collaborators.map((u) => u._id)));
@@ -203,7 +220,11 @@ const EditGalleryPage = () => {
       if (croppedCoverImage) {
         const compressed = await compressImage(dataURLtoFile(croppedCoverImage, 'cover.jpg'));
         formData.append('coverPhoto', compressed);
+      } else if (galleryData.coverPhoto === null && previewUrl === null) {
+        // If coverPhoto was removed and no new one selected
+        formData.append('coverPhoto', 'null');
       }
+
 
       const res = await fetch(`/api/galleries/${galleryId}`, {
         method: 'PUT',
@@ -214,7 +235,13 @@ const EditGalleryPage = () => {
       const data = await res.json();
       if (res.ok) {
         showToast('Success', 'Gallery updated successfully', 'success');
-        navigate(`/galleries/${data.owner.username}/${encodeURIComponent(data.name)}`);
+        // Check if data.owner exists before navigating
+        if (data.owner && data.owner.username) {
+            navigate(`/galleries/${data.owner.username}/${encodeURIComponent(data.name)}`);
+        } else {
+            // Fallback navigation if owner data is not immediately available
+            navigate(`/galleries/${galleryId}`);
+        }
       } else {
         showToast('Error', data.error || 'Failed to update gallery', 'error');
       }
@@ -252,17 +279,20 @@ const EditGalleryPage = () => {
             />
 
             <FormControl>
-              <FormLabel>Category</FormLabel>
-              <Select
-                value={galleryData.category || 'General'}
-                onChange={(e) => setGalleryData({ ...galleryData, category: e.target.value })}
+              <FormLabel>Categories</FormLabel>
+              <CheckboxGroup
+                colorScheme="blue"
+                value={galleryData.category}
+                onChange={(values) => setGalleryData({ ...galleryData, category: values })}
               >
-                {GALLERY_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </Select>
+                <Wrap spacing={2}>
+                  {GALLERY_CATEGORIES.map((cat) => (
+                    <WrapItem key={cat}>
+                      <Checkbox value={cat}>{cat}</Checkbox>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+              </CheckboxGroup>
             </FormControl>
 
             <FormControl>
@@ -305,12 +335,12 @@ const EditGalleryPage = () => {
               onChange={(e) => setGalleryData({ ...galleryData, tags: e.target.value })}
             />
 
-            {/* <Checkbox
-				isChecked={galleryData.isPublic === false}
-				onChange={(e) => setGalleryData({ ...galleryData, isPublic: !e.target.checked })}
-			  >
-				Make gallery private
-			  </Checkbox> */}
+            <Checkbox
+              isChecked={galleryData.isPublic === false}
+              onChange={(e) => setGalleryData({ ...galleryData, isPublic: !e.target.checked })}
+            >
+              Make gallery private
+            </Checkbox>
 
             <Input
               placeholder="Search collaborators by username"
@@ -360,10 +390,10 @@ const EditGalleryPage = () => {
 
             <Stack spacing={2} w="full">
               <FormLabel mb={-1}>Cover image</FormLabel>
-              {(previewUrl || galleryData.coverPhoto) && (
+              {(croppedCoverImage || previewUrl) && (
                 <Box position="relative" w="full">
                   <Image
-                    src={croppedCoverImage || previewUrl || galleryData.coverPhoto}
+                    src={croppedCoverImage || previewUrl}
                     alt="Cover Preview"
                     w="100%"
                     h="200px"
@@ -378,9 +408,9 @@ const EditGalleryPage = () => {
                     right="2"
                     aria-label="Remove image"
                     onClick={() => {
-                      setGalleryData({ ...galleryData, coverPhoto: null });
-                      setPreviewUrl(null);
-                      setCoverPhoto(null);
+                      setGalleryData({ ...galleryData, coverPhoto: null }); // Set to null to indicate removal
+                      setPreviewUrl(null); // Clear the displayed preview
+                      setCroppedCoverImage(null); // Clear any newly cropped image
                     }}
                   />
                 </Box>
@@ -403,7 +433,10 @@ const EditGalleryPage = () => {
         isOpen={isCropModalOpen}
         onClose={() => setIsCropModalOpen(false)}
         imageSrc={rawCoverImage}
-        onCropComplete={(cropped) => setCroppedCoverImage(cropped)}
+        onCropComplete={(cropped) => {
+          setCroppedCoverImage(cropped);
+          setPreviewUrl(cropped); // Update previewUrl with the cropped image
+        }}
       />
     </Container>
   );
