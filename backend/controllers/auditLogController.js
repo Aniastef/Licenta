@@ -46,5 +46,3 @@ export const addAuditLog = async ({
     console.error('Error saving audit log:', err);
   }
 };
-
-

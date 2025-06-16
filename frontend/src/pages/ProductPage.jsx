@@ -11,7 +11,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeSection, setActiveSection] = useState('reviews'); 
+  const [activeSection, setActiveSection] = useState('reviews');
 
   const fetchProduct = async () => {
     try {

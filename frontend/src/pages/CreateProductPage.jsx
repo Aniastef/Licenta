@@ -92,7 +92,7 @@ const ALL_CATEGORIES = [
   'Political Art',
   'Activist Art',
   'Environmental Art',
-]; 
+];
 
 const compressImage = async (file) => {
   try {
@@ -311,9 +311,9 @@ const CreateProductPage = () => {
               <CheckboxGroup
                 colorScheme="green"
                 value={newProduct.category}
-                onChange={(
-                  selectedValues, 
-                ) => setNewProduct({ ...newProduct, category: selectedValues })}
+                onChange={(selectedValues) =>
+                  setNewProduct({ ...newProduct, category: selectedValues })
+                }
               >
                 <Wrap spacing={2} mt={2} maxW="100%">
                   {' '}

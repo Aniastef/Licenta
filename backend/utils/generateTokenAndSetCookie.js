@@ -9,8 +9,8 @@ const generateTokenAndSetCookie = (userId, res) => {
 
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: isProduction, 
-    sameSite: isProduction ? 'none' : 'lax', 
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 15 * 24 * 60 * 60 * 1000,
   });
 
@@ -18,5 +18,3 @@ const generateTokenAndSetCookie = (userId, res) => {
 };
 
 export default generateTokenAndSetCookie;
-
-

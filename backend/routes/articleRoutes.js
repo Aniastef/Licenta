@@ -14,11 +14,11 @@ import protectRoute from '../middlewares/protectRoute.js';
 const router = express.Router();
 
 router.post('/', protectRoute, createArticle);
-router.get('/', getAllArticlesFiltered); 
+router.get('/', getAllArticlesFiltered);
 
-router.get('/user/me', protectRoute, getMyArticles); 
-router.get('/user/:username', getArticlesByUser); 
-router.get('/:id', getArticleById); 
+router.get('/user/me', protectRoute, getMyArticles);
+router.get('/user/:username', getArticlesByUser);
+router.get('/:id', getArticleById);
 router.put('/:id', protectRoute, updateArticle);
 router.delete('/:id', protectRoute, deleteArticle);
 router.get('/admin/articles', protectRoute, getAllArticles);

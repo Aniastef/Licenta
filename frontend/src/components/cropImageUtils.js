@@ -31,9 +31,9 @@ export default async function getCroppedImg(imageSrc, pixelCrop) {
     canvas.toBlob((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        resolve(reader.result); 
+        resolve(reader.result);
       };
       reader.readAsDataURL(file);
-    }, 'image/png'); 
+    }, 'image/png');
   });
 }

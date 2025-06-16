@@ -17,7 +17,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
-import articleRoutes from './routes/articleRoutes.js'; 
+import articleRoutes from './routes/articleRoutes.js';
 import { EventEmitter } from 'events';
 import searchRoutes from './routes/searchRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';

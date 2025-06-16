@@ -231,7 +231,7 @@ const OrdersPage = () => {
 
         if (containsEvents && containsProducts) {
           orderType = 'Product & Ticket';
-          orderTypeColorScheme = 'purple'; 
+          orderTypeColorScheme = 'purple';
         } else if (containsEvents) {
           orderType = 'Ticket';
           orderTypeColorScheme = 'blue';

@@ -94,7 +94,7 @@ export const handlePaymentSuccess = async (req, res) => {
       phone: phone?.trim() || '',
     });
 
-    user.cart = []; 
+    user.cart = [];
     await user.save();
 
     console.log('Order placed successfully');

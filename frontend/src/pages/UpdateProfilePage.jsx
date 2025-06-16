@@ -76,51 +76,51 @@ export default function UpdateProfilePage() {
   const { imgUrl, setImgUrl } = usePreviewImg();
 
   const calculateAge = (dateOfBirth) => {
-  if (!dateOfBirth) return null;
-  const dob = new Date(dateOfBirth);
-  const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear();
-  const monthDifference = today.getMonth() - dob.getMonth();
-  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dob.getDate())) {
-    age--;
-  }
-  return age;
-};
-
-// In UpdateProfilePage.jsx, inside the useEffect
-useEffect(() => {
-    if (user) {
-        setInputs({
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            username: user.username || '',
-            email: user.email || '',
-            bio: user.bio || '',
-            oldPassword: '',
-            password: '',
-            confirmPassword: '',
-            location: user.location || '',
-            address: user.address || '',
-            city: user.city || '',
-            country: user.country || '',
-            profession: user.profession || '',
-            dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
-            phone: user.phone || '',
-            webpage: user.webpage || '',
-            gender: user.gender || '',
-            customGender: user.customGender || '', // Ensure this is handled if you store it directly or map it.
-            pronouns: user.pronouns || '',
-            postalCode: user.postalCode || '',
-            hobbies: user.hobbies || '',
-            facebook: user.facebook || '',
-            instagram: user.instagram || '',
-            soundcloud: user.soundcloud || '',
-            spotify: user.spotify || '',
-            linkedin: user.linkedin || '',
-        });
-        setImgUrl(user.profilePicture || null);
+    if (!dateOfBirth) return null;
+    const dob = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDifference = today.getMonth() - dob.getMonth();
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dob.getDate())) {
+      age--;
     }
-}, [user, setImgUrl]); // Added setImgUrl to dependency array
+    return age;
+  };
+
+  // In UpdateProfilePage.jsx, inside the useEffect
+  useEffect(() => {
+    if (user) {
+      setInputs({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        username: user.username || '',
+        email: user.email || '',
+        bio: user.bio || '',
+        oldPassword: '',
+        password: '',
+        confirmPassword: '',
+        location: user.location || '',
+        address: user.address || '',
+        city: user.city || '',
+        country: user.country || '',
+        profession: user.profession || '',
+        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
+        phone: user.phone || '',
+        webpage: user.webpage || '',
+        gender: user.gender || '',
+        customGender: user.customGender || '', // Ensure this is handled if you store it directly or map it.
+        pronouns: user.pronouns || '',
+        postalCode: user.postalCode || '',
+        hobbies: user.hobbies || '',
+        facebook: user.facebook || '',
+        instagram: user.instagram || '',
+        soundcloud: user.soundcloud || '',
+        spotify: user.spotify || '',
+        linkedin: user.linkedin || '',
+      });
+      setImgUrl(user.profilePicture || null);
+    }
+  }, [user, setImgUrl]); // Added setImgUrl to dependency array
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -245,7 +245,6 @@ useEffect(() => {
             </Box>
           </VStack>
           <VStack spacing={4} flex={1}>
-            
             <HStack spacing={4} w="100%">
               <FormControl>
                 <FormLabel fontWeight="bold">First Name</FormLabel>
@@ -254,15 +253,15 @@ useEffect(() => {
                   onChange={(e) => setInputs({ ...inputs, firstName: e.target.value })}
                 />
               </FormControl>
-            {}
-            <FormControl>
-              <FormLabel fontWeight="bold">Date of Birth</FormLabel>
-              <Input
-                type="date"
-                value={inputs.dateOfBirth}
-                onChange={(e) => setInputs({ ...inputs, dateOfBirth: e.target.value })}
-              />
-            </FormControl>
+              {}
+              <FormControl>
+                <FormLabel fontWeight="bold">Date of Birth</FormLabel>
+                <Input
+                  type="date"
+                  value={inputs.dateOfBirth}
+                  onChange={(e) => setInputs({ ...inputs, dateOfBirth: e.target.value })}
+                />
+              </FormControl>
             </HStack>
             <HStack spacing={4} w="100%">
               <FormControl>

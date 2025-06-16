@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-   dateOfBirth: {
+    dateOfBirth: {
       type: Date,
       required: false,
     },
@@ -113,7 +113,7 @@ const userSchema = new mongoose.Schema(
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          refPath: 'cart.itemType', 
+          refPath: 'cart.itemType',
         },
         quantity: { type: Number, default: 1 },
         itemType: {
@@ -124,16 +124,16 @@ const userSchema = new mongoose.Schema(
       },
     ],
     articles: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Article',
-  },
-],
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Article',
+      },
+    ],
 
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product', 
+        ref: 'Product',
       },
     ],
     orders: [
@@ -221,10 +221,10 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'], 
+      enum: ['user', 'admin'],
       default: 'user',
     },
-    isVerified: { type: Boolean, default: false }, 
+    isVerified: { type: Boolean, default: false },
     verificationToken: { type: String },
     isBlocked: {
       type: Boolean,

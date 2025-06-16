@@ -6,7 +6,7 @@ const useLoadGoogleMapsScript = (apiKey) => {
 
   useEffect(() => {
     if (window.google) {
-      setIsLoaded(true); 
+      setIsLoaded(true);
       return;
     }
 

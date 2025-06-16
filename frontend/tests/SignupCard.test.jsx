@@ -39,7 +39,7 @@ describe('SignupCard', () => {
   const mockShowToast = jest.fn();
 
   beforeAll(() => {
-    jest.useFakeTimers(); 
+    jest.useFakeTimers();
   });
 
   afterAll(() => {

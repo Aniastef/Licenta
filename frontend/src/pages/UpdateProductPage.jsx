@@ -20,7 +20,7 @@ import {
   CheckboxGroup,
   Wrap,
   WrapItem,
-  Textarea
+  Textarea,
 } from '@chakra-ui/react';
 import { CloseIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
@@ -128,7 +128,7 @@ const EditProductPage = () => {
   const [newVideoPreviews, setNewVideoPreviews] = useState([]);
   const [newAudioPreviews, setNewAudioPreviews] = useState([]);
   const [userGalleries, setUserGalleries] = useState([]);
-  const [selectedGalleryId, setSelectedGalleryId] = useState(''); 
+  const [selectedGalleryId, setSelectedGalleryId] = useState('');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -140,19 +140,24 @@ const EditProductPage = () => {
         if (res.ok) {
           const initialCategories = Array.isArray(data.product.category)
             ? data.product.category
-            : (data.product.category ? [data.product.category] : []);
+            : data.product.category
+              ? [data.product.category]
+              : [];
 
           setProduct({
             ...data.product,
-            category: initialCategories.length > 0 ? initialCategories : ['General']
+            category: initialCategories.length > 0 ? initialCategories : ['General'],
           });
 
-          if (data.product.galleries && data.product.galleries.length > 0 && data.product.galleries[0].gallery) {
+          if (
+            data.product.galleries &&
+            data.product.galleries.length > 0 &&
+            data.product.galleries[0].gallery
+          ) {
             setSelectedGalleryId(data.product.galleries[0].gallery._id.toString());
           } else {
             setSelectedGalleryId('general-placeholder');
           }
-
         } else {
           showToast('Error', data.error, 'error');
           setProduct(null);
@@ -172,19 +177,19 @@ const EditProductPage = () => {
     const fetchGalleries = async () => {
       try {
         if (currentUser && currentUser.username) {
-            const res = await fetch(`/api/galleries/user/${currentUser.username}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-            });
-            const data = await res.json();
-            if (data.galleries) {
-                setUserGalleries(data.galleries);
-            } else if (data.error) {
-                showToast('Error fetching galleries', data.error, 'error');
-            }
+          const res = await fetch(`/api/galleries/user/${currentUser.username}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          });
+          const data = await res.json();
+          if (data.galleries) {
+            setUserGalleries(data.galleries);
+          } else if (data.error) {
+            showToast('Error fetching galleries', data.error, 'error');
+          }
         }
       } catch (err) {
         console.error('Error fetching galleries:', err.message);
@@ -192,7 +197,7 @@ const EditProductPage = () => {
       }
     };
     if (currentUser) {
-        fetchGalleries();
+      fetchGalleries();
     }
   }, [currentUser, showToast]);
 
@@ -230,25 +235,25 @@ const EditProductPage = () => {
     const newPreviewsToAdd = [];
     const newFilesToAdd = [];
 
-    files.forEach(file => {
-        newFilesToAdd.push(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            newPreviewsToAdd.push(reader.result);
-            if (newPreviewsToAdd.length === files.length) {
-                if (type === 'images') {
-                    setNewImageFiles(prev => [...prev, ...newFilesToAdd]);
-                    setNewImagePreviews(prev => [...prev, ...newPreviewsToAdd]);
-                } else if (type === 'videos') {
-                    setNewVideoFiles(prev => [...prev, ...newFilesToAdd]);
-                    setNewVideoPreviews(prev => [...prev, ...newPreviewsToAdd]);
-                } else if (type === 'audios') {
-                    setNewAudioFiles(prev => [...prev, ...newFilesToAdd]);
-                    setNewAudioPreviews(prev => [...prev, ...newPreviewsToAdd]);
-                }
-            }
-        };
-        reader.readAsDataURL(file);
+    files.forEach((file) => {
+      newFilesToAdd.push(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPreviewsToAdd.push(reader.result);
+        if (newPreviewsToAdd.length === files.length) {
+          if (type === 'images') {
+            setNewImageFiles((prev) => [...prev, ...newFilesToAdd]);
+            setNewImagePreviews((prev) => [...prev, ...newPreviewsToAdd]);
+          } else if (type === 'videos') {
+            setNewVideoFiles((prev) => [...prev, ...newFilesToAdd]);
+            setNewVideoPreviews((prev) => [...prev, ...newPreviewsToAdd]);
+          } else if (type === 'audios') {
+            setNewAudioFiles((prev) => [...prev, ...newFilesToAdd]);
+            setNewAudioPreviews((prev) => [...prev, ...newPreviewsToAdd]);
+          }
+        }
+      };
+      reader.readAsDataURL(file);
     });
   };
 
@@ -260,17 +265,19 @@ const EditProductPage = () => {
     }
   };
 
-const handleUpdate = async () => {
+  const handleUpdate = async () => {
     if (!product.title) {
       showToast('Error', 'Title is required', 'error');
       return;
     }
 
-    const hasExistingAudio = (product.audios && product.audios.length > 0);
+    const hasExistingAudio = product.audios && product.audios.length > 0;
     const hasNewAudio = newAudioFiles.length > 0;
     const isAddingAudio = hasExistingAudio || hasNewAudio;
 
-    const hasExistingVisual = (product.images && product.images.length > 0) || (product.videos && product.videos.length > 0);
+    const hasExistingVisual =
+      (product.images && product.images.length > 0) ||
+      (product.videos && product.videos.length > 0);
     const hasNewVisual = newImageFiles.length > 0 || newVideoFiles.length > 0;
     const hasVisualMedia = hasExistingVisual || hasNewVisual;
 
@@ -286,16 +293,17 @@ const handleUpdate = async () => {
       const videosBase64 = await Promise.all(newVideoFiles.map(fileToBase64));
       const audiosBase64 = await Promise.all(newAudioFiles.map(fileToBase64));
 
-      const galleriesToSend = selectedGalleryId && selectedGalleryId !== 'general-placeholder'
-        ? [{ gallery: selectedGalleryId, order: 0 }]
-        : [];
+      const galleriesToSend =
+        selectedGalleryId && selectedGalleryId !== 'general-placeholder'
+          ? [{ gallery: selectedGalleryId, order: 0 }]
+          : [];
 
       const updated = {
         ...product,
         images: [...(product.images || []), ...imagesBase64],
         videos: [...(product.videos || []), ...videosBase64],
         audios: [...(product.audios || []), ...audiosBase64],
-        galleries: galleriesToSend, 
+        galleries: galleriesToSend,
         category: product.category.length > 0 ? product.category : ['General'],
       };
 
@@ -309,7 +317,7 @@ const handleUpdate = async () => {
       const data = await res.json();
       if (res.ok) {
         showToast('Product updated', '', 'success');
-        navigate(`/products/${product._id}`); 
+        navigate(`/products/${product._id}`);
       } else {
         showToast('Update failed', data.error, 'error');
       }
@@ -320,318 +328,322 @@ const handleUpdate = async () => {
     }
   };
 
- if (currentUser && product && product.user && currentUser._id !== product.user._id) {
-  showToast('Error', 'You are not authorized to edit this product.', 'error');
-  navigate(`/`);
-  return null; 
-}
+  if (currentUser && product && product.user && currentUser._id !== product.user._id) {
+    showToast('Error', 'You are not authorized to edit this product.', 'error');
+    navigate(`/`);
+    return null;
+  }
 
   return (
     product && (
-    <Container maxW="container.md" py={10}>
-      <VStack spacing={8}>
-        <Heading size="xl">Edit artwork</Heading>
-        <Box w="full" p={6} rounded="lg" shadow="md">
-          <VStack spacing={4} align="stretch">
-            <FormControl>
-              <FormLabel>Title</FormLabel>
-              <Input
-                placeholder="Artwork title"
-                value={product.title ?? ''}
-                onChange={(e) => setProduct({ ...product, title: e.target.value })}
-              />
-            </FormControl>
+      <Container maxW="container.md" py={10}>
+        <VStack spacing={8}>
+          <Heading size="xl">Edit artwork</Heading>
+          <Box w="full" p={6} rounded="lg" shadow="md">
+            <VStack spacing={4} align="stretch">
+              <FormControl>
+                <FormLabel>Title</FormLabel>
+                <Input
+                  placeholder="Artwork title"
+                  value={product.title ?? ''}
+                  onChange={(e) => setProduct({ ...product, title: e.target.value })}
+                />
+              </FormControl>
 
-            <FormControl>
-              <FormLabel>Description</FormLabel>
-              <ReactQuill
-                theme="snow"
-                value={product.description ?? ''}
-                onChange={(value) => setProduct({ ...product, description: value })}
-                modules={{
-                  toolbar: [
-                    [{ header: [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ list: 'ordered' }, { list: 'bullet' }],
-                    [{ align: [] }],
-                    [{ color: [] }, { background: [] }],
-                    ['link', 'image'],
-                    ['clean'],
-                  ],
-                }}
-                formats={[
-                  'header',
-                  'bold',
-                  'italic',
-                  'underline',
-                  'strike',
-                  'list',
-                  'bullet',
-                  'align',
-                  'color',
-                  'background',
-                  'link',
-                  'image',
-                ]}
-                style={{ height: '200px', width: '100%', marginBottom: '50px' }}
-              />
-            </FormControl>
+              <FormControl>
+                <FormLabel>Description</FormLabel>
+                <ReactQuill
+                  theme="snow"
+                  value={product.description ?? ''}
+                  onChange={(value) => setProduct({ ...product, description: value })}
+                  modules={{
+                    toolbar: [
+                      [{ header: [1, 2, 3, false] }],
+                      ['bold', 'italic', 'underline', 'strike'],
+                      [{ list: 'ordered' }, { list: 'bullet' }],
+                      [{ align: [] }],
+                      [{ color: [] }, { background: [] }],
+                      ['link', 'image'],
+                      ['clean'],
+                    ],
+                  }}
+                  formats={[
+                    'header',
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strike',
+                    'list',
+                    'bullet',
+                    'align',
+                    'color',
+                    'background',
+                    'link',
+                    'image',
+                  ]}
+                  style={{ height: '200px', width: '100%', marginBottom: '50px' }}
+                />
+              </FormControl>
 
-            <FormControl display="flex" alignItems="center">
-              <FormLabel htmlFor="for-sale-switch" mb="0">
-                Is for sale?
-              </FormLabel>
-              <Switch
-                id="for-sale-switch"
-                isChecked={product.forSale}
-                onChange={(e) => setProduct({ ...product, forSale: e.target.checked })}
-              />
-            </FormControl>
+              <FormControl display="flex" alignItems="center">
+                <FormLabel htmlFor="for-sale-switch" mb="0">
+                  Is for sale?
+                </FormLabel>
+                <Switch
+                  id="for-sale-switch"
+                  isChecked={product.forSale}
+                  onChange={(e) => setProduct({ ...product, forSale: e.target.checked })}
+                />
+              </FormControl>
 
-            {product.forSale && (
-              <>
-                <FormControl>
-                  <FormLabel>Price (EUR)</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder="e.g., 99.99"
-                    value={product.price ?? 0}
-                    onChange={(e) =>
-                      setProduct({ ...product, price: parseFloat(e.target.value) || 0 })
-                    }
-                  />
-                </FormControl>
+              {product.forSale && (
+                <>
+                  <FormControl>
+                    <FormLabel>Price (EUR)</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 99.99"
+                      value={product.price ?? 0}
+                      onChange={(e) =>
+                        setProduct({ ...product, price: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  </FormControl>
 
-                <FormControl>
-                  <FormLabel>Quantity</FormLabel>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="e.g., 10"
-                    value={product.quantity}
-                    onChange={(e) =>
-                      setProduct({
-                        ...product,
-                        quantity: parseInt(e.target.value) || 0,
-                      })
-                    }
-                  />
-                </FormControl>
-              </>
-            )}
+                  <FormControl>
+                    <FormLabel>Quantity</FormLabel>
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="e.g., 10"
+                      value={product.quantity}
+                      onChange={(e) =>
+                        setProduct({
+                          ...product,
+                          quantity: parseInt(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </FormControl>
+                </>
+              )}
 
-            <FormControl>
-              <FormLabel>Categories</FormLabel>
-              <CheckboxGroup
-                colorScheme="orange"
-                value={product.category || ['General']}
-                onChange={handleCategoryChange}
-              >
-                <Wrap spacing={3}>
-                  {ALL_CATEGORIES.map((cat) => (
-                    <WrapItem key={cat}>
-                      <Checkbox value={cat}>{cat}</Checkbox>
-                    </WrapItem>
+              <FormControl>
+                <FormLabel>Categories</FormLabel>
+                <CheckboxGroup
+                  colorScheme="orange"
+                  value={product.category || ['General']}
+                  onChange={handleCategoryChange}
+                >
+                  <Wrap spacing={3}>
+                    {ALL_CATEGORIES.map((cat) => (
+                      <WrapItem key={cat}>
+                        <Checkbox value={cat}>{cat}</Checkbox>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                </CheckboxGroup>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Gallery</FormLabel>
+                <Select
+                  value={selectedGalleryId}
+                  onChange={(e) => {
+                    const selected = e.target.value;
+                    setSelectedGalleryId(selected);
+                  }}
+                >
+                  <option value="general-placeholder">General</option>
+                  {userGalleries.map((gallery) => (
+                    <option key={gallery._id} value={gallery._id}>
+                      {gallery.name}
+                    </option>
                   ))}
-                </Wrap>
-              </CheckboxGroup>
-            </FormControl>
+                </Select>
+              </FormControl>
 
-         <FormControl>
-              <FormLabel>Gallery</FormLabel>
-              <Select
-                value={selectedGalleryId}
-                onChange={(e) => {
-                  const selected = e.target.value;
-                  setSelectedGalleryId(selected);
-                }}
-              >
-                <option value="general-placeholder">General</option>
-                {userGalleries.map((gallery) => (
-                  <option key={gallery._id} value={gallery._id}>
-                    {gallery.name}
-                  </option>
-                ))}
-              </Select>
-            </FormControl>
-
-            {}
-            {(product.images?.length > 0 || product.videos?.length > 0 || product.audios?.length > 0) && (
+              {}
+              {(product.images?.length > 0 ||
+                product.videos?.length > 0 ||
+                product.audios?.length > 0) && (
                 <Box>
-                    <Text fontSize="lg" fontWeight="bold" mb={2}>Existing Media:</Text>
-                    <Flex gap={3} wrap="wrap" align="center">
-                        {product.images?.map((src, i) => (
-                            <Box key={`existing-img-${i}`} position="relative">
-                                <Image src={src} boxSize="100px" objectFit="cover" borderRadius="md" />
-                                <IconButton
-                                    icon={<CloseIcon />}
-                                    size="xs"
-                                    colorScheme="red"
-                                    position="absolute"
-                                    top="0"
-                                    right="0"
-                                    onClick={() => handleRemoveExistingMedia('images', i)}
-                                    aria-label="Remove image"
-                                />
-                            </Box>
-                        ))}
-                        {product.videos?.map((src, i) => (
-                            <Box key={`existing-vid-${i}`} position="relative">
-                                <video src={src} width="160" controls style={{ borderRadius: '8px' }} />
-                                <IconButton
-                                    icon={<CloseIcon />}
-                                    size="xs"
-                                    colorScheme="red"
-                                    position="absolute"
-                                    top="0"
-                                    right="0"
-                                    onClick={() => handleRemoveExistingMedia('videos', i)}
-                                    aria-label="Remove video"
-                                />
-                            </Box>
-                        ))}
-                        {product.audios?.map((src, i) => (
-                            <Box key={`existing-aud-${i}`} position="relative">
-                                <audio src={src} controls style={{ borderRadius: '8px' }} />
-                                <IconButton
-                                    icon={<CloseIcon />}
-                                    size="xs"
-                                    colorScheme="red"
-                                    position="absolute"
-                                    top="0"
-                                    right="0"
-                                    onClick={() => handleRemoveExistingMedia('audios', i)}
-                                    aria-label="Remove audio"
-                                />
-                            </Box>
-                        ))}
-                    </Flex>
+                  <Text fontSize="lg" fontWeight="bold" mb={2}>
+                    Existing Media:
+                  </Text>
+                  <Flex gap={3} wrap="wrap" align="center">
+                    {product.images?.map((src, i) => (
+                      <Box key={`existing-img-${i}`} position="relative">
+                        <Image src={src} boxSize="100px" objectFit="cover" borderRadius="md" />
+                        <IconButton
+                          icon={<CloseIcon />}
+                          size="xs"
+                          colorScheme="red"
+                          position="absolute"
+                          top="0"
+                          right="0"
+                          onClick={() => handleRemoveExistingMedia('images', i)}
+                          aria-label="Remove image"
+                        />
+                      </Box>
+                    ))}
+                    {product.videos?.map((src, i) => (
+                      <Box key={`existing-vid-${i}`} position="relative">
+                        <video src={src} width="160" controls style={{ borderRadius: '8px' }} />
+                        <IconButton
+                          icon={<CloseIcon />}
+                          size="xs"
+                          colorScheme="red"
+                          position="absolute"
+                          top="0"
+                          right="0"
+                          onClick={() => handleRemoveExistingMedia('videos', i)}
+                          aria-label="Remove video"
+                        />
+                      </Box>
+                    ))}
+                    {product.audios?.map((src, i) => (
+                      <Box key={`existing-aud-${i}`} position="relative">
+                        <audio src={src} controls style={{ borderRadius: '8px' }} />
+                        <IconButton
+                          icon={<CloseIcon />}
+                          size="xs"
+                          colorScheme="red"
+                          position="absolute"
+                          top="0"
+                          right="0"
+                          onClick={() => handleRemoveExistingMedia('audios', i)}
+                          aria-label="Remove audio"
+                        />
+                      </Box>
+                    ))}
+                  </Flex>
                 </Box>
-            )}
+              )}
 
-            {}
-            <FormControl>
-              <FormLabel>Add Images</FormLabel>
-              <Input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => handleFileChange(e, 'images')}
-              />
-              <Flex gap={3} wrap="wrap" mt={2}>
-                {newImagePreviews.map((src, i) => (
-                  <Box key={`new-img-${i}`} position="relative">
-                    <Image src={src} boxSize="100px" objectFit="cover" borderRadius="md" />
-                    <IconButton
-                      icon={<CloseIcon />}
-                      size="xs"
-                      colorScheme="red"
-                      position="absolute"
-                      top="0"
-                      right="0"
-                      onClick={() => handleRemoveNewMedia('images', i)}
-                      aria-label="Remove new image"
-                    />
-                  </Box>
-                ))}
-              </Flex>
-            </FormControl>
+              {}
+              <FormControl>
+                <FormLabel>Add Images</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => handleFileChange(e, 'images')}
+                />
+                <Flex gap={3} wrap="wrap" mt={2}>
+                  {newImagePreviews.map((src, i) => (
+                    <Box key={`new-img-${i}`} position="relative">
+                      <Image src={src} boxSize="100px" objectFit="cover" borderRadius="md" />
+                      <IconButton
+                        icon={<CloseIcon />}
+                        size="xs"
+                        colorScheme="red"
+                        position="absolute"
+                        top="0"
+                        right="0"
+                        onClick={() => handleRemoveNewMedia('images', i)}
+                        aria-label="Remove new image"
+                      />
+                    </Box>
+                  ))}
+                </Flex>
+              </FormControl>
 
-            <FormControl>
-              <FormLabel>Add Videos</FormLabel>
-              <Input
-                type="file"
-                accept="video/*"
-                multiple
-                onChange={(e) => handleFileChange(e, 'videos')}
-              />
-              <Flex gap={3} wrap="wrap" mt={2}>
-                {newVideoPreviews.map((src, i) => (
-                  <Box key={`new-vid-${i}`} position="relative">
-                    <video src={src} width="160" controls style={{ borderRadius: '8px' }} />
-                    <IconButton
-                      icon={<CloseIcon />}
-                      size="xs"
-                      colorScheme="red"
-                      position="absolute"
-                      top="0"
-                      right="0"
-                      onClick={() => handleRemoveNewMedia('videos', i)}
-                      aria-label="Remove new video"
-                    />
-                  </Box>
-                ))}
-              </Flex>
-            </FormControl>
+              <FormControl>
+                <FormLabel>Add Videos</FormLabel>
+                <Input
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  onChange={(e) => handleFileChange(e, 'videos')}
+                />
+                <Flex gap={3} wrap="wrap" mt={2}>
+                  {newVideoPreviews.map((src, i) => (
+                    <Box key={`new-vid-${i}`} position="relative">
+                      <video src={src} width="160" controls style={{ borderRadius: '8px' }} />
+                      <IconButton
+                        icon={<CloseIcon />}
+                        size="xs"
+                        colorScheme="red"
+                        position="absolute"
+                        top="0"
+                        right="0"
+                        onClick={() => handleRemoveNewMedia('videos', i)}
+                        aria-label="Remove new video"
+                      />
+                    </Box>
+                  ))}
+                </Flex>
+              </FormControl>
 
-            <FormControl>
-              <FormLabel>Add Audios</FormLabel>
-              <Input
-                type="file"
-                accept="audio/*"
-                multiple
-                onChange={(e) => handleFileChange(e, 'audios')}
-              />
-              <Flex gap={3} wrap="wrap" mt={2}>
-                {newAudioPreviews.map((src, i) => (
-                  <Box key={`new-aud-${i}`} position="relative">
-                    <audio src={src} controls style={{ borderRadius: '8px' }} />
-                    <IconButton
-                      icon={<CloseIcon />}
-                      size="xs"
-                      colorScheme="red"
-                      position="absolute"
-                      top="0"
-                      right="0"
-                      onClick={() => handleRemoveNewMedia('audios', i)}
-                      aria-label="Remove new audio"
-                    />
-                  </Box>
-                ))}
-              </Flex>
-            </FormControl>
+              <FormControl>
+                <FormLabel>Add Audios</FormLabel>
+                <Input
+                  type="file"
+                  accept="audio/*"
+                  multiple
+                  onChange={(e) => handleFileChange(e, 'audios')}
+                />
+                <Flex gap={3} wrap="wrap" mt={2}>
+                  {newAudioPreviews.map((src, i) => (
+                    <Box key={`new-aud-${i}`} position="relative">
+                      <audio src={src} controls style={{ borderRadius: '8px' }} />
+                      <IconButton
+                        icon={<CloseIcon />}
+                        size="xs"
+                        colorScheme="red"
+                        position="absolute"
+                        top="0"
+                        right="0"
+                        onClick={() => handleRemoveNewMedia('audios', i)}
+                        aria-label="Remove new audio"
+                      />
+                    </Box>
+                  ))}
+                </Flex>
+              </FormControl>
 
-            <FormControl>
-              <FormLabel>Writing / poem</FormLabel>
-              <ReactQuill
-                theme="snow"
-                value={product.writing ?? ''}
-                onChange={(value) => setProduct({ ...product, writing: value })}
-                modules={{
-                  toolbar: [
-                    [{ header: [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ list: 'ordered' }, { list: 'bullet' }],
-                    [{ align: [] }],
-                    [{ color: [] }, { background: [] }],
-                    ['link'],
-                    ['clean'],
-                  ],
-                }}
-                formats={[
-                  'header',
-                  'bold',
-                  'italic',
-                  'underline',
-                  'strike',
-                  'list',
-                  'bullet',
-                  'align',
-                  'color',
-                  'background',
-                  'link',
-                ]}
-                style={{ height: '200px', width: '100%', marginBottom: '50px' }}
-              />
-            </FormControl>
+              <FormControl>
+                <FormLabel>Writing / poem</FormLabel>
+                <ReactQuill
+                  theme="snow"
+                  value={product.writing ?? ''}
+                  onChange={(value) => setProduct({ ...product, writing: value })}
+                  modules={{
+                    toolbar: [
+                      [{ header: [1, 2, 3, false] }],
+                      ['bold', 'italic', 'underline', 'strike'],
+                      [{ list: 'ordered' }, { list: 'bullet' }],
+                      [{ align: [] }],
+                      [{ color: [] }, { background: [] }],
+                      ['link'],
+                      ['clean'],
+                    ],
+                  }}
+                  formats={[
+                    'header',
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strike',
+                    'list',
+                    'bullet',
+                    'align',
+                    'color',
+                    'background',
+                    'link',
+                  ]}
+                  style={{ height: '200px', width: '100%', marginBottom: '50px' }}
+                />
+              </FormControl>
 
-            <Button colorScheme="orange" onClick={handleUpdate} isLoading={updating} w="full">
-              Save Changes
-            </Button>
-          </VStack>
-        </Box>
-      </VStack>
-    </Container>
+              <Button colorScheme="orange" onClick={handleUpdate} isLoading={updating} w="full">
+                Save Changes
+              </Button>
+            </VStack>
+          </Box>
+        </VStack>
+      </Container>
     )
   );
 };

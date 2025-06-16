@@ -55,15 +55,14 @@ const MessagesPage = () => {
 
   const toast = useToast();
 
-
   const handleRemoveFile = (fileIndex) => {
-  const updatedFiles = selectedFiles.filter((_, index) => index !== fileIndex);
-  setSelectedFiles(updatedFiles);
+    const updatedFiles = selectedFiles.filter((_, index) => index !== fileIndex);
+    setSelectedFiles(updatedFiles);
 
-  if (fileInputRef.current) {
-    fileInputRef.current.value = '';
-  }
-};
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -96,12 +95,11 @@ const MessagesPage = () => {
 
   useEffect(() => {
     if (userId) {
-
       const userFromConversations = conversations.find((conv) => conv.user._id === userId);
       if (userFromConversations) {
         setSelectedUser(userFromConversations.user);
       }
-      fetchMessages(userId); 
+      fetchMessages(userId);
     } else {
       setSelectedUser(null);
       setMessages([]);
@@ -113,7 +111,7 @@ const MessagesPage = () => {
       const found = conversations.find((conv) => conv.user._id === userId);
       if (found) setSelectedUser(found.user);
     }
-  }, [currentUser]); 
+  }, [currentUser]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -239,7 +237,6 @@ const MessagesPage = () => {
     }
   };
 
-
   const handleSelectUser = (user, e) => {
     if (e) {
       e.preventDefault();
@@ -247,19 +244,17 @@ const MessagesPage = () => {
     }
 
     if (selectedUser && selectedUser._id === user._id && userId === user._id) {
-      setSearch(''); 
+      setSearch('');
       setSearchResults([]);
-      return; 
+      return;
     }
 
     setSelectedUser(user);
-    setSearch(''); 
+    setSearch('');
     setSearchResults([]);
-
 
     navigate(`/messages/${user._id}`);
 
- 
     fetchMessages(user._id);
 
     if (currentUser && currentUser.blockedUsers) {
@@ -311,7 +306,7 @@ const MessagesPage = () => {
         },
         credentials: 'include',
         body: JSON.stringify({
-          receiverId: userId, 
+          receiverId: userId,
           content: newMessage,
           attachments: attachmentsData,
         }),
@@ -341,7 +336,7 @@ const MessagesPage = () => {
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-        fetchConversations(); 
+        fetchConversations();
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -355,7 +350,6 @@ const MessagesPage = () => {
     return sentMessages.length > 0 ? sentMessages[sentMessages.length - 1] : null;
   };
 
- 
   const handleSubmitReport = async () => {
     if (!reportReason) {
       toast({ title: 'Please select a reason', status: 'warning' });
@@ -484,7 +478,7 @@ const MessagesPage = () => {
 
       {}
       <Box width="70%" p={5}>
-        {selectedUser ? ( 
+        {selectedUser ? (
           <>
             <VStack mb={4} align="start" spacing={3}>
               <HStack spacing={4} align="center" width="100%">
@@ -562,7 +556,7 @@ const MessagesPage = () => {
                                 src={msg.sender?.profilePicture || undefined}
                               />
                             )}
-                            {isCurrentUser && ( 
+                            {isCurrentUser && (
                               <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
                                 {new Date(msg.timestamp).toLocaleTimeString([], {
                                   hour: '2-digit',
@@ -633,7 +627,7 @@ const MessagesPage = () => {
                                   );
                                 })}
                             </MotionBox>
-                            {!isCurrentUser && ( 
+                            {!isCurrentUser && (
                               <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
                                 {new Date(msg.timestamp).toLocaleTimeString([], {
                                   hour: '2-digit',
@@ -666,63 +660,69 @@ const MessagesPage = () => {
 
             {!isBlocked ? (
               <>
-              {selectedFiles.length > 0 && (
-      <VStack
-        align="start"
-        spacing={2}
-        p={3}
-        border="1px solid #e2e8f0"
-        borderRadius="md"
-        mb={3}
-      >
-        <Text fontSize="sm" fontWeight="bold" color="gray.600">
-          Atașamente:
-        </Text>
-        {selectedFiles.map((file, index) => (
-          <HStack key={index} justify="space-between" width="100%">
-            <Text fontSize="sm" noOfLines={1}>
-              {file.name}
-            </Text>
-            <Button
-              size="xs"
-              colorScheme="red"
-              variant="ghost"
-              onClick={() => handleRemoveFile(index)}
-            >
-              x
-            </Button>
-          </HStack>
-        ))}
-      </VStack>
-    )}
-              <Flex mt={4}>
-                <Input
-                  placeholder="Type a message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  flex={1}
-                  fontSize="lg"
-                  py={3}
-                />
-                <Flex align="center" gap={2}>
-                  <Button variant="ghost" onClick={() => fileInputRef.current.click()}>
-                    <Image src={attachIcon} alt="Attach" boxSize="25px" />
-                  </Button>
+                {selectedFiles.length > 0 && (
+                  <VStack
+                    align="start"
+                    spacing={2}
+                    p={3}
+                    border="1px solid #e2e8f0"
+                    borderRadius="md"
+                    mb={3}
+                  >
+                    <Text fontSize="sm" fontWeight="bold" color="gray.600">
+                      Atașamente:
+                    </Text>
+                    {selectedFiles.map((file, index) => (
+                      <HStack key={index} justify="space-between" width="100%">
+                        <Text fontSize="sm" noOfLines={1}>
+                          {file.name}
+                        </Text>
+                        <Button
+                          size="xs"
+                          colorScheme="red"
+                          variant="ghost"
+                          onClick={() => handleRemoveFile(index)}
+                        >
+                          x
+                        </Button>
+                      </HStack>
+                    ))}
+                  </VStack>
+                )}
+                <Flex mt={4}>
                   <Input
-                    type="file"
-                    ref={fileInputRef}
-                    multiple
-                    display="none"
-                    onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
+                    placeholder="Type a message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                    flex={1}
+                    fontSize="lg"
+                    py={3}
                   />
-                </Flex>
+                  <Flex align="center" gap={2}>
+                    <Button variant="ghost" onClick={() => fileInputRef.current.click()}>
+                      <Image src={attachIcon} alt="Attach" boxSize="25px" />
+                    </Button>
+                    <Input
+                      type="file"
+                      ref={fileInputRef}
+                      multiple
+                      display="none"
+                      onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
+                    />
+                  </Flex>
 
-                <Button ml={2} colorScheme="blue" onClick={handleSendMessage} px={6} fontSize="lg">
-                  Send
-                </Button>
-              </Flex>
-               </>
+                  <Button
+                    ml={2}
+                    colorScheme="blue"
+                    onClick={handleSendMessage}
+                    px={6}
+                    fontSize="lg"
+                  >
+                    Send
+                  </Button>
+                </Flex>
+              </>
             ) : (
               <Text mt={4} fontSize="md" color="red.500">
                 You have blocked this user. Unblock them to continue the conversation.

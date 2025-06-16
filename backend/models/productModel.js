@@ -4,7 +4,7 @@ const productSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     category: {
-      type: [String], 
+      type: [String],
       enum: [
         'General',
         'Photography',
@@ -70,7 +70,7 @@ const productSchema = new mongoose.Schema(
         'Activist Art',
         'Environmental Art',
       ],
-      default: ['General'], 
+      default: ['General'],
     },
     description: { type: String, default: '' },
     favoritedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
@@ -83,18 +83,19 @@ const productSchema = new mongoose.Schema(
     audios: [{ type: String, default: '' }],
     writing: [{ type: String, default: '' }],
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
- galleries: [
-    {
-      gallery: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Gallery',
+    galleries: [
+      {
+        gallery: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Gallery',
+        },
+        order: {
+          type: Number,
+          default: 0,
+        },
       },
-      order: {
-        type: Number,
-        default: 0,
-      },
-    },
-  ],    averageRating: { type: Number, default: 0 },
+    ],
+    averageRating: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

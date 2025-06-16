@@ -243,20 +243,20 @@ const ProductsPage = () => {
         searchBy === 'title'
           ? (p.title || '').toLowerCase().includes(filterText.toLowerCase())
           : searchBy === 'creator'
-          ? `${p.user?.firstName || ''} ${p.user?.lastName || ''}`
-              .toLowerCase()
-              .includes(filterText.toLowerCase())
-          : searchBy === 'tags'
-          ? Array.isArray(p.tags) &&
-            p.tags.some((tag) => (tag || '').toLowerCase().includes(filterText.toLowerCase()))
-          : true;
+            ? `${p.user?.firstName || ''} ${p.user?.lastName || ''}`
+                .toLowerCase()
+                .includes(filterText.toLowerCase())
+            : searchBy === 'tags'
+              ? Array.isArray(p.tags) &&
+                p.tags.some((tag) => (tag || '').toLowerCase().includes(filterText.toLowerCase()))
+              : true;
 
       const matchSale =
         filterForSale === 'forsale'
           ? p.forSale
           : filterForSale === 'notforsale'
-          ? !p.forSale
-          : true;
+            ? !p.forSale
+            : true;
 
       const matchAvailability = availability.every((val) => {
         if (val === 'inStock') return p.quantity > 0;
@@ -623,11 +623,7 @@ const ProductsPage = () => {
 
                       <Box textAlign="center" py={3} minH="150px">
                         {}
-                        <Text
-                          fontWeight="bold"
-                          isTruncated 
-                          px={2} 
-                        >
+                        <Text fontWeight="bold" isTruncated px={2}>
                           {product.title}
                         </Text>
                         <Text color="gray.500" fontSize="sm">
@@ -636,8 +632,7 @@ const ProductsPage = () => {
                         </Text>
                         {Array.isArray(product.category) && product.category.length > 0 && (
                           <Text fontSize="sm" color="gray.600" mt={1}>
-                            <strong>Category:</strong>{' '}
-                            {product.category.slice(0, 2).join(', ')}
+                            <strong>Category:</strong> {product.category.slice(0, 2).join(', ')}
                             {product.category.length > 2 && '...'}
                           </Text>
                         )}

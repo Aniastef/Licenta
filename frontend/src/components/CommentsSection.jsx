@@ -52,12 +52,13 @@ export default function CommentsSection({ resourceId, resourceType }) {
       return;
     }
 
-    const reportedUserId = typeof commentToReport.userId === 'object' && commentToReport.userId !== null
-      ? commentToReport.userId._id
-      : commentToReport.userId;
+    const reportedUserId =
+      typeof commentToReport.userId === 'object' && commentToReport.userId !== null
+        ? commentToReport.userId._id
+        : commentToReport.userId;
 
-    console.log("Reporting comment with reportedUserId:", reportedUserId);
-    console.log("Full commentToReport:", commentToReport);
+    console.log('Reporting comment with reportedUserId:', reportedUserId);
+    console.log('Full commentToReport:', commentToReport);
 
     try {
       const response = await fetch('/api/report', {
@@ -74,8 +75,8 @@ export default function CommentsSection({ resourceId, resourceType }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json(); 
-        console.error("Server error response:", errorData);
+        const errorData = await response.json();
+        console.error('Server error response:', errorData);
         throw new Error(errorData.error || 'Failed to submit report');
       }
 
@@ -216,7 +217,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
       }
 
       setNewComment('');
-      await fetchComments(); 
+      await fetchComments();
     } catch (err) {
       console.error('Error adding comment:', err.message);
     }

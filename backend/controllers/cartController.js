@@ -1,6 +1,6 @@
 import User from '../models/userModel.js';
 import Product from '../models/productModel.js';
-import Event from '../models/eventModel.js'; 
+import Event from '../models/eventModel.js';
 
 export const addToCart = async (req, res) => {
   try {
@@ -76,7 +76,6 @@ export const removeFromCart = async (req, res) => {
 
     user.cart = user.cart.filter((item) => !item.product.equals(productId));
     await user.save();
-
 
     const updatedUser = await User.findById(userId).populate({
       path: 'cart.product',

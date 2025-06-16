@@ -22,9 +22,9 @@ import { useCart } from '../components/CartContext';
 import NotificationDrawer from './NotificationDrawer';
 import LogoFlowers from '../assets/logoflowers.svg';
 import navbarBg from '../assets/navbar.svg'; // imaginea de fundal
-import messagesIcon from '../assets/messagesIcon.svg'; 
+import messagesIcon from '../assets/messagesIcon.svg';
 import useUnreadMessagesCount from '../hooks/useUnreadMessagesCount';
-import { SearchIcon } from '@chakra-ui/icons'; 
+import { SearchIcon } from '@chakra-ui/icons';
 import SearchBar from './SearchBar';
 
 const Navbar = () => {
@@ -32,7 +32,7 @@ const Navbar = () => {
   const handleLogout = useLogout();
   const { cart } = useCart();
   const cartCount = cart.length;
-  const unreadMessages = useUnreadMessagesCount(); 
+  const unreadMessages = useUnreadMessagesCount();
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
@@ -43,17 +43,17 @@ const Navbar = () => {
   };
 
   return (
-     <Box
-    bgImage={`url(${navbarBg})`}
-    bgRepeat="no-repeat"
-    bgSize="100% auto"
-    bgPosition="top"
-    px={10}
-    pt={50}
-    pb="190px" 
-    marginBottom="-110px"
-    position="relative"
-  >
+    <Box
+      bgImage={`url(${navbarBg})`}
+      bgRepeat="no-repeat"
+      bgSize="100% auto"
+      bgPosition="top"
+      px={10}
+      pt={50}
+      pb="190px"
+      marginBottom="-110px"
+      position="relative"
+    >
       {}
       <VStack spacing={1} textAlign="center" mb={4}>
         <HStack spacing={2} justify="center">

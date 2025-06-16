@@ -1,7 +1,6 @@
 import Article from '../models/articleModel.js';
-import { addAuditLog } from './auditLogController.js'; 
+import { addAuditLog } from './auditLogController.js';
 import User from '../models/userModel.js';
-
 
 export const createArticle = async (req, res) => {
   try {
@@ -77,7 +76,7 @@ export const getAllArticlesFiltered = async (req, res) => {
     }
 
     const articles = await Article.find(filter)
-      .populate('user', 'firstName lastName username') 
+      .populate('user', 'firstName lastName username')
       .sort({ createdAt: -1 });
 
     res.status(200).json(articles);
@@ -127,7 +126,6 @@ export const updateArticle = async (req, res) => {
   }
 };
 
-
 export const deleteArticle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -140,7 +138,7 @@ export const deleteArticle = async (req, res) => {
     await User.findByIdAndUpdate(article.user, { $pull: { articles: article._id } });
 
     await Article.findByIdAndDelete(id);
-    
+
     await addAuditLog({
       action: 'delete_article',
       performedBy: req.user._id,

@@ -173,7 +173,7 @@ const CreateGalleryPage = () => {
     setCollaborators((prev) => prev.filter((u) => u._id !== userId));
   };
 
-const handleAddGallery = async () => {
+  const handleAddGallery = async () => {
     if (!newGallery.name) {
       showToast('Error', 'Gallery name is required', 'error');
       return;
@@ -218,7 +218,7 @@ const handleAddGallery = async () => {
 
       if (data._id) {
         navigate(`/galleries/${data._id}`);
-        showToast('Gallery created', 'Waiting for approval or invite acceptance', 'info'); 
+        showToast('Gallery created', 'Waiting for approval or invite acceptance', 'info');
       }
     } catch (error) {
       showToast('Error', error.message, 'error');
@@ -260,7 +260,9 @@ const handleAddGallery = async () => {
                 value={newGallery.category}
                 onChange={(values) => setNewGallery({ ...newGallery, category: values })}
               >
-                <Wrap spacing={2}> {}
+                <Wrap spacing={2}>
+                  {' '}
+                  {}
                   {GALLERY_CATEGORIES.map((cat) => (
                     <WrapItem key={cat}>
                       <Checkbox value={cat}>{cat}</Checkbox>

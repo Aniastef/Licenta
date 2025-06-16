@@ -101,12 +101,13 @@ const UserAllProductsPage = () => {
         credentials: 'include',
       });
 
-
-      if (res.ok) { 
+      if (res.ok) {
         setProducts((prev) => prev.filter((p) => p._id !== productId));
         setFilteredProducts((prev) => prev.filter((p) => p._id !== productId));
       } else {
-        const errorData = await res.json().catch(() => ({ error: 'Failed to delete product (unknown error)' }));
+        const errorData = await res
+          .json()
+          .catch(() => ({ error: 'Failed to delete product (unknown error)' }));
         alert(errorData.error || `Failed to delete product. Status: ${res.status}`);
       }
     } catch (err) {
@@ -173,7 +174,9 @@ const UserAllProductsPage = () => {
         </Flex>
       ) : filteredProducts.length === 0 ? (
         <Flex justify="center" mt={10}>
-          <Text fontSize="xl" color="gray.500">No artworks found.</Text>
+          <Text fontSize="xl" color="gray.500">
+            No artworks found.
+          </Text>
         </Flex>
       ) : filteredProducts.length === 1 ? (
         <Flex justify="center">
@@ -202,7 +205,14 @@ const UserAllProductsPage = () => {
                   objectFit="cover"
                 />
               ) : (
-                <Flex align="center" justify="center" h="100%" color="gray.600" fontWeight="bold" fontSize="lg">
+                <Flex
+                  align="center"
+                  justify="center"
+                  h="100%"
+                  color="gray.600"
+                  fontWeight="bold"
+                  fontSize="lg"
+                >
                   {filteredProducts[0].title}
                 </Flex>
               )}

@@ -8,12 +8,7 @@ import contactBarBg from '../assets/contactBar.svg';
 
 const ContactBar = () => {
   return (
-    <Box
-      w="100%"
-      position="relative"
-      minH="300px"
-      overflow="hidden"
-    >
+    <Box w="100%" position="relative" minH="300px" overflow="hidden">
       {}
       <Image
         src={contactBarBg}

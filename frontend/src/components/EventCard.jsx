@@ -156,12 +156,15 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
 
   const openGoogleMaps = () => {
     if (event.coordinates?.lat && event.coordinates?.lng) {
-      window.open(`https://www.google.com/maps?q=${event.coordinates.lat},${event.coordinates.lng}`, '_blank');
+      window.open(
+        `https://www.google.com/maps?q=${event.coordinates.lat},${event.coordinates.lng}`,
+        '_blank',
+      );
     } else {
       alert('Unable to open map. Coordinates not available.');
     }
   };
-  
+
   const handleAddToCart = () => {
     addToCart({
       product: {
@@ -222,7 +225,9 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
       <Flex justifyContent="space-between" mt={3} px={4}>
         <Box bg="goldenrod" color="black" borderRadius="full" px={6} py={1} fontWeight="bold">
           {new Date(event.date).toLocaleDateString('en-GB', {
-            day: '2-digit', month: 'short', year: 'numeric',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
           })}
         </Box>
         {currentUserId && !isEventOwner && (
@@ -247,19 +252,39 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
 
       <Flex mt={3} justifyContent="space-between" px={4} direction={{ base: 'column', lg: 'row' }}>
         <Flex maxW="800px" mx={{ base: 'auto', lg: 8 }} direction="column" gap={2} flex="2">
-          <Text><strong>Info</strong></Text>
-          <Text><strong>Category:</strong> {event.category || 'Universal'}</Text>
-          <Text><strong>Capacity:</strong> {event.capacity || 'Unlimited'}</Text>
-          <Text><strong>Ticket Type:</strong> {event.ticketType}</Text>
-          <Text><strong>Price:</strong> {event.price > 0 ? `${event.price} EUR` : 'Free'}</Text>
-          <Text><strong>Language:</strong> {event.language?.toUpperCase() || 'N/A'}</Text>
+          <Text>
+            <strong>Info</strong>
+          </Text>
+          <Text>
+            <strong>Category:</strong> {event.category || 'Universal'}
+          </Text>
+          <Text>
+            <strong>Capacity:</strong> {event.capacity || 'Unlimited'}
+          </Text>
+          <Text>
+            <strong>Ticket Type:</strong> {event.ticketType}
+          </Text>
+          <Text>
+            <strong>Price:</strong> {event.price > 0 ? `${event.price} EUR` : 'Free'}
+          </Text>
+          <Text>
+            <strong>Language:</strong> {event.language?.toUpperCase() || 'N/A'}
+          </Text>
           <Text>
             <strong>Created by:</strong>{' '}
             {event.user ? (
-              <Text as="span" color="blue.500" cursor="pointer" onClick={() => navigate(`/profile/${event.user.username}`)} _hover={{ textDecoration: 'underline' }}>
+              <Text
+                as="span"
+                color="blue.500"
+                cursor="pointer"
+                onClick={() => navigate(`/profile/${event.user.username}`)}
+                _hover={{ textDecoration: 'underline' }}
+              >
                 {event.user.firstName} {event.user.lastName}
               </Text>
-            ) : ('N/A')}
+            ) : (
+              'N/A'
+            )}
           </Text>
 
           {event.description && (
@@ -269,7 +294,12 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
                   <Collapse startingHeight={100} in={isDescriptionExpanded}>
                     <Box dangerouslySetInnerHTML={{ __html: event.description }} />
                   </Collapse>
-                  <Button variant="link" colorScheme="blue" mt={2} onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+                  <Button
+                    variant="link"
+                    colorScheme="blue"
+                    mt={2}
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  >
                     {isDescriptionExpanded ? 'see less' : 'see more'}
                   </Button>
                 </>
@@ -281,7 +311,9 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
 
           <Flex direction={'row'} gap={2} mt={4}>
             <Menu>
-              <MenuButton as={Button}>{`Going (${event.goingParticipants?.length || 0})`}</MenuButton>
+              <MenuButton
+                as={Button}
+              >{`Going (${event.goingParticipants?.length || 0})`}</MenuButton>
               <MenuList>
                 {event.goingParticipants?.length > 0 ? (
                   event.goingParticipants.map((user) => (
@@ -292,11 +324,15 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
                       </Flex>
                     </MenuItem>
                   ))
-                ) : (<MenuItem>No participants</MenuItem>)}
+                ) : (
+                  <MenuItem>No participants</MenuItem>
+                )}
               </MenuList>
             </Menu>
             <Menu>
-              <MenuButton as={Button}>{`Interested (${event.interestedParticipants?.length || 0})`}</MenuButton>
+              <MenuButton
+                as={Button}
+              >{`Interested (${event.interestedParticipants?.length || 0})`}</MenuButton>
               <MenuList>
                 {event.interestedParticipants?.length > 0 ? (
                   event.interestedParticipants.map((user) => (
@@ -307,24 +343,29 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
                       </Flex>
                     </MenuItem>
                   ))
-                ) : (<MenuItem>No participants</MenuItem>)}
+                ) : (
+                  <MenuItem>No participants</MenuItem>
+                )}
               </MenuList>
             </Menu>
           </Flex>
         </Flex>
 
         {event.coordinates?.lat && event.coordinates?.lng && (
-            <Flex direction={'column'} alignItems="center" gap={2} flex="1" mt={{ base: 4, lg: 0 }}>
-                <Box align="center" mx={8}>
-                    <div ref={mapRef} style={{ width: '400px', height: '300px', borderRadius: '12px' }}></div>
-                    <Button mt={4} colorScheme="green" onClick={openGoogleMaps}>
-                        Open in Google Maps
-                    </Button>
-                </Box>
-            </Flex>
+          <Flex direction={'column'} alignItems="center" gap={2} flex="1" mt={{ base: 4, lg: 0 }}>
+            <Box align="center" mx={8}>
+              <div
+                ref={mapRef}
+                style={{ width: '400px', height: '300px', borderRadius: '12px' }}
+              ></div>
+              <Button mt={4} colorScheme="green" onClick={openGoogleMaps}>
+                Open in Google Maps
+              </Button>
+            </Box>
+          </Flex>
         )}
       </Flex>
-      
+
       {event.gallery?.length > 0 && (
         <Box mx={8} position="relative" mt={8}>
           <Flex justifyContent="center" alignItems="center" position="relative" mb={2}>
@@ -332,25 +373,82 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
               Event Gallery
             </Box>
           </Flex>
-          <Button onClick={scrollLeft} position="absolute" left="0" top="50%" transform="translateY(-50%)" zIndex="1" bg="white" boxShadow="md">{'<'}</Button>
-          <Flex ref={galleryRef} overflowX="scroll" scrollBehavior="smooth" gap={4} py={4} css={{ '&::-webkit-scrollbar': { display: 'none' }, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+          <Button
+            onClick={scrollLeft}
+            position="absolute"
+            left="0"
+            top="50%"
+            transform="translateY(-50%)"
+            zIndex="1"
+            bg="white"
+            boxShadow="md"
+          >
+            {'<'}
+          </Button>
+          <Flex
+            ref={galleryRef}
+            overflowX="scroll"
+            scrollBehavior="smooth"
+            gap={4}
+            py={4}
+            css={{
+              '&::-webkit-scrollbar': { display: 'none' },
+              msOverflowStyle: 'none',
+              scrollbarWidth: 'none',
+            }}
+          >
             {event.gallery.map((imgUrl, idx) => (
-              <Image key={idx} src={imgUrl} alt={`Gallery image ${idx + 1}`} borderRadius="md" objectFit="cover" h="300px" minW="300px" cursor="pointer" onClick={() => handleImageClick(imgUrl)} />
+              <Image
+                key={idx}
+                src={imgUrl}
+                alt={`Gallery image ${idx + 1}`}
+                borderRadius="md"
+                objectFit="cover"
+                h="300px"
+                minW="300px"
+                cursor="pointer"
+                onClick={() => handleImageClick(imgUrl)}
+              />
             ))}
           </Flex>
-          <Button onClick={scrollRight} position="absolute" right="0" top="50%" transform="translateY(-50%)" zIndex="1" bg="white" boxShadow="md">{'>'}</Button>
+          <Button
+            onClick={scrollRight}
+            position="absolute"
+            right="0"
+            top="50%"
+            transform="translateY(-50%)"
+            zIndex="1"
+            bg="white"
+            boxShadow="md"
+          >
+            {'>'}
+          </Button>
         </Box>
       )}
 
       {event.attachments && event.attachments.length > 0 && (
         <Box mx={8} mt={8} textAlign="center">
-          <Button onClick={() => setIsAttachmentsVisible(!isAttachmentsVisible)} colorScheme="purple" mb={4}>
-            {isAttachmentsVisible ? 'Hide Attachments' : `Show Attachments (${event.attachments.length})`}
+          <Button
+            onClick={() => setIsAttachmentsVisible(!isAttachmentsVisible)}
+            colorScheme="purple"
+            mb={4}
+          >
+            {isAttachmentsVisible
+              ? 'Hide Attachments'
+              : `Show Attachments (${event.attachments.length})`}
           </Button>
           <Collapse in={isAttachmentsVisible} animateOpacity>
             <VStack spacing={3} align="stretch" maxW="lg" mx="auto">
               {event.attachments.map((attachment, index) => (
-                <Flex key={index} justifyContent="space-between" alignItems="center" p={3} borderWidth="1px" borderRadius="md" _hover={{ bg: 'gray.100' }}>
+                <Flex
+                  key={index}
+                  justifyContent="space-between"
+                  alignItems="center"
+                  p={3}
+                  borderWidth="1px"
+                  borderRadius="md"
+                  _hover={{ bg: 'gray.100' }}
+                >
                   <Text fontWeight="medium">{attachment.fileName}</Text>
                   <IconButton
                     icon={<DownloadIcon />}
@@ -371,11 +469,17 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         <ModalContent>
           <ModalCloseButton bg="whiteAlpha.700" _hover={{ bg: 'white' }} />
           <ModalBody p={0}>
-            <Image src={selectedImage} alt="Selected" w="100%" h="auto" maxH="90vh" objectFit="contain" />
+            <Image
+              src={selectedImage}
+              alt="Selected"
+              w="100%"
+              h="auto"
+              maxH="90vh"
+              objectFit="contain"
+            />
           </ModalBody>
         </ModalContent>
       </Modal>
-
     </Flex>
   );
 };

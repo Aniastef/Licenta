@@ -60,7 +60,6 @@ function App() {
         <Navbar />
 
         {isMessagesRoute ? (
-
           <Routes location={location}>
             {' '}
             <Route
@@ -79,7 +78,6 @@ function App() {
                 </PageWrapper>
               }
             />
-
           </Routes>
         ) : (
           <AnimatePresence mode="wait">

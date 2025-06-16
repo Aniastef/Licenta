@@ -19,7 +19,7 @@ jest.mock('react-router-dom', () => ({
 
 jest.mock('@chakra-ui/react', () => ({
   ...jest.requireActual('@chakra-ui/react'),
-  useToast: () => jest.fn(), 
+  useToast: () => jest.fn(),
 }));
 
 jest.mock('../src/components/ProductCard', () => ({
@@ -53,14 +53,14 @@ describe('ProductPage - Add to Cart functionality', () => {
     _id: 'mockProductId123',
     name: 'Test Artwork',
     price: 100,
-    quantity: 5, 
+    quantity: 5,
     images: ['mock-image.jpg'],
     user: { firstName: 'Artist', lastName: 'Mock' },
   };
 
   beforeEach(() => {
     fetch.mockClear();
-    jest.clearAllMocks(); 
+    jest.clearAllMocks();
 
     fetch.mockImplementation((url) => {
       if (url.includes(`/api/products/${mockProduct._id}`)) {
@@ -72,10 +72,7 @@ describe('ProductPage - Add to Cart functionality', () => {
       if (url.includes('/api/cart/add-to-cart')) {
         return Promise.resolve({
           ok: true,
-          json: () =>
-            Promise.resolve([
-              { product: mockProduct, quantity: 1, itemType: 'Product' },
-            ]),
+          json: () => Promise.resolve([{ product: mockProduct, quantity: 1, itemType: 'Product' }]),
         });
       }
       return Promise.reject(new Error(`Unhandled fetch for URL: ${url}`));

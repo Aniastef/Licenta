@@ -12,7 +12,7 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     if (userId) {
-      fetchCart(); 
+      fetchCart();
     }
   }, [userId]);
 
@@ -98,7 +98,7 @@ export const CartProvider = ({ children }) => {
         credentials: 'include',
         body: JSON.stringify({
           userId,
-          itemId: newItem.product._id, 
+          itemId: newItem.product._id,
           quantity: newItem.quantity || 1,
           itemType: newItem.product.itemType || 'Product',
         }),
@@ -115,7 +115,7 @@ export const CartProvider = ({ children }) => {
         setCart(data);
       } else {
         console.warn('❌ Cart response is not an array:', data);
-        setCart([]); 
+        setCart([]);
       }
     } catch (err) {
       console.error('❌ Error adding to cart:', err);

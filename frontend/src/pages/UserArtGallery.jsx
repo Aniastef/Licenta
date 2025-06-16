@@ -53,11 +53,7 @@ export default function GalleryPage() {
 
   return (
     <Flex direction="column">
-      <GalleryCard
-        gallery={gallery}
-        currentUserId={currentUser?._id}
-        fetchGallery={fetchGallery}
-      />
+      <GalleryCard gallery={gallery} currentUserId={currentUser?._id} fetchGallery={fetchGallery} />
       <Divider my={4} />
 
       <CommentsSection resourceId={gallery._id} resourceType="Gallery" />

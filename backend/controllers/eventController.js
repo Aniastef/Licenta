@@ -78,8 +78,8 @@ export const createEvent = async (req, res) => {
       user: req.user._id,
       location,
       coordinates,
-      capacity, 
-      category, 
+      capacity,
+      category,
       price,
       ticketType,
       language,
@@ -134,7 +134,6 @@ export const getEvent = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 export const markGoing = async (req, res) => {
   try {
@@ -411,7 +410,6 @@ export const getAllUserEvents = async (req, res) => {
 
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ error: 'User not found' });
-
 
     const events = await Event.find({ user: user._id })
       .populate('user', 'firstName lastName username')

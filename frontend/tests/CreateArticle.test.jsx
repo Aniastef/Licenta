@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
-import CreateOrEditArticlePage from '../src/pages/CreateArticle'; 
+import CreateOrEditArticlePage from '../src/pages/CreateArticle';
 
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -16,7 +16,7 @@ global.fetch = jest.fn();
 
 jest.mock('@chakra-ui/react', () => ({
   ...jest.requireActual('@chakra-ui/react'),
-  useToast: () => jest.fn(), 
+  useToast: () => jest.fn(),
 }));
 
 jest.mock('react-quill-new', () => {
@@ -70,8 +70,8 @@ const renderComponent = (params = { id: undefined }) => {
 
 describe('CreateOrEditArticlePage - Article Creation/Edit Scenarios', () => {
   beforeEach(() => {
-    jest.clearAllMocks(); 
-    global.fetch.mockReset(); 
+    jest.clearAllMocks();
+    global.fetch.mockReset();
     mockNavigate.mockReset();
     jest.spyOn(require('react-router-dom'), 'useParams').mockReturnValue({ id: undefined });
   });
@@ -246,14 +246,14 @@ describe('CreateOrEditArticlePage - Article Creation/Edit Scenarios', () => {
     });
   });
 
-    test('should display spinner when loading existing article for edit', async () => {
+  test('should display spinner when loading existing article for edit', async () => {
     global.fetch.mockImplementationOnce(() => new Promise(() => {}));
     renderComponent({ id: 'existing-article-id' });
 
     await screen.findByText(/Loading.../i);
   });
 
-    test('should open and close image crop modal', async () => {
+  test('should open and close image crop modal', async () => {
     renderComponent();
 
     const file = new File(['dummy content'], 'test.png', { type: 'image/png' });

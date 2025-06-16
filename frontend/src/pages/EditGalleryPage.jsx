@@ -16,9 +16,9 @@ import {
   IconButton,
   FormControl,
   FormLabel,
-  CheckboxGroup, 
+  CheckboxGroup,
   Wrap,
-  WrapItem, 
+  WrapItem,
 } from '@chakra-ui/react';
 import { CloseIcon } from '@chakra-ui/icons';
 import { useEffect, useState } from 'react';
@@ -123,7 +123,9 @@ const EditGalleryPage = () => {
         if (res.ok) {
           const categories = Array.isArray(data.category)
             ? data.category
-            : data.category ? [data.category] : ['General'];
+            : data.category
+              ? [data.category]
+              : ['General'];
           setGalleryData({ ...data, category: categories });
           setCollaborators(data.collaborators || []);
 
@@ -221,7 +223,6 @@ const EditGalleryPage = () => {
         formData.append('coverPhoto', 'null');
       }
 
-
       const res = await fetch(`/api/galleries/${galleryId}`, {
         method: 'PUT',
         body: formData,
@@ -232,9 +233,9 @@ const EditGalleryPage = () => {
       if (res.ok) {
         showToast('Success', 'Gallery updated successfully', 'success');
         if (data.owner && data.owner.username) {
-            navigate(`/galleries/${data.owner.username}/${encodeURIComponent(data.name)}`);
+          navigate(`/galleries/${data.owner.username}/${encodeURIComponent(data.name)}`);
         } else {
-            navigate(`/galleries/${galleryId}`);
+          navigate(`/galleries/${galleryId}`);
         }
       } else {
         showToast('Error', data.error || 'Failed to update gallery', 'error');
@@ -402,7 +403,7 @@ const EditGalleryPage = () => {
                     right="2"
                     aria-label="Remove image"
                     onClick={() => {
-                      setGalleryData({ ...galleryData, coverPhoto: null }); 
+                      setGalleryData({ ...galleryData, coverPhoto: null });
                       setPreviewUrl(null);
                       setCroppedCoverImage(null);
                     }}

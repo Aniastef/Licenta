@@ -33,7 +33,7 @@ export const universalSearch = async (req, res) => {
           _id: item._id,
           type: 'gallery',
           name: item.title,
-          username: item.owner.username, 
+          username: item.owner.username,
         })),
       );
     }
@@ -55,7 +55,7 @@ export const universalSearch = async (req, res) => {
         ...events.map((item) => ({
           _id: item._id,
           type: 'event',
-          name: item.name, 
+          name: item.name,
         })),
       );
     }
@@ -67,7 +67,7 @@ export const universalSearch = async (req, res) => {
           _id: item._id,
           type: 'user',
           name: item.username,
-          username: item.username, 
+          username: item.username,
         })),
       );
     }

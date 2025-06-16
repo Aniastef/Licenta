@@ -59,7 +59,7 @@ const ProductCard = ({ product }) => {
   const scrollRef = useRef();
   const thumbnailContainerRef = useRef();
   const [thumbnailsToShow, setThumbnailsToShow] = useState([]);
-  const [viewMode, setViewMode] = useState('image'); 
+  const [viewMode, setViewMode] = useState('image');
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const modes = ['image', 'video', 'writing'];
   const otherModes = modes.filter((mode) => mode !== viewMode);
@@ -110,22 +110,21 @@ const ProductCard = ({ product }) => {
     checkIfFavorite();
   }, [user?.username, product?._id]);
 
-useEffect(() => {
+  useEffect(() => {
     if (!product) return;
 
     if (product.images?.length > 0) {
       setViewMode('image');
-    }
-    else if (product.videos?.length > 0) {
+    } else if (product.videos?.length > 0) {
       setViewMode('video');
-    }
-    else if (
-      (Array.isArray(product.writing) && product.writing.length > 0 && product.writing[0]?.trim()) ||
+    } else if (
+      (Array.isArray(product.writing) &&
+        product.writing.length > 0 &&
+        product.writing[0]?.trim()) ||
       (typeof product.writing === 'string' && product.writing.trim())
     ) {
       setViewMode('writing');
-    }
-    else if (product.audios?.length > 0) {
+    } else if (product.audios?.length > 0) {
       setViewMode('audio');
     }
   }, [product]);
@@ -164,7 +163,7 @@ useEffect(() => {
           isClosable: true,
           position: 'top-right',
         });
-        window.location.href = `/profile/${user.username}`; 
+        window.location.href = `/profile/${user.username}`;
       } else {
         const data = await res.json();
         toast({
@@ -489,13 +488,14 @@ useEffect(() => {
                     onClick={handleAddToFavorites}
                     fontSize="sm"
                     leftIcon={
-  <Text fontSize="3xl"> {}
-    {isFavorite ? '❤️' : '🤍'}
-  </Text>
-}
+                      <Text fontSize="3xl">
+                        {' '}
+                        {}
+                        {isFavorite ? '❤️' : '🤍'}
+                      </Text>
+                    }
                     _hover={{ bg: 'transparent', textDecoration: 'underline' }}
-                  >
-                  </Button>
+                  ></Button>
                 )}
               </HStack>
 
@@ -516,38 +516,36 @@ useEffect(() => {
                 <Text mt={1} color="gray.600">
                   Category:{' '}
                   <b>
-                    {
-                      Array.isArray(product.category) 
-                        ? product.category.map((cat, index) => (
-                            <React.Fragment key={cat}>
-                              {cat}
-                              {index < product.category.length - 1 && ', '}
-                            </React.Fragment>
-                          ))
-                        : product.category
-                    }
+                    {Array.isArray(product.category)
+                      ? product.category.map((cat, index) => (
+                          <React.Fragment key={cat}>
+                            {cat}
+                            {index < product.category.length - 1 && ', '}
+                          </React.Fragment>
+                        ))
+                      : product.category}
                   </b>
                 </Text>
               )}
 
-             {product.galleries?.length > 0 && (
-  <Box mt={2}>
-    <Text fontWeight="bold">Part of galleries:</Text>
-    <HStack spacing={2} wrap="wrap">
-      {product.galleries.map((galleryWrapper) => (
-        galleryWrapper.gallery ? (
-          <RouterLink
-            key={galleryWrapper.gallery._id} 
-            to={`/galleries/${galleryWrapper.gallery._id}`} 
-            style={{ color: '#3182ce', textDecoration: 'underline' }}
-          >
-            {galleryWrapper.gallery.name} {}
-          </RouterLink>
-        ) : null
-      ))}
-    </HStack>
-  </Box>
-)}
+              {product.galleries?.length > 0 && (
+                <Box mt={2}>
+                  <Text fontWeight="bold">Part of galleries:</Text>
+                  <HStack spacing={2} wrap="wrap">
+                    {product.galleries.map((galleryWrapper) =>
+                      galleryWrapper.gallery ? (
+                        <RouterLink
+                          key={galleryWrapper.gallery._id}
+                          to={`/galleries/${galleryWrapper.gallery._id}`}
+                          style={{ color: '#3182ce', textDecoration: 'underline' }}
+                        >
+                          {galleryWrapper.gallery.name} {}
+                        </RouterLink>
+                      ) : null,
+                    )}
+                  </HStack>
+                </Box>
+              )}
 
               <Text
                 mt={2}

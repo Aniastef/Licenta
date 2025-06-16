@@ -203,21 +203,22 @@ const ExploreGalleries = () => {
 
     updated = updated.filter((g) => {
       let matchSearch = true;
-      let matchCategory = true; 
+      let matchCategory = true;
 
       if (filterCategories.length > 0) {
-        matchCategory = g.category?.some(cat => filterCategories.includes(cat));
+        matchCategory = g.category?.some((cat) => filterCategories.includes(cat));
       }
 
-      if (lowerFilterText) { 
+      if (lowerFilterText) {
         if (searchBy === 'name') {
           matchSearch = (g.name || '').toLowerCase().includes(lowerFilterText);
         } else if (searchBy === 'creator') {
-          const creatorName = `${g.owner?.firstName || ''} ${g.owner?.lastName || ''}`.toLowerCase();
+          const creatorName =
+            `${g.owner?.firstName || ''} ${g.owner?.lastName || ''}`.toLowerCase();
           matchSearch = creatorName.includes(lowerFilterText);
         } else if (searchBy === 'collaborators') {
           matchSearch = (g.collaborators || []).some((c) =>
-            `${c.firstName || ''} ${c.lastName || ''}`.toLowerCase().includes(lowerFilterText)
+            `${c.firstName || ''} ${c.lastName || ''}`.toLowerCase().includes(lowerFilterText),
           );
         } else if (searchBy === 'tags') {
           matchSearch = (g.tags || []).some((tag) => tag.toLowerCase().includes(lowerFilterText));
@@ -344,7 +345,9 @@ const ExploreGalleries = () => {
             <Text>No galleries found.</Text>
           ) : (
             <>
-<SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>                {paginated.map((gallery) => (
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                {' '}
+                {paginated.map((gallery) => (
                   <Link to={`/galleries/${gallery._id}`} key={gallery._id}>
                     <Box
                       p={0}
@@ -385,10 +388,7 @@ const ExploreGalleries = () => {
                       </Box>
 
                       <Box textAlign="center" py={3}>
-                        <Text
-                          fontWeight="bold"
-                          noOfLines={1}
-                        >
+                        <Text fontWeight="bold" noOfLines={1}>
                           {gallery.name}
                         </Text>
                         <Text fontSize="sm" color="gray.600">
@@ -417,8 +417,7 @@ const ExploreGalleries = () => {
 
                         {gallery.tags?.length > 0 && (
                           <Text fontSize="sm" color="purple.600">
-                            <strong>Tags:</strong>{' '}
-                            {gallery.tags.slice(0, 2).join(', ')}
+                            <strong>Tags:</strong> {gallery.tags.slice(0, 2).join(', ')}
                             {gallery.tags.length > 2 && '...'}
                           </Text>
                         )}

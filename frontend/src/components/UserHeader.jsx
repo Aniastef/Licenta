@@ -84,8 +84,8 @@ const UserHeader = ({ user }) => {
     activeGalleryFilter === 'owning'
       ? ownedGalleries
       : activeGalleryFilter === 'collaborating'
-      ? collaboratedGalleries
-      : favoriteGalleries;
+        ? collaboratedGalleries
+        : favoriteGalleries;
 
   const handleSave = () => {
     setIsEditing(false);
@@ -304,25 +304,27 @@ const UserHeader = ({ user }) => {
           <Text fontWeight="bold" fontSize="2xl">
             @{user.username}
           </Text>
-           {contactItems.map((item, idx) => {
+          {contactItems.map((item, idx) => {
             const isMessage = item.label === 'Message me';
             const isUrl = typeof item.label === 'string' && item.label.startsWith('http');
             const isEmail = typeof item.label === 'string' && item.label.includes('@');
-            
+
             const getDisplayLabel = (url, icon) => {
-                if (!url || typeof url !== 'string') return '';
-                const isSocial = [facebookIcon, instagramIcon, linkedinIcon].includes(icon);
-                
-                try {
-                    const parsedUrl = new URL(url);
-                    if (isSocial) {
-                        const pathParts = parsedUrl.pathname.split('/').filter(p => p);
-                        return pathParts[pathParts.length - 1] || parsedUrl.hostname.replace(/^www\./, '');
-                    }
-                    return parsedUrl.hostname.replace(/^www\./, '');
-                } catch {
-                    return url;
+              if (!url || typeof url !== 'string') return '';
+              const isSocial = [facebookIcon, instagramIcon, linkedinIcon].includes(icon);
+
+              try {
+                const parsedUrl = new URL(url);
+                if (isSocial) {
+                  const pathParts = parsedUrl.pathname.split('/').filter((p) => p);
+                  return (
+                    pathParts[pathParts.length - 1] || parsedUrl.hostname.replace(/^www\./, '')
+                  );
                 }
+                return parsedUrl.hostname.replace(/^www\./, '');
+              } catch {
+                return url;
+              }
             };
 
             const displayLabel = isUrl ? getDisplayLabel(item.label, item.icon) : item.label;
@@ -379,7 +381,7 @@ const UserHeader = ({ user }) => {
                         <Image src={item.icon} w="16px" h="16px" />
                         <Text>{item.label}</Text>
                       </Flex>
-                    )
+                    ),
                 )}
               </Flex>
             )}
@@ -393,7 +395,7 @@ const UserHeader = ({ user }) => {
                         <Image src={item.icon} w="16px" h="16px" />
                         <Text>{item.label}</Text>
                       </Flex>
-                    )
+                    ),
                 )}
               </Flex>
             )}
@@ -462,24 +464,24 @@ const UserHeader = ({ user }) => {
                               </Flex>
                             )}
                           </Box>
-                         <Box p={4}>
-  <Text fontWeight="bold" mb={1} isTruncated>
-    {product.title}
-  </Text>
-  {typeof product.price === 'number' ? (
-    <Text>{product.price.toFixed(2)} EUR</Text>
-  ) : (
-    <Text color="gray.500">Not for sale</Text>
-  )}
-  {product.category && (
-    <Text fontSize="xs" mt={1} color="gray.600" isTruncated>
-      Category: {product.category}
-    </Text>
-  )}
-  <Text fontSize="xs" mt={2} isTruncated>
-    {product.tags?.join(', ')}
-  </Text>
-</Box>
+                          <Box p={4}>
+                            <Text fontWeight="bold" mb={1} isTruncated>
+                              {product.title}
+                            </Text>
+                            {typeof product.price === 'number' ? (
+                              <Text>{product.price.toFixed(2)} EUR</Text>
+                            ) : (
+                              <Text color="gray.500">Not for sale</Text>
+                            )}
+                            {product.category && (
+                              <Text fontSize="xs" mt={1} color="gray.600" isTruncated>
+                                Category: {product.category}
+                              </Text>
+                            )}
+                            <Text fontSize="xs" mt={2} isTruncated>
+                              {product.tags?.join(', ')}
+                            </Text>
+                          </Box>
                         </Box>
                       ))
                     ) : (
@@ -561,19 +563,19 @@ const UserHeader = ({ user }) => {
                                 </Text>
                               )}
                             </Box>
-                           <Box p={4}>
-  <Text fontWeight="bold" fontSize="md" mb={1} isTruncated>
-    {gallery.name}
-  </Text>
-  <Text fontSize="sm" color="gray.600" mb={1} isTruncated>
-    {gallery.category || 'No category specified'}
-  </Text>
-  <Text fontSize="xs" color="gray.500" isTruncated>
-    {Array.isArray(gallery.tags) && gallery.tags.length > 0
-      ? gallery.tags.join(', ')
-      : 'No tags'}
-  </Text>
-</Box>
+                            <Box p={4}>
+                              <Text fontWeight="bold" fontSize="md" mb={1} isTruncated>
+                                {gallery.name}
+                              </Text>
+                              <Text fontSize="sm" color="gray.600" mb={1} isTruncated>
+                                {gallery.category || 'No category specified'}
+                              </Text>
+                              <Text fontSize="xs" color="gray.500" isTruncated>
+                                {Array.isArray(gallery.tags) && gallery.tags.length > 0
+                                  ? gallery.tags.join(', ')
+                                  : 'No tags'}
+                              </Text>
+                            </Box>
                           </Box>
                         ))
                       ) : (
@@ -624,8 +626,8 @@ const UserHeader = ({ user }) => {
                     {(eventFilter === 'created'
                       ? createdEvents
                       : eventFilter === 'going'
-                      ? goingEvents
-                      : interestedEvents
+                        ? goingEvents
+                        : interestedEvents
                     )
                       ?.slice(0, 4)
                       .map((event) => {

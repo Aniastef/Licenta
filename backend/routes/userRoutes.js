@@ -32,7 +32,7 @@ import { getFavoriteGalleries } from '../controllers/galleryController.js';
 const router = express.Router();
 
 router.get('/profile/:username', getUserProfile);
-router.get('/profile', protectRoute, getUserProfile); 
+router.get('/profile', protectRoute, getUserProfile);
 router.post('/signup', signupUser);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);
@@ -47,7 +47,7 @@ router.get('/me', protectRoute, getMe);
 
 router.post('/favorites/move', moveToFavorites);
 router.get('/random-users', getRandomUsers);
-router.post('/quote', protectRoute, saveQuote); 
+router.post('/quote', protectRoute, saveQuote);
 router.post('/favorites/gallery', protectRoute, addGalleryToFavorites);
 router.post('/favorites/gallery/remove', protectRoute, removeGalleryFromFavorites);
 router.get('/:username/favorites-all', getUserFavorites);

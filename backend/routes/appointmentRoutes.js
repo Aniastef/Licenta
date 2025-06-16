@@ -9,9 +9,9 @@ import protectRoute from '../middlewares/protectRoute.js';
 
 const router = express.Router();
 
-router.post('/', protectRoute, createAppointment); 
-router.get('/', protectRoute, getAppointments); 
-router.put('/:id', protectRoute, updateAppointment); 
-router.delete('/:id', protectRoute, deleteAppointment); 
+router.post('/', protectRoute, createAppointment);
+router.get('/', protectRoute, getAppointments);
+router.put('/:id', protectRoute, updateAppointment);
+router.delete('/:id', protectRoute, deleteAppointment);
 
 export default router;

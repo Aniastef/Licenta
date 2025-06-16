@@ -105,8 +105,8 @@ const CreateEventPage = () => {
   const [newAttachments, setNewAttachments] = useState([]);
 
   const apiKey = 'AIzaSyAy0C3aQsACcFAPnO-BK1T4nLpSQ9jmkPs';
-  const { isLoaded, error } = useLoadGoogleMapsScript(apiKey); 
-  const inputRef = useRef(null); 
+  const { isLoaded, error } = useLoadGoogleMapsScript(apiKey);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (isLoaded && inputRef.current) {
@@ -143,7 +143,6 @@ const CreateEventPage = () => {
 
     setIsLoading(true);
     try {
-
       console.log(newEvent);
     } catch (error) {
       console.error('Error submitting the event:', error);

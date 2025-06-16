@@ -191,11 +191,11 @@ export const getComments = async (req, res) => {
     const allComments = await Comment.find({ resourceId, resourceType })
       .populate('userId', 'username firstName lastName profilePicture')
       .populate('replies', 'content userId createdAt updatedAt')
-      .lean(); 
+      .lean();
 
     const commentMap = {};
     allComments.forEach((comment) => {
-      comment.replies = []; 
+      comment.replies = [];
       commentMap[comment._id] = comment;
     });
 
@@ -209,7 +209,7 @@ export const getComments = async (req, res) => {
         topLevelComments.push(comment);
       }
     });
-    
+
     res.status(200).json(topLevelComments);
   } catch (err) {
     console.error('Error fetching comments:', err.message);
@@ -220,7 +220,7 @@ export const getComments = async (req, res) => {
 export const likeUnlikeComment = async (req, res) => {
   try {
     const { id: commentId } = req.params;
-    const userId = req.user._id; 
+    const userId = req.user._id;
 
     const comment = await Comment.findById(commentId);
 
@@ -262,7 +262,7 @@ const handleLikeAndUnlike = async (commentId) => {
     const res = await fetch(`/api/comments/${commentId}/like`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', 
+      credentials: 'include',
     });
 
     const data = await res.json();

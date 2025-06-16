@@ -29,7 +29,6 @@ router.post('/create', upload.single('coverPhoto'), protectRoute, createGallery)
 
 router.put('/:galleryId', protectRoute, upload.single('coverPhoto'), updateGallery);
 
-
 router.delete('/:galleryId', protectRoute, deleteGallery);
 
 router.get('/', getAllGalleries);

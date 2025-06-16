@@ -20,11 +20,11 @@ const router = express.Router();
 
 router.post('/create', protectRoute, createProduct);
 
-router.put('/update/:productId', protectRoute, updateProduct); 
+router.put('/update/:productId', protectRoute, updateProduct);
 
 router.get('/:id', getProduct);
-router.get('/', getAllProducts); 
-router.get('/all', getAllProducts); 
+router.get('/', getAllProducts);
+router.get('/all', getAllProducts);
 router.get('/not-in-gallery/:galleryId', protectRoute, getProductsNotInGallery);
 router.get('/user/:username', getAllUserProducts);
 router.get('/available', getAvailableProducts);

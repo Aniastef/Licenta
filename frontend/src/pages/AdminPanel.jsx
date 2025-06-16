@@ -31,7 +31,7 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { saveAs } from 'file-saver';
-import Papa from 'papaparse'; 
+import Papa from 'papaparse';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import 'react-quill-new/dist/quill.snow.css';
 import ReactQuill from 'react-quill';
@@ -458,7 +458,7 @@ const AdminPanel = () => {
     try {
       const res = await fetch('/api/articles', { credentials: 'include' });
       const data = await res.json();
-      setArticles(data); 
+      setArticles(data);
     } catch (err) {
       toast({ title: 'Error loading articles', status: 'error' });
     }
@@ -532,7 +532,7 @@ const AdminPanel = () => {
       if (!res.ok) throw new Error(data.error || 'Failed to delete');
 
       toast({ title: 'Product deleted', status: 'success' });
-      fetchProducts(); 
+      fetchProducts();
     } catch (err) {
       toast({ title: err.message, status: 'error' });
     }
@@ -629,7 +629,7 @@ const AdminPanel = () => {
         country: editUser.country,
         message: editUser.message,
         heart: editUser.heart,
-        quote: editUser.quote, 
+        quote: editUser.quote,
       };
 
       if (newPassword) {
@@ -695,8 +695,6 @@ const AdminPanel = () => {
     }
   };
 
-  
-
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
@@ -726,7 +724,7 @@ const AdminPanel = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ role: newRole }),
-        credentials: 'include', 
+        credentials: 'include',
       });
 
       if (!response.ok) {

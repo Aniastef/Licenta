@@ -78,7 +78,7 @@ const gallerySchema = new mongoose.Schema(
         'Activist Art',
         'Environmental Art',
       ],
-      default: ['General'], 
+      default: ['General'],
     },
 
     description: {
@@ -91,7 +91,7 @@ const gallerySchema = new mongoose.Schema(
     },
     tags: [
       {
-        type: String, 
+        type: String,
       },
     ],
     products: [
@@ -102,7 +102,7 @@ const gallerySchema = new mongoose.Schema(
     ],
     owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', 
+      ref: 'User',
       required: true,
     },
     collaborators: [

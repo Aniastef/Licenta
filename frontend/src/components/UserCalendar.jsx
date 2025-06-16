@@ -75,8 +75,8 @@ const UserCalendar = ({ createdEvents = [], goingEvents = [] }) => {
         style={{ height: 600 }}
         eventPropGetter={eventStyleGetter}
         onSelectEvent={handleSelectEvent}
-        showMultiDayTimes={true} 
-        step={15} 
+        showMultiDayTimes={true}
+        step={15}
         timeslots={4}
         defaultView="week"
       />

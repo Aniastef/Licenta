@@ -291,7 +291,6 @@ const HomePage = () => {
             </Box>
           ))}
         </Grid>
-        
       </Box>
 
       {}

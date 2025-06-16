@@ -150,7 +150,7 @@ const CheckoutPage = () => {
 
   const handlePayment = async () => {
     if (paymentMethod !== 'online') {
-      handleDeliveryOrder(); 
+      handleDeliveryOrder();
       return;
     }
 
@@ -190,10 +190,7 @@ const CheckoutPage = () => {
           itemName = item.product.title;
         }
         if (!itemName || itemName.trim() === '') {
-          console.error(
-            `Item ${index}: Name/title is missing or empty for item:`,
-            item.product,
-          );
+          console.error(`Item ${index}: Name/title is missing or empty for item:`, item.product);
           return null;
         }
         const itemPrice = Number(item.product.price);

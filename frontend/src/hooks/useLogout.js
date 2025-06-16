@@ -15,7 +15,7 @@ const useLogout = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', 
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -28,7 +28,7 @@ const useLogout = () => {
       localStorage.removeItem('art-corner');
       setUser(null);
       showToast('Success', 'Logged out successfully', 'success');
-      navigate('/home'); 
+      navigate('/home');
     } catch (error) {
       showToast('Error', error.message, 'error');
     }

@@ -9,7 +9,7 @@ const useGetUserProfile = () => {
   useEffect(() => {
     const getUser = async () => {
       try {
-        setLoading(true); 
+        setLoading(true);
         const res = await fetch(`/api/users/profile/${username}`, {
           credentials: 'include',
         });
@@ -26,14 +26,14 @@ const useGetUserProfile = () => {
         console.error('Error:', error.message);
         setUser(null);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
     if (username) getUser();
   }, [username]);
 
-  return { user, loading }; 
+  return { user, loading };
 };
 
 export default useGetUserProfile;

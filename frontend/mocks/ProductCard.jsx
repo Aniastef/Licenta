@@ -107,7 +107,7 @@ const ProductCard = ({ product }) => {
     checkIfFavorite();
   }, [user?.username, product?._id]);
 
-useEffect(() => {
+  useEffect(() => {
     if (!product) return;
 
     // Prioritize images
@@ -120,7 +120,9 @@ useEffect(() => {
     }
     // Then check for meaningful writing content
     else if (
-      (Array.isArray(product.writing) && product.writing.length > 0 && product.writing[0]?.trim()) ||
+      (Array.isArray(product.writing) &&
+        product.writing.length > 0 &&
+        product.writing[0]?.trim()) ||
       (typeof product.writing === 'string' && product.writing.trim())
     ) {
       setViewMode('writing');
@@ -511,16 +513,14 @@ useEffect(() => {
                 <Text mt={1} color="gray.600">
                   Categories:{' '}
                   <b>
-                    {
-                      Array.isArray(product.category) 
-                        ? product.category.map((cat, index) => (
-                            <React.Fragment key={cat}>
-                              {cat}
-                              {index < product.category.length - 1 && ', '}
-                            </React.Fragment>
-                          ))
-                        : product.category
-                    }
+                    {Array.isArray(product.category)
+                      ? product.category.map((cat, index) => (
+                          <React.Fragment key={cat}>
+                            {cat}
+                            {index < product.category.length - 1 && ', '}
+                          </React.Fragment>
+                        ))
+                      : product.category}
                   </b>
                 </Text>
               )}

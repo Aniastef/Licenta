@@ -225,54 +225,52 @@ const UserAllGalleriesPage = () => {
                 )}
               </Box>
 
-             
-<Box
-  textAlign="center"
-  py={3}
-  px={2}
-  display="flex"
-  flexDir="column"
-  justifyContent="space-between"
-  flex="1"
->
-  <Text fontWeight="bold" isTruncated>
-    {gallery.name}
-  </Text>
-  <Text fontSize="sm" color="gray.600">
-    {gallery.products?.length || 0} products
-  </Text>
-  <Text fontSize="sm" mt={1} isTruncated>
-    <strong>Creator:</strong> {gallery.owner?.firstName} {gallery.owner?.lastName}
-  </Text>
-  {gallery.collaborators?.length > 0 && (
-    <Text fontSize="sm" color="blue.500" isTruncated>
-      <strong>Collaborators:</strong>{' '}
-      {gallery.collaborators.map((c) => `${c.firstName} ${c.lastName}`).join(', ')}
-    </Text>
-  )}
-  {gallery.tags?.length > 0 && (
-    <Text fontSize="sm" color="purple.600" isTruncated>
-      <strong>Tags:</strong> {gallery.tags.join(', ')}
-    </Text>
-  )}
+              <Box
+                textAlign="center"
+                py={3}
+                px={2}
+                display="flex"
+                flexDir="column"
+                justifyContent="space-between"
+                flex="1"
+              >
+                <Text fontWeight="bold" isTruncated>
+                  {gallery.name}
+                </Text>
+                <Text fontSize="sm" color="gray.600">
+                  {gallery.products?.length || 0} products
+                </Text>
+                <Text fontSize="sm" mt={1} isTruncated>
+                  <strong>Creator:</strong> {gallery.owner?.firstName} {gallery.owner?.lastName}
+                </Text>
+                {gallery.collaborators?.length > 0 && (
+                  <Text fontSize="sm" color="blue.500" isTruncated>
+                    <strong>Collaborators:</strong>{' '}
+                    {gallery.collaborators.map((c) => `${c.firstName} ${c.lastName}`).join(', ')}
+                  </Text>
+                )}
+                {gallery.tags?.length > 0 && (
+                  <Text fontSize="sm" color="purple.600" isTruncated>
+                    <strong>Tags:</strong> {gallery.tags.join(', ')}
+                  </Text>
+                )}
 
-  {}
-  {currentUser && gallery.owner._id === currentUser._id && (
-    <Button
-      mt={2}
-      maxW={'150px'}
-      alignSelf="center"
-      colorScheme="red"
-      onClick={(e) => {
-        e.stopPropagation();
-        handleDeleteGallery(gallery._id);
-      }}
-    >
-      Delete Gallery
-    </Button>
-  )}
-</Box>
-
+                {}
+                {currentUser && gallery.owner._id === currentUser._id && (
+                  <Button
+                    mt={2}
+                    maxW={'150px'}
+                    alignSelf="center"
+                    colorScheme="red"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteGallery(gallery._id);
+                    }}
+                  >
+                    Delete Gallery
+                  </Button>
+                )}
+              </Box>
             </Box>
           ))}
         </Flex>

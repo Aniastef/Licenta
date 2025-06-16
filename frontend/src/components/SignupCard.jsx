@@ -34,7 +34,7 @@ const SignupCard = () => {
   const setUser = useSetRecoilState(userAtom);
   const showToast = useShowToast();
   const [rawImage, setRawImage] = useState(null);
-  const [imgUrl, setImgUrl] = useState(null); 
+  const [imgUrl, setImgUrl] = useState(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
 
   const [inputs, setInputs] = useState({
@@ -68,15 +68,15 @@ const SignupCard = () => {
     if (!file) return;
 
     const options = {
-      maxSizeMB: 1, 
-      maxWidthOrHeight: 800, 
+      maxSizeMB: 1,
+      maxWidthOrHeight: 800,
       useWebWorker: true,
     };
 
     try {
       const compressed = await imageCompression(file, options);
       const base64 = await imageCompression.getDataUrlFromFile(compressed);
-      setRawImage(base64); 
+      setRawImage(base64);
       setCropModalOpen(true);
     } catch (err) {
       console.error('Image compression failed:', err);
@@ -93,7 +93,7 @@ const SignupCard = () => {
       body: formData,
     });
     const data = await res.json();
-    return data.secure_url; 
+    return data.secure_url;
   };
 
   const validateInputs = () => {
@@ -178,7 +178,6 @@ const SignupCard = () => {
       showToast('Error', 'Something went wrong. Please try again.', 'error');
     }
   };
-
 
   return (
     <Flex mb={10} minH="80vh" align="center" justify="center">
@@ -331,8 +330,8 @@ const SignupCard = () => {
               onClose={() => setCropModalOpen(false)}
               imageSrc={rawImage}
               onCropComplete={(croppedBase64) => {
-                setImgUrl(croppedBase64); 
-                setInputs({ ...inputs, profilePicture: croppedBase64 }); 
+                setImgUrl(croppedBase64);
+                setInputs({ ...inputs, profilePicture: croppedBase64 });
               }}
             />
 

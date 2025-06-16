@@ -51,12 +51,12 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     if (isDifferent && ordered.every((p) => p?.product?._id)) {
       setProducts(ordered);
     }
-  }, [gallery.products, products]); 
+  }, [gallery.products, products]);
 
   useEffect(() => {
     const checkIfGalleryFavorite = async () => {
       if (!currentUserId || !gallery?._id) {
-        setIsGalleryFavorite(false); 
+        setIsGalleryFavorite(false);
         return;
       }
 
@@ -120,7 +120,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     try {
       let res;
       if (isGalleryFavorite) {
-        res = await fetch(`/api/users/favorites/gallery/${gallery._id}`, { 
+        res = await fetch(`/api/users/favorites/gallery/${gallery._id}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -128,7 +128,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
           credentials: 'include',
         });
       } else {
-        res = await fetch('/api/users/favorites/gallery', { 
+        res = await fetch('/api/users/favorites/gallery', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -140,7 +140,9 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || `Failed to ${isGalleryFavorite ? 'remove from' : 'add to'} favorites`);
+        throw new Error(
+          errorData.error || `Failed to ${isGalleryFavorite ? 'remove from' : 'add to'} favorites`,
+        );
       }
 
       setIsGalleryFavorite(!isGalleryFavorite);
@@ -153,7 +155,10 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         position: 'top-right',
       });
 
-      console.log(`✅ Gallery ${isGalleryFavorite ? 'removed from' : 'added to'} favorites:`, gallery._id);
+      console.log(
+        `✅ Gallery ${isGalleryFavorite ? 'removed from' : 'added to'} favorites:`,
+        gallery._id,
+      );
     } catch (err) {
       console.error('Error toggling gallery favorite:', err);
       toast({
@@ -166,7 +171,6 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       });
     }
   };
-
 
   const addProductToGallery = async (productId) => {
     try {
@@ -277,12 +281,14 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   return (
     <Flex direction={'column'}>
       <Flex direction="column" alignItems="center" px={4} pt={4} position="relative">
-        <HStack spacing={2} alignItems="center"> {}
+        <HStack spacing={2} alignItems="center">
+          {' '}
+          {}
           <Text fontWeight="bold" fontSize="2xl" textAlign="center">
             {gallery.name || 'Gallery Name'}
           </Text>
           {}
-          {currentUserId && !isOwner && ( 
+          {currentUserId && !isOwner && (
             <IconButton
               icon={<Text fontSize="2xl">{isGalleryFavorite ? '❤️' : '🤍'}</Text>}
               onClick={toggleGalleryFavorite}
@@ -335,7 +341,6 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
           Created by: {`${gallery.owner?.firstName} ${gallery.owner?.lastName}`}
         </Text>
 
-
         {canEdit && (
           <Button colorScheme="orange" onClick={onOpen}>
             Add your artworks
@@ -362,18 +367,16 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               ))}
             </Flex>
           )}
-                      {}
+          {}
           {gallery.category?.length > 0 && (
-                      <Flex wrap="wrap" gap={2}>
-                          {gallery.category.map((cat, idx) => (
-                              <Tag key={idx} fontWeight="semibold" colorScheme="blue">
-                                  {cat}
-                              </Tag>
-                          ))}
-                      </Flex>
-                    )}
-
-
+            <Flex wrap="wrap" gap={2}>
+              {gallery.category.map((cat, idx) => (
+                <Tag key={idx} fontWeight="semibold" colorScheme="blue">
+                  {cat}
+                </Tag>
+              ))}
+            </Flex>
+          )}
           {gallery.tags?.length > 0 && (
             <Flex direction="row" gap={2} wrap="wrap">
               {gallery.tags.map((tag, idx) => (
@@ -383,31 +386,42 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               ))}
             </Flex>
           )}
-              {gallery.description && (
-            <>
-              {gallery.description.length > 300 ? (
-                <>
-                  <Collapse startingHeight={100} in={isDescriptionExpanded}>
-                    <Text whiteSpace="pre-wrap" dangerouslySetInnerHTML={{ __html: gallery.description }} /> {}
-                  </Collapse>
-                  <Button
-                    variant="link"
-                    colorScheme="blue"
-                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                  >
-                    {isDescriptionExpanded ? 'see less' : 'see more'}
-                  </Button>
-                </>
-              ) : (
-                <Box
-                  className="quill-content"
-                  dangerouslySetInnerHTML={{ __html: gallery.description }}
-                />
-              )}
-            </>
-          )}
+             {' '}
+          {gallery.description && (
+            <>
+                           {' '}
+              {gallery.description.length > 300 ? (
+                <>
+                                   {' '}
+                  <Collapse startingHeight={100} in={isDescriptionExpanded}>
+                                       {' '}
+                    <Text
+                      whiteSpace="pre-wrap"
+                      dangerouslySetInnerHTML={{ __html: gallery.description }}
+                    />{' '}
+                    {}                 {' '}
+                  </Collapse>
+                                   {' '}
+                  <Button
+                    variant="link"
+                    colorScheme="blue"
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  >
+                                        {isDescriptionExpanded ? 'see less' : 'see more'}           
+                         {' '}
+                  </Button>
+                                 {' '}
+                </>
+              ) : (
+                <Box
+                  className="quill-content"
+                  dangerouslySetInnerHTML={{ __html: gallery.description }}
+                />
+              )}
+                         {' '}
+            </>
+          )}
           <Flex direction={'row'} gap={2} mt={gallery.description?.length > 900 ? 4 : 2}></Flex>
-
           <ReactSortable
             list={products}
             setList={setProducts}
@@ -502,7 +516,6 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               );
             })}
           </ReactSortable>
-
           {products.length > visibleCount && (
             <Flex justify="center" mt={4}>
               {!expanded ? (
@@ -516,7 +529,6 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               )}
             </Flex>
           )}
-
           <Modal isOpen={isOpen} onClose={onClose} size="4xl" isCentered>
             <ModalOverlay />
             <ModalContent>
@@ -571,8 +583,8 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                           {!product.forSale
                             ? 'Not for Sale'
                             : product.quantity > 0
-                            ? `Stock: ${product.quantity} left`
-                            : 'Out of Stock'}
+                              ? `Stock: ${product.quantity} left`
+                              : 'Out of Stock'}
                         </Tag>
                         <Button
                           colorScheme="green"

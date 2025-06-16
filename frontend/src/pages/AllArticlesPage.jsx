@@ -95,15 +95,7 @@ const AllArticlesPage = () => {
 
     setFilteredArticles(updated);
     setCurrentPage(1);
-  }, [
-    articles,
-    searchText,
-    dateFrom,
-    dateTo,
-    sortOption,
-    sortDirection,
-    selectedCategories,
-  ]);
+  }, [articles, searchText, dateFrom, dateTo, sortOption, sortDirection, selectedCategories]);
 
   const paginated = filteredArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,

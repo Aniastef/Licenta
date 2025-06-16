@@ -50,7 +50,7 @@ const NotificationDrawer = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(fetchNotifications, 10000); 
+    const interval = setInterval(fetchNotifications, 10000);
     return () => clearInterval(interval);
   }, []);
 

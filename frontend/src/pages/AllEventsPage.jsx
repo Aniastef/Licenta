@@ -492,10 +492,7 @@ const EventsPage = () => {
 
                         {}
                         <Box textAlign="left" flex="1">
-                          <Text
-                            fontWeight="bold"
-                            noOfLines={1}
-                          >
+                          <Text fontWeight="bold" noOfLines={1}>
                             {event.name}
                           </Text>
                           {event.category && (
@@ -528,8 +525,7 @@ const EventsPage = () => {
                           )}
                           {event.tags?.length > 0 && (
                             <Text fontSize="sm" color="purple.600">
-                              <strong>Tags:</strong>{' '}
-                              {event.tags.slice(0, 2).join(', ')}
+                              <strong>Tags:</strong> {event.tags.slice(0, 2).join(', ')}
                               {event.tags.length > 2 && '...'}
                             </Text>
                           )}

@@ -9,7 +9,6 @@ import Article from '../models/articleModel.js';
 import Notification from '../models/notificationModel.js';
 import { addAuditLog } from './auditLogController.js';
 
-
 export const getUserProfile = async (req, res) => {
   try {
     const username = req.params.username;
@@ -22,18 +21,14 @@ export const getUserProfile = async (req, res) => {
 
     const ownedGalleries = await Gallery.find({ owner: user._id })
       .populate('collaborators', '_id')
-      .select(
-        'name isPublic owner collaborators pendingCollaborators coverPhoto category tags',
-      );
+      .select('name isPublic owner collaborators pendingCollaborators coverPhoto category tags');
 
     const collaboratedGalleries = await Gallery.find({
       collaborators: user._id,
       owner: { $ne: user._id },
     })
       .populate('collaborators', '_id')
-      .select(
-        'name isPublic owner collaborators pendingCollaborators coverPhoto category tags',
-      );
+      .select('name isPublic owner collaborators pendingCollaborators coverPhoto category tags');
 
     await user.populate([
       {
@@ -57,7 +52,7 @@ export const getUserProfile = async (req, res) => {
       .select('title price images videos tags createdAt category')
       .sort({ createdAt: -1 });
 
-    const articles = await Article.find({ user: user._id }) 
+    const articles = await Article.find({ user: user._id })
       .select('title subtitle category createdAt content')
       .sort({ createdAt: -1 })
       .limit(3);
@@ -78,7 +73,7 @@ export const getUserProfile = async (req, res) => {
       .lean();
 
     const userObject = user.toObject();
-    
+
     userObject.products = products;
     userObject.articles = articles;
     userObject.favoriteGalleries = favoriteGalleries ? favoriteGalleries.favoriteGalleries : [];
@@ -116,7 +111,7 @@ export const addArticleToFavorites = async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const articleIdObj = new mongoose.Types.ObjectId(articleId);
-    if (!user.favoriteArticles.some(favId => favId.equals(articleIdObj))) {
+    if (!user.favoriteArticles.some((favId) => favId.equals(articleIdObj))) {
       user.favoriteArticles.push(articleIdObj);
       await user.save();
 
@@ -589,7 +584,7 @@ export const addGalleryToFavorites = async (req, res) => {
 
     const galleryIdObj = new mongoose.Types.ObjectId(galleryId);
 
-    if (!user.favoriteGalleries.some(favId => favId.equals(galleryIdObj))) {
+    if (!user.favoriteGalleries.some((favId) => favId.equals(galleryIdObj))) {
       user.favoriteGalleries.push(galleryIdObj);
       await user.save();
 
@@ -665,7 +660,7 @@ export const removeGalleryFromFavorites = async (req, res) => {
     const { galleryId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(galleryId)) {
-        return res.status(400).json({ error: 'Invalid gallery ID' });
+      return res.status(400).json({ error: 'Invalid gallery ID' });
     }
 
     const user = await User.findById(userId);
@@ -673,9 +668,7 @@ export const removeGalleryFromFavorites = async (req, res) => {
 
     const galleryIdObj = new mongoose.Types.ObjectId(galleryId);
 
-    user.favoriteGalleries = user.favoriteGalleries.filter(
-      (favId) => !favId.equals(galleryIdObj)
-    );
+    user.favoriteGalleries = user.favoriteGalleries.filter((favId) => !favId.equals(galleryIdObj));
 
     await user.save();
 
@@ -698,7 +691,7 @@ export const moveToFavorites = async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const productIdObj = new mongoose.Types.ObjectId(productId);
-    if (!user.favorites.some(favId => favId.equals(productIdObj))) {
+    if (!user.favorites.some((favId) => favId.equals(productIdObj))) {
       user.favorites.push(productIdObj);
     }
 
@@ -771,7 +764,7 @@ export const blockUser = async (req, res) => {
     const currentUser = await User.findById(req.user._id);
 
     const userToBlockObj = new mongoose.Types.ObjectId(userToBlock);
-    if (!currentUser.blockedUsers.some(blockedId => blockedId.equals(userToBlockObj))) {
+    if (!currentUser.blockedUsers.some((blockedId) => blockedId.equals(userToBlockObj))) {
       currentUser.blockedUsers.push(userToBlockObj);
       await currentUser.save();
     }
@@ -805,8 +798,7 @@ export const getBlockedUsers = async (req, res) => {
       'firstName lastName profilePicture',
     );
     res.status(200).json({ blockedUsers: user.blockedUsers });
-  } catch (err)
- {
+  } catch (err) {
     console.error('Get blocked users error:', err);
     res.status(500).json({ error: 'Failed to get blocked users' });
   }
@@ -903,14 +895,12 @@ export const toggleFavoriteGallery = async (req, res) => {
     }
 
     const galleryIdObj = new mongoose.Types.ObjectId(actualGalleryId);
-    const isCurrentlyFavorite = user.favoriteGalleries.some(
-      (favId) => favId.equals(galleryIdObj)
-    );
+    const isCurrentlyFavorite = user.favoriteGalleries.some((favId) => favId.equals(galleryIdObj));
 
     let message;
     if (isCurrentlyFavorite) {
       user.favoriteGalleries = user.favoriteGalleries.filter(
-        (favId) => !favId.equals(galleryIdObj)
+        (favId) => !favId.equals(galleryIdObj),
       );
       message = 'Gallery removed from favorites';
     } else {
@@ -926,7 +916,6 @@ export const toggleFavoriteGallery = async (req, res) => {
   }
 };
 
-
 export const getUserFavoriteGalleries = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -936,7 +925,7 @@ export const getUserFavoriteGalleries = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const favoriteGalleryIds = user.favoriteGalleries.map(gallery => gallery._id.toString());
+    const favoriteGalleryIds = user.favoriteGalleries.map((gallery) => gallery._id.toString());
 
     res.status(200).json(favoriteGalleryIds);
   } catch (error) {

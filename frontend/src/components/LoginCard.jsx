@@ -34,7 +34,7 @@ const LoginCard = () => {
   const [showPassword, setShowPassword] = useState(false);
   const setAuthScreen = useSetRecoilState(authScreenAtom);
   const showToast = useShowToast();
-  const setUser = useSetRecoilState(userAtom); 
+  const setUser = useSetRecoilState(userAtom);
   const slideshowImages = [p1, p2, p3, p4, p5, p6, p7, p8];
   const getRandomIndex = () => Math.floor(Math.random() * slideshowImages.length);
   const [currentSlide, setCurrentSlide] = useState(getRandomIndex());
@@ -44,14 +44,14 @@ const LoginCard = () => {
     username: '',
     password: '',
   });
-  
+
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
     const rememberedUsername = localStorage.getItem('rememberedUsername');
     if (rememberedUsername) {
       setInputs((prevInputs) => ({ ...prevInputs, username: rememberedUsername }));
-      setRememberMe(true); 
+      setRememberMe(true);
     }
   }, []);
 
@@ -100,7 +100,6 @@ const LoginCard = () => {
     }
   };
 
-
   useEffect(() => {
     const checkUserSessionStatus = async () => {
       try {
@@ -114,7 +113,7 @@ const LoginCard = () => {
           setUser(null);
           if (localStorage.getItem('art-corner')) {
             showToast('Info', 'Your session has expired or your account has been blocked.', 'info');
-            localStorage.removeItem('art-corner'); 
+            localStorage.removeItem('art-corner');
           }
         } else {
           setUser(data);
@@ -203,10 +202,10 @@ const LoginCard = () => {
               fontWeight="bold"
               fontSize="md"
               onClick={() => {
-                setUser(null); 
+                setUser(null);
                 localStorage.removeItem('art-corner');
-                localStorage.removeItem('rememberedUsername'); 
-                setRememberMe(false); 
+                localStorage.removeItem('rememberedUsername');
+                setRememberMe(false);
                 navigate('/');
                 showToast('Info', 'Continuing as guest.', 'info');
               }}

@@ -15,7 +15,7 @@ const appointmentSchema = new mongoose.Schema(
       required: true,
     },
     time: {
-      type: String, 
+      type: String,
       required: true,
     },
     createdBy: {
@@ -26,7 +26,7 @@ const appointmentSchema = new mongoose.Schema(
     participant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      default: null, 
+      default: null,
     },
     status: {
       type: String,
