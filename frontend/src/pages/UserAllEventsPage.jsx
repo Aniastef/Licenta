@@ -211,7 +211,7 @@ const UserAllEventsPage = () => {
       </Flex>
 
       <Flex gap={4} wrap="wrap" justify="center">
-        {/* Search by name, tags, co-hosts */}
+        {}
         <Input
           placeholder="Search by name, tags, or co-hosts..."
           value={searchTerm}
@@ -219,7 +219,7 @@ const UserAllEventsPage = () => {
           maxW="310px"
         />
 
-        {/* Search by location */}
+        {}
         <Input
           placeholder="Search by location..."
           value={locationSearch}
@@ -227,7 +227,7 @@ const UserAllEventsPage = () => {
           maxW="250px"
         />
 
-        {/* Role filter */}
+        {}
         <Select
           placeholder="Filter by role"
           value={roleFilter}
@@ -240,9 +240,9 @@ const UserAllEventsPage = () => {
       </Flex>
 
       <Flex wrap="wrap" justify="space-between" align="flex-start" mt={4}>
-        {/* Stânga: Status + Ticket Type */}
+        {}
         <Box>
-          {/* Status */}
+          {}
           <Flex align="center" gap={3} mb={2}>
             <Text fontWeight="bold" minW="70px">
               Status
@@ -256,7 +256,7 @@ const UserAllEventsPage = () => {
             </CheckboxGroup>
           </Flex>
 
-          {/* Ticket Type */}
+          {}
           <Flex align="center" gap={3}>
             <Text fontWeight="bold" minW="70px">
               Ticket Type
@@ -271,7 +271,7 @@ const UserAllEventsPage = () => {
           </Flex>
         </Box>
 
-        {/* Dreapta: Interval preț */}
+        {}
         <Box maxW="500px" ml={[0, 4]} flex="1">
           <Flex align="center" mb={2}>
             <Checkbox
@@ -283,7 +283,7 @@ const UserAllEventsPage = () => {
           </Flex>
 
           <Flex direction="row" align="center" gap={4}>
-            {/* Slider ocupa tot spațiul rămas */}
+            {}
             <Box flex="1" w="100%">
               <RangeSlider
                 isDisabled={!enablePriceFilter}
@@ -306,7 +306,7 @@ const UserAllEventsPage = () => {
               </RangeSlider>
             </Box>
 
-            {/* Inputuri min-max */}
+            {}
             <Flex gap={2} align="center">
               <Input
                 size="sm"
@@ -409,7 +409,7 @@ const UserAllEventsPage = () => {
                 </Box>
 
                 <Flex p={4} gap={3} align="center">
-                  {/* Data în stânga */}
+                  {}
                   <Flex direction="column" align="center" minW="50px">
                     {(() => {
                       const { day, month, year } = formatDate(event.date);
@@ -423,14 +423,14 @@ const UserAllEventsPage = () => {
                     })()}
                   </Flex>
 
-                  {/* Detalii în dreapta */}
+                  {}
                   <Box textAlign="left" flex="1" overflow="hidden">
-                                  {/* MODIFICARE AICI: Adăugat isTruncated */}
+                                  {}
                     <Text fontSize="md" fontWeight="bold" isTruncated>
                       {event.name || 'Nume eveniment'}
                     </Text>
                     {event.category && <Text fontSize="sm">Category: {event.category}</Text>}
-                                  {/* MODIFICARE AICI: Adăugat isTruncated */}
+                                  {}
                     <Text fontSize="sm" isTruncated>
                       {event.location || 'TBA'}
                     </Text>

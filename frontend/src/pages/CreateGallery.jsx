@@ -259,13 +259,13 @@ const handleAddGallery = async () => {
               onChange={(e) => setNewGallery({ ...newGallery, name: e.target.value })}
             />
             <FormControl>
-              <FormLabel>Categories</FormLabel> {/* Modified label */}
+              <FormLabel>Categories</FormLabel> {}
               <CheckboxGroup
                 colorScheme="blue"
                 value={newGallery.category}
                 onChange={(values) => setNewGallery({ ...newGallery, category: values })}
               >
-                <Wrap spacing={2}> {/* Use Wrap for better layout */}
+                <Wrap spacing={2}> {}
                   {GALLERY_CATEGORIES.map((cat) => (
                     <WrapItem key={cat}>
                       <Checkbox value={cat}>{cat}</Checkbox>

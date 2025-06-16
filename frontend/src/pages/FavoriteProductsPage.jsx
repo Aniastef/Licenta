@@ -110,7 +110,7 @@ export default function FavoriteProductsPage() {
         Favorite Products
       </Heading>
 
-      {/* 🛠️ Căutare și Filtrare */}
+      {}
       <Flex mb={4} gap={4}>
         <Input
           placeholder="Search for a product..."
@@ -129,7 +129,7 @@ export default function FavoriteProductsPage() {
         </Select>
       </Flex>
 
-      {/* 🔥 Afișarea produselor */}
+      {}
       {sortedProducts.length === 0 ? (
         <Text>No favorite products found.</Text>
       ) : (

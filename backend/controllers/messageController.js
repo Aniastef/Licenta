@@ -63,7 +63,7 @@ export const getConversations = async (req, res) => {
           isUnread: 1,
         },
       },
-      { $sort: { 'lastMessage.timestamp': -1 } }, // Sortare conversații
+      { $sort: { 'lastMessage.timestamp': -1 } },
     ]);
 
     res.status(200).json({ conversations });
@@ -88,7 +88,7 @@ export const getMessages = async (req, res) => {
         { sender: userId, receiver: req.user._id },
       ],
     })
-      .populate('sender', 'firstName lastName profilePicture') // ✅ Verifică aici
+      .populate('sender', 'firstName lastName profilePicture')
       .populate('receiver', 'firstName lastName profilePicture')
       .sort({ timestamp: 1 });
 
@@ -173,7 +173,7 @@ export const markMessagesAsRead = async (req, res) => {
       {
         $set: {
           isRead: true,
-          readAt: new Date(), // 👈 setăm ora la care s-a citit
+          readAt: new Date(),
         },
       },
     );

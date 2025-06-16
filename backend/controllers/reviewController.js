@@ -1,10 +1,8 @@
-// controllers/reviewController.js
 import Review from '../models/reviewModel.js';
 import Product from '../models/productModel.js';
 import Notification from '../models/notificationModel.js';
 import User from '../models/userModel.js';
 
-// 🔁 Recalculare medie rating după modificări
 const updateProductRating = async (productId) => {
   const reviews = await Review.find({ productId });
   if (reviews.length === 0) {
@@ -16,7 +14,6 @@ const updateProductRating = async (productId) => {
   await Product.findByIdAndUpdate(productId, { averageRating: avg.toFixed(2) });
 };
 
-// ✅ Adaugă sau actualizează review (1 per user/product)
 export const addOrUpdateReview = async (req, res) => {
   try {
     const { productId, rating, content } = req.body;
@@ -56,7 +53,6 @@ export const addOrUpdateReview = async (req, res) => {
   }
 };
 
-// ✅ Returnează toate review-urile pentru un produs
 export const getReviewsForProduct = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -68,7 +64,6 @@ export const getReviewsForProduct = async (req, res) => {
   }
 };
 
-// ✅ Șterge review-ul unui utilizator
 export const deleteReview = async (req, res) => {
   try {
     const { productId } = req.params;

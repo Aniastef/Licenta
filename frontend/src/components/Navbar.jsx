@@ -54,7 +54,7 @@ const Navbar = () => {
     marginBottom="-110px" // 🧠 anulează spațiul pentru conținutul de dedesubt
     position="relative"
   >
-      {/* LOGO + SUBTITLU */}
+      {}
       <VStack spacing={1} textAlign="center" mb={4}>
         <HStack spacing={2} justify="center">
           <Text fontFamily="logo" fontSize="3xl" fontWeight="bold">
@@ -66,7 +66,7 @@ const Navbar = () => {
         </Text>
       </VStack>
 
-      {/* MENIU + SEARCH */}
+      {}
       <Flex justify="space-between" align="center" flexWrap="wrap">
         <HStack spacing={6} fontSize="lg" flexWrap="wrap">
           <Link to="/home">
@@ -103,7 +103,7 @@ const Navbar = () => {
               </MenuList>
             </Menu>
           )}
-          {/* 👤 PROFILE */}
+          {}
           {user ? (
             <Menu>
               <MenuButton _hover={{ textDecoration: 'underline' }}>My account ▼</MenuButton>
@@ -148,8 +148,8 @@ const Navbar = () => {
           )}
         </HStack>
 
-        {/* SEARCH + CART + NOTIFICATIONS */}
-        {/* SEARCH + CONDITIONAL ACTIONS */}
+        {}
+        {}
         <HStack spacing={4} mt={{ base: 4, md: 0 }}>
           <SearchBar />
 

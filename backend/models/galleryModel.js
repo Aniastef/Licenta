@@ -1,4 +1,3 @@
-// galleryModel.js
 import mongoose from 'mongoose';
 
 const gallerySchema = new mongoose.Schema(
@@ -13,7 +12,7 @@ const gallerySchema = new mongoose.Schema(
     },
 
     category: {
-      type: [String], // Change to an array of strings
+      type: [String],
       enum: [
         'General',
         'Photography',
@@ -79,7 +78,7 @@ const gallerySchema = new mongoose.Schema(
         'Activist Art',
         'Environmental Art',
       ],
-      default: ['General'], // Default to an array with "General"
+      default: ['General'], 
     },
 
     description: {
@@ -92,7 +91,7 @@ const gallerySchema = new mongoose.Schema(
     },
     tags: [
       {
-        type: String, // Fiecare tag va fi un string
+        type: String, 
       },
     ],
     products: [
@@ -103,7 +102,7 @@ const gallerySchema = new mongoose.Schema(
     ],
     owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Proprietarul galeriei
+      ref: 'User', 
       required: true,
     },
     collaborators: [

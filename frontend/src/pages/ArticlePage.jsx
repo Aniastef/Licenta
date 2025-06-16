@@ -255,7 +255,7 @@ const ArticlePage = () => {
   return (
     <Box maxW="1700px" mx="auto" py={8}>
       <VStack spacing={4} align="stretch">
-        {/* HEADER + EDIT BUTTON */}
+        {}
         <Box position="relative" textAlign="center">
           {!editMode && isOwner && (
             <IconButton
@@ -410,7 +410,7 @@ const ArticlePage = () => {
           </Flex>
         </Box>
 
-        {/* CONTENT */}
+        {}
         {editMode ? (
           <>
             <ReactQuill

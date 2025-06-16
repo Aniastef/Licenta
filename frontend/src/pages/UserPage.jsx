@@ -26,10 +26,10 @@ const UserPage = () => {
 
   return (
     <>
-      {/* Header-ul utilizatorului */}
+      {}
       <UserHeader user={user} />
 
-      {/* Secțiunea de comentarii */}
+      {}
       <Box>
         <Divider my={4} />
 

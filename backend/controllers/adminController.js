@@ -32,7 +32,6 @@ export const deleteUser = async (req, res) => {
 
     await User.findByIdAndDelete(req.params.id);
 
-    // ✅ Salvează log-ul acțiunii
     await addAuditLog('User deleted', req.user._id, user._id, `Deleted user: ${user.email}`);
 
     res.json({ message: 'User deleted successfully' });
@@ -57,7 +56,6 @@ export const updateAdminRole = async (req, res) => {
     user.role = req.body.role;
     await user.save();
 
-    // ✅ Salvează log-ul acțiunii
     await addAuditLog(
       'Admin role updated',
       req.user._id,
@@ -85,7 +83,6 @@ export const toggleBlockUser = async (req, res) => {
     user.isBlocked = !user.isBlocked;
     await user.save();
 
-    // ✅ Salvează log-ul acțiunii
     await addAuditLog(
       'User blocked/unblocked',
       req.user._id,
@@ -165,7 +162,6 @@ export const updateUserAdmin = async (req, res) => {
 
     await user.save();
 
-    // ✅ Salvează log-ul acțiunii
     await addAuditLog(
       'User updated',
       req.user._id,
@@ -175,7 +171,7 @@ export const updateUserAdmin = async (req, res) => {
 
     res.status(200).json({ message: 'User updated successfully' });
   } catch (err) {
-    console.error('❌ Error in updateUserAdmin:', err); // ← adaugă asta
+    console.error('❌ Error in updateUserAdmin:', err);
 
     res.status(500).json({ error: err.message });
   }
@@ -195,7 +191,6 @@ export const uploadProfilePicture = async (req, res) => {
     user.profilePicture = imageUrl;
     await user.save();
 
-    // ✅ Salvează log-ul acțiunii
     await addAuditLog(
       'Profile picture updated',
       req.user._id,
@@ -233,7 +228,6 @@ export const handleRoleChange = async (req, res) => {
     user.role = role;
     await user.save();
 
-    // ✅ Salvează log-ul acțiunii
     await addAuditLog('Role changed', req.user._id, user._id, `Changed role to: ${role}`);
 
     res.json({ message: 'User role updated successfully', user });

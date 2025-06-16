@@ -474,7 +474,7 @@ const handleUpdate = async () => {
               </Select>
             </FormControl>
 
-            {/* Existing Media Display */}
+            {}
             {(product.images?.length > 0 || product.videos?.length > 0 || product.audios?.length > 0) && (
                 <Box>
                     <Text fontSize="lg" fontWeight="bold" mb={2}>Existing Media:</Text>
@@ -528,7 +528,7 @@ const handleUpdate = async () => {
                 </Box>
             )}
 
-            {/* New Media Upload and Preview */}
+            {}
             <FormControl>
               <FormLabel>Add Images</FormLabel>
               <Input

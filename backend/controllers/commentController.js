@@ -219,8 +219,8 @@ export const getComments = async (req, res) => {
 
 export const likeUnlikeComment = async (req, res) => {
   try {
-    const { id: commentId } = req.params; // ID-ul comentariului
-    const userId = req.user._id; // ID-ul utilizatorului din autentificare
+    const { id: commentId } = req.params;
+    const userId = req.user._id; 
 
     const comment = await Comment.findById(commentId);
 
@@ -231,10 +231,8 @@ export const likeUnlikeComment = async (req, res) => {
     const userLiked = comment.likes.includes(userId);
 
     if (userLiked) {
-      // Retrage like-ul dacă există
       comment.likes = comment.likes.filter((id) => id.toString() !== userId.toString());
     } else {
-      // Adaugă like și elimină dislike-ul dacă există
       if (comment.dislikes.includes(userId)) {
         comment.dislikes = comment.dislikes.filter((id) => id.toString() !== userId.toString());
       }
@@ -264,7 +262,7 @@ const handleLikeAndUnlike = async (commentId) => {
     const res = await fetch(`/api/comments/${commentId}/like`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // Include autentificarea
+      credentials: 'include', 
     });
 
     const data = await res.json();
@@ -274,7 +272,6 @@ const handleLikeAndUnlike = async (commentId) => {
       return;
     }
 
-    // Actualizăm starea locală a comentariilor
     setComments((prevComments) =>
       prevComments.map((comment) =>
         comment._id === commentId
@@ -308,10 +305,8 @@ export const dislikeUndislikeComment = async (req, res) => {
     const userDisliked = comment.dislikes.includes(userId);
 
     if (userDisliked) {
-      // Retrage dislike-ul dacă există
       comment.dislikes = comment.dislikes.filter((id) => id.toString() !== userId.toString());
     } else {
-      // Adaugă dislike și elimină like-ul dacă există
       if (comment.likes.includes(userId)) {
         comment.likes = comment.likes.filter((id) => id.toString() !== userId.toString());
       }
@@ -349,7 +344,6 @@ export const deleteComment = async (req, res) => {
       return res.status(403).json({ error: "You don't have permission to delete this comment" });
     }
 
-    // Ștergem și toate răspunsurile asociate, dacă este un comentariu principal
     if (!comment.parentId) {
       await Comment.deleteMany({ parentId: comment._id });
     }

@@ -310,7 +310,7 @@ const ExploreGalleries = () => {
       </Flex>
 
       <Flex direction={{ base: 'column', md: 'row' }} gap={6}>
-        {/* Sidebar */}
+        {}
         <Box w="220px" p={4} borderWidth={1} borderRadius="lg">
           <Text fontWeight="bold">Filter by Category</Text>
           <Wrap spacing={2} mt={2}>
@@ -339,7 +339,7 @@ const ExploreGalleries = () => {
           </Wrap>
         </Box>
 
-        {/* Gallery List */}
+        {}
         <Box flex={1}>
           {loading ? (
             <Text>Loading...</Text>
@@ -402,7 +402,7 @@ const ExploreGalleries = () => {
                           {gallery.owner?.lastName}
                         </Text>
 
-                        {/* MODIFIED: Display categories joined by comma */}
+                        {}
                         {gallery.category && gallery.category.length > 0 && (
                           <Text fontSize="sm" color="teal.600">
                             <strong>Category:</strong> {gallery.category.join(', ')}
@@ -467,7 +467,7 @@ const ExploreGalleries = () => {
         </Box>
       </Flex>
 
-      {/* Butonul flotant de scroll to top */}
+      {}
       {showScrollButton && (
         <Button
           onClick={scrollToTop}

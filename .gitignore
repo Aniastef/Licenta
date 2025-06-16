@@ -1,5 +1,3 @@
-# Ignoră folderul node_modules de la rădăcină
 /node_modules
 
-# Ignoră folderul node_modules din frontend
 /frontend/node_modules

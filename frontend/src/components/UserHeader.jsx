@@ -184,9 +184,9 @@ const UserHeader = ({ user }) => {
 
   return (
     <Flex direction="column" px={6} py={12} maxW="1300px" mx="auto">
-      {/* Header Section */}
+      {}
       <Flex justify="space-between" align="flex-start" gap={15}>
-        {/* Avatar & Contact */}
+        {}
         <Flex direction="column" align="center" gap={2}>
           <Box
             borderRadius="full"
@@ -215,7 +215,7 @@ const UserHeader = ({ user }) => {
           </Box>
         </Flex>
 
-        {/* Bio */}
+        {}
         <Flex direction="column" flex={1} maxW="450px">
           <Flex align="center" gap={2}>
             <Text fontWeight="bold" fontSize="2xl">
@@ -297,7 +297,7 @@ const UserHeader = ({ user }) => {
         </Box>
       </Flex>
 
-      {/* ///////////////////////////////////// */}
+      {}
 
       <Flex align="flex-start" gap={10}>
         <Flex ml={45} direction="column" align="start" gap={3}>
@@ -370,7 +370,7 @@ const UserHeader = ({ user }) => {
           })}
         </Flex>
 
-        {/* About Me & Tabs Section */}
+        {}
         <Flex direction={'column'} ml={65} textAlign="center">
           <Text textAlign="left" fontWeight="bold" fontSize="lg" mb={2}>
             About me
@@ -416,7 +416,7 @@ const UserHeader = ({ user }) => {
               </TabList>
 
               <TabPanels>
-                {/* Artworks Panel */}
+                {}
                 <TabPanel>
                   <Flex wrap="wrap" gap={7} maxW="1400px" mx="auto" justify="left">
                     {latestProducts && latestProducts.length > 0 ? (
@@ -507,7 +507,7 @@ const UserHeader = ({ user }) => {
                   </Box>
                 </TabPanel>
 
-                {/* Galleries Panel */}
+                {}
                 <TabPanel>
                   <Flex direction="column" align="center" gap={4} maxW="800px" mx="auto">
                     <Flex gap={4}>
@@ -602,9 +602,9 @@ const UserHeader = ({ user }) => {
                   </Flex>
                 </TabPanel>
 
-                {/* ========================================================= */}
-                {/* ===== SECȚIUNEA EVENTS A FOST MUTATĂ AICI (LOCUL CORECT) ===== */}
-                {/* ========================================================= */}
+                {}
+                {}
+                {}
                 <TabPanel>
                   <Flex justifyContent="center" gap={5} mb={5} wrap="wrap">
                     <Button
@@ -722,7 +722,7 @@ const UserHeader = ({ user }) => {
                   </Box>
                 </TabPanel>
 
-                {/* Articles Panel */}
+                {}
                 <TabPanel>
                   <Flex direction="column" align="center" gap={6}>
                     <Flex direction="column" w="100%" maxW="800px" gap={4}>

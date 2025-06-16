@@ -2,9 +2,6 @@ import User from '../models/userModel.js';
 import Product from '../models/productModel.js';
 import Event from '../models/eventModel.js';
 
-/**
- * Get user orders
- */
 export const getUserOrders = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -15,7 +12,6 @@ export const getUserOrders = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Console log before display fallbacks for debugging
     console.log(
       '🔍 Backend (orderController): Fetched user orders BEFORE display fallbacks for user:',
       userId,
@@ -35,7 +31,6 @@ export const getUserOrders = async (req, res) => {
                 }
               }
             } else {
-              // Assume "Product"
               if (!item.product.images || item.product.images.length === 0) {
                 const productDetails = await Product.findById(item.product._id);
                 if (productDetails) {
@@ -49,8 +44,6 @@ export const getUserOrders = async (req, res) => {
 
       const isOrderOnlyTickets =
         Array.isArray(order.products) && order.products.every((p) => p.itemType === 'Event');
-
-      // Apply display fallbacks here based on saved value.
       order.firstName = order.firstName || 'N/A';
       order.lastName = order.lastName || 'N/A';
 
@@ -71,7 +64,6 @@ export const getUserOrders = async (req, res) => {
         order.deliveryMethod === 'N/A' ? 'N/A' : order.deliveryMethod || 'courier';
     }
 
-    // Console log after display fallbacks for debugging
     console.log(
       '✅ Backend (orderController): Orders prepared for sending to frontend (after fallbacks):',
       JSON.parse(JSON.stringify(user.orders)),
@@ -84,9 +76,6 @@ export const getUserOrders = async (req, res) => {
   }
 };
 
-/**
- * Add a new order
- */
 export const addOrder = async (req, res) => {
   console.log('📩 Backend (orderController): Received req.body for addOrder:', req.body);
   try {
@@ -106,7 +95,6 @@ export const addOrder = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Save exactly what's received.
     const newOrder = {
       products: products.map((p) => ({
         product: p._id,
@@ -187,7 +175,6 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
-// Admin - Get All Orders from All Users
 export const getAllOrders = async (req, res) => {
   try {
     console.log('✅ getAllOrders triggered');

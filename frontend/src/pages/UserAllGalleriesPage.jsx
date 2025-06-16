@@ -256,7 +256,7 @@ const UserAllGalleriesPage = () => {
     </Text>
   )}
 
-  {/* Buton de ștergere dacă userul este owner */}
+  {}
   {currentUser && gallery.owner._id === currentUser._id && (
     <Button
       mt={2}

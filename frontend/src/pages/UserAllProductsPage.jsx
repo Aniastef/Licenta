@@ -185,8 +185,8 @@ const UserAllProductsPage = () => {
         </Flex>
       ) : filteredProducts.length === 1 ? (
         <Flex justify="center">
-          {/* Aici nu mai folosim Link, pentru că butonul de Delete este integrat direct. */}
-          {/* Folosim un Box care este clicabil (prin onClick) pentru a naviga. */}
+          {}
+          {}
           <Box
             bg="gray.100"
             borderRadius="md"
@@ -200,7 +200,7 @@ const UserAllProductsPage = () => {
             // Atentie: navigate la click pe intreg Box-ul, dar stopPropagation pe buton
             onClick={() => navigate(`/products/${filteredProducts[0]._id}`)}
           >
-            {/* imagine */}
+            {}
             <Box h="270px" bg="gray.200">
               {filteredProducts[0].images?.[0] ? (
                 <Image
@@ -217,7 +217,7 @@ const UserAllProductsPage = () => {
               )}
             </Box>
 
-            {/* detalii + buton */}
+            {}
             <Box py={3} px={2} textAlign="center">
               <Text fontWeight="bold" noOfLines={1}>
                 {filteredProducts[0].title}
@@ -234,7 +234,7 @@ const UserAllProductsPage = () => {
                 </Text>
               )}
 
-              {/* buton delete vizibil doar pentru owner */}
+              {}
               {currentUser?._id === user?._id && (
                 <Button
                   mt={2}
@@ -266,7 +266,7 @@ const UserAllProductsPage = () => {
               cursor="pointer"
               onClick={() => navigate(`/products/${product._id}`)}
             >
-              {/* imagine */}
+              {}
               <Box h="270px" bg="gray.200">
                 {product.images?.[0] ? (
                   <Image
@@ -290,7 +290,7 @@ const UserAllProductsPage = () => {
                 )}
               </Box>
 
-              {/* detalii + buton */}
+              {}
               <Box textAlign="center" py={3} px={2}>
                 <Text fontWeight="bold" noOfLines={1}>
                   {product.title}
@@ -307,7 +307,7 @@ const UserAllProductsPage = () => {
                   </Text>
                 )}
 
-                {/* buton delete vizibil doar pentru owner */}
+                {}
                 {currentUser?._id === user?._id && (
                   <Button
                     mt={2}

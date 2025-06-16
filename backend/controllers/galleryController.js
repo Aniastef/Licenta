@@ -5,15 +5,14 @@ import { uploadToCloudinary } from "../config/imgUpload.js";
 import User from "../models/userModel.js";
 import Product from "../models/productModel.js";
 import Notification from "../models/notificationModel.js";
-import { createNotification } from "./notificationController.js"; // adaugă sus
-import { addAuditLog } from "./auditLogController.js"; // ← modifică path-ul dacă e diferit
+import { createNotification } from "./notificationController.js"; 
+import { addAuditLog } from "./auditLogController.js"; 
 
 export const createGallery = async (req, res) => {
   try {
-    const { name, description, collaborators, isPublic } = req.body; // Remove category and tags from destructuring here
-    let { category, tags } = req.body; // Declare them as mutable
+    const { name, description, collaborators, isPublic } = req.body; 
+    let { category, tags } = req.body; 
 
-    // --- FIX 1: Parse category from JSON string ---
     if (typeof category === 'string') {
       try {
         category = JSON.parse(category);
@@ -23,18 +22,16 @@ export const createGallery = async (req, res) => {
       }
     }
     if (!Array.isArray(category)) {
-      category = []; // Ensure it's an array if parsing failed or it wasn't an array initially
+      category = []; 
     }
-    // Set a default if it's empty after parsing
     if (category.length === 0) {
       category = ['General'];
     }
 
-    // --- FIX 2: Parse tags from comma-separated string ---
     if (typeof tags === 'string') {
-      tags = tags.split(",").map(tag => tag.trim()).filter(Boolean); // Filter(Boolean) removes empty strings
+      tags = tags.split(",").map(tag => tag.trim()).filter(Boolean); 
     } else if (!Array.isArray(tags)) {
-      tags = []; // Ensure it's an array
+      tags = []; 
     }
 
 
@@ -45,7 +42,7 @@ export const createGallery = async (req, res) => {
     let coverPhotoUrl = null;
     if (req.file) {
       coverPhotoUrl = await uploadToCloudinary(req.file);
-    } else if (req.body.coverPhoto === 'null') { // Handle explicit removal
+    } else if (req.body.coverPhoto === 'null') { 
       coverPhotoUrl = '';
     }
 
@@ -63,7 +60,7 @@ export const createGallery = async (req, res) => {
         : [];
     } catch (e) {
       parsedCollaborators = [];
-      console.error("Error parsing collaborators:", e.message); // Added console.error
+      console.error("Error parsing collaborators:", e.message); 
     }
 
     const uniquePendingCollaborators = [
@@ -74,10 +71,10 @@ export const createGallery = async (req, res) => {
 
     const newGallery = new Gallery({
       name,
-      category, // Use the parsed category
+      category,
       description,
       coverPhoto: coverPhotoUrl,
-      tags, // Use the parsed tags
+      tags, 
       owner: currentUserId,
       pendingCollaborators: uniquePendingCollaborators,
       isPublic: isPublic === "true" || isPublic === true,
@@ -111,7 +108,7 @@ export const createGallery = async (req, res) => {
 
     res.status(201).json(newGallery);
   } catch (err) {
-    console.error("Error creating gallery:", err.message); // Log the specific error message
+    console.error("Error creating gallery:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -120,7 +117,7 @@ export const createGallery = async (req, res) => {
 export const getGallery = async (req, res) => {
   try {
     const { galleryId } = req.params;
-    const currentUserId = req.user?._id?.toString();  // ← aici e nevoie să fie autentificat
+    const currentUserId = req.user?._id?.toString();  
 
     const gallery = await Gallery.findById(galleryId)
       .populate("owner", "firstName lastName username _id")
@@ -129,7 +126,7 @@ export const getGallery = async (req, res) => {
       .populate({
         path: "products.product",
         model: "Product",
-        select: "images title price quantity forSale description tags", // Adaugă 'tags' aici
+        select: "images title price quantity forSale description tags",
       });
 
     if (!gallery) {
@@ -173,7 +170,7 @@ export const getProductsNotInGallery = async (req, res) => {
       return res.status(404).json({ error: "Gallery not found" });
     }
 
-    // 🔍 Ia doar produsele utilizatorului care NU sunt deja în gallery.products
+    
     const existingProductIds = gallery.products.map(p => p.product.toString());
 
     const products = await Product.find({
@@ -219,8 +216,8 @@ export const deleteGallery = async (req, res) => {
 export const updateGallery = async (req, res) => {
   try {
     const { galleryId } = req.params;
-    const { name, description, collaborators, isPublic } = req.body; // Remove category and tags from destructuring
-    let { category, tags } = req.body; // Declare them as mutable
+    const { name, description, collaborators, isPublic } = req.body; 
+    let { category, tags } = req.body; 
 
     const gallery = await Gallery.findById(galleryId);
     if (!gallery) return res.status(404).json({ error: "Gallery not found" });
@@ -232,7 +229,6 @@ export const updateGallery = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized action" });
     }
 
-    // --- FIX 1: Parse category from JSON string ---
     if (typeof category === 'string') {
       try {
         category = JSON.parse(category);
@@ -241,30 +237,24 @@ export const updateGallery = async (req, res) => {
         return res.status(400).json({ error: "Invalid category format for update." });
       }
     }
-    // If category is not provided in update, retain existing. If it's an empty array, it will be saved as such.
     if (!Array.isArray(category)) {
       category = gallery.category || ['General'];
     }
 
-
-    // --- FIX 2: Parse tags from comma-separated string ---
     if (typeof tags === 'string') {
       tags = tags.split(",").map((t) => t.trim()).filter(Boolean);
-    } else if (tags === undefined) { // If tags field is completely omitted, retain existing
+    } else if (tags === undefined) {
         tags = gallery.tags;
-    } else if (!Array.isArray(tags)) { // If it's not a string and not undefined, ensure it's an array
+    } else if (!Array.isArray(tags)) {
         tags = [];
     }
 
-
-    // 🔄 Actualizări de bază
     gallery.name = name || gallery.name;
-    gallery.category = category; // Use the parsed category
+    gallery.category = category; 
     gallery.description = description || gallery.description;
-    gallery.tags = tags; // Use the parsed tags
+    gallery.tags = tags; 
     gallery.isPublic = isPublic === "true" || isPublic === true;
 
-    // ✅ Parsează colaboratori din request
     let parsedCollaborators = [];
     try {
       const raw = typeof collaborators === "string" ? JSON.parse(collaborators) : collaborators;
@@ -276,70 +266,61 @@ export const updateGallery = async (req, res) => {
         : [];
     } catch (err) {
       parsedCollaborators = [];
-      console.error("Error parsing collaborators for update:", err.message); // Added console.error
+      console.error("Error parsing collaborators for update:", err.message); 
     }
 
-    // ✅ Curățăm listele
     const currentUserId = req.user._id.toString();
     const newCollaborators = new Set();
     const newPending = new Set();
 
-    // Existing collaborators and pending collaborators as strings for easy comparison
     const existingCollaboratorStrings = gallery.collaborators.map(c => c.toString());
     const existingPendingStrings = gallery.pendingCollaborators.map(p => p.toString());
 
-    // Determine who should be a collaborator or pending based on the new list
     for (const id of parsedCollaborators) {
       const idStr = id.toString();
       if (idStr === currentUserId) continue;
 
       if (existingCollaboratorStrings.includes(idStr)) {
-        newCollaborators.add(idStr); // Remains a collaborator
+        newCollaborators.add(idStr); 
       } else if (!existingPendingStrings.includes(idStr)) {
-        newPending.add(idStr); // New invite, not already pending
+        newPending.add(idStr); 
       }
     }
 
-    // Identify collaborators to remove (no longer in parsedCollaborators)
     const collaboratorsToRemove = existingCollaboratorStrings.filter(
         id => !newCollaborators.has(id) && !newPending.has(id)
     );
 
-    // Identify pending invites to remove (no longer in parsedCollaborators)
     const pendingToRemove = existingPendingStrings.filter(
         id => !newCollaborators.has(id) && !newPending.has(id)
     );
 
 
-    // Update gallery's collaborators and pendingCollaborators
     gallery.collaborators = Array.from(newCollaborators).map(id => new mongoose.Types.ObjectId(id));
     gallery.pendingCollaborators = Array.from(newPending).map(id => new mongoose.Types.ObjectId(id));
 
-    // Remove old notifications for declined/removed invites
     if (pendingToRemove.length > 0) {
       await Notification.deleteMany({
         recipient: { $in: pendingToRemove.map(id => new mongoose.Types.ObjectId(id)) },
         type: "invite",
         "meta.galleryId": galleryId,
       });
-      // Optionally notify users that their invite was rescinded
       for (const userId of pendingToRemove) {
         await createNotification({
           userId: userId,
           type: "info",
           message: `Your invitation to collaborate on "${gallery.name}" was withdrawn.`,
-          link: `/galleries`, // Or relevant page
+          link: `/galleries`,
           meta: { galleryId: gallery._id },
         });
         addAuditLog(currentUserId, `Withdrew collaboration invite for ${userId} from gallery "${gallery.name}"`);
       }
     }
 
-    // Notify users who were removed as collaborators
     if (collaboratorsToRemove.length > 0) {
-      await Notification.deleteMany({ // Clear any old notifications for them related to this gallery
+      await Notification.deleteMany({
         recipient: { $in: collaboratorsToRemove.map(id => new mongoose.Types.ObjectId(id)) },
-        type: { $in: ["invite", "info"] }, // Maybe other types too
+        type: { $in: ["invite", "info"] },
         "meta.galleryId": galleryId,
       });
       for (const userId of collaboratorsToRemove) {
@@ -347,25 +328,23 @@ export const updateGallery = async (req, res) => {
           userId: userId,
           type: "info",
           message: `You have been removed as a collaborator from "${gallery.name}".`,
-          link: `/galleries`, // Or relevant page
+          link: `/galleries`,
           meta: { galleryId: gallery._id },
         });
         addAuditLog(currentUserId, `Removed collaborator ${userId} from gallery "${gallery.name}"`);
       }
     }
 
-
-    // ✅ Trimitere notificări DOAR celor noi în pending
     for (const userId of newPending) {
       const alreadyNotified = await Notification.findOne({
-        userId: userId, // Corrected to userId
+        userId: userId,
         type: "invite",
         "meta.galleryId": gallery._id,
       });
 
       if (!alreadyNotified) {
         await createNotification({
-          userId: userId, // Corrected to userId
+          userId: userId,
           type: "invite",
           message: `${req.user.firstName} ${req.user.lastName} invited you to collaborate on gallery "${gallery.name}"`,
           link: `/galleries/${gallery._id}`,
@@ -375,7 +354,6 @@ export const updateGallery = async (req, res) => {
       }
     }
 
-    // 🖼️ Gestionare imagine (opțional)
     const shouldRemoveCover = !req.file && req.body.coverPhoto === "null";
     if (shouldRemoveCover && gallery.coverPhoto) {
       const publicId = gallery.coverPhoto.split("/").pop().split(".")[0];
@@ -393,8 +371,6 @@ export const updateGallery = async (req, res) => {
 
     await gallery.save();
 
-    // Fix: The audit log for "delete_gallery" should not be here in updateGallery.
-    // Ensure you log "update_gallery" only once and correctly.
     await addAuditLog({
       action: "update_gallery",
       performedBy: req.user._id,
@@ -405,23 +381,21 @@ export const updateGallery = async (req, res) => {
     await gallery.populate("owner", "username");
     res.status(200).json(gallery);
   } catch (err) {
-    console.error("Error updating gallery:", err.message); // Log the specific error message
+    console.error("Error updating gallery:", err.message); 
     res.status(500).json({ error: err.message });
   }
 };
-// ... rest of your controller
-
 
 
 export const getAllGalleries = async (req, res) => {
   try {
-   // getAllGalleries
+
  const galleries = await Gallery.find()
   .populate("owner", "username firstName lastName profilePicture")
   .populate("collaborators", "firstName lastName")
   .populate({
     path: "products.product",
-    select: "images", // ← doar câmpuri esențiale
+    select: "images",
   })
   .select("name category tags products owner coverPhoto collaborators createdAt")
   .sort({ createdAt: -1 });
@@ -477,9 +451,6 @@ export const addProductToGallery = async (req, res) => {
 };
 
 
-
-
-  
 export const addMultipleProductsToGallery = async (req, res) => {
   try {
     const { galleryId } = req.params;
@@ -591,7 +562,7 @@ export const updateProductOrder = async (req, res) => {
           orderedProductIds.indexOf(b.product.toString())
       )
       .map((p, index) => ({
-        ...p.toObject(), // preserve subdocument _id
+        ...p.toObject(),
         order: index,
       }));
 
@@ -606,13 +577,6 @@ export const updateProductOrder = async (req, res) => {
   }
 };
 
-
-
-
-
-
-  
-  
   export const acceptGalleryInvite = async (req, res) => {
     try {
       const { galleryId } = req.params;
@@ -651,7 +615,7 @@ export const updateProductOrder = async (req, res) => {
       const gallery = await Gallery.findById(galleryId);
       if (!gallery) return res.status(404).json({ error: "Gallery not found" });
   
-      // 🔁 Fix: folosește .some() cu toString() pentru comparație corectă
+    
       const wasPending = gallery.pendingCollaborators.some(
         (id) => id.toString() === userId.toString()
       );
@@ -663,7 +627,7 @@ export const updateProductOrder = async (req, res) => {
       );
       await gallery.save();
   
-      // ✅ Șterge notificarea aferentă
+  
       await Notification.deleteMany({
         user: userId,
         type: "invite",
@@ -679,7 +643,7 @@ export const updateProductOrder = async (req, res) => {
 
   export const getFavoriteGalleries = async (req, res) => {
   try {
-    const userId = req.user._id; // Assuming user is authenticated and req.user is populated
+    const userId = req.user._id; 
 
     const user = await User.findById(userId).select('favoriteGalleries');
 
@@ -687,7 +651,6 @@ export const updateProductOrder = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Return the array of favorite gallery IDs
     res.status(200).json(user.favoriteGalleries);
   } catch (error) {
     console.error("Error fetching favorite galleries:", error.message);
@@ -699,20 +662,17 @@ export const updateProductOrder = async (req, res) => {
     try {
       const { username } = req.params;
   
-      // Caută utilizatorul după username
       const user = await User.findOne({ username });
       if (!user) return res.status(404).json({ error: "User not found" });
   
-      // Caută galeriile unde userul e owner sau colaborator
       const galleries = await Gallery.find({
         $or: [{ owner: user._id }, { collaborators: user._id }],
       })
         .populate("owner", "firstName lastName username")
         .populate("collaborators", "firstName lastName")
-       // In your galleryController.js (getAllUserGalleries function)
         .populate({
-            path: "products.product", // This is key!
-            select: "title description images price quantity forSale tags", // Select all fields needed by GalleryCard
+            path: "products.product", 
+            select: "title description images price quantity forSale tags", 
         })  
         .select("name tags products owner coverPhoto collaborators isPublic")
         .sort({ createdAt: -1 });

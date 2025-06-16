@@ -1,4 +1,3 @@
-// controllers/reportController.js
 import Report from '../models/reportModel.js';
 
 export const createReport = async (req, res) => {

@@ -629,7 +629,7 @@ const ProductsPage = () => {
                       </Box>
 
                       <Box textAlign="center" py={3} minH="150px">
-                        {/* Apply truncation here */}
+                        {}
                         <Text
                           fontWeight="bold"
                           isTruncated // This Chakra UI prop applies overflow: hidden, white-space: nowrap, text-overflow: ellipsis
@@ -714,7 +714,7 @@ const ProductsPage = () => {
         </Box>
       </Flex>
 
-      {/* Butonul flotant de scroll to top */}
+      {}
       {showScrollButton && (
         <Button
           onClick={scrollToTop}

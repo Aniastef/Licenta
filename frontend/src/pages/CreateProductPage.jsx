@@ -309,7 +309,7 @@ const CreateProductPage = () => {
             )}
 
             <FormControl>
-              <FormLabel>Categories</FormLabel> {/* MODIFICATION: Label changed to plural */}
+              <FormLabel>Categories</FormLabel> {}
               <CheckboxGroup
                 colorScheme="green"
                 value={newProduct.category} // MODIFICATION: Bind value to array
@@ -319,7 +319,7 @@ const CreateProductPage = () => {
               >
                 <Wrap spacing={2} mt={2} maxW="100%">
                   {' '}
-                  {/* Use Wrap for better layout of checkboxes */}
+                  {}
                   {ALL_CATEGORIES.map((cat) => (
                     <WrapItem key={cat}>
                       <Checkbox value={cat}>{cat}</Checkbox>

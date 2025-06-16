@@ -1,9 +1,7 @@
-// --- articleController.js ---
 import Article from '../models/articleModel.js';
-import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul dacă e diferit
-import User from '../models/userModel.js'; // <-- ADAUGĂ ACEASTĂ LINIE
+import { addAuditLog } from './auditLogController.js'; 
+import User from '../models/userModel.js';
 
-// în articleController.js
 
 export const createArticle = async (req, res) => {
   try {
@@ -21,7 +19,6 @@ export const createArticle = async (req, res) => {
 
     await article.save();
 
-    // NOU: Actualizează documentul utilizatorului adăugând ID-ul noului articol
     await User.findByIdAndUpdate(req.user._id, { $push: { articles: article._id } });
 
     await addAuditLog({
@@ -58,7 +55,7 @@ export const getMyArticles = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-// GET /api/articles?search=abc&from=2024-01-01&to=2024-12-31
+
 export const getAllArticlesFiltered = async (req, res) => {
   try {
     const { search = '', from, to } = req.query;
@@ -80,7 +77,7 @@ export const getAllArticlesFiltered = async (req, res) => {
     }
 
     const articles = await Article.find(filter)
-      .populate('user', 'firstName lastName username') // 🔥 adaugă toate câmpurile necesare
+      .populate('user', 'firstName lastName username') 
       .sort({ createdAt: -1 });
 
     res.status(200).json(articles);
@@ -130,7 +127,6 @@ export const updateArticle = async (req, res) => {
   }
 };
 
-// în articleController.js
 
 export const deleteArticle = async (req, res) => {
   try {
@@ -141,7 +137,6 @@ export const deleteArticle = async (req, res) => {
     if (article.user.toString() !== req.user._id.toString())
       return res.status(403).json({ error: 'Unauthorized' });
 
-    // NOU: Șterge referința din documentul utilizatorului înainte de a șterge articolul
     await User.findByIdAndUpdate(article.user, { $pull: { articles: article._id } });
 
     await Article.findByIdAndDelete(id);
@@ -159,14 +154,13 @@ export const deleteArticle = async (req, res) => {
   }
 };
 
-// ADD IN articleController.js
 export const getAllArticles = async (req, res) => {
   try {
     const articles = await Article.find()
       .populate('user', 'firstName lastName')
       .sort({ createdAt: -1 });
 
-    res.status(200).json({ articles }); // ✅ răspunsul corect către frontend
+    res.status(200).json({ articles });
   } catch (err) {
     console.error('Error fetching articles:', err.message);
     res.status(500).json({ error: 'Failed to fetch articles' });

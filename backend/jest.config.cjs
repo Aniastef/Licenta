@@ -1,7 +1,7 @@
 // backend/jest.config.cjs
 module.exports = {
   testEnvironment: 'node',
-  testMatch: ['**/tests/**/*.test.js', '**/?(*.)+(spec|test).[tj]s?(x)'],
+  testMatch: ['**/tests*.test.js', '**/?(*.)+(spec|test).[tj]s?(x)'],
   // Add this transform configuration
   transform: {
     // Use babel-jest for all .js files, excluding node_modules

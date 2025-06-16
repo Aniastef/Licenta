@@ -276,7 +276,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
 
   return (
     <Flex direction="column" ml={100} gap={6}>
-      {/* Header-ul tău cu buline */}
+      {}
       <Flex direction="row" align="center" justifyContent="space-between">
         <Text fontWeight="bold" width="100px" borderBottom="2px solid gray" pb={1}>
           Comments
@@ -333,7 +333,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
                 </Text>
               )}
 
-              {/* Likes/Dislikes */}
+              {}
               <HStack mt={2}>
                 {user && (
                   <>
@@ -356,7 +356,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
                   </>
                 )}
 
-                {/* 🔥 Aici adaugi butonul de Reply */}
+                {}
                 {user && (
                   <Button
                     size="sm"
@@ -401,7 +401,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
                   </Button>
                 )}
 
-                {/* 🔥 Aici adaugi butonul de Show/Hide Replies */}
+                {}
                 {comment.replies?.length > 0 && (
                   <Button size="sm" variant="ghost" onClick={() => toggleReplies(comment._id)}>
                     {showReplies[comment._id]
@@ -423,7 +423,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
                 )}
               </HStack>
 
-              {/* Replies */}
+              {}
               {showReplies[comment._id] && (
                 <Flex direction="column" mt={3} pl={10} gap={3}>
                   {comment.replies?.map((reply) => (
@@ -450,7 +450,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
                   ))}
                 </Flex>
               )}
-              {/* Reply box */}
+              {}
               {user && activeReplyBox === comment._id && (
                 <Collapse in={activeReplyBox === comment._id} animateOpacity>
                   <Flex direction="column" mt={3} pl={10} gap={2}>
@@ -479,7 +479,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
           </Flex>
         </Box>
       ))}
-      {/* Add comment */}
+      {}
       {user && (
         <Box mt={4}>
           <Textarea

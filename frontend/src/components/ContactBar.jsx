@@ -14,7 +14,7 @@ const ContactBar = () => {
       minH="300px" // Ajustează această înălțime dacă e nevoie
       overflow="hidden"
     >
-      {/* Fundal inversat cu imaginea SVG - poziționat absolut */}
+      {}
       <Image
         src={contactBarBg}
         alt="contact shape"
@@ -28,7 +28,7 @@ const ContactBar = () => {
         pointerEvents="none"
       />
 
-      {/* Conținut Contact - poziționat absolut peste imagine */}
+      {}
       <Flex
         position="absolute"
         bottom="0"
@@ -51,24 +51,24 @@ const ContactBar = () => {
         </HStack>
 
         {/* <HStack spacing={3} mb={2}>
-          <Image src={phoneIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
+          <Image src={phoneIcon} boxSize="20px" /> {}
           {/* <Text>+40 723 123 456</Text>
         </HStack> */} 
 
         <HStack spacing={3} mb={2}>
-          <Image src={emailIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
+          <Image src={emailIcon} boxSize="20px" /> {}
           <Text>contact@art-corner.com</Text>
         </HStack>
 
         <HStack spacing={3} mb={2}>
-          <Image src={facebookIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
+          <Image src={facebookIcon} boxSize="20px" /> {}
           <Link href="https://facebook.com/art-corner" isExternal color="blue.700">
             facebook.com/art-corner
           </Link>
         </HStack>
 
         <HStack spacing={3}>
-          <Image src={instagramIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
+          <Image src={instagramIcon} boxSize="20px" /> {}
           <Link href="https://instagram.com/art-corner" isExternal color="purple.700">
             @art-corner
           </Link>

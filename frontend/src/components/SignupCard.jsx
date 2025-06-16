@@ -313,7 +313,7 @@ const SignupCard = () => {
             </FormControl>
           </VStack>
 
-          {/* Coloana 2 */}
+          {}
           <VStack spacing={4} flex="1">
             <FormControl>
               <FormLabel>Phone number</FormLabel>

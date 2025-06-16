@@ -26,7 +26,7 @@ const EventsSection = ({ title, events }) => {
               overflow="hidden"
               _hover={{ transform: 'scale(1.02)', transition: '0.2s' }}
             >
-              {/* Imaginea de copertă */}
+              {}
               <Box h="200px" width="100%" overflow="hidden">
                 <Image
                   src={event.coverImage || 'https://via.placeholder.com/600x150'}
@@ -37,7 +37,7 @@ const EventsSection = ({ title, events }) => {
                 />
               </Box>
 
-              {/* Detalii despre eveniment */}
+              {}
               <Box p={4}>
                 <Heading size="md" mb={2}>
                   {event.name}

@@ -113,7 +113,7 @@ const eventSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Include createdAt și updatedAt
+    timestamps: true,
   },
 );
 

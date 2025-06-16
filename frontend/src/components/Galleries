@@ -85,7 +85,7 @@ const ExploreGalleries = () => {
         textAlign="left"
       />
 
-      {/* Bara de căutare combinată și sortare */}
+      {}
       <Flex mt={4} mb={5} justify="space-between" wrap="wrap" gap={4}>
         <Flex direction="row" alignItems="center" gap={4}>
           <RectangleShape
@@ -147,7 +147,7 @@ const ExploreGalleries = () => {
         </Flex>
       </Flex>
 
-      {/* Lista de galerii */}
+      {}
       <Flex direction="column" px={5}>
         {filteredGalleries.length > 0 ? (
           filteredGalleries.map((gallery) => (

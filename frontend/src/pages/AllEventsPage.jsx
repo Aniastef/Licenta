@@ -296,7 +296,7 @@ const EventsPage = () => {
       </Flex>
 
       <Flex direction={{ base: 'column', md: 'row' }} gap={6}>
-        {/* Sidebar Filters */}
+        {}
         <Box w="220px" p={4} borderWidth={1} borderRadius="lg">
           <Text fontWeight="bold">Price Range</Text>
           <RangeSlider
@@ -437,7 +437,7 @@ const EventsPage = () => {
           </Wrap>
         </Box>
 
-        {/* Events List */}
+        {}
         <Box flex={1}>
           {loading ? (
             <Text>Loading...</Text>
@@ -479,7 +479,7 @@ const EventsPage = () => {
                       </Box>
 
                       <Flex p={4} gap={3} align="center">
-                        {/* Data pe stânga */}
+                        {}
                         <Flex direction="column" align="center" minW="50px">
                           <Text fontWeight="bold" fontSize="lg">
                             {formatDate(event.date).day}
@@ -492,7 +492,7 @@ const EventsPage = () => {
                           </Text>
                         </Flex>
 
-                        {/* Detalii pe dreapta */}
+                        {}
                         <Box textAlign="left" flex="1">
                           <Text
                             fontWeight="bold"

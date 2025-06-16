@@ -255,7 +255,7 @@ useEffect(() => {
                   onChange={(e) => setInputs({ ...inputs, firstName: e.target.value })}
                 />
               </FormControl>
-            {/* CHANGED: Age to Date of Birth */}
+            {}
             <FormControl>
               <FormLabel fontWeight="bold">Date of Birth</FormLabel>
               <Input

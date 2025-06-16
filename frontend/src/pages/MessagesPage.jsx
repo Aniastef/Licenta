@@ -390,7 +390,7 @@ const MessagesPage = () => {
 
   return (
     <Flex height="100vh">
-      {/* Sidebar */}
+      {}
       <Box width="25%" p={4} borderRight="1px solid #ddd">
         <Heading size="md" mb={3}>
           Chats
@@ -482,7 +482,7 @@ const MessagesPage = () => {
         )}
       </Box>
 
-      {/* Chat Window */}
+      {}
       <Box width="70%" p={5}>
         {selectedUser ? ( // Render chat window only if selectedUser is set
           <>
@@ -496,7 +496,7 @@ const MessagesPage = () => {
                 <Heading size="lg">
                   {selectedUser.firstName} {selectedUser.lastName}
                 </Heading>
-                <Spacer /> {/* 🔥 Mută butoanele în dreapta */}
+                <Spacer /> {}
                 {selectedUser && currentUser && (
                   <HStack spacing={2}>
                     <Button colorScheme="red" variant="outline" onClick={onOpen}>
@@ -644,7 +644,7 @@ const MessagesPage = () => {
                             )}
                           </Flex>
 
-                          {/* 🔥 Seen sub mesaj, aliniat cu bubble-ul */}
+                          {}
                           {isCurrentUser && isLastSeen && (
                             <Flex justify="flex-start" mt={1} pr={6}>
                               <Text fontSize="xs" color="gray.500">

@@ -1,4 +1,3 @@
-// paymentController.js - Controller for Stripe payments
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 dotenv.config();

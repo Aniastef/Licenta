@@ -282,11 +282,11 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   return (
     <Flex direction={'column'}>
       <Flex direction="column" alignItems="center" px={4} pt={4} position="relative">
-        <HStack spacing={2} alignItems="center"> {/* Use HStack for title and icon */}
+        <HStack spacing={2} alignItems="center"> {}
           <Text fontWeight="bold" fontSize="2xl" textAlign="center">
             {gallery.name || 'Gallery Name'}
           </Text>
-          {/* Conditional rendering for the favorite icon */}
+          {}
           {currentUserId && !isOwner && ( // Only show if user is logged in and not the owner
             <IconButton
               icon={<Text fontSize="2xl">{isGalleryFavorite ? '❤️' : '🤍'}</Text>}
@@ -352,7 +352,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
           <Circle size="30px" bg="green" />
         </Flex>
 
-        {/* aici chestii in paralel */}
+        {}
       </Flex>
 
       <Flex justifyContent="space-between" px={10}>
@@ -367,7 +367,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               ))}
             </Flex>
           )}
-                      {/* MODIFICARE AICI: Iterăm prin array-ul de categorii pentru a afișa fiecare ca un tag separat */}
+                      {}
           {gallery.category?.length > 0 && (
                       <Flex wrap="wrap" gap={2}>
                           {gallery.category.map((cat, idx) => (
@@ -393,7 +393,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               {gallery.description.length > 300 ? (
                 <>
                   <Collapse startingHeight={100} in={isDescriptionExpanded}>
-                    <Text whiteSpace="pre-wrap" dangerouslySetInnerHTML={{ __html: gallery.description }} /> {/* MODIFIED */}
+                    <Text whiteSpace="pre-wrap" dangerouslySetInnerHTML={{ __html: gallery.description }} /> {}
                   </Collapse>
                   <Button
                     variant="link"
@@ -464,7 +464,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                   )}
 
                   <Box display="flex" flexDirection="column" alignItems="center" p={3}>
-                    {/* Afișăm prețul doar dacă e de vânzare */}
+                    {}
                     <Text fontWeight="semibold" textAlign="center">
                       {p.title}
                     </Text>
@@ -472,7 +472,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                       {p.forSale && p.price != null ? `Price: ${p.price} EUR` : 'Not for sale'}
                     </Text>
 
-                    {/* Afișăm tag-urile */}
+                    {}
                     {p.tags?.length > 0 && (
                       <Flex justifyContent="center" gap={1} mt={2}>
                         {p.tags.slice(0, 3).map((tag, idx) => (

@@ -1,6 +1,6 @@
 import User from '../models/userModel.js';
 import Product from '../models/productModel.js';
-import Event from '../models/eventModel.js'; // 👈 Asigură-te că ai importat Event
+import Event from '../models/eventModel.js'; 
 
 export const addToCart = async (req, res) => {
   try {
@@ -48,14 +48,13 @@ export const addToCart = async (req, res) => {
   }
 };
 
-// ✅ Obține conținutul cart-ului utilizatorului
 export const getCart = async (req, res) => {
   try {
     const { userId } = req.params;
 
     const user = await User.findById(userId).populate({
       path: 'cart.product',
-      refPath: 'cart.itemType', // 🔧 corect
+      refPath: 'cart.itemType',
       populate: { path: 'user', model: 'User' },
     });
 
@@ -68,7 +67,6 @@ export const getCart = async (req, res) => {
   }
 };
 
-// ✅ Elimină un produs din cart
 export const removeFromCart = async (req, res) => {
   try {
     const { userId, productId } = req.body;
@@ -79,7 +77,7 @@ export const removeFromCart = async (req, res) => {
     user.cart = user.cart.filter((item) => !item.product.equals(productId));
     await user.save();
 
-    // ✅ Populează din nou produsele
+
     const updatedUser = await User.findById(userId).populate({
       path: 'cart.product',
       refPath: 'cart.itemType',
@@ -103,13 +101,11 @@ export const updateCartItem = async (req, res) => {
 
     const item = user.cart.find((i) => i.product.equals(productId));
     if (item) {
-      // Actualizează cantitatea produsului
       item.quantity = quantity;
     }
 
     await user.save();
 
-    // ✅ Populăm produsele din nou
     const updatedUser = await User.findById(userId).populate({
       path: 'cart.product',
       refPath: 'cart.itemType',

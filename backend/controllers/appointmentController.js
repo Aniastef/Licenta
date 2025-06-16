@@ -1,7 +1,6 @@
 import Appointment from '../models/appointmentModel.js';
 import User from '../models/userModel.js';
 
-// Creare programare
 export const createAppointment = async (req, res) => {
   try {
     const { title, description, date, time, participant } = req.body;
@@ -21,7 +20,6 @@ export const createAppointment = async (req, res) => {
   }
 };
 
-// Obține programările unui utilizator
 export const getAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({
@@ -36,7 +34,6 @@ export const getAppointments = async (req, res) => {
   }
 };
 
-// Actualizează programarea (ex: schimbă statusul)
 export const updateAppointment = async (req, res) => {
   try {
     const { status } = req.body;
@@ -57,7 +54,6 @@ export const updateAppointment = async (req, res) => {
   }
 };
 
-// Șterge o programare
 export const deleteAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id);

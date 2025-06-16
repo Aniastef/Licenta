@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     favoriteGalleries: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Gallery', // Referință către galerii
+        ref: 'Gallery',
       },
     ],
     bio: {
@@ -113,7 +113,7 @@ const userSchema = new mongoose.Schema(
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          refPath: 'cart.itemType', // ✅ corect: suportă dinamic Product sau Event
+          refPath: 'cart.itemType', 
         },
         quantity: { type: Number, default: 1 },
         itemType: {
@@ -133,7 +133,7 @@ const userSchema = new mongoose.Schema(
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product', // Referință către produsele utilizatorului
+        ref: 'Product', 
       },
     ],
     orders: [
@@ -142,7 +142,7 @@ const userSchema = new mongoose.Schema(
           {
             product: {
               type: mongoose.Schema.Types.ObjectId,
-              refPath: 'orders.products.itemType', // 👈 dinamic: Product sau Event
+              refPath: 'orders.products.itemType',
               required: true,
             },
             itemType: {
@@ -167,7 +167,7 @@ const userSchema = new mongoose.Schema(
         },
         deliveryMethod: {
           type: String,
-          enum: ['courier', 'easybox', 'N/A'], // Add "N/A" here
+          enum: ['courier', 'easybox', 'N/A'],
           default: 'courier',
         },
         firstName: String,
@@ -188,7 +188,7 @@ const userSchema = new mongoose.Schema(
     galleries: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Gallery', // Referință la galerii
+        ref: 'Gallery',
       },
     ],
     favorites: [
@@ -202,13 +202,13 @@ const userSchema = new mongoose.Schema(
     eventsMarkedInterested: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Event', // Evenimente marcate ca "interested"
+        ref: 'Event',
       },
     ],
     eventsMarkedGoing: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Event', // Evenimente marcate ca "going"
+        ref: 'Event',
       },
     ],
     resetPasswordToken: {
@@ -221,11 +221,11 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'], // ✅ Mai multe roluri
+      enum: ['user', 'admin'], 
       default: 'user',
     },
-    isVerified: { type: Boolean, default: false }, // ✅ Verificare email
-    verificationToken: { type: String }, // ✅ Token pentru activare
+    isVerified: { type: Boolean, default: false }, 
+    verificationToken: { type: String },
     isBlocked: {
       type: Boolean,
       default: false,

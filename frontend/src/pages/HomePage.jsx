@@ -103,7 +103,7 @@ const HomePage = () => {
 
   return (
     <Box>
-      {/* Intro Section */}
+      {}
       <Flex
         direction={{ base: 'column', md: 'row' }}
         maxW="1200px"
@@ -114,8 +114,8 @@ const HomePage = () => {
         justify="space-between"
         gap={{ base: 10, md: 6 }}
       >
-        {/* Imagine */}
-        {/* Imagine / video + buline dedesubt */}
+        {}
+        {}
         <Box>
           <Box
             position="relative"
@@ -150,7 +150,7 @@ const HomePage = () => {
             />
           </Box>
 
-          {/* Bule decorative - în afara video */}
+          {}
           <HStack spacing={6} pl={{ base: 2, md: 6 }} mt={4}>
             <Box w="24px" h="24px" bg="#b75c5c" borderRadius="full" />
             <Box w="24px" h="24px" bg="#b48f33" borderRadius="full" />
@@ -160,7 +160,7 @@ const HomePage = () => {
           </HStack>
         </Box>
 
-        {/* Conținut */}
+        {}
         <VStack align="start" spacing={6} flex="1">
           <Grid templateColumns="repeat(3, 1fr)" gap={4} alignSelf="center">
             {[
@@ -221,8 +221,8 @@ const HomePage = () => {
         </VStack>
       </Flex>
 
-      {/* Gallery Preview */}
-      {/* Gallery Section – ajustat ca în mockup */}
+      {}
+      {}
       <Box px={6} py={12} maxW="1100px" mx="auto">
         <Flex justify="space-between" align="center" mb={6}>
           <Text fontSize="2xl" fontWeight="semibold">
@@ -295,7 +295,7 @@ const HomePage = () => {
         
       </Box>
 
-      {/* Mood Section */}
+      {}
 
       <VStack textAlign="center" mb={3}>
         <Box
@@ -310,7 +310,7 @@ const HomePage = () => {
             read about different perspectives and moods...
           </Text>
 
-          {/* Bule colț dreapta sus */}
+          {}
           <HStack spacing={4} position="absolute" top={4} right={6}>
             <Box boxSize={6} bg="green.600" borderRadius="full" />
             <Box boxSize={6} bg="gray.800" borderRadius="full" />
@@ -438,9 +438,9 @@ const HomePage = () => {
         </Flex>
       </Box>
 
-      {/* People Section */}
+      {}
       <Box mt={20} mb={20} px={10} position="relative" h="500px">
-        {/* Central Text */}
+        {}
         <Box
           position="absolute"
           top="50%"
@@ -454,7 +454,7 @@ const HomePage = () => {
           </Text>
         </Box>
 
-        {/* Circular Avatars */}
+        {}
         {randomUsers.slice(0, circularPositions.length).map((user, i) => (
           <VStack
             key={i}
@@ -485,7 +485,7 @@ const HomePage = () => {
         ))}
       </Box>
 
-      {/* Summary Section */}
+      {}
       <Box textAlign="center" mb={20} mt={35}>
         <Text fontWeight="semibold" mb={6} fontSize="xl">
           As a summary, ART CORNER gives you the possibility to

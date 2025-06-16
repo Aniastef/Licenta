@@ -5,8 +5,7 @@ import Comment from '../models/commentModel.js';
 import Event from '../models/eventModel.js';
 import User from '../models/userModel.js';
 import Notification from '../models/notificationModel.js';
-import axios from 'axios'; // To make an API request to the geocoding service
-import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul dacă e diferit
+import { addAuditLog } from './auditLogController.js';
 
 export const createEvent = async (req, res) => {
   try {
@@ -79,8 +78,8 @@ export const createEvent = async (req, res) => {
       user: req.user._id,
       location,
       coordinates,
-      capacity, // <--- nou
-      category, // <--- nou
+      capacity, 
+      category, 
       price,
       ticketType,
       language,
@@ -99,7 +98,6 @@ export const createEvent = async (req, res) => {
       details: `Created event: ${newEvent.name}`,
     });
 
-    // Adaugă evenimentul la utilizator
     await User.findByIdAndUpdate(req.user._id, { $push: { events: newEvent._id } });
 
     res.status(201).json(newEvent);
@@ -197,7 +195,6 @@ export const markGoing = async (req, res) => {
   }
 };
 
-// Updated markInterested with notification
 export const markInterested = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -415,10 +412,9 @@ export const getAllUserEvents = async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // AM MODIFICAT AICI: Căutăm doar evenimentele unde utilizatorul este creatorul
+
     const events = await Event.find({ user: user._id })
-      .populate('user', 'firstName lastName username') // Populează creatorul
-      // .populate('collaborators', 'firstName lastName username') // <-- ELIMINAT
+      .populate('user', 'firstName lastName username')
       .sort({ date: 1 });
 
     res.status(200).json({ events, user });

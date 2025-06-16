@@ -28,7 +28,7 @@ const SearchResultsPage = () => {
       {results.products.map((p) => (
         <p key={p._id}>{p.name}</p>
       ))}
-      {/* Repeat for galleries, articles, events */}
+      {}
     </div>
   );
 };

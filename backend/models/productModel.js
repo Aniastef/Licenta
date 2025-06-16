@@ -1,12 +1,10 @@
-// productModel.js
 import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     category: {
-      // <--- MODIFICATION HERE
-      type: [String], // Change to an array of strings
+      type: [String], 
       enum: [
         'General',
         'Photography',
@@ -72,7 +70,7 @@ const productSchema = new mongoose.Schema(
         'Activist Art',
         'Environmental Art',
       ],
-      default: ['General'], // Default to an array with "General"
+      default: ['General'], 
     },
     description: { type: String, default: '' },
     favoritedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

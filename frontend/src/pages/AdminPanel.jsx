@@ -1000,7 +1000,7 @@ const AdminPanel = () => {
         </Box>
         {activeTab === 'dashboard' && (
           <Box>
-            {/* Statistici generale în grid */}
+            {}
             <SimpleGrid columns={[1, 2, 3]} spacing={4} mb={6}>
               <Box p={4} border="1px solid gray" borderRadius="md">
                 Total Users: {users.length}
@@ -1025,7 +1025,7 @@ const AdminPanel = () => {
               </Box>
             </SimpleGrid>
 
-            {/* Chart-uri în 2 coloane */}
+            {}
             <SimpleGrid columns={[1, null, 2]} spacing={6}>
               <Box>
                 <Heading size="md" mb={4}>
@@ -1058,7 +1058,7 @@ const AdminPanel = () => {
               </Box>
             </SimpleGrid>
 
-            {/* Top Contributors + Recent Users în grid */}
+            {}
             <SimpleGrid columns={[1, null, 2]} spacing={6} mt={8}>
               <Box>
                 <Heading size="md" mb={2}>
@@ -1128,7 +1128,7 @@ const AdminPanel = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            {/* Search Input */}
+            {}
             <Flex mt={4} direction="row" gap={2}>
               <Select
                 size="sm"
@@ -1172,7 +1172,7 @@ const AdminPanel = () => {
               </Button>
             </Flex>
 
-            {/* Tabel cu filtrare activă */}
+            {}
             {loading ? (
               <Spinner />
             ) : (
@@ -1435,7 +1435,7 @@ const AdminPanel = () => {
               Manage events
             </Heading>
 
-            {/* Căutare */}
+            {}
             <Input
               placeholder="Search events..."
               value={eventSearch}
@@ -1443,7 +1443,7 @@ const AdminPanel = () => {
               mb={4}
             />
 
-            {/* Filtrare + sortare */}
+            {}
             <Flex wrap="wrap" gap={3} mb={4}>
               <Select
                 size="sm"
@@ -1820,7 +1820,7 @@ const AdminPanel = () => {
             </Box>
           </Box>
         )}
-        {/* ✅ Secțiunea Audit Logs */}
+        {}
         {activeTab === 'logs' && (
           <>
             {loading ? (
@@ -1844,7 +1844,7 @@ const AdminPanel = () => {
                         <Td>
                           {log.performedBy.firstName} {log.performedBy.lastName}
                         </Td>
-                        <Td>{getTargetInfo(log)}</Td> {/* ✅ Înlocuiește pentru afișare completă */}
+                        <Td>{getTargetInfo(log)}</Td> {}
                         <Td
                           style={{
                             whiteSpace: 'pre-wrap',
@@ -2717,7 +2717,7 @@ const AdminPanel = () => {
                 </FormControl>
                 {(editEvent?.gallery?.length > 0 || eventGalleryFiles.length > 0) && (
                   <Flex wrap="wrap" gap={2} mt={2}>
-                    {/* Imagini deja salvate */}
+                    {}
                     {editEvent?.gallery?.map((imgUrl, idx) => (
                       <Box key={`existing-${idx}`} position="relative">
                         <Image
@@ -2745,7 +2745,7 @@ const AdminPanel = () => {
                       </Box>
                     ))}
 
-                    {/* Imagini noi încărcate */}
+                    {}
                     {eventGalleryFiles.map((file, idx) => {
                       const previewUrl = URL.createObjectURL(file);
                       return (

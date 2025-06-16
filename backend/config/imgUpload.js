@@ -4,14 +4,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Configurare Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configurare Multer pentru a stoca fișiere în memorie
 const storage = multer.memoryStorage();
 
 const upload = multer({ storage });

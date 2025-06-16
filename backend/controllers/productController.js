@@ -6,9 +6,9 @@ import Comment from '../models/commentModel.js';
 import Gallery from '../models/galleryModel.js';
 import User from '../models/userModel.js';
 import Notification from '../models/notificationModel.js';
-import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul dacă e diferit
+import { addAuditLog } from './auditLogController.js'; 
 
-// în productController.js
+
 
 
 export const createProduct = async (req, res) => {
@@ -19,7 +19,7 @@ export const createProduct = async (req, res) => {
       writing,
       price,
       quantity,
-      forSale, // This 'forSale' variable is already available here
+      forSale, 
       galleries,
       images = [],
       videos = [],
@@ -36,7 +36,6 @@ export const createProduct = async (req, res) => {
     const uploadedVideos = [];
     const uploadedAudios = [];
 
-    // --- Image/Video/Audio Upload Logic (no changes needed here from last review) ---
     for (const img of images) {
       if (img && img.startsWith('data:')) {
         try {
@@ -62,16 +61,14 @@ export const createProduct = async (req, res) => {
     for (const audio of audios) {
       if (audio && audio.startsWith('data:')) {
         try {
-          const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'raw', folder: 'products_audios' }); // Keep 'raw' or 'auto'
+          const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'raw', folder: 'products_audios' }); 
           uploadedAudios.push(uploadRes.secure_url);
         } catch (uploadError) {
           console.error('Cloudinary Audio Upload Error:', uploadError);
         }
       }
     }
-    // --- End Upload Logic ---
 
-    // Sanitize and provide defaults for newProduct creation
 const newProduct = new Product({
       title,
       description: description?.trim() || 'No description',
@@ -84,30 +81,22 @@ const newProduct = new Product({
       writing,
       category: Array.isArray(category) && category.length > 0 ? category : ['General'],
       user: req.user._id,
-      // CORRECTED LINE: Map incoming gallery IDs to the schema's expected format
       galleries: Array.isArray(galleries) && galleries.length > 0
-        ? galleries.map(gId => ({ gallery: gId, order: 0 })) // Default order to 0 for new products
+        ? galleries.map(gId => ({ gallery: gId, order: 0 })) 
         : [],
     });
 
-    // Price validation specific for 'forSale'
-    // This check can now safely use newProduct.forSale because newProduct is defined.
-    // However, the prior fix made 'price' 0 if undefined, so this check for `price <= 0` is now the relevant part for validation.
-    if (newProduct.forSale && newProduct.price <= 0) { // Assuming 0 is not a valid sale price, adjust if it is.
+.
         return res.status(400).json({ error: 'Price must be greater than 0 if artwork is for sale.' });
     }
-    // If you want to allow price 0, remove the `newProduct.price <= 0` part.
-    // If you just want to ensure it's not undefined if for sale, the line above where newProduct is created already handles it by setting it to 0.
-
+ 
 
     await newProduct.save();
     console.log('Product saved successfully:', newProduct._id);
 
-    // Update user's products array
     await User.findByIdAndUpdate(req.user._id, { $push: { products: newProduct._id } });
     console.log('User document updated with new product ID.');
 
-    // Add audit log
     await addAuditLog({
       action: 'create_product',
       performedBy: req.user._id,
@@ -116,7 +105,7 @@ const newProduct = new Product({
     });
     console.log('Audit log added.');
 
-    // Update Galleries with 'order' field (logic is okay from previous step)
+    
     if (galleries && galleries.length > 0) {
       console.log(`Processing ${galleries.length} galleries for new product ${newProduct._id}.`);
       for (const galleryId of galleries) {
@@ -166,8 +155,8 @@ export const getProduct = async (req, res) => {
     const product = await Product.findById(id)
       .populate('user', 'username firstName lastName')
       .populate({
-        path: 'galleries.gallery', // Populează câmpul 'gallery' din obiectele din array-ul 'galleries'
-        select: '_id name', // Selectează doar _id și name
+        path: 'galleries.gallery', 
+        select: '_id name', 
       });
 
     if (!product) {
@@ -180,8 +169,6 @@ export const getProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-// în productController.js
 
 export const deleteProduct = async (req, res) => {
   try {
@@ -203,7 +190,6 @@ export const deleteProduct = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized action' });
     }
 
-    // NOU: Șterge referința din documentul utilizatorului
     await User.findByIdAndUpdate(product.user, { $pull: { products: product._id } });
 
     await product.deleteOne();
@@ -252,18 +238,16 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized action' });
     }
 
-    // Upload updated images
     const uploadedImages = [];
     for (const img of images) {
       if (img.startsWith('data:')) {
         const uploadRes = await cloudinary.uploader.upload(img);
         uploadedImages.push(uploadRes.secure_url);
       } else {
-        uploadedImages.push(img); // Already uploaded image
+        uploadedImages.push(img);
       }
     }
 
-    // Upload updated videos
     const uploadedVideos = [];
     for (const video of videos) {
       if (video.startsWith('data:')) {
@@ -274,18 +258,16 @@ export const updateProduct = async (req, res) => {
       }
     }
 
-    // Upload updated audios
     const uploadedAudios = [];
     for (const audio of audios) {
       if (audio.startsWith('data:')) {
-        const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'video' }); // audio = video tip pentru Cloudinary
+        const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'video' });
         uploadedAudios.push(uploadRes.secure_url);
       } else {
         uploadedAudios.push(audio);
       }
     }
 
-    // Update fields
     product.title = title || product.title;
     product.description = description?.trim() || product.description || 'No description';
     product.price = price ?? product.price;
@@ -313,20 +295,11 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// export const updateProductRating = async (productId) => {
-// const comments = await Comment.find({ resourceId: productId, resourceType: "Product", rating: { $exists: true } });
-// if (comments.length > 0) {
-// 	const avg = comments.reduce((sum, c) => sum + c.rating, 0) / comments.length;
-// 	await Product.findByIdAndUpdate(productId, { averageRating: avg.toFixed(2) });
-// }
-// };
-
 export const getAllProducts = async (req, res) => {
   try {
-    // Găsește toate produsele și populează informațiile despre utilizator
     const products = await Product.find()
-      .populate('user', 'firstName lastName') // Populează datele utilizatorului
-      .sort({ createdAt: -1 }); // Sortează produsele în ordine descrescătoare (cele mai recente prime)
+      .populate('user', 'firstName lastName') 
+      .sort({ createdAt: -1 }); 
 
     res.status(200).json({ products });
   } catch (err) {
@@ -353,13 +326,11 @@ export const getProductsNotInGallery = async (req, res) => {
   try {
     const { galleryId } = req.params;
 
-    // Găsește galeria și produsele sale
     const gallery = await Gallery.findById(galleryId);
     if (!gallery) {
       return res.status(404).json({ error: 'Gallery not found' });
     }
 
-    // Găsește produsele care NU sunt în această galerie
     const products = await Product.find({ _id: { $nin: gallery.products } });
 
     res.status(200).json({ products });
@@ -382,7 +353,7 @@ export const getAllUserProducts = async (req, res) => {
       .populate('galleries.gallery', 'name')
       .select('title price  quantity forSale images videos audios writing galleries createdAt');
 
-    res.status(200).json({ user, products }); // ✅ trimite și user
+    res.status(200).json({ user, products });
   } catch (err) {
     console.error("Error fetching user's products:", err.message);
     res.status(500).json({ error: 'Failed to fetch products' });
@@ -435,11 +406,10 @@ export const addToFavorites = async (req, res) => {
       user.favorites.push(productId);
       await user.save();
 
-      // ✅ Trimite notificare dacă utilizatorul NU e proprietarul produsului
       if (product.user._id.toString() !== userId.toString()) {
         await Notification.create({
-          user: product.user._id, // destinatar: creatorul produsului
-          fromUser: user._id, // cine a dat favorite
+          user: product.user._id,
+          fromUser: user._id,
           resourceType: 'Product',
           resourceId: product._id,
           type: 'favorite_product',
@@ -459,15 +429,14 @@ export const addToFavorites = async (req, res) => {
 
 export const removeFromFavorites = async (req, res) => {
   try {
-    const { id: productId } = req.params; // Extragem ID-ul produsului
-    const userId = req.user.id; // ID-ul utilizatorului autentificat
+    const { id: productId } = req.params; 
+    const userId = req.user.id; 
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Eliminăm produsul din lista de favorite
     user.favorites = user.favorites.filter((fav) => fav.toString() !== productId);
-    await user.save(); // ✅ Salvăm modificarea
+    await user.save(); 
 
     return res.json({ message: 'Product removed from favorites' });
   } catch (error) {
@@ -475,17 +444,6 @@ export const removeFromFavorites = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error });
   }
 };
-
-//   export const getFavoriteProducts = async (req, res) => {
-// 	try {
-// 	  const user = await User.findById(req.params.userId).populate("favorites");
-// 	  if (!user) return res.status(404).json({ message: "User not found" });
-
-// 	  res.json(user.favorites);
-// 	} catch (error) {
-// 	  res.status(500).json({ message: "Server error", error });
-// 	}
-//   };
 
 export const getFavoriteProducts = async (req, res) => {
   try {

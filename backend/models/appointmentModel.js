@@ -15,7 +15,7 @@ const appointmentSchema = new mongoose.Schema(
       required: true,
     },
     time: {
-      type: String, // ex. "14:00"
+      type: String, 
       required: true,
     },
     createdBy: {
@@ -26,7 +26,7 @@ const appointmentSchema = new mongoose.Schema(
     participant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      default: null, // Dacă este un appointment personal, poate fi null
+      default: null, 
     },
     status: {
       type: String,

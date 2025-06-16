@@ -4,7 +4,7 @@ import img from '../assets/textOver.png';
 const TextOverImage = () => {
   return (
     <Box position="relative" w="full" h="300px">
-      {/* Imaginea */}
+      {}
       <Image
         src={img} // Înlocuiește cu imaginea ta
         alt="Background"
@@ -13,7 +13,7 @@ const TextOverImage = () => {
         objectFit="cover"
       />
 
-      {/* Textul deasupra imaginii */}
+      {}
       <Text
         position="absolute"
         top="5%" // Ajustează pentru poziționarea verticală

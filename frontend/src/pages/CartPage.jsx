@@ -90,7 +90,7 @@ const CartPage = () => {
               align="center"
               justify="space-between"
             >
-              {/* Imagine */}
+              {}
               {isEvent ? (
                 <Image
                   src={item.product.coverImage}
@@ -124,7 +124,7 @@ const CartPage = () => {
                 </Flex>
               )}
 
-              {/* Detalii + acțiuni */}
+              {}
               <Flex direction="column" flex="1" px={2}>
                 <Link
                   to={isEvent ? `/events/${item.product._id}` : `/products/${item.product._id}`}
@@ -177,7 +177,7 @@ const CartPage = () => {
                 )}
               </Flex>
 
-              {/* Preț + ștergere */}
+              {}
               <VStack spacing={2} align="end" justify="space-between" h="100%">
                 <Text fontSize="sm" color="gray.600">
                   {unitPrice} EUR × {item.quantity}
@@ -198,7 +198,7 @@ const CartPage = () => {
             </Flex>
           );
         })}
-        {/* Totals */}
+        {}
         <Box mt={8} alignContent="center" textAlign="center">
           <Text fontSize="2xl" fontWeight="bold">
             Total:

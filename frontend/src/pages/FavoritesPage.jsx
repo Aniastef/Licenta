@@ -52,7 +52,7 @@ const FavoritesPage = () => {
 
   return (
     <Box p={4} maxW="1900px" mx="auto">
-      {/* HEADER */}
+      {}
       <Flex justifyContent="center" alignItems="center" mb={6} position="relative">
         <Heading size="lg">User favorites</Heading>
         <Flex position="absolute" right={4} gap={2}>
@@ -61,7 +61,7 @@ const FavoritesPage = () => {
         </Flex>
       </Flex>
 
-      {/* TABS */}
+      {}
       <Tabs isFitted variant="enclosed">
         <TabList mb={4}>
           <Tab>Favorite Galleries</Tab>
@@ -70,7 +70,7 @@ const FavoritesPage = () => {
         </TabList>
 
         <TabPanels>
-          {/* GALLERIES */}
+          {}
           <TabPanel>
             {favoriteGalleries.length === 0 ? (
               <Text>No favorite galleries.</Text>
@@ -130,7 +130,7 @@ const FavoritesPage = () => {
             )}
           </TabPanel>
 
-          {/* PRODUCTS */}
+          {}
           <TabPanel>
             {favoriteProducts.length === 0 ? (
               <Text>No favorite products.</Text>
@@ -189,7 +189,7 @@ const FavoritesPage = () => {
             )}
           </TabPanel>
 
-          {/* ARTICLES */}
+          {}
           <TabPanel>
             {favoriteArticles.length === 0 ? (
               <Text>No favorite articles.</Text>
@@ -209,7 +209,7 @@ const FavoritesPage = () => {
                     cursor="pointer"
                     onClick={() => (window.location.href = `/articles/${article._id}`)}
                   >
-                    {/* Imaginea de copertă */}
+                    {}
                     {article.coverImage && (
                       <Image
                         src={article.coverImage}
@@ -221,7 +221,7 @@ const FavoritesPage = () => {
                       />
                     )}
 
-                    {/* Fundal tip foaie */}
+                    {}
                     <Box
                       px={4}
                       py={4}

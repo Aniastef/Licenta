@@ -284,7 +284,7 @@ useEffect(() => {
               </HStack>
 
               <Flex direction="row" align="flex-start" gap={10} pl={4}>
-                {/* Left Section - Image Thumbnails */}
+                {}
                 <VStack align="center" spacing={2}>
                   {(viewMode === 'image' && product.images?.length > 1) ||
                   (viewMode === 'video' && product.videos?.length > 1) ? (
@@ -352,7 +352,7 @@ useEffect(() => {
                   ) : null}
                 </VStack>
 
-                {/* Right Section - Main Image */}
+                {}
                 <Flex justify="center">
                   {viewMode === 'writing' ? (
                     <Box w="700px" h="700px" position="relative">
@@ -474,7 +474,7 @@ useEffect(() => {
               </Flex>
             </Flex>
 
-            {/* partea cu detalii */}
+            {}
             <Flex mt={5} direction="column" align="flex-start" justify="flex-start" ml={5}>
               <HStack justify="space-between" align="center" w="100%">
                 <Text
@@ -493,7 +493,7 @@ useEffect(() => {
                     onClick={handleAddToFavorites}
                     fontSize="sm"
                     leftIcon={
-  <Text fontSize="3xl"> {/* sau "2xl", "lg", etc. */}
+  <Text fontSize="3xl"> {}
     {isFavorite ? '❤️' : '🤍'}
   </Text>
 }
@@ -515,7 +515,7 @@ useEffect(() => {
                 </Text>
               )}
 
-              {/* MODIFICATION HERE for category display */}
+              {}
               {product.category?.length > 0 && (
                 <Text mt={1} color="gray.600">
                   Category:{' '}
@@ -546,7 +546,7 @@ useEffect(() => {
             to={`/galleries/${galleryWrapper.gallery._id}`} // Access nested _id
             style={{ color: '#3182ce', textDecoration: 'underline' }}
           >
-            {galleryWrapper.gallery.name} {/* Access nested name */}
+            {galleryWrapper.gallery.name} {}
           </RouterLink>
         ) : null
       ))}

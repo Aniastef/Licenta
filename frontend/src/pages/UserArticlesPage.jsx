@@ -146,7 +146,7 @@ const UserArticlesPage = () => {
           )}
         </Box>
 
-        {/* Article List */}
+        {}
         <VStack spacing={6} align="stretch" flex={1}>
           {filteredArticles.length === 0 ? (
             <Text>No articles for this day.</Text>
@@ -162,7 +162,7 @@ const UserArticlesPage = () => {
                   align="flex-start"
                   wrap="wrap"
                 >
-                  {/* Date */}
+                  {}
                   <Box w="60px" textAlign="center">
                     <Text fontWeight="bold" fontSize="lg">
                       {day}
@@ -175,7 +175,7 @@ const UserArticlesPage = () => {
                     </Text>
                   </Box>
 
-                  {/* Article Details */}
+                  {}
                   <Box
                     key={article._id}
                     p={0}
@@ -188,7 +188,7 @@ const UserArticlesPage = () => {
                     onClick={() => navigate(`/articles/${article._id}`)}
                     bg="white"
                   >
-                    {/* Imaginea de sus, dacă există */}
+                    {}
                     {article.coverImage && (
                       <Image
                         src={article.coverImage}
@@ -201,7 +201,7 @@ const UserArticlesPage = () => {
                       />
                     )}
 
-                    {/* Fundal de foaie DOAR sub imagine */}
+                    {}
                     <Box
                       px={6}
                       py={6}
