@@ -300,26 +300,39 @@ const UserHeader = ({ user }) => {
       {/* ///////////////////////////////////// */}
 
       <Flex align="flex-start" gap={10}>
-        <Flex ml={70} direction="column" align="start" gap={3}>
+        <Flex ml={45} direction="column" align="start" gap={3}>
           <Text fontWeight="bold" fontSize="2xl">
             @{user.username}
           </Text>
-          {contactItems.map((item, idx) => {
+           {contactItems.map((item, idx) => {
             const isMessage = item.label === 'Message me';
             const isUrl = typeof item.label === 'string' && item.label.startsWith('http');
             const isEmail = typeof item.label === 'string' && item.label.includes('@');
-            const isWeb = item.icon === webpageIcon;
-
-            const extractUsername = (url) => {
-              try {
-                const parsed = new URL(url);
-                return parsed.hostname.replace(/^www\./, '');
-              } catch {
-                return url;
-              }
+            
+            // --- START MODIFICATION ---
+            // New function to get the correct display text for links.
+            const getDisplayLabel = (url, icon) => {
+                if (!url || typeof url !== 'string') return '';
+                // List of icons for which we want to show the username.
+                const isSocial = [facebookIcon, instagramIcon, linkedinIcon].includes(icon);
+                
+                try {
+                    const parsedUrl = new URL(url);
+                    if (isSocial) {
+                        // Get the last part of the URL path (e.g., "username" from "facebook.com/username")
+                        const pathParts = parsedUrl.pathname.split('/').filter(p => p);
+                        return pathParts[pathParts.length - 1] || parsedUrl.hostname.replace(/^www\./, '');
+                    }
+                    // For other websites (webpage, spotify, etc.), show the domain name.
+                    return parsedUrl.hostname.replace(/^www\./, '');
+                } catch {
+                    // If it's not a valid URL, return the original text.
+                    return url;
+                }
             };
 
-            const displayLabel = isUrl ? extractUsername(item.label) : item.label;
+            const displayLabel = isUrl ? getDisplayLabel(item.label, item.icon) : item.label;
+            // --- END MODIFICATION ---
 
             return isMessage ? (
               <Flex key={idx} align="center" gap={3}>
@@ -358,7 +371,7 @@ const UserHeader = ({ user }) => {
         </Flex>
 
         {/* About Me & Tabs Section */}
-        <Flex direction={'column'} ml={50} textAlign="center">
+        <Flex direction={'column'} ml={65} textAlign="center">
           <Text textAlign="left" fontWeight="bold" fontSize="lg" mb={2}>
             About me
           </Text>

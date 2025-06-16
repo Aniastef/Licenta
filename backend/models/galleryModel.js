@@ -97,7 +97,7 @@ const gallerySchema = new mongoose.Schema(
     ],
     products: [
       {
-        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
         order: { type: Number, default: 0 },
       },
     ],

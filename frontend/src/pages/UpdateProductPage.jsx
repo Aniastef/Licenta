@@ -14,6 +14,13 @@ import {
   IconButton,
   Spinner,
   Text,
+  Alert,
+  AlertIcon,
+  Checkbox,
+  CheckboxGroup,
+  Wrap,
+  WrapItem,
+  Textarea // Adăugat Textarea pentru descriere
 } from '@chakra-ui/react';
 import { CloseIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
@@ -22,6 +29,74 @@ import useShowToast from '../hooks/useShowToast';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import imageCompression from 'browser-image-compression';
+import { useRecoilValue } from 'recoil';
+import userAtom from '../atoms/userAtom';
+
+const ALL_CATEGORIES = [
+  'General',
+  'Photography',
+  'Painting',
+  'Drawing',
+  'Sketch',
+  'Illustration',
+  'Digital Art',
+  'Pixel Art',
+  '3D Art',
+  'Animation',
+  'Graffiti',
+  'Calligraphy',
+  'Typography',
+  'Collage',
+  'Mixed Media',
+  'Sculpture',
+  'Installation',
+  'Fashion',
+  'Textile',
+  'Architecture',
+  'Interior Design',
+  'Product Design',
+  'Graphic Design',
+  'UI/UX',
+  'Music',
+  'Instrumental',
+  'Vocal',
+  'Rap',
+  'Spoken Word',
+  'Podcast',
+  'Sound Design',
+  'Film',
+  'Short Film',
+  'Documentary',
+  'Cinematography',
+  'Video Art',
+  'Performance',
+  'Dance',
+  'Theatre',
+  'Acting',
+  'Poetry',
+  'Writing',
+  'Essay',
+  'Prose',
+  'Fiction',
+  'Non-fiction',
+  'Journal',
+  'Comics',
+  'Manga',
+  'Zine',
+  'Fantasy Art',
+  'Surrealism',
+  'Realism',
+  'Abstract',
+  'Minimalism',
+  'Expressionism',
+  'Pop Art',
+  'Concept Art',
+  'AI Art',
+  'Experimental',
+  'Political Art',
+  'Activist Art',
+  'Environmental Art',
+];
 
 const compressImage = async (file) => {
   try {
@@ -34,57 +109,103 @@ const compressImage = async (file) => {
     return compressedFile;
   } catch (error) {
     console.error('Compression failed:', error);
-    return file;
+    return file; // Return original file if compression fails
   }
 };
 
 const EditProductPage = () => {
-  const { id } = useParams();
+  const { id: productId } = useParams(); // Renamed 'id' to 'productId' for clarity
   const navigate = useNavigate();
   const showToast = useShowToast();
+  const currentUser = useRecoilValue(userAtom);
 
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [imageFiles, setImageFiles] = useState([]);
-  const [videoFiles, setVideoFiles] = useState([]);
-  const [audioFiles, setAudioFiles] = useState([]);
-  const [userGalleries, setUserGalleries] = useState([]);
 
+  const [newImageFiles, setNewImageFiles] = useState([]);
+  const [newVideoFiles, setNewVideoFiles] = useState([]);
+  const [newAudioFiles, setNewAudioFiles] = useState([]);
+
+  const [newImagePreviews, setNewImagePreviews] = useState([]);
+  const [newVideoPreviews, setNewVideoPreviews] = useState([]);
+  const [newAudioPreviews, setNewAudioPreviews] = useState([]);
+
+  const [userGalleries, setUserGalleries] = useState([]);
+  // Use selectedGalleryId for the single-select dropdown value
+  const [selectedGalleryId, setSelectedGalleryId] = useState(''); 
+
+
+  // Fetch product data on component mount
+// Fetch product data on component mount
   useEffect(() => {
     const fetchProduct = async () => {
+      setIsLoading(true);
       try {
-        const res = await fetch(`/api/products/${id}`, { credentials: 'include' });
+        const res = await fetch(`/api/products/${productId}`, { credentials: 'include' });
         const data = await res.json();
-        if (res.ok) setProduct(data.product);
-        else showToast('Error', data.error, 'error');
+
+        if (res.ok) {
+          const initialCategories = Array.isArray(data.product.category)
+            ? data.product.category
+            : (data.product.category ? [data.product.category] : []);
+
+          // Keep the original, populated galleries structure in the product state
+          setProduct({
+            ...data.product,
+            category: initialCategories.length > 0 ? initialCategories : ['General']
+          });
+
+          // Separately manage the ID for the dropdown's selected value
+          if (data.product.galleries && data.product.galleries.length > 0 && data.product.galleries[0].gallery) {
+            setSelectedGalleryId(data.product.galleries[0].gallery._id.toString());
+          } else {
+            setSelectedGalleryId('general-placeholder');
+          }
+
+        } else {
+          showToast('Error', data.error, 'error');
+          setProduct(null);
+        }
       } catch (err) {
         showToast('Error', err.message, 'error');
+        setProduct(null);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchProduct();
-  }, [id]);
 
+    fetchProduct();
+  }, [productId, showToast]);
+  // Fetch user galleries
   useEffect(() => {
     const fetchGalleries = async () => {
       try {
-        const res = await fetch('/api/users/galleries', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
-        const data = await res.json();
-        if (data.galleries) setUserGalleries(data.galleries);
+        if (currentUser && currentUser.username) {
+            // Corrected endpoint to use the "getAllUserGalleries" route
+            const res = await fetch(`/api/galleries/user/${currentUser.username}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
+            const data = await res.json();
+            if (data.galleries) {
+                setUserGalleries(data.galleries);
+            } else if (data.error) {
+                showToast('Error fetching galleries', data.error, 'error');
+            }
+        }
       } catch (err) {
         console.error('Error fetching galleries:', err.message);
+        showToast('Error', 'Failed to fetch galleries: ' + err.message, 'error');
       }
     };
-    fetchGalleries();
-  }, []);
+    if (currentUser) {
+        fetchGalleries();
+    }
+  }, [currentUser, showToast]); // Added showToast to dependency array
 
   const fileToBase64 = (file) =>
     new Promise((resolve, reject) => {
@@ -94,41 +215,102 @@ const EditProductPage = () => {
       reader.readAsDataURL(file);
     });
 
-  const handleRemoveMedia = (type, index) => {
+  const handleRemoveExistingMedia = (type, indexToRemove) => {
     setProduct((prev) => ({
       ...prev,
-      [type]: prev[type].filter((_, i) => i !== index),
+      [type]: prev[type].filter((_, i) => i !== indexToRemove),
     }));
   };
 
-  const handleUpdate = async () => {
+  const handleRemoveNewMedia = (type, indexToRemove) => {
+    if (type === 'images') {
+      setNewImageFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+      setNewImagePreviews((prev) => prev.filter((_, i) => i !== indexToRemove));
+    } else if (type === 'videos') {
+      setNewVideoFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+      setNewVideoPreviews((prev) => prev.filter((_, i) => i !== indexToRemove));
+    } else if (type === 'audios') {
+      setNewAudioFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+      setNewAudioPreviews((prev) => prev.filter((_, i) => i !== indexToRemove));
+    }
+  };
+
+  const handleFileChange = (e, type) => {
+    const files = Array.from(e.target.files);
+
+    const newPreviewsToAdd = [];
+    const newFilesToAdd = [];
+
+    files.forEach(file => {
+        newFilesToAdd.push(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            newPreviewsToAdd.push(reader.result);
+            if (newPreviewsToAdd.length === files.length) {
+                if (type === 'images') {
+                    setNewImageFiles(prev => [...prev, ...newFilesToAdd]);
+                    setNewImagePreviews(prev => [...prev, ...newPreviewsToAdd]);
+                } else if (type === 'videos') {
+                    setNewVideoFiles(prev => [...prev, ...newFilesToAdd]);
+                    setNewVideoPreviews(prev => [...prev, ...newPreviewsToAdd]);
+                } else if (type === 'audios') {
+                    setNewAudioFiles(prev => [...prev, ...newFilesToAdd]);
+                    setNewAudioPreviews(prev => [...prev, ...newPreviewsToAdd]);
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+  };
+
+  const handleCategoryChange = (selectedCategories) => {
+    if (selectedCategories.length === 0) {
+      setProduct({ ...product, category: ['General'] });
+    } else {
+      setProduct({ ...product, category: selectedCategories });
+    }
+  };
+
+const handleUpdate = async () => {
     if (!product.title) {
       showToast('Error', 'Title is required', 'error');
       return;
     }
-    const isAddingAudio = audioFiles.length > 0;
-    const hasVisualMedia =
-      imageFiles.length > 0 ||
-      videoFiles.length > 0 ||
-      (product.images?.length || 0) > 0 ||
-      (product.videos?.length || 0) > 0;
+
+    const hasExistingAudio = (product.audios && product.audios.length > 0);
+    const hasNewAudio = newAudioFiles.length > 0;
+    const isAddingAudio = hasExistingAudio || hasNewAudio;
+
+    const hasExistingVisual = (product.images && product.images.length > 0) || (product.videos && product.videos.length > 0);
+    const hasNewVisual = newImageFiles.length > 0 || newVideoFiles.length > 0;
+    const hasVisualMedia = hasExistingVisual || hasNewVisual;
 
     if (isAddingAudio && !hasVisualMedia) {
       showToast('Error', 'You must have at least one image or video if you add audio.', 'error');
       return;
     }
+
     setUpdating(true);
     try {
-      const compressedImages = await Promise.all(imageFiles.map((file) => compressImage(file)));
+      const compressedImages = await Promise.all(newImageFiles.map((file) => compressImage(file)));
       const imagesBase64 = await Promise.all(compressedImages.map(fileToBase64));
-      const videosBase64 = await Promise.all(videoFiles.map(fileToBase64));
-      const audiosBase64 = await Promise.all(audioFiles.map(fileToBase64));
+      const videosBase64 = await Promise.all(newVideoFiles.map(fileToBase64));
+      const audiosBase64 = await Promise.all(newAudioFiles.map(fileToBase64));
+
+      // Construct galleriesToSend in the correct format for productModel:
+      // [{ gallery: ID_GALERIE, order: 0 }]
+      // selectedGalleryId holds the single selected ID from the dropdown.
+      const galleriesToSend = selectedGalleryId && selectedGalleryId !== 'general-placeholder'
+        ? [{ gallery: selectedGalleryId, order: 0 }]
+        : [];
 
       const updated = {
         ...product,
         images: [...(product.images || []), ...imagesBase64],
         videos: [...(product.videos || []), ...videosBase64],
         audios: [...(product.audios || []), ...audiosBase64],
+        galleries: galleriesToSend, // Use the correctly formatted galleries array
+        category: product.category.length > 0 ? product.category : ['General'],
       };
 
       const res = await fetch(`/api/products/update/${product._id}`, {
@@ -141,7 +323,7 @@ const EditProductPage = () => {
       const data = await res.json();
       if (res.ok) {
         showToast('Product updated', '', 'success');
-        navigate(`/products/${product._id}`);
+        navigate(`/products/${product._id}`); // Navigate to the product page
       } else {
         showToast('Update failed', data.error, 'error');
       }
@@ -152,29 +334,29 @@ const EditProductPage = () => {
     }
   };
 
-  if (isLoading)
-    return (
-      <Container py={10}>
-        <Spinner />
-      </Container>
-    );
-  if (!product)
-    return (
-      <Container py={10}>
-        <Heading size="md">Product not found.</Heading>
-      </Container>
-    );
+  // You might want to add a check here if currentUser is the owner of the product
+  // If not, redirect or show an error.
+ if (currentUser && product && product.user && currentUser._id !== product.user._id) {
+  showToast('Error', 'You are not authorized to edit this product.', 'error');
+  navigate(`/`);
+  return null; // Don't render the form
+}
 
   return (
-    <Container maxW="container.md">
+    product && (
+    <Container maxW="container.md" py={10}>
       <VStack spacing={8}>
-        <Heading>Edit artwork</Heading>
+        <Heading size="xl">Edit artwork</Heading>
         <Box w="full" p={6} rounded="lg" shadow="md">
-          <VStack spacing={4}>
-            <Input
-              value={product.title ?? ''}
-              onChange={(e) => setProduct({ ...product, title: e.target.value })}
-            />
+          <VStack spacing={4} align="stretch">
+            <FormControl>
+              <FormLabel>Title</FormLabel>
+              <Input
+                placeholder="Artwork title"
+                value={product.title ?? ''}
+                onChange={(e) => setProduct({ ...product, title: e.target.value })}
+              />
+            </FormControl>
 
             <FormControl>
               <FormLabel>Description</FormLabel>
@@ -207,131 +389,80 @@ const EditProductPage = () => {
                   'link',
                   'image',
                 ]}
-                style={{ height: '200px', width: '100%', marginBottom: '30px' }}
+                style={{ height: '200px', width: '100%', marginBottom: '50px' }}
               />
             </FormControl>
 
             <FormControl display="flex" alignItems="center">
-              <FormLabel mt={2}>Is for sale</FormLabel>
+              <FormLabel htmlFor="for-sale-switch" mb="0">
+                Is for sale?
+              </FormLabel>
               <Switch
+                id="for-sale-switch"
                 isChecked={product.forSale}
                 onChange={(e) => setProduct({ ...product, forSale: e.target.checked })}
               />
             </FormControl>
+
             {product.forSale && (
               <>
-                <Input
-                  type="number"
-                  placeholder="Price"
-                  value={product.price ?? 0} // fallback la 0
-                  onChange={(e) =>
-                    setProduct({ ...product, price: parseFloat(e.target.value) || 0 })
-                  }
-                />
+                <FormControl>
+                  <FormLabel>Price (EUR)</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 99.99"
+                    value={product.price ?? 0}
+                    onChange={(e) =>
+                      setProduct({ ...product, price: parseFloat(e.target.value) || 0 })
+                    }
+                  />
+                </FormControl>
 
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="Quantity"
-                  value={product.quantity}
-                  onChange={(e) =>
-                    setProduct({
-                      ...product,
-                      quantity: parseInt(e.target.value) || 0,
-                    })
-                  }
-                />
+                <FormControl>
+                  <FormLabel>Quantity</FormLabel>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 10"
+                    value={product.quantity}
+                    onChange={(e) =>
+                      setProduct({
+                        ...product,
+                        quantity: parseInt(e.target.value) || 0,
+                      })
+                    }
+                  />
+                </FormControl>
               </>
             )}
 
             <FormControl>
-              <FormLabel>Category</FormLabel>
-              <Select
-                value={product.category || 'General'}
-                onChange={(e) => setProduct({ ...product, category: e.target.value })}
+              <FormLabel>Categories</FormLabel>
+              <CheckboxGroup
+                colorScheme="orange"
+                value={product.category || ['General']}
+                onChange={handleCategoryChange}
               >
-                {[
-                  'General',
-                  'Photography',
-                  'Painting',
-                  'Drawing',
-                  'Sketch',
-                  'Illustration',
-                  'Digital Art',
-                  'Pixel Art',
-                  '3D Art',
-                  'Animation',
-                  'Graffiti',
-                  'Calligraphy',
-                  'Typography',
-                  'Collage',
-                  'Mixed Media',
-                  'Sculpture',
-                  'Installation',
-                  'Fashion',
-                  'Textile',
-                  'Architecture',
-                  'Interior Design',
-                  'Product Design',
-                  'Graphic Design',
-                  'UI/UX',
-                  'Music',
-                  'Instrumental',
-                  'Vocal',
-                  'Rap',
-                  'Spoken Word',
-                  'Podcast',
-                  'Sound Design',
-                  'Film',
-                  'Short Film',
-                  'Documentary',
-                  'Cinematography',
-                  'Video Art',
-                  'Performance',
-                  'Dance',
-                  'Theatre',
-                  'Acting',
-                  'Poetry',
-                  'Writing',
-                  'Essay',
-                  'Prose',
-                  'Fiction',
-                  'Non-fiction',
-                  'Journal',
-                  'Comics',
-                  'Manga',
-                  'Zine',
-                  'Fantasy Art',
-                  'Surrealism',
-                  'Realism',
-                  'Abstract',
-                  'Minimalism',
-                  'Expressionism',
-                  'Pop Art',
-                  'Concept Art',
-                  'AI Art',
-                  'Experimental',
-                  'Political Art',
-                  'Activist Art',
-                  'Environmental Art',
-                ].map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </Select>
+                <Wrap spacing={3}>
+                  {ALL_CATEGORIES.map((cat) => (
+                    <WrapItem key={cat}>
+                      <Checkbox value={cat}>{cat}</Checkbox>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+              </CheckboxGroup>
             </FormControl>
 
-            <FormControl>
+         <FormControl>
               <FormLabel>Gallery</FormLabel>
               <Select
-                value={product.galleries?.[0] || 'general-placeholder'}
+                // Use selectedGalleryId for the value to control the dropdown
+                value={selectedGalleryId}
                 onChange={(e) => {
                   const selected = e.target.value;
-                  setProduct({
-                    ...product,
-                    galleries: selected === 'general-placeholder' ? [] : [selected],
-                  });
+                  setSelectedGalleryId(selected);
+                  // The product state's galleries will be constructed in handleUpdate,
+                  // so there's no need to update the product state directly here.
                 }}
               >
                 <option value="general-placeholder">General</option>
@@ -343,17 +474,73 @@ const EditProductPage = () => {
               </Select>
             </FormControl>
 
-            {['images', 'videos', 'audios'].map((mediaType) => (
-              <Flex key={mediaType} gap={3} wrap="wrap" align="center">
-                {product[mediaType]?.map((src, i) => (
-                  <Box key={i} position="relative">
-                    {mediaType === 'images' ? (
-                      <Image src={src} boxSize="100px" objectFit="cover" borderRadius="md" />
-                    ) : mediaType === 'videos' ? (
-                      <video src={src} width="160" controls />
-                    ) : (
-                      <audio src={src} controls />
-                    )}
+            {/* Existing Media Display */}
+            {(product.images?.length > 0 || product.videos?.length > 0 || product.audios?.length > 0) && (
+                <Box>
+                    <Text fontSize="lg" fontWeight="bold" mb={2}>Existing Media:</Text>
+                    <Flex gap={3} wrap="wrap" align="center">
+                        {product.images?.map((src, i) => (
+                            <Box key={`existing-img-${i}`} position="relative">
+                                <Image src={src} boxSize="100px" objectFit="cover" borderRadius="md" />
+                                <IconButton
+                                    icon={<CloseIcon />}
+                                    size="xs"
+                                    colorScheme="red"
+                                    position="absolute"
+                                    top="0"
+                                    right="0"
+                                    onClick={() => handleRemoveExistingMedia('images', i)}
+                                    aria-label="Remove image"
+                                />
+                            </Box>
+                        ))}
+                        {product.videos?.map((src, i) => (
+                            <Box key={`existing-vid-${i}`} position="relative">
+                                <video src={src} width="160" controls style={{ borderRadius: '8px' }} />
+                                <IconButton
+                                    icon={<CloseIcon />}
+                                    size="xs"
+                                    colorScheme="red"
+                                    position="absolute"
+                                    top="0"
+                                    right="0"
+                                    onClick={() => handleRemoveExistingMedia('videos', i)}
+                                    aria-label="Remove video"
+                                />
+                            </Box>
+                        ))}
+                        {product.audios?.map((src, i) => (
+                            <Box key={`existing-aud-${i}`} position="relative">
+                                <audio src={src} controls style={{ borderRadius: '8px' }} />
+                                <IconButton
+                                    icon={<CloseIcon />}
+                                    size="xs"
+                                    colorScheme="red"
+                                    position="absolute"
+                                    top="0"
+                                    right="0"
+                                    onClick={() => handleRemoveExistingMedia('audios', i)}
+                                    aria-label="Remove audio"
+                                />
+                            </Box>
+                        ))}
+                    </Flex>
+                </Box>
+            )}
+
+            {/* New Media Upload and Preview */}
+            <FormControl>
+              <FormLabel>Add Images</FormLabel>
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleFileChange(e, 'images')}
+              />
+              <Flex gap={3} wrap="wrap" mt={2}>
+                {newImagePreviews.map((src, i) => (
+                  <Box key={`new-img-${i}`} position="relative">
+                    <Image src={src} boxSize="100px" objectFit="cover" borderRadius="md" />
                     <IconButton
                       icon={<CloseIcon />}
                       size="xs"
@@ -361,45 +548,70 @@ const EditProductPage = () => {
                       position="absolute"
                       top="0"
                       right="0"
-                      onClick={() => handleRemoveMedia(mediaType, i)}
-                      aria-label="Remove media"
+                      onClick={() => handleRemoveNewMedia('images', i)}
+                      aria-label="Remove new image"
                     />
                   </Box>
                 ))}
               </Flex>
-            ))}
-
-            {/* Upload new files */}
-            <FormControl>
-              <FormLabel mt={-5}>Images</FormLabel>
-              <Input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => setImageFiles([...e.target.files])}
-              />
             </FormControl>
+
             <FormControl>
-              <FormLabel>Videos</FormLabel>
+              <FormLabel>Add Videos</FormLabel>
               <Input
                 type="file"
                 accept="video/*"
                 multiple
-                onChange={(e) => setVideoFiles([...e.target.files])}
+                onChange={(e) => handleFileChange(e, 'videos')}
               />
+              <Flex gap={3} wrap="wrap" mt={2}>
+                {newVideoPreviews.map((src, i) => (
+                  <Box key={`new-vid-${i}`} position="relative">
+                    <video src={src} width="160" controls style={{ borderRadius: '8px' }} />
+                    <IconButton
+                      icon={<CloseIcon />}
+                      size="xs"
+                      colorScheme="red"
+                      position="absolute"
+                      top="0"
+                      right="0"
+                      onClick={() => handleRemoveNewMedia('videos', i)}
+                      aria-label="Remove new video"
+                    />
+                  </Box>
+                ))}
+              </Flex>
             </FormControl>
+
             <FormControl>
-              <FormLabel>Audios</FormLabel>
+              <FormLabel>Add Audios</FormLabel>
               <Input
                 type="file"
                 accept="audio/*"
                 multiple
-                onChange={(e) => setAudioFiles([...e.target.files])}
+                onChange={(e) => handleFileChange(e, 'audios')}
               />
+              <Flex gap={3} wrap="wrap" mt={2}>
+                {newAudioPreviews.map((src, i) => (
+                  <Box key={`new-aud-${i}`} position="relative">
+                    <audio src={src} controls style={{ borderRadius: '8px' }} />
+                    <IconButton
+                      icon={<CloseIcon />}
+                      size="xs"
+                      colorScheme="red"
+                      position="absolute"
+                      top="0"
+                      right="0"
+                      onClick={() => handleRemoveNewMedia('audios', i)}
+                      aria-label="Remove new audio"
+                    />
+                  </Box>
+                ))}
+              </Flex>
             </FormControl>
 
             <FormControl>
-              <FormLabel>Writing / Poem</FormLabel>
+              <FormLabel>Writing / poem</FormLabel>
               <ReactQuill
                 theme="snow"
                 value={product.writing ?? ''}
@@ -428,7 +640,7 @@ const EditProductPage = () => {
                   'background',
                   'link',
                 ]}
-                style={{ height: '200px', width: '100%', marginBottom: '30px' }}
+                style={{ height: '200px', width: '100%', marginBottom: '50px' }}
               />
             </FormControl>
 
@@ -439,6 +651,7 @@ const EditProductPage = () => {
         </Box>
       </VStack>
     </Container>
+    )
   );
 };
 

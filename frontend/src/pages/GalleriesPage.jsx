@@ -347,8 +347,7 @@ const ExploreGalleries = () => {
             <Text>No galleries found.</Text>
           ) : (
             <>
-              <SimpleGrid minChildWidth="400px" spacing={6}>
-                {paginated.map((gallery) => (
+<SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>                {paginated.map((gallery) => (
                   <Link to={`/galleries/${gallery._id}`} key={gallery._id}>
                     <Box
                       p={0}

@@ -12,8 +12,8 @@ const testimonials = [
   },
   {
     text: `Joining Art Corner felt like coming home. I connected with artists from different countries, shared my music, and even started collaborations I never imagined possible. It’s not just a platform - it’s a creative family.`,
-    user: 'alexandra',
-    name: 'Alexandra Talapan',
+    user: 'bogdanfona',
+    name: 'Bogdan Fona',
     avatar: '/avatars/jimmy.jpg',
   },
 ];

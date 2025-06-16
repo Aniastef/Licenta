@@ -43,17 +43,17 @@ const Navbar = () => {
   };
 
   return (
-    <Box
-      bgImage={`url(${navbarBg})`}
-      bgRepeat="no-repeat"
-      bgSize="100% auto"
-      bgPosition="top"
-      px={10}
-      pt={5}
-      pb="190px" // 🧠 adaugă spațiu pentru a lăsa imaginea să coboare
-      position="relative"
-      zIndex={10}
-    >
+     <Box
+    bgImage={`url(${navbarBg})`}
+    bgRepeat="no-repeat"
+    bgSize="100% auto"
+    bgPosition="top"
+    px={10}
+    pt={50}
+    pb="190px" // 🧠 lasă spațiul pentru imagine
+    marginBottom="-110px" // 🧠 anulează spațiul pentru conținutul de dedesubt
+    position="relative"
+  >
       {/* LOGO + SUBTITLU */}
       <VStack spacing={1} textAlign="center" mb={4}>
         <HStack spacing={2} justify="center">
@@ -106,7 +106,7 @@ const Navbar = () => {
           {/* 👤 PROFILE */}
           {user ? (
             <Menu>
-              <MenuButton _hover={{ textDecoration: 'underline' }}>Mine ▼</MenuButton>
+              <MenuButton _hover={{ textDecoration: 'underline' }}>My account ▼</MenuButton>
               <MenuList>
                 <MenuItem as={Link} to={`/profile/${user.username}`}>
                   My profile

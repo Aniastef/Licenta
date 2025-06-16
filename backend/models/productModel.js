@@ -85,8 +85,18 @@ const productSchema = new mongoose.Schema(
     audios: [{ type: String, default: '' }],
     writing: [{ type: String, default: '' }],
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    galleries: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Gallery' }],
-    averageRating: { type: Number, default: 0 },
+ galleries: [
+    {
+      gallery: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Gallery',
+      },
+      order: {
+        type: Number,
+        default: 0,
+      },
+    },
+  ],    averageRating: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

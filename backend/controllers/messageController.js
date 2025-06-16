@@ -26,7 +26,7 @@ export const getConversations = async (req, res) => {
               content: '$content',
               timestamp: '$timestamp',
               sender: '$sender',
-              attachments: { $ifNull: ['$attachments', []] }, // 👈 aici setezi mereu attachments ca array gol dacă nu există
+              attachments: { $ifNull: ['$attachments', []] },
             },
           },
 
@@ -59,7 +59,7 @@ export const getConversations = async (req, res) => {
           'lastMessage.content': 1,
           'lastMessage.timestamp': 1,
           'lastMessage.sender': 1,
-          'lastMessage.attachments': 1, // 👈 Asta lipsește!
+          'lastMessage.attachments': 1,
           isUnread: 1,
         },
       },
@@ -152,6 +152,7 @@ export const sendMessage = async (req, res) => {
     });
 
     await newMessage.save();
+    await newMessage.populate('sender', 'firstName lastName profilePicture');
     res.status(200).json({ data: newMessage });
   } catch (err) {
     console.error('Send message error:', err);

@@ -22,7 +22,7 @@ import {
   Collapse,
   VStack,
   IconButton,
-  useToast, // NOU: Import pentru notificări
+  useToast, // Added for notifications
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import useLoadGoogleMapsScript from '../hooks/useLoadGoogleMapsScript';
@@ -37,7 +37,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isAttachmentsVisible, setIsAttachmentsVisible] = useState(false);
   const { addToCart } = useCart();
-  const toast = useToast(); // NOU: Inițializarea hook-ului pentru notificări
+  const toast = useToast(); // Hook for showing notifications
 
   const isInterested = event?.interestedParticipants?.some((user) => user._id === currentUserId);
   const isGoing = event?.goingParticipants?.some((user) => user._id === currentUserId);
@@ -98,20 +98,73 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
       </Box>
     );
   }
-  
-  // Functiile API
-  const markInterested = async () => { /* ... codul existent ... */ };
-  const markGoing = async () => { /* ... codul existent ... */ };
-  const handleDeleteEvent = async () => { /* ... codul existent ... */ };
+
+  // API Functions
+  const markInterested = async () => {
+    try {
+      const response = await fetch(`/api/events/${event._id}/interested`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId: currentUserId }),
+      });
+      if (response.ok) fetchEvent();
+      else alert((await response.json()).error || 'Failed to mark as interested');
+    } catch (err) {
+      console.error('Error marking interested:', err);
+    }
+  };
+
+  const markGoing = async () => {
+    try {
+      const response = await fetch(`/api/events/${event._id}/going`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId: currentUserId }),
+      });
+      if (response.ok) fetchEvent();
+      else alert((await response.json()).error || 'Failed to mark as going');
+    } catch (err) {
+      console.error('Error marking going:', err);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    try {
+      const res = await fetch(`/api/events/${event._id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Event deleted successfully');
+        navigate('/events');
+      } else {
+        alert(data.error || 'Failed to delete event');
+      }
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      alert('An error occurred while deleting.');
+    }
+  };
+
   const handleImageClick = (image) => {
     setSelectedImage(image);
     onOpen();
   };
-  const openGoogleMaps = () => { /* ... codul existent ... */ };
+
+  const openGoogleMaps = () => {
+    if (event.coordinates?.lat && event.coordinates?.lng) {
+      window.open(`https://www.google.com/maps?q=${event.coordinates.lat},${event.coordinates.lng}`, '_blank');
+    } else {
+      alert('Unable to open map. Coordinates not available.');
+    }
+  };
   
-  // NOU: Funcție pentru a adăuga în coș și a afișa notificarea
+  // New function to add to cart and show notification
   const handleAddToCart = () => {
-    // 1. Adaugă produsul în coș
     addToCart({
       product: {
         ...event,
@@ -122,7 +175,6 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
       quantity: 1,
     });
 
-    // 2. Afișează notificarea de succes
     toast({
       title: 'Ticket Added!',
       description: `A ticket for "${event.name}" has been added to your cart.`,
@@ -135,8 +187,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
 
   return (
     <Flex direction={'column'}>
-      {/* ... Antetul și imaginea principală (fără modificări) ... */}
-       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
+      <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
         <Text fontWeight="bold" fontSize="2xl" textAlign="center">
           {event.name || 'Event name'}
         </Text>
@@ -170,7 +221,6 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         </Box>
       </Box>
 
-
       <Flex justifyContent="space-between" mt={3} px={4}>
         <Box bg="goldenrod" color="black" borderRadius="full" px={6} py={1} fontWeight="bold">
           {new Date(event.date).toLocaleDateString('en-GB', {
@@ -186,7 +236,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
               {isInterested ? 'Unmark Interested' : 'Mark if Interested'}
             </Button>
             {event.ticketType?.toLowerCase() === 'paid' && (
-              // MODIFICAT: Butonul apelează noua funcție
+              // Button now calls the new handler function
               <Button colorScheme="green" onClick={handleAddToCart}>
                 Add Ticket to Cart
               </Button>
@@ -198,7 +248,6 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
         </Box>
       </Flex>
 
-      {/* ... Restul componentei (Info, Galerie, Atașamente, etc. - fără modificări) ... */}
       <Flex mt={3} justifyContent="space-between" px={4} direction={{ base: 'column', lg: 'row' }}>
         <Flex maxW="800px" mx={{ base: 'auto', lg: 8 }} direction="column" gap={2} flex="2">
           <Text><strong>Info</strong></Text>

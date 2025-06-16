@@ -27,6 +27,7 @@ import {
 } from '../controllers/userController.js';
 import protectRoute from '../middlewares/protectRoute.js';
 import adminOnly from '../middlewares/adminOnly.js';
+import { getFavoriteGalleries } from '../controllers/galleryController.js';
 
 const router = express.Router();
 
@@ -60,5 +61,6 @@ router.delete('/favorites/gallery/:galleryId', protectRoute, toggleFavoriteGalle
 
 // Route to get all favorite galleries for the current user
 router.get('/users/:userId/favorite-galleries', protectRoute, getUserFavoriteGalleries);
+router.get('/me/favorite-galleries', protectRoute, getFavoriteGalleries);
 
 export default router;

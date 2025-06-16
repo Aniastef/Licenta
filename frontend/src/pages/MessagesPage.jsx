@@ -55,13 +55,20 @@ const MessagesPage = () => {
 
   const toast = useToast();
 
-  // MessagesPage.jsx
+
+  const handleRemoveFile = (fileIndex) => {
+  const updatedFiles = selectedFiles.filter((_, index) => index !== fileIndex);
+  setSelectedFiles(updatedFiles);
+
+  if (fileInputRef.current) {
+    fileInputRef.current.value = '';
+  }
+};
+
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       setTimeout(() => {
-        // Re-check inside the timeout to ensure it's still valid
         if (messagesContainerRef.current) {
-          //
           messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight; //
         }
       }, 100);
@@ -87,40 +94,26 @@ const MessagesPage = () => {
     fetchCurrentUser();
   }, []);
 
-  // 🔥 IMPORTANT: This useEffect will now react to changes in userId from useParams
-  // AND will set the selectedUser and fetch messages.
-  // MessagesPage.jsx
   useEffect(() => {
     if (userId) {
-      // If there's a userId in the URL
-      // Try to find the user in existing conversations
+
       const userFromConversations = conversations.find((conv) => conv.user._id === userId);
       if (userFromConversations) {
         setSelectedUser(userFromConversations.user);
-      } else {
-        // If not in conversations, it means it's likely a new chat from search,
-        // or a direct link to a user not yet in the conversation list.
-        // In this case, ensure selectedUser is set from the userId directly if possible,
-        // or fetch user details if necessary.
-        // For now, fetchMessages(userId) will handle it, but setting selectedUser
-        // explicitly here (e.g., by fetching user details by userId) could make UI smoother.
-        // Example: fetchUserDetails(userId).then(data => setSelectedUser(data))
       }
-      fetchMessages(userId); // Always fetch messages for the current userId from URL
+      fetchMessages(userId); 
     } else {
-      // If no userId in URL (e.g., /messages), clear selected user and messages
       setSelectedUser(null);
       setMessages([]);
     }
   }, [userId, conversations]);
 
-  // Added conversations to dependency array
   useEffect(() => {
     if (userId && currentUser) {
       const found = conversations.find((conv) => conv.user._id === userId);
       if (found) setSelectedUser(found.user);
     }
-  }, [currentUser]); // No longer directly dependent on userId here to avoid redundancy with the above useEffect
+  }, [currentUser]); 
 
   const fetchCurrentUser = async () => {
     try {
@@ -134,7 +127,6 @@ const MessagesPage = () => {
       const data = await res.json();
       setCurrentUser(data);
 
-      // 🧠 Setăm corect isBlocked — comparăm .toString()
       if (userId && data.blockedUsers) {
         const isBlocked = data.blockedUsers.some((u) => String(u._id || u) === String(userId));
         setIsBlocked(isBlocked);
@@ -196,9 +188,8 @@ const MessagesPage = () => {
     }
   };
 
-  // 🔥 Modified fetchMessages to accept an explicit ID to ensure correct fetching
   const fetchMessages = async (targetUserId) => {
-    if (!targetUserId) return; // Ensure we have an ID to fetch messages for
+    if (!targetUserId) return;
     setLoading(true);
     try {
       const response = await fetch(`/api/messages/${targetUserId}`, {
@@ -214,7 +205,6 @@ const MessagesPage = () => {
 
       if (response.ok) {
         setMessages(data.messages || []);
-        // Mark messages as seen for the targetUserId
         await fetch(`/api/messages/seen/${targetUserId}`, {
           method: 'PATCH',
           headers: {
@@ -249,38 +239,29 @@ const MessagesPage = () => {
     }
   };
 
-  // 🔥 Modified handleSelectUser to ensure `selectedUser` and `userId` are in sync and trigger fetch
-  // 🔥 Modified handleSelectUser to ensure `selectedUser` and `userId` are in sync and trigger fetch
-  // MessagesPage.jsx
-  // MessagesPage.jsx
+
   const handleSelectUser = (user, e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    // If the user clicked is already the selected user, do nothing (or just close search if open)
     if (selectedUser && selectedUser._id === user._id && userId === user._id) {
-      setSearch(''); // Clear search results if already on the same user
+      setSearch(''); 
       setSearchResults([]);
-      return; // Don't re-navigate or re-fetch if already displaying this user
+      return; 
     }
 
-    // 1. Immediately set the selected user state. This makes the UI reactive.
     setSelectedUser(user);
-    setSearch(''); // Clear search results immediately
+    setSearch(''); 
     setSearchResults([]);
 
-    // 2. Navigate to the user's chat. This updates the URL and `userId` from `useParams`.
-    //    This is crucial for direct links and browser history.
+
     navigate(`/messages/${user._id}`);
 
-    // 3. Crucially, explicitly call fetchMessages for the selected user's ID.
-    //    This ensures messages are fetched right away, bypassing potential race conditions
-    //    with the useEffect that monitors `userId` from useParams.
+ 
     fetchMessages(user._id);
 
-    // Also, update isBlocked state for the newly selected user
     if (currentUser && currentUser.blockedUsers) {
       const isBlockedNow = currentUser.blockedUsers.some(
         (u) => String(u._id || u) === String(user._id),
@@ -316,6 +297,7 @@ const MessagesPage = () => {
             return {
               url: await toBase64(file),
               type,
+              name: file.name,
             };
           }),
         );
@@ -356,6 +338,9 @@ const MessagesPage = () => {
         setMessages([...messages, completeMessage]);
         setNewMessage('');
         setSelectedFiles([]);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
         fetchConversations(); 
       }
     } catch (error) {
@@ -370,10 +355,7 @@ const MessagesPage = () => {
     return sentMessages.length > 0 ? sentMessages[sentMessages.length - 1] : null;
   };
 
-  // Removed redundant useEffect for selectedUser based on currentUser.
-  // The main useEffect listening to `userId` from `useParams` and `conversations`
-  // should handle setting `selectedUser` now.
-
+ 
   const handleSubmitReport = async () => {
     if (!reportReason) {
       toast({ title: 'Please select a reason', status: 'warning' });
@@ -684,6 +666,36 @@ const MessagesPage = () => {
             </Box>
 
             {!isBlocked ? (
+              <>
+              {selectedFiles.length > 0 && (
+      <VStack
+        align="start"
+        spacing={2}
+        p={3}
+        border="1px solid #e2e8f0"
+        borderRadius="md"
+        mb={3} // Adaugă spațiu sub lista de fișiere
+      >
+        <Text fontSize="sm" fontWeight="bold" color="gray.600">
+          Atașamente:
+        </Text>
+        {selectedFiles.map((file, index) => (
+          <HStack key={index} justify="space-between" width="100%">
+            <Text fontSize="sm" noOfLines={1}>
+              {file.name}
+            </Text>
+            <Button
+              size="xs"
+              colorScheme="red"
+              variant="ghost"
+              onClick={() => handleRemoveFile(index)}
+            >
+              x
+            </Button>
+          </HStack>
+        ))}
+      </VStack>
+    )}
               <Flex mt={4}>
                 <Input
                   placeholder="Type a message..."
@@ -711,6 +723,7 @@ const MessagesPage = () => {
                   Send
                 </Button>
               </Flex>
+               </>
             ) : (
               <Text mt={4} fontSize="md" color="red.500">
                 You have blocked this user. Unblock them to continue the conversation.

@@ -981,7 +981,7 @@ const AdminPanel = () => {
                 View audit logs
               </Button>
               <Button
-                colorScheme={activeTab === 'users' ? 'blue' : 'gray'}
+                colorScheme={activeTab === 'dashboard' ? 'blue' : 'gray'}
                 onClick={() => setActiveTab('dashboard')}
               >
                 Dashboard

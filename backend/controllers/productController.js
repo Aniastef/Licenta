@@ -10,6 +10,7 @@ import { addAuditLog } from './auditLogController.js'; // ← modifică path-ul 
 
 // în productController.js
 
+
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -18,7 +19,7 @@ export const createProduct = async (req, res) => {
       writing,
       price,
       quantity,
-      forSale,
+      forSale, // This 'forSale' variable is already available here
       galleries,
       images = [],
       videos = [],
@@ -27,80 +28,133 @@ export const createProduct = async (req, res) => {
     } = req.body;
 
     if (!req.user) {
+      console.error('Error: User not authenticated for product creation.');
       return res.status(403).json({ error: 'User not authenticated' });
     }
 
-    // ... codul existent pentru upload-ul imaginilor/video/audio ...
     const uploadedImages = [];
     const uploadedVideos = [];
     const uploadedAudios = [];
 
+    // --- Image/Video/Audio Upload Logic (no changes needed here from last review) ---
     for (const img of images) {
-      if (img.startsWith('data:')) {
-        const uploadRes = await cloudinary.uploader.upload(img);
-        uploadedImages.push(uploadRes.secure_url);
+      if (img && img.startsWith('data:')) {
+        try {
+          const uploadRes = await cloudinary.uploader.upload(img);
+          uploadedImages.push(uploadRes.secure_url);
+        } catch (uploadError) {
+          console.error('Cloudinary Image Upload Error:', uploadError);
+        }
       }
     }
 
     for (const video of videos) {
-      if (video.startsWith('data:')) {
-        const uploadRes = await cloudinary.uploader.upload(video, { resource_type: 'video' });
-        uploadedVideos.push(uploadRes.secure_url);
+      if (video && video.startsWith('data:')) {
+        try {
+          const uploadRes = await cloudinary.uploader.upload(video, { resource_type: 'video', folder: 'products_videos' });
+          uploadedVideos.push(uploadRes.secure_url);
+        } catch (uploadError) {
+          console.error('Cloudinary Video Upload Error:', uploadError);
+        }
       }
     }
 
     for (const audio of audios) {
-      if (audio.startsWith('data:')) {
-        const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'video' });
-        uploadedAudios.push(uploadRes.secure_url);
+      if (audio && audio.startsWith('data:')) {
+        try {
+          const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'raw', folder: 'products_audios' }); // Keep 'raw' or 'auto'
+          uploadedAudios.push(uploadRes.secure_url);
+        } catch (uploadError) {
+          console.error('Cloudinary Audio Upload Error:', uploadError);
+        }
       }
     }
+    // --- End Upload Logic ---
 
-    const newProduct = new Product({
+    // Sanitize and provide defaults for newProduct creation
+const newProduct = new Product({
       title,
       description: description?.trim() || 'No description',
-      price,
+      price: forSale ? (price !== undefined && price !== null ? price : 0) : undefined,
       quantity: quantity || 0,
       forSale: forSale !== undefined ? forSale : true,
-      galleries: galleries || [],
       images: uploadedImages,
       videos: uploadedVideos,
       audios: uploadedAudios,
       writing,
-      category: category || 'General',
+      category: Array.isArray(category) && category.length > 0 ? category : ['General'],
       user: req.user._id,
+      // CORRECTED LINE: Map incoming gallery IDs to the schema's expected format
+      galleries: Array.isArray(galleries) && galleries.length > 0
+        ? galleries.map(gId => ({ gallery: gId, order: 0 })) // Default order to 0 for new products
+        : [],
     });
 
-    if (forSale && price === undefined) {
-      return res.status(400).json({ error: 'Price is required if artwork is for sale.' });
+    // Price validation specific for 'forSale'
+    // This check can now safely use newProduct.forSale because newProduct is defined.
+    // However, the prior fix made 'price' 0 if undefined, so this check for `price <= 0` is now the relevant part for validation.
+    if (newProduct.forSale && newProduct.price <= 0) { // Assuming 0 is not a valid sale price, adjust if it is.
+        return res.status(400).json({ error: 'Price must be greater than 0 if artwork is for sale.' });
     }
+    // If you want to allow price 0, remove the `newProduct.price <= 0` part.
+    // If you just want to ensure it's not undefined if for sale, the line above where newProduct is created already handles it by setting it to 0.
+
 
     await newProduct.save();
+    console.log('Product saved successfully:', newProduct._id);
 
-    // NOU: Actualizează documentul utilizatorului adăugând ID-ul noului produs
+    // Update user's products array
     await User.findByIdAndUpdate(req.user._id, { $push: { products: newProduct._id } });
+    console.log('User document updated with new product ID.');
 
+    // Add audit log
     await addAuditLog({
       action: 'create_product',
       performedBy: req.user._id,
       targetProduct: newProduct._id,
       details: `Created artwork: ${newProduct.title}`,
     });
+    console.log('Audit log added.');
 
+    // Update Galleries with 'order' field (logic is okay from previous step)
     if (galleries && galleries.length > 0) {
-      await Gallery.updateMany(
-        { _id: { $in: galleries } },
-        { $push: { products: newProduct._id } },
-      );
+      console.log(`Processing ${galleries.length} galleries for new product ${newProduct._id}.`);
+      for (const galleryId of galleries) {
+        try {
+          const gallery = await Gallery.findById(galleryId);
+
+          if (gallery) {
+            if (!Array.isArray(gallery.products)) {
+                gallery.products = [];
+                console.warn(`Gallery ${gallery._id} products array was not an array. Initialized.`);
+            }
+
+            if (!gallery.products.some(p => p.product && p.product.toString() === newProduct._id.toString())) {
+              const currentOrders = gallery.products.map(p => p.order || 0);
+              const nextOrder = currentOrders.length > 0
+                ? Math.max(...currentOrders) + 1
+                : 0;
+
+              gallery.products.push({ product: newProduct._id, order: nextOrder });
+              await gallery.save();
+              console.log(`Product ${newProduct._id} successfully added to gallery ${galleryId} with order ${nextOrder}.`);
+            }
+          } else {
+            console.warn(`Gallery with ID ${galleryId} not found when attempting to add product ${newProduct._id}.`);
+          }
+        } catch (galleryUpdateError) {
+          console.error(`ERROR PROCESSING GALLERY ${galleryId} FOR PRODUCT ${newProduct._id}:`, galleryUpdateError.message);
+        }
+      }
     }
 
     res.status(201).json(newProduct);
+
   } catch (err) {
-    console.error('Error while creating product:', err.message);
-    res.status(500).json({ message: err.message });
+    console.error('FATAL SERVER ERROR IN createProduct FUNCTION:', err.stack || err.message || err);
+    res.status(500).json({ error: 'Server error during product creation', details: err.message });
   }
 };
-
 export const getProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,8 +164,11 @@ export const getProduct = async (req, res) => {
     }
 
     const product = await Product.findById(id)
-      .populate('user', 'firstName lastName email username')
-      .populate('galleries', 'name type');
+      .populate('user', 'username firstName lastName')
+      .populate({
+        path: 'galleries.gallery', // Populează câmpul 'gallery' din obiectele din array-ul 'galleries'
+        select: '_id name', // Selectează doar _id și name
+      });
 
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -322,7 +379,7 @@ export const getAllUserProducts = async (req, res) => {
     }
 
     const products = await Product.find({ user: user._id })
-      .populate('galleries', 'name')
+      .populate('galleries.gallery', 'name')
       .select('title price  quantity forSale images videos audios writing galleries createdAt');
 
     res.status(200).json({ user, products }); // ✅ trimite și user

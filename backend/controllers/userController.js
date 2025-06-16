@@ -54,13 +54,11 @@ export const getUserProfile = async (req, res) => {
       },
     ]);
 
-    // 3. Produsele create de acest user - LINIE CORECTATĂ
-    const products = await Product.find({ user: user._id }) // <-- Schimbat din 'owner' în 'user'
+    const products = await Product.find({ user: user._id })
       .select('title price images videos tags createdAt category')
       .sort({ createdAt: -1 });
 
-    // 4. Articolele scrise de acest user - LINIE CORECTATĂ
-    const articles = await Article.find({ user: user._id }) // <-- Schimbat din 'author' în 'user'
+    const articles = await Article.find({ user: user._id }) 
       .select('title subtitle category createdAt content')
       .sort({ createdAt: -1 })
       .limit(3);
@@ -393,6 +391,7 @@ export const loginUser = async (req, res) => {
       address: user.address,
       city: user.city,
       country: user.country,
+      role: user.role,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

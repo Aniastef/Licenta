@@ -129,7 +129,7 @@ export const getGallery = async (req, res) => {
       .populate({
         path: "products.product",
         model: "Product",
-        select: "images title price quantity forSale description",
+        select: "images title price quantity forSale description tags", // Adaugă 'tags' aici
       });
 
     if (!gallery) {
@@ -677,6 +677,24 @@ export const updateProductOrder = async (req, res) => {
     }
   };
 
+  export const getFavoriteGalleries = async (req, res) => {
+  try {
+    const userId = req.user._id; // Assuming user is authenticated and req.user is populated
+
+    const user = await User.findById(userId).select('favoriteGalleries');
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Return the array of favorite gallery IDs
+    res.status(200).json(user.favoriteGalleries);
+  } catch (error) {
+    console.error("Error fetching favorite galleries:", error.message);
+    res.status(500).json({ error: "Failed to fetch favorite galleries" });
+  }
+};
+
   export const getAllUserGalleries = async (req, res) => {
     try {
       const { username } = req.params;
@@ -691,10 +709,11 @@ export const updateProductOrder = async (req, res) => {
       })
         .populate("owner", "firstName lastName username")
         .populate("collaborators", "firstName lastName")
+       // In your galleryController.js (getAllUserGalleries function)
         .populate({
-          path: "products",
-          select: "images",
-        })
+            path: "products.product", // This is key!
+            select: "title description images price quantity forSale tags", // Select all fields needed by GalleryCard
+        })  
         .select("name tags products owner coverPhoto collaborators isPublic")
         .sort({ createdAt: -1 });
   

@@ -47,9 +47,13 @@ const ContactBar = () => {
         </Text>
 
         <HStack spacing={3} mb={2}>
-          <Image src={phoneIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
-          <Text>+40 723 123 456</Text>
+          <Text>Made by Stefania Istvan</Text>
         </HStack>
+
+        {/* <HStack spacing={3} mb={2}>
+          <Image src={phoneIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}
+          {/* <Text>+40 723 123 456</Text>
+        </HStack> */} 
 
         <HStack spacing={3} mb={2}>
           <Image src={emailIcon} boxSize="20px" /> {/* Am șters filter="invert(1)" aici */}

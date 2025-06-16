@@ -314,8 +314,8 @@ useEffect(() => {
                                 alt={`Thumbnail ${index + 1}`}
                                 borderRadius="md"
                                 objectFit="cover"
-                                w="100px"
-                                h="100px"
+                                w="350px"
+                                h="250px"
                                 cursor="pointer"
                                 onClick={() => setCurrentIndex(index)}
                                 border={currentIndex === index ? '2px solid green' : 'none'}
@@ -492,10 +492,13 @@ useEffect(() => {
                     colorScheme={isFavorite ? 'red' : 'gray'}
                     onClick={handleAddToFavorites}
                     fontSize="sm"
-                    leftIcon={<span>{isFavorite ? '❤️' : '🤍'}</span>}
+                    leftIcon={
+  <Text fontSize="3xl"> {/* sau "2xl", "lg", etc. */}
+    {isFavorite ? '❤️' : '🤍'}
+  </Text>
+}
                     _hover={{ bg: 'transparent', textDecoration: 'underline' }}
                   >
-                    {isFavorite ? 'remove from favorites' : 'add to favorites'}
                   </Button>
                 )}
               </HStack>
@@ -531,22 +534,25 @@ useEffect(() => {
                 </Text>
               )}
 
-              {product.galleries?.length > 0 && (
-                <Box mt={2}>
-                  <Text fontWeight="bold">Part of galleries:</Text>
-                  <HStack spacing={2} wrap="wrap">
-                    {product.galleries.map((gallery) => (
-                      <RouterLink
-                        key={gallery._id}
-                        to={`/galleries/${gallery._id}`}
-                        style={{ color: '#3182ce', textDecoration: 'underline' }}
-                      >
-                        {gallery.name}
-                      </RouterLink>
-                    ))}
-                  </HStack>
-                </Box>
-              )}
+             {product.galleries?.length > 0 && (
+  <Box mt={2}>
+    <Text fontWeight="bold">Part of galleries:</Text>
+    <HStack spacing={2} wrap="wrap">
+      {product.galleries.map((galleryWrapper) => ( // Renamed to galleryWrapper for clarity
+        // Ensure galleryWrapper.gallery exists and has _id and name
+        galleryWrapper.gallery ? (
+          <RouterLink
+            key={galleryWrapper.gallery._id} // Access nested _id
+            to={`/galleries/${galleryWrapper.gallery._id}`} // Access nested _id
+            style={{ color: '#3182ce', textDecoration: 'underline' }}
+          >
+            {galleryWrapper.gallery.name} {/* Access nested name */}
+          </RouterLink>
+        ) : null
+      ))}
+    </HStack>
+  </Box>
+)}
 
               <Text
                 mt={2}

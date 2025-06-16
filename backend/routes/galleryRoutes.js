@@ -15,6 +15,7 @@ import {
   acceptGalleryInvite,
   declineGalleryInvite,
   getAllUserGalleries,
+  getFavoriteGalleries,
 } from '../controllers/galleryController.js';
 
 const router = express.Router();

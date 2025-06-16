@@ -69,7 +69,7 @@ const UserAllProductsPage = () => {
 
     if (selectedMediaTypes.length > 0) {
       updated = updated.filter((p) => {
-        return selectedMediaTypes.every((type) => {
+        return selectedMediaTypes.some((type) => {
           if (type === 'images') return Array.isArray(p.images) && p.images.length > 0;
           if (type === 'videos') return Array.isArray(p.videos) && p.videos.length > 0;
           if (type === 'audios') return Array.isArray(p.audios) && p.audios.length > 0;
@@ -101,15 +101,25 @@ const UserAllProductsPage = () => {
         credentials: 'include',
       });
 
-      const data = await res.json();
-      if (res.ok) {
+      // Nu mai apelam res.json() DACA statusul este 204 No Content
+      // Un server care șterge resurse poate răspunde cu 204 și fără body.
+      // Dacă serverul tău returnează JSON chiar și la succes, păstrează .json()
+      // Dar verifică res.ok în primul rând.
+      if (res.ok) { // Verificați direct res.ok pentru succes (status 2xx)
+        // Daca serverul trimite un JSON la succes, il poti parsa
+        // const data = await res.json();
         setProducts((prev) => prev.filter((p) => p._id !== productId));
+        setFilteredProducts((prev) => prev.filter((p) => p._id !== productId));
+        // Nu mai este nevoie de alert("Product deleted successfully") daca UX-ul se actualizeaza.
       } else {
-        alert(data.error || 'Failed to delete product');
+        // Dacă res.ok este false, înseamnă că a fost un status de eroare (4xx, 5xx).
+        // Încercăm să parsam JSON-ul pentru mesajul de eroare, dar avem grijă.
+        const errorData = await res.json().catch(() => ({ error: 'Failed to delete product (unknown error)' }));
+        alert(errorData.error || `Failed to delete product. Status: ${res.status}`);
       }
     } catch (err) {
       console.error('Error deleting product:', err.message);
-      alert('Error deleting product.');
+      alert('Error deleting product due to network or unexpected issue.');
     }
   };
 
@@ -169,10 +179,83 @@ const UserAllProductsPage = () => {
         <Flex justify="center">
           <Spinner size="xl" />
         </Flex>
+      ) : filteredProducts.length === 0 ? (
+        <Flex justify="center" mt={10}>
+          <Text fontSize="xl" color="gray.500">No artworks found.</Text>
+        </Flex>
       ) : filteredProducts.length === 1 ? (
         <Flex justify="center">
-          <Link to={`/products/${filteredProducts[0]._id}`}>
+          {/* Aici nu mai folosim Link, pentru că butonul de Delete este integrat direct. */}
+          {/* Folosim un Box care este clicabil (prin onClick) pentru a naviga. */}
+          <Box
+            bg="gray.100"
+            borderRadius="md"
+            boxShadow="md"
+            overflow="hidden"
+            border="1px solid #ccc"
+            _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
+            transition="all 0.2s"
+            cursor="pointer"
+            w="300px"
+            // Atentie: navigate la click pe intreg Box-ul, dar stopPropagation pe buton
+            onClick={() => navigate(`/products/${filteredProducts[0]._id}`)}
+          >
+            {/* imagine */}
+            <Box h="270px" bg="gray.200">
+              {filteredProducts[0].images?.[0] ? (
+                <Image
+                  src={filteredProducts[0].images[0]}
+                  alt={filteredProducts[0].title}
+                  w="100%"
+                  h="100%"
+                  objectFit="cover"
+                />
+              ) : (
+                <Flex align="center" justify="center" h="100%" color="gray.600" fontWeight="bold" fontSize="lg">
+                  {filteredProducts[0].title}
+                </Flex>
+              )}
+            </Box>
+
+            {/* detalii + buton */}
+            <Box py={3} px={2} textAlign="center">
+              <Text fontWeight="bold" noOfLines={1}>
+                {filteredProducts[0].title}
+              </Text>
+              {typeof filteredProducts[0].price === 'number' && filteredProducts[0].price > 0 && (
+                <Text fontSize="sm" color="green.600">
+                  Price: {filteredProducts[0].price} EUR
+                </Text>
+              )}
+
+              {filteredProducts[0].quantity > 0 && (
+                <Text fontSize="sm" color="gray.600">
+                  Stock: {filteredProducts[0].quantity}
+                </Text>
+              )}
+
+              {/* buton delete vizibil doar pentru owner */}
+              {currentUser?._id === user?._id && (
+                <Button
+                  mt={2}
+                  size="sm"
+                  colorScheme="red"
+                  onClick={(e) => {
+                    e.stopPropagation(); // oprește navigarea spre produs
+                    handleDeleteProduct(filteredProducts[0]._id);
+                  }}
+                >
+                  Delete
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </Flex>
+      ) : (
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={4} mt={6}>
+          {filteredProducts.map((product) => (
             <Box
+              key={product._id}
               bg="gray.100"
               borderRadius="md"
               boxShadow="md"
@@ -181,197 +264,67 @@ const UserAllProductsPage = () => {
               _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
               transition="all 0.2s"
               cursor="pointer"
-              w="300px"
+              onClick={() => navigate(`/products/${product._id}`)}
             >
-              <Box
-                w="270px"
-                bg="gray.100"
-                borderRadius="md"
-                boxShadow="md"
-                overflow="hidden"
-                border="1px solid #ccc"
-                _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
-                transition="all 0.2s"
-                cursor="pointer"
-                onClick={() => navigate(`/products/${product._id}`)}
-              >
-                <Box h="270px" bg="gray.200">
-                  {product.images?.[0] ? (
-                    <Image
-                      src={product.images[0]}
-                      alt={product.title}
-                      w="100%"
-                      h="100%"
-                      objectFit="cover"
-                    />
-                  ) : (
-                    <Flex align="center" justify="center" h="100%">
-                      <Text fontWeight="bold" fontSize="lg" color="gray.600">
-                        {product.title}
-                      </Text>
-                    </Flex>
-                  )}
-                </Box>
-
-                <Box py={3} px={2} textAlign="center">
-                  <Text fontWeight="bold" noOfLines={1}>
+              {/* imagine */}
+              <Box h="270px" bg="gray.200">
+                {product.images?.[0] ? (
+                  <Image
+                    src={product.images[0]}
+                    alt={product.title}
+                    w="100%"
+                    h="100%"
+                    objectFit="cover"
+                  />
+                ) : (
+                  <Flex
+                    align="center"
+                    justify="center"
+                    h="100%"
+                    color="gray.600"
+                    fontWeight="bold"
+                    fontSize="lg"
+                  >
                     {product.title}
-                  </Text>
-
-                  {product.forSale && (
-                    <Text fontSize="sm" color="green.600">
-                      {product.price}
-                    </Text>
-                  )}
-
-                  {product.quantity > 0 && (
-                    <Text fontSize="sm" color="gray.600">
-                      Stock: {product.quantity}
-                    </Text>
-                  )}
-
-                  {product.galleries?.length > 0 && (
-                    <Text fontSize="xs" color="purple.500">
-                      Gallery: {product.galleries[0].name}
-                    </Text>
-                  )}
-
-                  {currentUser?._id === user?._id && (
-                    <Button
-                      mt={2}
-                      size="sm"
-                      colorScheme="red"
-                      onClick={(e) => {
-                        e.stopPropagation(); // prevenim navigarea
-                        handleDeleteProduct(product._id);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </Box>
+                  </Flex>
+                )}
               </Box>
 
+              {/* detalii + buton */}
               <Box textAlign="center" py={3} px={2}>
                 <Text fontWeight="bold" noOfLines={1}>
-                  {filteredProducts[0].title}
+                  {product.title}
                 </Text>
-
-                {filteredProducts[0].forSale && filteredProducts[0].price > 0 && (
+                {typeof product.price === 'number' && product.price > 0 && (
                   <Text fontSize="sm" color="green.600">
-                    For Sale: {filteredProducts[0].price} EUR
+                    Price: {product.price} EUR
                   </Text>
                 )}
 
-                {filteredProducts[0].forSale && filteredProducts[0].price > 0 && (
+                {product.quantity > 0 && (
                   <Text fontSize="sm" color="gray.600">
-                    Stock: {filteredProducts[0].quantity}
+                    Stock: {product.quantity}
                   </Text>
                 )}
 
-                {filteredProducts[0].galleries?.length > 0 && (
-                  <Text fontSize="xs" color="purple.500" mt={1}>
-                    Gallery: {filteredProducts[0].galleries[0].name || '-'}
-                  </Text>
-                )}
-
-                {currentUser?._id === product.user?._id && (
+                {/* buton delete vizibil doar pentru owner */}
+                {currentUser?._id === user?._id && (
                   <Button
                     mt={2}
                     size="sm"
                     colorScheme="red"
-                    variant="solid"
-                    onClick={() => handleDeleteProduct(product._id)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // oprește navigarea spre produs
+                      handleDeleteProduct(product._id);
+                    }}
                   >
                     Delete
                   </Button>
                 )}
               </Box>
             </Box>
-          </Link>
-        </Flex>
-      ) : (
-        <Flex wrap="wrap" justify="center" gap={4}>
-          <Flex wrap="wrap" justify="center" gap={4}>
-            {filteredProducts.map((product) => (
-              <Box
-                key={product._id}
-                w="270px"
-                bg="gray.100"
-                borderRadius="md"
-                boxShadow="md"
-                overflow="hidden"
-                border="1px solid #ccc"
-                _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
-                transition="all 0.2s"
-                cursor="pointer"
-                onClick={() => navigate(`/products/${product._id}`)}
-              >
-                {/* imagine */}
-                <Box h="270px" bg="gray.200">
-                  {product.images?.[0] ? (
-                    <Image
-                      src={product.images[0]}
-                      alt={product.title}
-                      w="100%"
-                      h="100%"
-                      objectFit="cover"
-                    />
-                  ) : (
-                    <Flex
-                      align="center"
-                      justify="center"
-                      h="100%"
-                      color="gray.600"
-                      fontWeight="bold"
-                      fontSize="lg"
-                    >
-                      {product.title}
-                    </Flex>
-                  )}
-                </Box>
-
-                {/* detalii + buton */}
-                <Box textAlign="center" py={3} px={2}>
-                  <Text fontWeight="bold" noOfLines={1}>
-                    {product.title}
-                  </Text>
-                  {typeof product.price === 'number' && product.price > 0 && (
-                    <Text fontSize="sm" color="green.600">
-                      Price: {product.price}
-                    </Text>
-                  )}
-
-                  {product.forSale && product.price > 0 && (
-                    <Text fontSize="sm" color="gray.600">
-                      Stock: {product.quantity}
-                    </Text>
-                  )}
-                  {product.galleries?.length > 0 && (
-                    <Text fontSize="xs" color="purple.500" mt={1}>
-                      Gallery: {product.galleries[0].name || '-'}
-                    </Text>
-                  )}
-
-                  {/* buton delete vizibil doar pentru owner */}
-                  {currentUser?._id === user?._id && (
-                    <Button
-                      mt={2}
-                      size="sm"
-                      colorScheme="red"
-                      onClick={(e) => {
-                        e.stopPropagation(); // oprește navigarea spre produs
-                        handleDeleteProduct(product._id);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </Box>
-              </Box>
-            ))}
-          </Flex>
-        </Flex>
+          ))}
+        </SimpleGrid>
       )}
     </Box>
   );

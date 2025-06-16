@@ -335,6 +335,7 @@ const CreateProductPage = () => {
                 value={newProduct.galleries[0] || 'general-placeholder'}
                 onChange={(e) => {
                   const selected = e.target.value;
+                  // This is correct as it sends just the ID to the backend
                   setNewProduct({
                     ...newProduct,
                     galleries: selected === 'general-placeholder' ? [] : [selected],
