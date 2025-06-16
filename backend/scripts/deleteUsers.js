@@ -1,4 +1,4 @@
-//run node scripts/deleteUsers.js from backend folder in the terminal to delete all users from the database
+//run node scripts/deleteUsers.js from backend folder
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from '../models/userModel.js';

@@ -21,7 +21,7 @@ const useUnreadMessagesCount = () => {
 
   useEffect(() => {
     fetchConversations();
-    const interval = setInterval(fetchConversations, 10000); // Refresh la fiecare 10s
+    const interval = setInterval(fetchConversations, 10000);
     return () => clearInterval(interval);
   }, []);
 

@@ -13,13 +13,12 @@ import protectRoute from '../middlewares/protectRoute.js';
 
 const router = express.Router();
 
-// Ordinea corectă a rutelor contează!
 router.post('/', protectRoute, createArticle);
-router.get('/', getAllArticlesFiltered); // ✅ returnează toate articolele (filtrabil)
+router.get('/', getAllArticlesFiltered); 
 
-router.get('/user/me', protectRoute, getMyArticles); // 🔼 mai sus
-router.get('/user/:username', getArticlesByUser); // 🔼 mai sus
-router.get('/:id', getArticleById); // trebuie să fie ultima GET
+router.get('/user/me', protectRoute, getMyArticles); 
+router.get('/user/:username', getArticlesByUser); 
+router.get('/:id', getArticleById); 
 router.put('/:id', protectRoute, updateArticle);
 router.delete('/:id', protectRoute, deleteArticle);
 router.get('/admin/articles', protectRoute, getAllArticles);

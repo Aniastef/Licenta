@@ -30,8 +30,8 @@ import {
   SimpleGrid,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { saveAs } from 'file-saver'; // ✅ Pentru descărcare fișiere
-import Papa from 'papaparse'; // ✅ Pentru generare CSV
+import { saveAs } from 'file-saver';
+import Papa from 'papaparse'; 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import 'react-quill-new/dist/quill.snow.css';
 import ReactQuill from 'react-quill';
@@ -56,7 +56,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [logs, setLogs] = useState([]);
-  const [activeTab, setActiveTab] = useState('users'); // ✅ Adăugare tab switcher
+  const [activeTab, setActiveTab] = useState('users');
   const [actionFilter, setActionFilter] = useState('all');
   const [products, setProducts] = useState([]);
   const [productSearch, setProductSearch] = useState('');
@@ -64,19 +64,14 @@ const AdminPanel = () => {
   const [saleFilter, setSaleFilter] = useState('all');
   const [productSortField, setProductSortField] = useState('name');
   const [productSortOrder, setProductSortOrder] = useState('asc');
-  // Pentru articole
   const [articles, setArticles] = useState([]);
   const [articleSearch, setArticleSearch] = useState('');
   const [articleSortField, setArticleSortField] = useState('title');
   const [articleSortOrder, setArticleSortOrder] = useState('asc');
-
-  // Pentru evenimente
   const [events, setEvents] = useState([]);
   const [eventSearch, setEventSearch] = useState('');
   const [eventSortField, setEventSortField] = useState('name');
   const [eventSortOrder, setEventSortOrder] = useState('asc');
-
-  // Pentru galerii
   const [galleries, setGalleries] = useState([]);
   const [gallerySearch, setGallerySearch] = useState('');
   const [gallerySortField, setGallerySortField] = useState('name');
@@ -153,7 +148,7 @@ const AdminPanel = () => {
   const prettifyDetails = (details) => {
     try {
       const parsed = JSON.parse(details.replace(/^Updated fields:\s*/, ''));
-      const { profilePicture, ...rest } = parsed; // exclude imaginea
+      const { profilePicture, ...rest } = parsed;
       return JSON.stringify(rest, null, 2);
     } catch {
       return details;
@@ -197,7 +192,7 @@ const AdminPanel = () => {
 
   const handleEditArticle = (article) => {
     setEditArticle(article);
-    setCroppedArticleCover(article.coverImage || null); // preîncarcă imaginea
+    setCroppedArticleCover(article.coverImage || null);
     setIsArticleModalOpen(true);
   };
 
@@ -302,7 +297,6 @@ const AdminPanel = () => {
         JSON.stringify(editGallery.collaborators?.map((c) => c._id) || []),
       );
 
-      // Dacă e imagine base64, convertește-o în Blob
       if (croppedGalleryCover?.startsWith('data:')) {
         const res = await fetch(croppedGalleryCover);
         const blob = await res.blob();
@@ -464,7 +458,7 @@ const AdminPanel = () => {
     try {
       const res = await fetch('/api/articles', { credentials: 'include' });
       const data = await res.json();
-      setArticles(data); // ← în loc de `data.articles || []`
+      setArticles(data); 
     } catch (err) {
       toast({ title: 'Error loading articles', status: 'error' });
     }
@@ -476,7 +470,6 @@ const AdminPanel = () => {
       const response = await fetch('/api/audit/logs', { credentials: 'include' });
       const data = await response.json();
 
-      // ✅ Sortare descrescătoare după timestamp
       const sortedLogs = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
       setLogs(sortedLogs);
@@ -539,7 +532,7 @@ const AdminPanel = () => {
       if (!res.ok) throw new Error(data.error || 'Failed to delete');
 
       toast({ title: 'Product deleted', status: 'success' });
-      fetchProducts(); // Refresh
+      fetchProducts(); 
     } catch (err) {
       toast({ title: err.message, status: 'error' });
     }
@@ -582,7 +575,7 @@ const AdminPanel = () => {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await fetch('/api/users/me', { credentials: 'include' }); // ← aici e corect acum
+      const response = await fetch('/api/users/me', { credentials: 'include' });
       const data = await response.json();
       if (!data || !data.role) navigate('/');
       if (data.role !== 'admin' && data.role !== 'admin') navigate('/');
@@ -636,7 +629,7 @@ const AdminPanel = () => {
         country: editUser.country,
         message: editUser.message,
         heart: editUser.heart,
-        quote: editUser.quote, // Adăugat câmpul quote
+        quote: editUser.quote, 
       };
 
       if (newPassword) {
@@ -733,7 +726,7 @@ const AdminPanel = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ role: newRole }),
-        credentials: 'include', // ✅ Asigură-te că este inclus
+        credentials: 'include', 
       });
 
       if (!response.ok) {
@@ -768,12 +761,6 @@ const AdminPanel = () => {
     saveAs(csvBlob, 'users_list.csv');
     toast({ title: 'Users exported successfully!', status: 'success' });
   };
-
-  // const filteredUsers = users.filter(user =>
-  //   `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   user.role.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
 
   const filteredOrders = orders
     .filter(
@@ -956,7 +943,7 @@ const AdminPanel = () => {
               <Button
                 onClick={() => {
                   setActiveTab('articles');
-                  fetchArticles(); // La fel pentru events și galleries
+                  fetchArticles();
                 }}
               >
                 ARTicles
@@ -965,7 +952,7 @@ const AdminPanel = () => {
                 colorScheme={activeTab === 'orders' ? 'blue' : 'gray'}
                 onClick={() => {
                   setActiveTab('orders');
-                  fetchOrders(); // funcție definită mai jos
+                  fetchOrders();
                 }}
               >
                 Orders
@@ -975,7 +962,7 @@ const AdminPanel = () => {
                 colorScheme={activeTab === 'logs' ? 'blue' : 'gray'}
                 onClick={() => {
                   setActiveTab('logs');
-                  fetchLogs(); // ✅ Încarcă logurile doar când e activ tab-ul
+                  fetchLogs();
                 }}
               >
                 View audit logs
@@ -990,7 +977,7 @@ const AdminPanel = () => {
                 colorScheme={activeTab === 'reports' ? 'blue' : 'gray'}
                 onClick={() => {
                   setActiveTab('reports');
-                  fetchReports(); // vei defini această funcție
+                  fetchReports();
                 }}
               >
                 Reports
@@ -2082,7 +2069,7 @@ const AdminPanel = () => {
                     theme="snow"
                     value={editProduct?.description || ''}
                     onChange={(value) => setEditProduct({ ...editProduct, description: value })}
-                    style={{ height: '200px', marginBottom: '50px' }} // 👈 important
+                    style={{ height: '200px', marginBottom: '50px' }}
                   />
                 </FormControl>
 
@@ -2092,7 +2079,7 @@ const AdminPanel = () => {
                     theme="snow"
                     value={editProduct?.writing || ''}
                     onChange={(value) => setEditProduct({ ...editProduct, writing: value })}
-                    style={{ height: '200px', marginBottom: '50px' }} // 👈 important
+                    style={{ height: '200px', marginBottom: '50px' }}
                   />
                 </FormControl>
 

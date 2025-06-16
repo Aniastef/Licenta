@@ -1,4 +1,3 @@
-// pages/AllArticlesPage.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -103,7 +102,7 @@ const AllArticlesPage = () => {
     dateTo,
     sortOption,
     sortDirection,
-    selectedCategories, // ✅ ADĂUGĂ DEPENDENȚA AICI!
+    selectedCategories,
   ]);
 
   const paginated = filteredArticles.slice(

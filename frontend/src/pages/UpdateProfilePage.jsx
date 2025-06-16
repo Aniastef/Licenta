@@ -1,4 +1,3 @@
-// Updated UpdateProfilePage.jsx with Confirm Password aligned with City, Webpage under Username, Custom Gender under Pronouns, and Hobbies added
 'use client';
 
 import {

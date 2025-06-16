@@ -149,7 +149,7 @@ const ArticlePage = () => {
           title: editedTitle,
           subtitle: editedSubtitle,
           content: editedContent,
-          coverImage, // nou
+          coverImage,
           category,
         }),
       });
@@ -220,7 +220,7 @@ const ArticlePage = () => {
 
       if (res.ok) {
         showToast('Success', 'Article deleted', 'success');
-        window.location.href = `/articles`; // sau navigate("/articles")
+        window.location.href = `/articles`;
       } else {
         showToast('Error', data.error || 'Failed to delete', 'error');
       }
@@ -467,7 +467,7 @@ const ArticlePage = () => {
         imageSrc={rawCoverImage}
         onCropComplete={(cropped) => {
           setCroppedCoverImage(cropped);
-          setCoverImage(cropped); // actualizează imaginea de trimis
+          setCoverImage(cropped);
         }}
       />
     </Box>

@@ -11,13 +11,13 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeSection, setActiveSection] = useState('reviews'); // default: reviews
+  const [activeSection, setActiveSection] = useState('reviews'); 
 
   const fetchProduct = async () => {
     try {
       const res = await fetch(`/api/products/${id}`, {
         method: 'GET',
-        credentials: 'include', // ✅ Send cookies like JWT token
+        credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to fetch product details');
       const data = await res.json();

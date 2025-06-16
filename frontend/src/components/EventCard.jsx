@@ -22,7 +22,7 @@ import {
   Collapse,
   VStack,
   IconButton,
-  useToast, // Added for notifications
+  useToast,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import useLoadGoogleMapsScript from '../hooks/useLoadGoogleMapsScript';
@@ -37,7 +37,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isAttachmentsVisible, setIsAttachmentsVisible] = useState(false);
   const { addToCart } = useCart();
-  const toast = useToast(); // Hook for showing notifications
+  const toast = useToast();
 
   const isInterested = event?.interestedParticipants?.some((user) => user._id === currentUserId);
   const isGoing = event?.goingParticipants?.some((user) => user._id === currentUserId);
@@ -99,7 +99,6 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
     );
   }
 
-  // API Functions
   const markInterested = async () => {
     try {
       const response = await fetch(`/api/events/${event._id}/interested`, {
@@ -163,7 +162,6 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
     }
   };
   
-  // New function to add to cart and show notification
   const handleAddToCart = () => {
     addToCart({
       product: {
@@ -236,7 +234,6 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
               {isInterested ? 'Unmark Interested' : 'Mark if Interested'}
             </Button>
             {event.ticketType?.toLowerCase() === 'paid' && (
-              // Button now calls the new handler function
               <Button colorScheme="green" onClick={handleAddToCart}>
                 Add Ticket to Cart
               </Button>

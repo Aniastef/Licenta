@@ -1,4 +1,3 @@
-// components/PageWrapper.jsx
 import { motion } from 'framer-motion';
 
 const PageWrapper = ({ children }) => {

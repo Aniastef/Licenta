@@ -8,7 +8,7 @@ const UserHeader = () => {
   const user = useRecoilValue(userAtom);
 
   if (!user) {
-    return <Text>Loading...</Text>; // Sau orice altă componentă de încărcare
+    return <Text>Loading...</Text>;
   }
 
   return (

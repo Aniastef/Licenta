@@ -28,7 +28,7 @@ const UserAllProductsPage = () => {
   const [sortOption, setSortOption] = useState('latest');
   const [selectedMediaTypes, setSelectedMediaTypes] = useState([]);
   const [saleStatuses, setSaleStatuses] = useState([]); // ["forSale", "notForSale"]
-  const [user, setUser] = useState(null); // nouă stare
+  const [user, setUser] = useState(null);
   const currentUser = useRecoilValue(userAtom);
   const navigate = useNavigate();
 
@@ -44,7 +44,7 @@ const UserAllProductsPage = () => {
       const data = await res.json();
       setProducts(data.products || []);
       setFilteredProducts(data.products || []);
-      if (data.user) setUser(data.user); // salvează obiectul user
+      if (data.user) setUser(data.user);
     } catch (err) {
       console.error('Error fetching user products:', err);
     } finally {
@@ -101,19 +101,11 @@ const UserAllProductsPage = () => {
         credentials: 'include',
       });
 
-      // Nu mai apelam res.json() DACA statusul este 204 No Content
-      // Un server care șterge resurse poate răspunde cu 204 și fără body.
-      // Dacă serverul tău returnează JSON chiar și la succes, păstrează .json()
-      // Dar verifică res.ok în primul rând.
-      if (res.ok) { // Verificați direct res.ok pentru succes (status 2xx)
-        // Daca serverul trimite un JSON la succes, il poti parsa
-        // const data = await res.json();
+
+      if (res.ok) { 
         setProducts((prev) => prev.filter((p) => p._id !== productId));
         setFilteredProducts((prev) => prev.filter((p) => p._id !== productId));
-        // Nu mai este nevoie de alert("Product deleted successfully") daca UX-ul se actualizeaza.
       } else {
-        // Dacă res.ok este false, înseamnă că a fost un status de eroare (4xx, 5xx).
-        // Încercăm să parsam JSON-ul pentru mesajul de eroare, dar avem grijă.
         const errorData = await res.json().catch(() => ({ error: 'Failed to delete product (unknown error)' }));
         alert(errorData.error || `Failed to delete product. Status: ${res.status}`);
       }
@@ -197,7 +189,6 @@ const UserAllProductsPage = () => {
             transition="all 0.2s"
             cursor="pointer"
             w="300px"
-            // Atentie: navigate la click pe intreg Box-ul, dar stopPropagation pe buton
             onClick={() => navigate(`/products/${filteredProducts[0]._id}`)}
           >
             {}
@@ -241,7 +232,7 @@ const UserAllProductsPage = () => {
                   size="sm"
                   colorScheme="red"
                   onClick={(e) => {
-                    e.stopPropagation(); // oprește navigarea spre produs
+                    e.stopPropagation();
                     handleDeleteProduct(filteredProducts[0]._id);
                   }}
                 >
@@ -314,7 +305,7 @@ const UserAllProductsPage = () => {
                     size="sm"
                     colorScheme="red"
                     onClick={(e) => {
-                      e.stopPropagation(); // oprește navigarea spre produs
+                      e.stopPropagation();
                       handleDeleteProduct(product._id);
                     }}
                   >

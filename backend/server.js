@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/connectDB.js';
 import cookieParser from 'cookie-parser';
-import cors from 'cors'; // ✅ nou
+import cors from 'cors';
 
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
@@ -15,10 +15,9 @@ import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
-import reviewRoutes from './routes/reviewRoutes.js'; // ✅ nou
-import notificationRoutes from './routes/notificationRoutes.js'; // ✅ nou
-import articleRoutes from './routes/articleRoutes.js'; // ✅ nou
-import upload from './config/imgUpload.js';
+import reviewRoutes from './routes/reviewRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import articleRoutes from './routes/articleRoutes.js'; 
 import { EventEmitter } from 'events';
 import searchRoutes from './routes/searchRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
@@ -36,7 +35,6 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
-// ✅ CORS config corect (IMPORTANT pentru cookies)
 app.use(
   cors({
     origin: 'http://localhost:5173',
@@ -56,17 +54,16 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/audit', auditRoutes);
-app.use('/api/reviews', reviewRoutes); // ✅ nou
+app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/search', searchRoutes);
-app.use('/api/report', reportRoutes); // fără 's'
+app.use('/api/report', reportRoutes);
 
-// Not Found fallback
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
 app.listen(PORT, () => console.log(`✅ Server started at http://localhost:${PORT}`));
 
-export default app; // This is the correct way to export in an ES Module
+export default app;

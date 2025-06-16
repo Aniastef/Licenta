@@ -15,9 +15,9 @@ import {
   Collapse,
   Tag,
   useDisclosure,
-  IconButton, // Import IconButton
-  HStack, // Import HStack
-  useToast, // Ensure useToast is imported
+  IconButton,
+  HStack,
+  useToast,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { ReactSortable } from 'react-sortablejs';
@@ -32,7 +32,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
   const [visibleCount, setVisibleCount] = useState(20);
   const [expanded, setExpanded] = useState(false);
   const toast = useToast();
-  const [isGalleryFavorite, setIsGalleryFavorite] = useState(false); // New state for gallery favorite
+  const [isGalleryFavorite, setIsGalleryFavorite] = useState(false);
 
   const navigate = useNavigate();
 
@@ -51,35 +51,32 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     if (isDifferent && ordered.every((p) => p?.product?._id)) {
       setProducts(ordered);
     }
-  }, [gallery.products, products]); // Added `products` to dependencies to prevent infinite loop or stale state
+  }, [gallery.products, products]); 
 
-  // Effect to check if the gallery is a favorite of the current user
   useEffect(() => {
     const checkIfGalleryFavorite = async () => {
       if (!currentUserId || !gallery?._id) {
-        setIsGalleryFavorite(false); // Ensure it's false if no user or gallery
+        setIsGalleryFavorite(false); 
         return;
       }
 
       try {
-        // Updated API endpoint to get favorite gallery IDs for the current user
-        // This expects an array of gallery IDs from the backend for the current user
-        const res = await fetch(`/api/users/me/favorite-galleries`); // Changed to /api/users/me/favorite-galleries
+        const res = await fetch(`/api/users/me/favorite-galleries`);
         if (!res.ok) {
           const errorData = await res.json();
           console.error('Failed to fetch favorite galleries:', errorData.error);
           throw new Error('Failed to fetch favorite galleries');
         }
-        const data = await res.json(); // This data will be an array of gallery IDs
-        setIsGalleryFavorite(data.includes(gallery._id)); // Check if current gallery._id is in the array
+        const data = await res.json();
+        setIsGalleryFavorite(data.includes(gallery._id));
       } catch (error) {
         console.error('Error checking gallery favorite status:', error);
-        setIsGalleryFavorite(false); // Default to false on error
+        setIsGalleryFavorite(false);
       }
     };
 
     checkIfGalleryFavorite();
-  }, [currentUserId, gallery._id]); // Add gallery._id to dependency array
+  }, [currentUserId, gallery._id]);
 
   useEffect(() => {
     const fetchAvailableProducts = async () => {
@@ -123,8 +120,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
     try {
       let res;
       if (isGalleryFavorite) {
-        // If it's currently a favorite, we want to remove it (DELETE request)
-        res = await fetch(`/api/users/favorites/gallery/${gallery._id}`, { // Send galleryId in URL params
+        res = await fetch(`/api/users/favorites/gallery/${gallery._id}`, { 
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -132,8 +128,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
           credentials: 'include',
         });
       } else {
-        // If not a favorite, add it (POST request)
-        res = await fetch('/api/users/favorites/gallery', { // Send galleryId in request body
+        res = await fetch('/api/users/favorites/gallery', { 
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -148,7 +143,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
         throw new Error(errorData.error || `Failed to ${isGalleryFavorite ? 'remove from' : 'add to'} favorites`);
       }
 
-      setIsGalleryFavorite(!isGalleryFavorite); // Toggle the state
+      setIsGalleryFavorite(!isGalleryFavorite);
       toast({
         title: isGalleryFavorite ? 'Removed from Favorites' : 'Added to Favorites',
         description: `${gallery.name} was ${isGalleryFavorite ? 'removed from' : 'added to'} your favorites.`,
@@ -269,7 +264,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
           duration: 3000,
           isClosable: true,
         });
-        navigate('/'); // sau o altă rută relevantă după ștergere
+        navigate('/');
       } else {
         alert(data.error || 'Failed to delete gallery');
       }
@@ -287,7 +282,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
             {gallery.name || 'Gallery Name'}
           </Text>
           {}
-          {currentUserId && !isOwner && ( // Only show if user is logged in and not the owner
+          {currentUserId && !isOwner && ( 
             <IconButton
               icon={<Text fontSize="2xl">{isGalleryFavorite ? '❤️' : '🤍'}</Text>}
               onClick={toggleGalleryFavorite}
@@ -495,7 +490,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                         size="sm"
                         mt={2}
                         onClick={(e) => {
-                          e.stopPropagation(); // 👉 previne propagarea click-ului
+                          e.stopPropagation();
                           removeProductFromGallery(p._id);
                         }}
                       >
@@ -543,7 +538,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                         bg="gray.200"
                         p={4}
                         borderRadius="md"
-                        width="calc(25% - 1rem)" // 4 pe rând
+                        width="calc(25% - 1rem)" // 4 pe rand
                         minW="200px"
                         maxW="250px"
                         display="flex"

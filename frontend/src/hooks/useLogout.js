@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const useLogout = () => {
   const setUser = useSetRecoilState(userAtom);
   const showToast = useShowToast();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -15,7 +15,7 @@ const useLogout = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // ✅ esențial pentru logout-ul corect
+        credentials: 'include', 
       });
 
       const data = await res.json();
@@ -28,7 +28,7 @@ const useLogout = () => {
       localStorage.removeItem('art-corner');
       setUser(null);
       showToast('Success', 'Logged out successfully', 'success');
-      navigate('/home'); // Redirect to home page after successful logout
+      navigate('/home'); 
     } catch (error) {
       showToast('Error', error.message, 'error');
     }

@@ -25,16 +25,15 @@ import video3 from '../assets/3.mp4';
 import video4 from '../assets/4.mp4';
 import video5 from '../assets/5.mp4';
 import TestimonialCarousel from '../components/testimonialsCarousel';
-import { useNavigate } from 'react-router-dom'; // adaugă asta sus în fișier
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
-  // State pentru video curent
   const [videoIndex, setVideoIndex] = React.useState(0);
   const videoList = [video1, video2, video3, video4, video5];
   const [topRated, setTopRated] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [randomUsers, setRandomUsers] = useState([]);
-  const navigate = useNavigate(); // adaugă în componentă
+  const navigate = useNavigate();
 
   const handleCategoryClick = (category) => {
     navigate(`/products?category=${encodeURIComponent(category)}`);
@@ -304,7 +303,7 @@ const HomePage = () => {
           bgImage="url('/path/to/background.jpg')"
           bgSize="cover"
           bgPosition="center"
-          position="relative" // pentru a permite poziționarea absolută în interior
+          position="relative"
         >
           <Text textAlign="center" fontWeight="semibold" fontSize="2xl" mb={6}>
             read about different perspectives and moods...
@@ -471,8 +470,8 @@ const HomePage = () => {
             >
               <Avatar
                 size="2xl"
-                src={user.profilePicture || undefined} // 🔥 Eliminăm fallback
-                name={`${user.firstName} ${user.lastName}`} // ✅ Chakra va genera inițiale dacă nu există poză
+                src={user.profilePicture || undefined}
+                name={`${user.firstName} ${user.lastName}`}
               />
             </Box>
             <Text fontSize="sm" mt={1}>

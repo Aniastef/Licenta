@@ -13,10 +13,10 @@ import {
   HStack,
   Circle,
   Image,
-  Tag, // Ensure Tag is imported if you decide to use Option 2 later
+  Tag,
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
-import { FaArrowUp } from 'react-icons/fa'; // Import nou
+import { FaArrowUp } from 'react-icons/fa';
 
 const GALLERIES_PER_PAGE = 12;
 const GALLERY_CATEGORIES = [
@@ -155,7 +155,7 @@ const ExploreGalleries = () => {
   const [filteredGalleries, setFilteredGalleries] = useState([]);
   const [filterText, setFilterText] = useState('');
   const [searchBy, setSearchBy] = useState('name');
-  const [filterTags, setFilterTags] = useState([]); // This state is not currently used in filtering, consider removing if not needed.
+  const [filterTags, setFilterTags] = useState([]);
   const [sortOption, setSortOption] = useState('name');
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -203,16 +203,13 @@ const ExploreGalleries = () => {
 
     updated = updated.filter((g) => {
       let matchSearch = true;
-      let matchCategory = true; // Initialize matchCategory to true
+      let matchCategory = true; 
 
-      // Category filtering (always apply if categories are selected)
       if (filterCategories.length > 0) {
-        // Here, g.category is an array, so we check if ANY of its categories are in filterCategories
         matchCategory = g.category?.some(cat => filterCategories.includes(cat));
       }
 
-      // Text search filtering based on searchBy
-      if (lowerFilterText) { // Only apply text search if filterText is not empty
+      if (lowerFilterText) { 
         if (searchBy === 'name') {
           matchSearch = (g.name || '').toLowerCase().includes(lowerFilterText);
         } else if (searchBy === 'creator') {
@@ -250,7 +247,7 @@ const ExploreGalleries = () => {
 
     setFilteredGalleries(updated);
     setCurrentPage(1);
-  }, [galleries, filterText, searchBy, sortOption, sortDirection, filterCategories]); // Removed filterTags as it's unused in the filtering logic
+  }, [galleries, filterText, searchBy, sortOption, sortDirection, filterCategories]);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -390,7 +387,7 @@ const ExploreGalleries = () => {
                       <Box textAlign="center" py={3}>
                         <Text
                           fontWeight="bold"
-                          noOfLines={1} // Truncate with ellipsis for gallery name
+                          noOfLines={1}
                         >
                           {gallery.name}
                         </Text>

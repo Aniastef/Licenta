@@ -8,8 +8,8 @@ import {
 
 const router = express.Router();
 
-router.post('/add-to-cart', addToCart); // ✅ Adaugă un produs în cart
-router.get('/:userId', getCart); // ✅ Obține conținutul cart-ului
+router.post('/add-to-cart', addToCart); 
+router.get('/:userId', getCart); 
 router.delete('/remove', removeFromCart);
 router.post('/update', updateCartItem);
 

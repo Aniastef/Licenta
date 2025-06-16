@@ -34,7 +34,7 @@ const SignupCard = () => {
   const setUser = useSetRecoilState(userAtom);
   const showToast = useShowToast();
   const [rawImage, setRawImage] = useState(null);
-  const [imgUrl, setImgUrl] = useState(null); // pentru preview-ul final
+  const [imgUrl, setImgUrl] = useState(null); 
   const [cropModalOpen, setCropModalOpen] = useState(false);
 
   const [inputs, setInputs] = useState({
@@ -57,8 +57,8 @@ const SignupCard = () => {
     profilePicture: null,
     customGender: '',
     agreedToTerms: false,
-    role: 'user', // 👈 AICI
-    adminCode: '', // 🔐 Cod pentru a valida înregistrarea ca admin
+    role: 'user',
+    adminCode: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -86,17 +86,16 @@ const SignupCard = () => {
   const uploadProfilePicture = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'your_preset'); // sau semnătură dacă nu folosești preset
+    formData.append('upload_preset', 'your_preset');
 
     const res = await fetch(`https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`, {
       method: 'POST',
       body: formData,
     });
     const data = await res.json();
-    return data.secure_url; // URL-ul imaginii
+    return data.secure_url; 
   };
 
-  // 📌 Funcție pentru validarea inputurilor
   const validateInputs = () => {
     let newErrors = {};
 

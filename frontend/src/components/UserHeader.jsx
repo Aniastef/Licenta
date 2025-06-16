@@ -96,7 +96,7 @@ const UserHeader = ({ user }) => {
       isClosable: true,
     });
   };
-  console.log('Date COMPLETE primite pentru utilizator:', user); // <--- ADAUGĂ ACEASTĂ LINIE
+  console.log('Date COMPLETE primite pentru utilizator:', user);
 
   const saveQuote = async () => {
     try {
@@ -309,30 +309,23 @@ const UserHeader = ({ user }) => {
             const isUrl = typeof item.label === 'string' && item.label.startsWith('http');
             const isEmail = typeof item.label === 'string' && item.label.includes('@');
             
-            // --- START MODIFICATION ---
-            // New function to get the correct display text for links.
             const getDisplayLabel = (url, icon) => {
                 if (!url || typeof url !== 'string') return '';
-                // List of icons for which we want to show the username.
                 const isSocial = [facebookIcon, instagramIcon, linkedinIcon].includes(icon);
                 
                 try {
                     const parsedUrl = new URL(url);
                     if (isSocial) {
-                        // Get the last part of the URL path (e.g., "username" from "facebook.com/username")
                         const pathParts = parsedUrl.pathname.split('/').filter(p => p);
                         return pathParts[pathParts.length - 1] || parsedUrl.hostname.replace(/^www\./, '');
                     }
-                    // For other websites (webpage, spotify, etc.), show the domain name.
                     return parsedUrl.hostname.replace(/^www\./, '');
                 } catch {
-                    // If it's not a valid URL, return the original text.
                     return url;
                 }
             };
 
             const displayLabel = isUrl ? getDisplayLabel(item.label, item.icon) : item.label;
-            // --- END MODIFICATION ---
 
             return isMessage ? (
               <Flex key={idx} align="center" gap={3}>

@@ -12,7 +12,7 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     if (userId) {
-      fetchCart(); // 🛒 actualizează cartul de fiecare dată când userul se loghează
+      fetchCart(); 
     }
   }, [userId]);
 
@@ -23,14 +23,14 @@ export const CartProvider = ({ children }) => {
 
       if (Array.isArray(data)) {
         setCart(data);
-        console.log('✅ Cart fetched successfully:', data); // Add this line
+        console.log('✅ Cart fetched successfully:', data);
       } else {
         console.warn('⚠️ Cart response is not an array:', data);
-        setCart([]); // fallback, previne cart.map error
+        setCart([]);
       }
     } catch (err) {
       console.error('❌ Error fetching cart:', err);
-      setCart([]); // fallback la eroare
+      setCart([]);
     }
   };
 
@@ -86,7 +86,6 @@ export const CartProvider = ({ children }) => {
       updateCartQuantity(newItem.product._id, totalQty, newItem.product.itemType || 'Product');
       return;
     }
-    // Dacă nu există item, dar cantitatea cerută > stoc disponibil
     if (newItem.quantity > newItem.product.quantity) {
       console.warn('❌ Cerere depășește stocul pentru', newItem.product.name);
       return;
@@ -99,7 +98,7 @@ export const CartProvider = ({ children }) => {
         credentials: 'include',
         body: JSON.stringify({
           userId,
-          itemId: newItem.product._id, // ← folosește `itemId`
+          itemId: newItem.product._id, 
           quantity: newItem.quantity || 1,
           itemType: newItem.product.itemType || 'Product',
         }),
@@ -116,7 +115,7 @@ export const CartProvider = ({ children }) => {
         setCart(data);
       } else {
         console.warn('❌ Cart response is not an array:', data);
-        setCart([]); // fallback
+        setCart([]); 
       }
     } catch (err) {
       console.error('❌ Error adding to cart:', err);
@@ -131,7 +130,7 @@ export const CartProvider = ({ children }) => {
         updateCartQuantity,
         removeFromCart,
         addToCart,
-        fetchCart, // 🔁 expus aici
+        fetchCart,
       }}
     >
       {children}

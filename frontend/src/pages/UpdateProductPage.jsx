@@ -20,7 +20,7 @@ import {
   CheckboxGroup,
   Wrap,
   WrapItem,
-  Textarea // Adăugat Textarea pentru descriere
+  Textarea
 } from '@chakra-ui/react';
 import { CloseIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
@@ -109,35 +109,27 @@ const compressImage = async (file) => {
     return compressedFile;
   } catch (error) {
     console.error('Compression failed:', error);
-    return file; // Return original file if compression fails
+    return file;
   }
 };
 
 const EditProductPage = () => {
-  const { id: productId } = useParams(); // Renamed 'id' to 'productId' for clarity
+  const { id: productId } = useParams();
   const navigate = useNavigate();
   const showToast = useShowToast();
   const currentUser = useRecoilValue(userAtom);
-
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-
   const [newImageFiles, setNewImageFiles] = useState([]);
   const [newVideoFiles, setNewVideoFiles] = useState([]);
   const [newAudioFiles, setNewAudioFiles] = useState([]);
-
   const [newImagePreviews, setNewImagePreviews] = useState([]);
   const [newVideoPreviews, setNewVideoPreviews] = useState([]);
   const [newAudioPreviews, setNewAudioPreviews] = useState([]);
-
   const [userGalleries, setUserGalleries] = useState([]);
-  // Use selectedGalleryId for the single-select dropdown value
   const [selectedGalleryId, setSelectedGalleryId] = useState(''); 
 
-
-  // Fetch product data on component mount
-// Fetch product data on component mount
   useEffect(() => {
     const fetchProduct = async () => {
       setIsLoading(true);
@@ -150,13 +142,11 @@ const EditProductPage = () => {
             ? data.product.category
             : (data.product.category ? [data.product.category] : []);
 
-          // Keep the original, populated galleries structure in the product state
           setProduct({
             ...data.product,
             category: initialCategories.length > 0 ? initialCategories : ['General']
           });
 
-          // Separately manage the ID for the dropdown's selected value
           if (data.product.galleries && data.product.galleries.length > 0 && data.product.galleries[0].gallery) {
             setSelectedGalleryId(data.product.galleries[0].gallery._id.toString());
           } else {
@@ -177,12 +167,11 @@ const EditProductPage = () => {
 
     fetchProduct();
   }, [productId, showToast]);
-  // Fetch user galleries
+
   useEffect(() => {
     const fetchGalleries = async () => {
       try {
         if (currentUser && currentUser.username) {
-            // Corrected endpoint to use the "getAllUserGalleries" route
             const res = await fetch(`/api/galleries/user/${currentUser.username}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -205,7 +194,7 @@ const EditProductPage = () => {
     if (currentUser) {
         fetchGalleries();
     }
-  }, [currentUser, showToast]); // Added showToast to dependency array
+  }, [currentUser, showToast]);
 
   const fileToBase64 = (file) =>
     new Promise((resolve, reject) => {
@@ -297,9 +286,6 @@ const handleUpdate = async () => {
       const videosBase64 = await Promise.all(newVideoFiles.map(fileToBase64));
       const audiosBase64 = await Promise.all(newAudioFiles.map(fileToBase64));
 
-      // Construct galleriesToSend in the correct format for productModel:
-      // [{ gallery: ID_GALERIE, order: 0 }]
-      // selectedGalleryId holds the single selected ID from the dropdown.
       const galleriesToSend = selectedGalleryId && selectedGalleryId !== 'general-placeholder'
         ? [{ gallery: selectedGalleryId, order: 0 }]
         : [];
@@ -309,7 +295,7 @@ const handleUpdate = async () => {
         images: [...(product.images || []), ...imagesBase64],
         videos: [...(product.videos || []), ...videosBase64],
         audios: [...(product.audios || []), ...audiosBase64],
-        galleries: galleriesToSend, // Use the correctly formatted galleries array
+        galleries: galleriesToSend, 
         category: product.category.length > 0 ? product.category : ['General'],
       };
 
@@ -323,7 +309,7 @@ const handleUpdate = async () => {
       const data = await res.json();
       if (res.ok) {
         showToast('Product updated', '', 'success');
-        navigate(`/products/${product._id}`); // Navigate to the product page
+        navigate(`/products/${product._id}`); 
       } else {
         showToast('Update failed', data.error, 'error');
       }
@@ -334,12 +320,10 @@ const handleUpdate = async () => {
     }
   };
 
-  // You might want to add a check here if currentUser is the owner of the product
-  // If not, redirect or show an error.
  if (currentUser && product && product.user && currentUser._id !== product.user._id) {
   showToast('Error', 'You are not authorized to edit this product.', 'error');
   navigate(`/`);
-  return null; // Don't render the form
+  return null; 
 }
 
   return (
@@ -456,13 +440,10 @@ const handleUpdate = async () => {
          <FormControl>
               <FormLabel>Gallery</FormLabel>
               <Select
-                // Use selectedGalleryId for the value to control the dropdown
                 value={selectedGalleryId}
                 onChange={(e) => {
                   const selected = e.target.value;
                   setSelectedGalleryId(selected);
-                  // The product state's galleries will be constructed in handleUpdate,
-                  // so there's no need to update the product state directly here.
                 }}
               >
                 <option value="general-placeholder">General</option>

@@ -52,7 +52,7 @@ const UserCalendar = ({ createdEvents = [], goingEvents = [] }) => {
         color: 'white',
         border: '1px solid black',
         padding: '5px',
-        zIndex: 10, // Asigură stratificarea corectă
+        zIndex: 10,
       },
     };
   };
@@ -75,10 +75,10 @@ const UserCalendar = ({ createdEvents = [], goingEvents = [] }) => {
         style={{ height: 600 }}
         eventPropGetter={eventStyleGetter}
         onSelectEvent={handleSelectEvent}
-        showMultiDayTimes={true} // Afișează corect evenimentele pe mai multe zile
-        step={15} // Interval de 15 minute pentru o mai bună granularitate
-        timeslots={4} // 4 sloturi per oră
-        defaultView="week" // Vizualizare implicită pe săptămână
+        showMultiDayTimes={true} 
+        step={15} 
+        timeslots={4}
+        defaultView="week"
       />
 
       <Flex mt={4} justifyContent="center">

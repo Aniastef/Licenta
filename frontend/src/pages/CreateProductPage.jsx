@@ -9,15 +9,15 @@ import {
   Stack,
   Image,
   Flex,
-  Select, // Keep Select if you want to use it for single-select dropdowns for other things, but it's replaced for Category.
+  Select,
   Switch,
   FormControl,
   FormLabel,
   Text,
-  Checkbox, // Add Checkbox
-  CheckboxGroup, // Add CheckboxGroup
+  Checkbox,
+  CheckboxGroup,
   Wrap,
-  WrapItem, // Add Wrap and WrapItem for better layout of checkboxes
+  WrapItem,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import useShowToast from '../hooks/useShowToast';
@@ -92,7 +92,7 @@ const ALL_CATEGORIES = [
   'Political Art',
   'Activist Art',
   'Environmental Art',
-]; //
+]; 
 
 const compressImage = async (file) => {
   try {
@@ -117,23 +117,21 @@ const CreateProductPage = () => {
     price: '',
     quantity: null,
     forSale: true,
-    category: ['General'], // MODIFICATION: Initialize as an array with "General"
+    category: ['General'],
     galleries: [],
     images: [],
     videos: [],
     audios: [],
-    writing: '', // assuming writing is a single string for Quill
+    writing: '',
   });
 
   const [imageFiles, setImageFiles] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
-  // const [audioFiles, setAudioFiles] = useState([]);
   const [userGalleries, setUserGalleries] = useState([]);
   const showToast = useShowToast();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Preluare galerii ale utilizatorului
   useEffect(() => {
     const fetchGalleries = async () => {
       try {
@@ -312,9 +310,9 @@ const CreateProductPage = () => {
               <FormLabel>Categories</FormLabel> {}
               <CheckboxGroup
                 colorScheme="green"
-                value={newProduct.category} // MODIFICATION: Bind value to array
+                value={newProduct.category}
                 onChange={(
-                  selectedValues, // MODIFICATION: Handle array of selected values
+                  selectedValues, 
                 ) => setNewProduct({ ...newProduct, category: selectedValues })}
               >
                 <Wrap spacing={2} mt={2} maxW="100%">
@@ -335,7 +333,6 @@ const CreateProductPage = () => {
                 value={newProduct.galleries[0] || 'general-placeholder'}
                 onChange={(e) => {
                   const selected = e.target.value;
-                  // This is correct as it sends just the ID to the backend
                   setNewProduct({
                     ...newProduct,
                     galleries: selected === 'general-placeholder' ? [] : [selected],

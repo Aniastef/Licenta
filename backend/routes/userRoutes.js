@@ -32,7 +32,7 @@ import { getFavoriteGalleries } from '../controllers/galleryController.js';
 const router = express.Router();
 
 router.get('/profile/:username', getUserProfile);
-router.get('/profile', protectRoute, getUserProfile); // ✅ Returnează utilizatorul logat
+router.get('/profile', protectRoute, getUserProfile); 
 router.post('/signup', signupUser);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);
@@ -47,19 +47,18 @@ router.get('/me', protectRoute, getMe);
 
 router.post('/favorites/move', moveToFavorites);
 router.get('/random-users', getRandomUsers);
-router.post('/quote', protectRoute, saveQuote); // Salvează citatul utilizatorului
+router.post('/quote', protectRoute, saveQuote); 
 router.post('/favorites/gallery', protectRoute, addGalleryToFavorites);
 router.post('/favorites/gallery/remove', protectRoute, removeGalleryFromFavorites);
 router.get('/:username/favorites-all', getUserFavorites);
 router.post('/favorites/articles', protectRoute, addArticleToFavorites);
 router.delete('/favorites/articles/remove', protectRoute, removeArticleFromFavorites);
-router.get('/favorites', protectRoute, getUserFavoriteArticles); // ✅ adaugă
+router.get('/favorites', protectRoute, getUserFavoriteArticles);
 router.put('/admin/users/:id/update', protectRoute, adminOnly, updateUserByAdmin);
-// Route to toggle favorite status for a gallery (add/remove)
-router.post('/favorites/gallery', protectRoute, toggleFavoriteGallery);
-router.delete('/favorites/gallery/:galleryId', protectRoute, toggleFavoriteGallery); // <--- NEW DELETE ROUTE
 
-// Route to get all favorite galleries for the current user
+router.post('/favorites/gallery', protectRoute, toggleFavoriteGallery);
+router.delete('/favorites/gallery/:galleryId', protectRoute, toggleFavoriteGallery);
+
 router.get('/users/:userId/favorite-galleries', protectRoute, getUserFavoriteGalleries);
 router.get('/me/favorite-galleries', protectRoute, getFavoriteGalleries);
 

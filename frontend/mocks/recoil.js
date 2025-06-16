@@ -1,6 +1,6 @@
 export const useRecoilValue = (atom) => {
   if (atom.key === 'userAtom') {
-    return { _id: 'mockUserId123', firstName: 'Test', lastName: 'User' }; // Return a mock user
+    return { _id: 'mockUserId123', firstName: 'Test', lastName: 'User' };
   }
   return null;
 };

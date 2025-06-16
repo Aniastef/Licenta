@@ -6,7 +6,7 @@ const usePreviewImg = () => {
   const showToast = useShowToast();
   const handleImageChange = (e, url = null) => {
     if (url) {
-      setImgUrl(url); // 🔥 direct URL-ul (Cloudinary)
+      setImgUrl(url);
       return;
     }
     const file = e.target.files[0];

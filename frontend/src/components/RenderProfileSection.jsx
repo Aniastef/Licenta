@@ -9,9 +9,9 @@ const EventsSection = ({ title, events }) => {
       {events?.length > 0 ? (
         <Grid
           templateColumns={{
-            base: 'repeat(1, 1fr)', // Un eveniment pe rând pentru ecrane mici
-            md: 'repeat(2, 1fr)', // Două evenimente pe rând pentru ecrane medii
-            lg: 'repeat(3, 1fr)', // Trei evenimente pe rând pentru ecrane mari
+            base: 'repeat(1, 1fr)',
+            md: 'repeat(2, 1fr)', 
+            lg: 'repeat(3, 1fr)', 
           }}
           gap={6}
         >

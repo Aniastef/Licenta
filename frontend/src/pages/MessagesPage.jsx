@@ -31,7 +31,7 @@ import attachIcon from '../assets/attach.png';
 const MotionBox = motion(Box);
 
 const MessagesPage = () => {
-  const { userId } = useParams(); // This will reflect the URL's userId
+  const { userId } = useParams();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -39,7 +39,7 @@ const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null); // This state will drive the chat display
+  const [selectedUser, setSelectedUser] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const fileInputRef = useRef();
 
@@ -69,7 +69,7 @@ const MessagesPage = () => {
     if (messagesContainerRef.current) {
       setTimeout(() => {
         if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight; //
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
         }
       }, 100);
     }
@@ -224,7 +224,7 @@ const MessagesPage = () => {
 
   const handleSearch = async () => {
     if (!search.trim()) {
-      setSearchResults([]); // Clear results if search is empty
+      setSearchResults([]);
       return;
     }
 
@@ -484,7 +484,7 @@ const MessagesPage = () => {
 
       {}
       <Box width="70%" p={5}>
-        {selectedUser ? ( // Render chat window only if selectedUser is set
+        {selectedUser ? ( 
           <>
             <VStack mb={4} align="start" spacing={3}>
               <HStack spacing={4} align="center" width="100%">
@@ -512,7 +512,7 @@ const MessagesPage = () => {
             </VStack>
 
             <Box
-              ref={messagesContainerRef} // 👈 aici
+              ref={messagesContainerRef}
               border="1px solid #ddd"
               borderRadius="md"
               p={4}
@@ -525,14 +525,13 @@ const MessagesPage = () => {
                 <Flex justify="center" align="center" height="100%">
                   <Spinner size="lg" />
                 </Flex>
-              ) : messages.length === 0 && selectedUser ? ( // Show "No messages yet" only if a user is selected
+              ) : messages.length === 0 && selectedUser ? (
                 <Text>No messages yet.</Text>
               ) : (
                 <VStack spacing={5} align="stretch">
                   {messages.map((msg, index) => {
                     const isCurrentUser = String(msg.sender?._id) === String(currentUser?._id);
 
-                    // 🔥 Determină dacă e prima dată când apare această zi
                     const currentDate = new Date(msg.timestamp).toDateString();
                     const prevDate =
                       index > 0 ? new Date(messages[index - 1].timestamp).toDateString() : null;
@@ -556,14 +555,14 @@ const MessagesPage = () => {
                           mb={2}
                         >
                           <Flex align="flex-end" gap={2}>
-                            {!isCurrentUser && ( // Avatar pentru alt user
+                            {!isCurrentUser && (
                               <Avatar
                                 size="sm"
                                 name={`${msg.sender?.firstName || ''} ${msg.sender?.lastName || ''}`}
                                 src={msg.sender?.profilePicture || undefined}
                               />
                             )}
-                            {isCurrentUser && ( // 🔥 Ora în stânga pentru mesajele portocalii
+                            {isCurrentUser && ( 
                               <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
                                 {new Date(msg.timestamp).toLocaleTimeString([], {
                                   hour: '2-digit',
@@ -634,7 +633,7 @@ const MessagesPage = () => {
                                   );
                                 })}
                             </MotionBox>
-                            {!isCurrentUser && ( // 🔥 Ora în dreapta pentru mesajele verzi
+                            {!isCurrentUser && ( 
                               <Text fontSize="sm" color="gray.500" alignSelf="flex-end">
                                 {new Date(msg.timestamp).toLocaleTimeString([], {
                                   hour: '2-digit',
@@ -674,7 +673,7 @@ const MessagesPage = () => {
         p={3}
         border="1px solid #e2e8f0"
         borderRadius="md"
-        mb={3} // Adaugă spațiu sub lista de fișiere
+        mb={3}
       >
         <Text fontSize="sm" fontWeight="bold" color="gray.600">
           Atașamente:

@@ -1,4 +1,3 @@
-// EditEventPage.jsx
 import {
   Box,
   Button,

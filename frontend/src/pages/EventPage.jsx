@@ -7,7 +7,7 @@ import { useRecoilValue } from 'recoil';
 import userAtom from '../atoms/userAtom';
 
 export default function EventPage() {
-  const { id } = useParams(); // Obține ID-ul evenimentului din URL
+  const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

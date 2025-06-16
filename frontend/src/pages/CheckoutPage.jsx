@@ -1,4 +1,3 @@
-// CheckoutPage.jsx
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Text, VStack, Select, Input, HStack, useToast } from '@chakra-ui/react';
 import { useCart } from '../components/CartContext';
@@ -23,7 +22,6 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [deliveryMethod, setDeliveryMethod] = useState('courier');
 
-  // Initialize with user profile data, or empty string if not available
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [address, setAddress] = useState(user?.address || '');
@@ -125,18 +123,15 @@ const CheckoutPage = () => {
 
     if (isSuccess === 'true') {
       console.log('Stripe payment successful!');
-      // Retrieve stored data from localStorage
       const storedOrderData = localStorage.getItem('pendingStripeOrder');
       if (storedOrderData) {
         const orderData = JSON.parse(storedOrderData);
-        // Call handlePaymentSuccess with the stored data
         handlePaymentSuccess(orderData);
       } else {
         console.warn(
           'No pending order data found in localStorage after Stripe success. Cart may be empty.',
         );
-        // Fallback for cases where data wasn't stored (e.g., direct access, or issue)
-        handlePaymentSuccess(); // This will use current (likely empty) cart state
+        handlePaymentSuccess();
       }
       navigate('/checkout', { replace: true });
     } else if (isCanceled === 'true') {

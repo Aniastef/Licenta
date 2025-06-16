@@ -15,9 +15,7 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
-// import sticky from "../assets/sticky.svg"; // This import seems unused, can be removed if not used elsewhere
 
-// import loginImage from '../assets/login.jpg'; // This import seems unused, can be removed if not used elsewhere
 import { useRecoilState, useSetRecoilState } from 'recoil';
 import authScreenAtom from '../atoms/authAtom';
 import userAtom from '../atoms/userAtom';
@@ -36,7 +34,7 @@ const LoginCard = () => {
   const [showPassword, setShowPassword] = useState(false);
   const setAuthScreen = useSetRecoilState(authScreenAtom);
   const showToast = useShowToast();
-  const setUser = useSetRecoilState(userAtom); // This sets the user in Recoil, not necessarily for persistence
+  const setUser = useSetRecoilState(userAtom); 
   const slideshowImages = [p1, p2, p3, p4, p5, p6, p7, p8];
   const getRandomIndex = () => Math.floor(Math.random() * slideshowImages.length);
   const [currentSlide, setCurrentSlide] = useState(getRandomIndex());
@@ -63,7 +61,7 @@ const LoginCard = () => {
         let next;
         do {
           next = getRandomIndex();
-        } while (next === prev); // avoid same image consecutively
+        } while (next === prev);
         return next;
       });
     }, 2000);
@@ -103,8 +101,6 @@ const LoginCard = () => {
   };
 
 
-
-  // Periodic check for user status (remains similar, but focuses on session validity)
   useEffect(() => {
     const checkUserSessionStatus = async () => {
       try {
@@ -115,23 +111,16 @@ const LoginCard = () => {
         const data = await res.json();
 
         if (!res.ok || data.isBlocked) {
-          // If session is invalid or user is blocked, clear current user state
           setUser(null);
-          // Only show toast if user was previously logged in
           if (localStorage.getItem('art-corner')) {
-            // Check if user was in localStorage
             showToast('Info', 'Your session has expired or your account has been blocked.', 'info');
-            localStorage.removeItem('art-corner'); // Clear cached user data
+            localStorage.removeItem('art-corner'); 
           }
-          // No need to navigate here, assume routing handles unauthenticated state
-          // e.g., a protected route will redirect to /auth
         } else {
-          // Session is valid, ensure Recoil state is updated
           setUser(data);
         }
       } catch (error) {
         console.error('Error checking user status during interval:', error);
-        // In case of a network error, consider session invalid
         setUser(null);
         if (localStorage.getItem('art-corner')) {
           showToast('Error', 'Lost connection to server. Please log in again.', 'error');
@@ -140,12 +129,10 @@ const LoginCard = () => {
       }
     };
 
-    // Run the check periodically only if a user is potentially logged in (e.g., cookie exists)
-    // Or if you want to aggressively check
-    const interval = setInterval(checkUserSessionStatus, 30000); // Check every 30 seconds
+    const interval = setInterval(checkUserSessionStatus, 30000);
 
     return () => clearInterval(interval);
-  }, [setUser, showToast]); // Dependencies for interval check
+  }, [setUser, showToast]);
 
   return (
     <Flex minH="80vh" align="center" justify="center">

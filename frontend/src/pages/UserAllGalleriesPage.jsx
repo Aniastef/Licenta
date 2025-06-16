@@ -261,10 +261,10 @@ const UserAllGalleriesPage = () => {
     <Button
       mt={2}
       maxW={'150px'}
-      alignSelf="center" // Am adăugat asta pentru o aliniere mai bună a butonului
+      alignSelf="center"
       colorScheme="red"
       onClick={(e) => {
-        e.stopPropagation(); // 🛑 oprește navigarea
+        e.stopPropagation();
         handleDeleteGallery(gallery._id);
       }}
     >

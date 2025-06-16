@@ -83,7 +83,7 @@ describe('CreateOrEditArticlePage - Article Creation/Edit Scenarios', () => {
     expect(screen.getByPlaceholderText(/Subtitle/i)).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /Category/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/Cover image/i)).toBeInTheDocument();
-    expect(screen.getByTestId('article-content-editor')).toBeInTheDocument(); // Our mocked Quill editor
+    expect(screen.getByTestId('article-content-editor')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Save Draft/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Publish/i })).toBeInTheDocument();
   });
@@ -130,7 +130,7 @@ describe('CreateOrEditArticlePage - Article Creation/Edit Scenarios', () => {
         duration: 3000,
       });
     });
-    expect(global.fetch).not.toHaveBeenCalled(); // Ensure no API call is made
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   test('should successfully publish an article with valid data', async () => {
@@ -247,8 +247,7 @@ describe('CreateOrEditArticlePage - Article Creation/Edit Scenarios', () => {
   });
 
     test('should display spinner when loading existing article for edit', async () => {
-    global.fetch.mockImplementationOnce(() => new Promise(() => {})); // Mock just for this specific fetch call
-
+    global.fetch.mockImplementationOnce(() => new Promise(() => {}));
     renderComponent({ id: 'existing-article-id' });
 
     await screen.findByText(/Loading.../i);

@@ -8,7 +8,6 @@ import {
   VStack,
   Stack,
   HStack,
-  // Select, // Remove Select if you are no longer using it for single category
   Avatar,
   Text,
   Flex,
@@ -19,19 +18,19 @@ import {
   MenuItem,
   FormControl,
   FormLabel,
-  CheckboxGroup, // Add CheckboxGroup
-  Wrap, // Add Wrap for better layout of checkboxes
-  WrapItem, // Add WrapItem
+  CheckboxGroup,
+  Wrap,
+  WrapItem,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import useShowToast from '../hooks/useShowToast';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
-import userAtom from '../atoms/userAtom'; // ✅ import currentUser
+import userAtom from '../atoms/userAtom';
 import imageCompression from 'browser-image-compression';
 import GalleryImageCropModal from '../components/GalleryImageCropModal';
 import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css'; // Don't forget to import the CSS for ReactQuill
+import 'react-quill-new/dist/quill.snow.css';
 
 const GALLERY_CATEGORIES = [
   'General',
@@ -102,7 +101,7 @@ const GALLERY_CATEGORIES = [
 const compressImage = async (file) => {
   try {
     const options = {
-      maxSizeMB: 0.5, // 500 KB max
+      maxSizeMB: 0.5,
       maxWidthOrHeight: 1080,
       useWebWorker: true,
     };
@@ -128,17 +127,17 @@ const dataURLtoFile = (dataUrl, filename) => {
 
 const CreateGalleryPage = () => {
   const navigate = useNavigate();
-  const currentUser = useRecoilValue(userAtom); // ✅ acces utilizator
+  const currentUser = useRecoilValue(userAtom);
   const [rawCoverImage, setRawCoverImage] = useState(null);
   const [croppedCoverImage, setCroppedCoverImage] = useState(null);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
 
   const [newGallery, setNewGallery] = useState({
     name: '',
-    category: ['General'], // Modified: Initialize as an array
+    category: ['General'],
     description: '',
     tags: '',
-    isPublic: true, // ✅ adaugă explicit
+    isPublic: true,
   });
 
   const [coverPhoto, setCoverPhoto] = useState(null);
@@ -190,7 +189,7 @@ const handleAddGallery = async () => {
     try {
       const formData = new FormData();
       formData.append('name', newGallery.name);
-      formData.append('category', JSON.stringify(newGallery.category)); // Ensure it's stringified for FormData
+      formData.append('category', JSON.stringify(newGallery.category));
       formData.append('description', newGallery.description);
       formData.append('tags', newGallery.tags);
       formData.append('collaborators', JSON.stringify(collaborators.map((u) => u._id)));
@@ -207,25 +206,21 @@ const handleAddGallery = async () => {
         credentials: 'include',
       });
 
-      const data = await res.json(); // Wait for the response and parse it
+      const data = await res.json();
 
       if (data.error) {
-        // Only show error if the server explicitly returns an error
         showToast('Error creating gallery', data.error, 'error');
-        // Do NOT navigate or show success if there's an error
         return;
       }
 
-      // If no error from the server, then it's a success
-      console.log('➡️ Collaborators being sent:', collaborators); // This log is fine here
+      console.log('➡️ Collaborators being sent:', collaborators);
       showToast('Gallery created successfully', '', 'success');
 
       if (data._id) {
         navigate(`/galleries/${data._id}`);
-        showToast('Gallery created', 'Waiting for approval or invite acceptance', 'info'); // This second toast might be redundant, consider combining or making clearer
+        showToast('Gallery created', 'Waiting for approval or invite acceptance', 'info'); 
       }
     } catch (error) {
-      // This catch block handles network errors or errors thrown before the fetch completes
       showToast('Error', error.message, 'error');
     } finally {
       setIsLoading(false);

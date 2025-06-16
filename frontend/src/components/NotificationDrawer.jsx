@@ -27,7 +27,6 @@ const NotificationDrawer = () => {
       const res = await fetch('/api/notifications', { credentials: 'include' });
       const data = await res.json();
 
-      // If it's an array, use it, otherwise log an error
       if (Array.isArray(data)) {
         setNotifications(data);
         setUnseenCount(data.filter((n) => !n.seen).length);
@@ -47,11 +46,11 @@ const NotificationDrawer = () => {
   };
 
   useEffect(() => {
-    fetchNotifications(); // la montare
+    fetchNotifications();
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(fetchNotifications, 10000); // mai frecvent
+    const interval = setInterval(fetchNotifications, 10000); 
     return () => clearInterval(interval);
   }, []);
 
@@ -75,7 +74,7 @@ const NotificationDrawer = () => {
         method: 'POST',
         credentials: 'include',
       });
-      fetchNotifications(); // actualizează lista după
+      fetchNotifications();
     } catch (err) {
       console.error('Failed to mark all as seen', err);
     }
@@ -109,7 +108,7 @@ const NotificationDrawer = () => {
     <>
       <Box position="relative">
         <IconButton
-          icon={<BellIcon boxSize={7} />} // ⬅️ fă-l mai mare, default e 5 (20px), acum e 7 (28px)
+          icon={<BellIcon boxSize={7} />}
           onClick={handleOpen}
           aria-label="Notifications"
           variant="ghost"
@@ -192,7 +191,6 @@ const NotificationDrawer = () => {
 
 export default NotificationDrawer;
 
-// ✅ Reutilizabil: verifică dacă userul e deja colaborator
 const GalleryInviteActions = ({ galleryId, onAccept, onDecline }) => {
   const [alreadyCollaborator, setAlreadyCollaborator] = useState(false);
   const [loading, setLoading] = useState(true);

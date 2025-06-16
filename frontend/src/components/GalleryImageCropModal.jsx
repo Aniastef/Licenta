@@ -43,7 +43,7 @@ const GalleryImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }) =>
               image={imageSrc}
               crop={crop}
               zoom={zoom}
-              aspect={3.319} // același raport ca în GalleryCard
+              aspect={3.319}
               cropShape="rect"
               showGrid={false}
               zoomWithScroll

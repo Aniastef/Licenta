@@ -29,7 +29,7 @@ export default function GalleryPage() {
   const fetchGallery = async () => {
     try {
       const response = await fetch(`/api/galleries/${galleryId}`, {
-        credentials: 'include', // 🔐 pentru autentificare cu sesiune
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to fetch gallery');
       const data = await response.json();
@@ -55,7 +55,7 @@ export default function GalleryPage() {
     <Flex direction="column">
       <GalleryCard
         gallery={gallery}
-        currentUserId={currentUser?._id} // ← folosim optional chaining
+        currentUserId={currentUser?._id}
         fetchGallery={fetchGallery}
       />
       <Divider my={4} />

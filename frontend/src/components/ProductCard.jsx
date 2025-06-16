@@ -55,11 +55,11 @@ const ProductCard = ({ product }) => {
   const { isOpen: isImageOpen, onOpen: openImage, onClose: closeImage } = useDisclosure();
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const imagesPerPage = 5; // Only show 3 images at a time
+  const imagesPerPage = 5;
   const scrollRef = useRef();
   const thumbnailContainerRef = useRef();
   const [thumbnailsToShow, setThumbnailsToShow] = useState([]);
-  const [viewMode, setViewMode] = useState('image'); // "image" sau "video"
+  const [viewMode, setViewMode] = useState('image'); 
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const modes = ['image', 'video', 'writing'];
   const otherModes = modes.filter((mode) => mode !== viewMode);
@@ -79,7 +79,7 @@ const ProductCard = ({ product }) => {
       visible.push(i);
     }
 
-    setVisibleImages(visible); // sau setThumbnailsToShow(visible)
+    setVisibleImages(visible);
   }, [product, currentIndex]);
 
   const scrollByAmount = (amount) => {
@@ -113,22 +113,18 @@ const ProductCard = ({ product }) => {
 useEffect(() => {
     if (!product) return;
 
-    // Prioritize images
     if (product.images?.length > 0) {
       setViewMode('image');
     }
-    // Then videos
     else if (product.videos?.length > 0) {
       setViewMode('video');
     }
-    // Then check for meaningful writing content
     else if (
       (Array.isArray(product.writing) && product.writing.length > 0 && product.writing[0]?.trim()) ||
       (typeof product.writing === 'string' && product.writing.trim())
     ) {
       setViewMode('writing');
     }
-    // Finally, audios
     else if (product.audios?.length > 0) {
       setViewMode('audio');
     }
@@ -168,7 +164,7 @@ useEffect(() => {
           isClosable: true,
           position: 'top-right',
         });
-        window.location.href = `/profile/${user.username}`; // Redirecționează spre pagina profilului
+        window.location.href = `/profile/${user.username}`; 
       } else {
         const data = await res.json();
         toast({
@@ -521,14 +517,14 @@ useEffect(() => {
                   Category:{' '}
                   <b>
                     {
-                      Array.isArray(product.category) // Ensure product.category is an array
+                      Array.isArray(product.category) 
                         ? product.category.map((cat, index) => (
                             <React.Fragment key={cat}>
                               {cat}
                               {index < product.category.length - 1 && ', '}
                             </React.Fragment>
                           ))
-                        : product.category // Fallback for single string if old data exists
+                        : product.category
                     }
                   </b>
                 </Text>
@@ -538,12 +534,11 @@ useEffect(() => {
   <Box mt={2}>
     <Text fontWeight="bold">Part of galleries:</Text>
     <HStack spacing={2} wrap="wrap">
-      {product.galleries.map((galleryWrapper) => ( // Renamed to galleryWrapper for clarity
-        // Ensure galleryWrapper.gallery exists and has _id and name
+      {product.galleries.map((galleryWrapper) => (
         galleryWrapper.gallery ? (
           <RouterLink
-            key={galleryWrapper.gallery._id} // Access nested _id
-            to={`/galleries/${galleryWrapper.gallery._id}`} // Access nested _id
+            key={galleryWrapper.gallery._id} 
+            to={`/galleries/${galleryWrapper.gallery._id}`} 
             style={{ color: '#3182ce', textDecoration: 'underline' }}
           >
             {galleryWrapper.gallery.name} {}

@@ -38,7 +38,7 @@ const ARTICLE_CATEGORIES = [
 ];
 
 const CreateOrEditArticlePage = () => {
-  const { id } = useParams(); // Dacă există, e editare
+  const { id } = useParams();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -243,7 +243,7 @@ const CreateOrEditArticlePage = () => {
         imageSrc={rawCoverImage}
         onCropComplete={(cropped) => {
           setCroppedCoverImage(cropped);
-          setCoverImage(cropped); // salvează ca Base64
+          setCoverImage(cropped);
         }}
       />
     </Container>

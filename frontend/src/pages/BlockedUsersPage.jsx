@@ -44,7 +44,7 @@ const BlockedUsersPage = () => {
           duration: 3000,
           isClosable: true,
         });
-        fetchBlockedUsers(); // Refresh lista
+        fetchBlockedUsers();
       } else {
         toast({
           title: 'Failed to unblock user',

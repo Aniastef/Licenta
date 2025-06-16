@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 const useGetUserProfile = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ Nou
+  const [loading, setLoading] = useState(true);
   const { username } = useParams();
 
   useEffect(() => {

@@ -7,7 +7,6 @@ import {
   VStack,
   Stack,
   HStack,
-  // Select, // Remove Select as we are using CheckboxGroup
   Avatar,
   Text,
   Flex,
@@ -17,9 +16,9 @@ import {
   IconButton,
   FormControl,
   FormLabel,
-  CheckboxGroup, // Add CheckboxGroup
-  Wrap, // Add Wrap for better layout of checkboxes
-  WrapItem, // Add WrapItem
+  CheckboxGroup, 
+  Wrap,
+  WrapItem, 
 } from '@chakra-ui/react';
 import { CloseIcon } from '@chakra-ui/icons';
 import { useEffect, useState } from 'react';
@@ -122,13 +121,12 @@ const EditGalleryPage = () => {
         });
         const data = await res.json();
         if (res.ok) {
-          // Ensure category is an array
           const categories = Array.isArray(data.category)
             ? data.category
-            : data.category ? [data.category] : ['General']; // Default to ['General'] if no category or not an array
+            : data.category ? [data.category] : ['General'];
           setGalleryData({ ...data, category: categories });
           setCollaborators(data.collaborators || []);
-          // Set preview URL if coverPhoto exists
+
           if (data.coverPhoto) {
             setPreviewUrl(data.coverPhoto);
           }
@@ -142,7 +140,7 @@ const EditGalleryPage = () => {
       }
     };
     fetchGallery();
-  }, [galleryId, showToast]); // Added showToast to dependencies
+  }, [galleryId, showToast]);
 
   const handleSearchUsers = async () => {
     if (!searchText.trim()) return;
@@ -202,7 +200,6 @@ const EditGalleryPage = () => {
       return;
     }
 
-    // Ensure at least one category is selected
     if (galleryData.category.length === 0) {
       showToast('Error', 'Please select at least one category', 'error');
       return;
@@ -212,7 +209,7 @@ const EditGalleryPage = () => {
     try {
       const formData = new FormData();
       formData.append('name', galleryData.name);
-      formData.append('category', JSON.stringify(galleryData.category)); // Stringify the array
+      formData.append('category', JSON.stringify(galleryData.category));
       formData.append('description', galleryData.description);
       formData.append('tags', galleryData.tags);
       formData.append('collaborators', JSON.stringify(collaborators.map((u) => u._id)));
@@ -221,7 +218,6 @@ const EditGalleryPage = () => {
         const compressed = await compressImage(dataURLtoFile(croppedCoverImage, 'cover.jpg'));
         formData.append('coverPhoto', compressed);
       } else if (galleryData.coverPhoto === null && previewUrl === null) {
-        // If coverPhoto was removed and no new one selected
         formData.append('coverPhoto', 'null');
       }
 
@@ -235,11 +231,9 @@ const EditGalleryPage = () => {
       const data = await res.json();
       if (res.ok) {
         showToast('Success', 'Gallery updated successfully', 'success');
-        // Check if data.owner exists before navigating
         if (data.owner && data.owner.username) {
             navigate(`/galleries/${data.owner.username}/${encodeURIComponent(data.name)}`);
         } else {
-            // Fallback navigation if owner data is not immediately available
             navigate(`/galleries/${galleryId}`);
         }
       } else {
@@ -408,9 +402,9 @@ const EditGalleryPage = () => {
                     right="2"
                     aria-label="Remove image"
                     onClick={() => {
-                      setGalleryData({ ...galleryData, coverPhoto: null }); // Set to null to indicate removal
-                      setPreviewUrl(null); // Clear the displayed preview
-                      setCroppedCoverImage(null); // Clear any newly cropped image
+                      setGalleryData({ ...galleryData, coverPhoto: null }); 
+                      setPreviewUrl(null);
+                      setCroppedCoverImage(null);
                     }}
                   />
                 </Box>
@@ -435,7 +429,7 @@ const EditGalleryPage = () => {
         imageSrc={rawCoverImage}
         onCropComplete={(cropped) => {
           setCroppedCoverImage(cropped);
-          setPreviewUrl(cropped); // Update previewUrl with the cropped image
+          setPreviewUrl(cropped);
         }}
       />
     </Container>

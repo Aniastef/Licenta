@@ -43,8 +43,8 @@ const EventImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }) => {
               image={imageSrc}
               crop={crop}
               zoom={zoom}
-              aspect={1200 / 398} // Raport de aspect consistent cu EventCard
-              cropShape="rect" // 🟦 dreptunghi, nu cerc
+              aspect={1200 / 398}
+              cropShape="rect"
               showGrid={false}
               zoomWithScroll
               minZoom={1}

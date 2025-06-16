@@ -22,9 +22,9 @@ import { useCart } from '../components/CartContext';
 import NotificationDrawer from './NotificationDrawer';
 import LogoFlowers from '../assets/logoflowers.svg';
 import navbarBg from '../assets/navbar.svg'; // imaginea de fundal
-import messagesIcon from '../assets/messagesIcon.svg'; // Iconița mesajelor
-import useUnreadMessagesCount from '../hooks/useUnreadMessagesCount'; // Hook-ul cu numărul necitit
-import { SearchIcon } from '@chakra-ui/icons'; // sus în importuri
+import messagesIcon from '../assets/messagesIcon.svg'; 
+import useUnreadMessagesCount from '../hooks/useUnreadMessagesCount';
+import { SearchIcon } from '@chakra-ui/icons'; 
 import SearchBar from './SearchBar';
 
 const Navbar = () => {
@@ -32,7 +32,7 @@ const Navbar = () => {
   const handleLogout = useLogout();
   const { cart } = useCart();
   const cartCount = cart.length;
-  const unreadMessages = useUnreadMessagesCount(); // Returnează 0, 1, 2, etc.
+  const unreadMessages = useUnreadMessagesCount(); 
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
@@ -50,8 +50,8 @@ const Navbar = () => {
     bgPosition="top"
     px={10}
     pt={50}
-    pb="190px" // 🧠 lasă spațiul pentru imagine
-    marginBottom="-110px" // 🧠 anulează spațiul pentru conținutul de dedesubt
+    pb="190px" 
+    marginBottom="-110px"
     position="relative"
   >
       {}

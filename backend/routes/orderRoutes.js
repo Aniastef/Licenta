@@ -9,7 +9,7 @@ import {
 
 const router = express.Router();
 
-router.get('/orders', getAllOrders); // 🟢 trebuie să fie PRIMA
+router.get('/orders', getAllOrders);
 router.get('/:userId', getUserOrders);
 router.post('/:userId', addOrder);
 router.delete('/:userId/:orderId', deleteOrder);

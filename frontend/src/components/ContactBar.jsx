@@ -11,7 +11,7 @@ const ContactBar = () => {
     <Box
       w="100%"
       position="relative"
-      minH="300px" // Ajustează această înălțime dacă e nevoie
+      minH="300px"
       overflow="hidden"
     >
       {}
@@ -49,11 +49,6 @@ const ContactBar = () => {
         <HStack spacing={3} mb={2}>
           <Text>Made by Stefania Istvan</Text>
         </HStack>
-
-        {/* <HStack spacing={3} mb={2}>
-          <Image src={phoneIcon} boxSize="20px" /> {}
-          {/* <Text>+40 723 123 456</Text>
-        </HStack> */} 
 
         <HStack spacing={3} mb={2}>
           <Image src={emailIcon} boxSize="20px" /> {}

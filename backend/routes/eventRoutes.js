@@ -14,18 +14,14 @@ import {
 
 const router = express.Router();
 
-// Creare eveniment
 router.post('/create', upload.single('coverImage'), protectRoute, createEvent);
 
 router.get('/user/:username', getAllUserEvents);
 
-// Obținere detalii despre un eveniment specific
 router.get('/:eventId', getEvent);
 
-// Actualizare eveniment
 router.put('/:eventId', protectRoute, updateEvent);
 
-// Ștergere eveniment
 router.delete('/:eventId', protectRoute, deleteEvent);
 
 router.post('/:eventId/interested', protectRoute, markInterested);

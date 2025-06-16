@@ -205,7 +205,6 @@ const NotificationsPage = () => {
 
 export default NotificationsPage;
 
-// ✅ Componentă internă pentru verificarea dacă userul e deja colaborator
 const GalleryInviteActions = ({ galleryId, onAccept, onDecline }) => {
   const [alreadyCollaborator, setAlreadyCollaborator] = useState(false);
   const [loading, setLoading] = useState(true);

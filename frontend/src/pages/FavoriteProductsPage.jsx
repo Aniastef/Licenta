@@ -11,13 +11,13 @@ import {
   Button,
   Flex,
   Spinner,
-  useToast, // ✅ Importăm useToast
+  useToast,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 
 export default function FavoriteProductsPage() {
   const { username } = useParams();
-  const toast = useToast(); // ✅ Inițializăm toast-ul
+  const toast = useToast();
   const [favoriteProducts, setFavoriteProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState('');
@@ -27,7 +27,7 @@ export default function FavoriteProductsPage() {
     const fetchFavorites = async () => {
       try {
         const res = await fetch(`/api/users/favorites/${username}`, {
-          credentials: 'include', // ✅ Adaugă asta
+          credentials: 'include',
         });
         const data = await res.json();
         setFavoriteProducts(data);
@@ -49,17 +49,15 @@ export default function FavoriteProductsPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        credentials: 'include', // ✅ Adaugă asta
+        credentials: 'include',
       });
 
       if (!res.ok) {
         throw new Error('Failed to remove product from favorites');
       }
 
-      // Obținem produsul eliminat pentru notificare
       const removedProduct = favoriteProducts.find((product) => product._id === productId);
 
-      // ✅ Afișăm notificarea (Toast)
       toast({
         title: 'Removed from Favorites',
         description: `${removedProduct?.name || 'Product'} was removed from your favorites.`,
@@ -69,7 +67,6 @@ export default function FavoriteProductsPage() {
         position: 'top-right',
       });
 
-      // Actualizează lista eliminând produsul
       setFavoriteProducts((prevProducts) =>
         prevProducts.filter((product) => product._id !== productId),
       );
@@ -78,7 +75,6 @@ export default function FavoriteProductsPage() {
     } catch (error) {
       console.error('Error removing product from favorites:', error);
 
-      // ❌ Afișăm o notificare de eroare dacă eliminarea eșuează
       toast({
         title: 'Error',
         description: 'Failed to remove product from favorites.',
@@ -90,12 +86,10 @@ export default function FavoriteProductsPage() {
     }
   };
 
-  // Funcție de filtrare după nume
   const filteredProducts = favoriteProducts.filter((product) =>
     product.name.toLowerCase().includes(filterText.toLowerCase()),
   );
 
-  // Funcție de sortare
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortOption === 'price-asc') return a.price - b.price;
     if (sortOption === 'price-desc') return b.price - a.price;

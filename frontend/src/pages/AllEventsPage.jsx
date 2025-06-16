@@ -87,7 +87,7 @@ const EventsPage = () => {
   const [customMax, setCustomMax] = useState(10000);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [sortDirection, setSortDirection] = useState('desc'); // "asc" | "desc"
+  const [sortDirection, setSortDirection] = useState('desc');
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [filterCategories, setFilterCategories] = useState([]);
 
@@ -147,7 +147,6 @@ const EventsPage = () => {
           matchSearch = fullName.includes(lowerFilter);
         } else if (searchBy === 'location') {
           const loc = event.location?.toLowerCase() || '';
-          // extrage ultimele 2 componente (oraș, țară)
           const parts = loc.split(',').map((p) => p.trim());
           const cityCountry = parts.slice(-2).join(' ');
           matchSearch = cityCountry.includes(lowerFilter);
@@ -182,7 +181,7 @@ const EventsPage = () => {
       return (
         matchSearch &&
         matchTags &&
-        matchCategory && // ✅ nou
+        matchCategory &&
         matchTicketType &&
         matchLanguage &&
         matchPriceSlider &&
@@ -239,8 +238,8 @@ const EventsPage = () => {
     dateFrom,
     dateTo,
     statusFilters,
-    filterCategories, // ✅ ADĂUGAT
-    currentPage, // <== ADĂUGĂ AICI
+    filterCategories,
+    currentPage,
   ]);
 
   const paginatedEvents = filteredEvents.slice(
@@ -325,7 +324,6 @@ const EventsPage = () => {
               value={customMin}
               onChange={(e) => {
                 const val = e.target.value;
-                // Permite doar numere sau șir gol temporar
                 if (/^\d*$/.test(val)) {
                   setCustomMin(val);
                   const parsed = parseInt(val || '0', 10);
@@ -413,7 +411,7 @@ const EventsPage = () => {
           <Wrap spacing={2} mt={2} maxW="100%">
             {ALL_EVENT_CATEGORIES.map((cat) => {
               const isSelected = filterCategories.includes(cat);
-              const background = isSelected ? '#2B6CB0' : categoryColorMap[cat]; // use Chakra's blue[700] for selected
+              const background = isSelected ? '#2B6CB0' : categoryColorMap[cat];
 
               return (
                 <WrapItem key={cat}>
@@ -496,7 +494,7 @@ const EventsPage = () => {
                         <Box textAlign="left" flex="1">
                           <Text
                             fontWeight="bold"
-                            noOfLines={1} // Truncate with ellipsis for event name
+                            noOfLines={1}
                           >
                             {event.name}
                           </Text>

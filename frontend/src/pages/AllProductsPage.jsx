@@ -1,5 +1,3 @@
-// Pagina de produse cu filtre avansate, rating, taguri și paginare
-
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -31,7 +29,7 @@ import {
 import { Link } from 'react-router-dom';
 import { StarIcon } from '@chakra-ui/icons';
 import { useLocation } from 'react-router-dom';
-import { FaArrowUp } from 'react-icons/fa'; // Import nou
+import { FaArrowUp } from 'react-icons/fa';
 
 const PRODUCTS_PER_PAGE = 60;
 const ALL_CATEGORIES = [
@@ -188,14 +186,13 @@ const ProductsPage = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortDirection, setSortDirection] = useState('desc'); // "asc" | "desc"
+  const [sortDirection, setSortDirection] = useState('desc');
   const [customMin, setCustomMin] = useState(0);
   const [customMax, setCustomMax] = useState(10000);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialCategory = queryParams.get('category');
 
-  // Noul state pentru vizibilitatea butonului de scroll
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   useEffect(() => {
@@ -208,7 +205,6 @@ const ProductsPage = () => {
     fetchProducts();
   }, []);
 
-  // Noul useEffect pentru a gestiona vizibilitatea butonului de scroll
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
@@ -220,7 +216,6 @@ const ProductsPage = () => {
 
     window.addEventListener('scroll', handleScroll);
 
-    // Funcție de cleanup pentru a elimina event listener-ul la demontarea componentei
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
@@ -286,7 +281,6 @@ const ProductsPage = () => {
         selectedRatings.length === 0 ||
         selectedRatings.some((r) => Math.floor(p.averageRating || 0) === r);
 
-      // MODIFICARE AICI: Permite selectarea mai multor categorii cu logica AND
       const matchCategories =
         selectedCategories.length === 0 ||
         (Array.isArray(p.category) &&
@@ -363,7 +357,6 @@ const ProductsPage = () => {
     );
   };
 
-  // Noua funcție pentru a derula la începutul paginii
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -632,8 +625,8 @@ const ProductsPage = () => {
                         {}
                         <Text
                           fontWeight="bold"
-                          isTruncated // This Chakra UI prop applies overflow: hidden, white-space: nowrap, text-overflow: ellipsis
-                          px={2} // Add some horizontal padding for better appearance
+                          isTruncated 
+                          px={2} 
                         >
                           {product.title}
                         </Text>

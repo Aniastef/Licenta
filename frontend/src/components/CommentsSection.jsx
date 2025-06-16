@@ -1,4 +1,3 @@
-// CommentsSection.jsx
 import {
   Box,
   Button,
@@ -31,8 +30,6 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 
-// ... importurile tale rămân la fel
-
 export default function CommentsSection({ resourceId, resourceType }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -49,7 +46,6 @@ export default function CommentsSection({ resourceId, resourceType }) {
   const [reportDetails, setReportDetails] = useState('');
   const [commentToReport, setCommentToReport] = useState(null);
 
-// CommentsSection.jsx - inside handleSubmitReport
   const handleSubmitReport = async () => {
     if (!reportReason || !commentToReport) {
       showToast('Error', 'Please select a reason', 'warning');
@@ -60,10 +56,8 @@ export default function CommentsSection({ resourceId, resourceType }) {
       ? commentToReport.userId._id
       : commentToReport.userId;
 
-    // --- ADD THIS CONSOLE.LOG ---
     console.log("Reporting comment with reportedUserId:", reportedUserId);
     console.log("Full commentToReport:", commentToReport);
-    // ----------------------------
 
     try {
       const response = await fetch('/api/report', {
@@ -80,7 +74,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json(); // Try to get more specific error from server
+        const errorData = await response.json(); 
         console.error("Server error response:", errorData);
         throw new Error(errorData.error || 'Failed to submit report');
       }
@@ -127,7 +121,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
       const res = await fetch(`/api/comments/${commentId}/dislike`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Include autentificarea
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -137,7 +131,6 @@ export default function CommentsSection({ resourceId, resourceType }) {
         return;
       }
 
-      // Actualizăm starea locală a comentariilor
       setComments((prevComments) =>
         prevComments.map((comment) =>
           comment._id === commentId
@@ -223,7 +216,7 @@ export default function CommentsSection({ resourceId, resourceType }) {
       }
 
       setNewComment('');
-      await fetchComments(); // 🔥 Soluția cheie: reîncarcă comentariile complet populate
+      await fetchComments(); 
     } catch (err) {
       console.error('Error adding comment:', err.message);
     }

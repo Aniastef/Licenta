@@ -1,4 +1,3 @@
-// run: node scripts/deleteProducts.js from backend folder in the terminal to delete all products from the database
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';

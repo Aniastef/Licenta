@@ -223,7 +223,6 @@ const OrdersPage = () => {
       {orders.map((order) => {
         const total = calculateTotal(order);
 
-        // Determine order type for the badge
         const containsEvents = order.products.some((p) => p.itemType === 'Event');
         const containsProducts = order.products.some((p) => p.itemType !== 'Event');
 
@@ -232,13 +231,13 @@ const OrdersPage = () => {
 
         if (containsEvents && containsProducts) {
           orderType = 'Product & Ticket';
-          orderTypeColorScheme = 'purple'; // Or any other color you prefer for mixed orders
+          orderTypeColorScheme = 'purple'; 
         } else if (containsEvents) {
           orderType = 'Ticket';
           orderTypeColorScheme = 'blue';
         } else if (containsProducts) {
           orderType = 'Product';
-          orderTypeColorScheme = 'teal'; // Or any other color you prefer for products only
+          orderTypeColorScheme = 'teal';
         }
 
         return (

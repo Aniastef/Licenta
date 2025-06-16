@@ -376,7 +376,7 @@ const UserAllEventsPage = () => {
           {filteredEvents.map((event) => (
             <Link to={`/events/${event._id}`} key={event._id}>
               <Box
-                w="350px" // Lățime fixă pentru card
+                w="350px" 
                 borderWidth="1px"
                 borderRadius="md"
                 overflow="hidden"

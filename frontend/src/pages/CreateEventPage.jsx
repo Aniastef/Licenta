@@ -32,7 +32,7 @@ import 'react-quill-new/dist/quill.snow.css';
 const compressImage = async (file) => {
   try {
     const options = {
-      maxSizeMB: 0.5, // 500 KB max
+      maxSizeMB: 0.5,
       maxWidthOrHeight: 1080,
       useWebWorker: true,
     };
@@ -121,7 +121,7 @@ const CreateEventPage = () => {
           setNewEvent((prev) => ({
             ...prev,
             location: place.formatted_address,
-            coordinates: { lat: lat(), lng: lng() }, // Set coordinates here
+            coordinates: { lat: lat(), lng: lng() },
           }));
         } else {
           showToast('Error', 'Please select a valid location from the suggestions', 'error');
@@ -143,7 +143,7 @@ const CreateEventPage = () => {
 
     setIsLoading(true);
     try {
-      // Submit the event data (you can send this to your server)
+
       console.log(newEvent);
     } catch (error) {
       console.error('Error submitting the event:', error);
@@ -372,8 +372,8 @@ const CreateEventPage = () => {
                   if (file) {
                     const reader = new FileReader();
                     reader.onloadend = () => {
-                      setRawCoverImage(reader.result); // base64 brut
-                      setCropModalOpen(true); // deschide popup crop
+                      setRawCoverImage(reader.result);
+                      setCropModalOpen(true);
                     };
                     reader.readAsDataURL(file);
                   }
@@ -412,7 +412,7 @@ const CreateEventPage = () => {
         imageSrc={rawCoverImage}
         onCropComplete={(croppedBase64) => {
           setCroppedCoverImage(croppedBase64);
-          setCoverImage(croppedBase64); // ✅ Adaugă această linie!
+          setCoverImage(croppedBase64);
         }}
       />
     </Container>
