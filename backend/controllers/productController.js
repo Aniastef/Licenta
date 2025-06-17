@@ -8,9 +8,6 @@ import User from '../models/userModel.js';
 import Notification from '../models/notificationModel.js';
 import { addAuditLog } from './auditLogController.js'; 
 
-
-
-
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -19,7 +16,7 @@ export const createProduct = async (req, res) => {
       writing,
       price,
       quantity,
-      forSale, 
+      forSale,
       galleries,
       images = [],
       videos = [],
@@ -62,34 +59,35 @@ export const createProduct = async (req, res) => {
       if (audio && audio.startsWith('data:')) {
         try {
           const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'raw', folder: 'products_audios' }); 
-          uploadedAudios.push(uploadRes.secure_url);
         } catch (uploadError) {
           console.error('Cloudinary Audio Upload Error:', uploadError);
         }
       }
     }
 
-const newProduct = new Product({
-      title,
-      description: description?.trim() || 'No description',
-      price: forSale ? (price !== undefined && price !== null ? price : 0) : undefined,
-      quantity: quantity || 0,
-      forSale: forSale !== undefined ? forSale : true,
-      images: uploadedImages,
-      videos: uploadedVideos,
-      audios: uploadedAudios,
-      writing,
-      category: Array.isArray(category) && category.length > 0 ? category : ['General'],
-      user: req.user._id,
-      galleries: Array.isArray(galleries) && galleries.length > 0
-        ? galleries.map(gId => ({ gallery: gId, order: 0 })) 
-        : [],
-    });
+      const newProduct = new Product({
+        title,
+        description: description?.trim() || 'No description',
+        price: forSale ? (price !== undefined && price !== null ? price : 0) : undefined,
+        quantity: quantity || 0,
+        forSale: forSale !== undefined ? forSale : true,
+        images: uploadedImages,
+        videos: uploadedVideos,
+        audios: uploadedAudios,
+        writing,
+        category: Array.isArray(category) && category.length > 0 ? category : ['General'],
+        user: req.user._id,
 
-.
+        galleries: Array.isArray(galleries) && galleries.length > 0
+          ? galleries.map(gId => ({ gallery: gId, order: 0 })) 
+          : [],
+      });
+
+
+    if (newProduct.forSale && newProduct.price <= 0) {
         return res.status(400).json({ error: 'Price must be greater than 0 if artwork is for sale.' });
     }
- 
+
 
     await newProduct.save();
     console.log('Product saved successfully:', newProduct._id);
@@ -105,7 +103,6 @@ const newProduct = new Product({
     });
     console.log('Audit log added.');
 
-    
     if (galleries && galleries.length > 0) {
       console.log(`Processing ${galleries.length} galleries for new product ${newProduct._id}.`);
       for (const galleryId of galleries) {
@@ -144,6 +141,7 @@ const newProduct = new Product({
     res.status(500).json({ error: 'Server error during product creation', details: err.message });
   }
 };
+
 export const getProduct = async (req, res) => {
   try {
     const { id } = req.params;

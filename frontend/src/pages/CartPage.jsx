@@ -59,16 +59,15 @@ const CartPage = () => {
 
   return (
     <Box p={8}>
-      <Flex justify="space-between" align="center">
-        <Heading mb={2} textAlign="center" w="full">
+        <Heading mb={2} textAlign="center">
           My Cart
         </Heading>
 
-        <Flex right={4} gap={2}>
-          <Circle size="30px" bg="yellow.400" />
-          <Circle size="30px" bg="green.400" />
-        </Flex>
+        <Flex justify="flex-end" mb={4} gap={2}>
+        <Circle size="30px" bg="yellow.400" />
+        <Circle size="30px" bg="green.400" />
       </Flex>
+
 
       <VStack spacing={6} align="center">
         {cart.map((item) => {
