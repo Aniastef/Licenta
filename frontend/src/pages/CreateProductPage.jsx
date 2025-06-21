@@ -22,11 +22,12 @@ import {
 import { useState, useEffect } from 'react';
 import useShowToast from '../hooks/useShowToast';
 import productAtom from '../atoms/productAtom';
-import { useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { useNavigate } from 'react-router-dom';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import imageCompression from 'browser-image-compression';
+import userAtom from '../atoms/userAtom';
 
 const ALL_CATEGORIES = [
   'General',
@@ -111,6 +112,7 @@ const compressImage = async (file) => {
 
 const CreateProductPage = () => {
   const setProduct = useSetRecoilState(productAtom);
+  const currentUser = useRecoilValue(userAtom); 
   const [newProduct, setNewProduct] = useState({
     title: '',
     description: '',
@@ -134,8 +136,9 @@ const CreateProductPage = () => {
 
   useEffect(() => {
     const fetchGalleries = async () => {
+      if (!currentUser) return;
       try {
-        const res = await fetch('/api/users/galleries', {
+        const res = await fetch(`/api/galleries/user/${currentUser.username}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',
@@ -155,7 +158,7 @@ const CreateProductPage = () => {
       }
     };
     fetchGalleries();
-  }, []);
+  }, [currentUser]);
 
   const [audioFiles, setAudioFiles] = useState([]);
 
@@ -327,25 +330,26 @@ const CreateProductPage = () => {
               </CheckboxGroup>
             </FormControl>
 
-            <FormControl>
-              <FormLabel>Gallery</FormLabel>
-              <Select
-                value={newProduct.galleries[0] || 'general-placeholder'}
-                onChange={(e) => {
-                  const selected = e.target.value;
+           <FormControl>
+              <FormLabel>Galleries</FormLabel>
+              <CheckboxGroup
+                colorScheme="orange"
+                value={newProduct.galleries}
+                onChange={(selectedGalleryIds) => {
                   setNewProduct({
                     ...newProduct,
-                    galleries: selected === 'general-placeholder' ? [] : [selected],
+                    galleries: selectedGalleryIds,
                   });
                 }}
               >
-                <option value="general-placeholder">General</option>
-                {userGalleries.map((gallery) => (
-                  <option key={gallery._id} value={gallery._id}>
-                    {gallery.name}
-                  </option>
-                ))}
-              </Select>
+                <Wrap spacing={4} mt={2}>
+                  {userGalleries.map((gallery) => (
+                    <WrapItem key={gallery._id}>
+                      <Checkbox value={gallery._id}>{gallery.name}</Checkbox>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+              </CheckboxGroup>
             </FormControl>
 
             <FormControl>

@@ -128,7 +128,6 @@ const EditProductPage = () => {
   const [newVideoPreviews, setNewVideoPreviews] = useState([]);
   const [newAudioPreviews, setNewAudioPreviews] = useState([]);
   const [userGalleries, setUserGalleries] = useState([]);
-  const [selectedGalleryId, setSelectedGalleryId] = useState('');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -149,15 +148,6 @@ const EditProductPage = () => {
             category: initialCategories.length > 0 ? initialCategories : ['General'],
           });
 
-          if (
-            data.product.galleries &&
-            data.product.galleries.length > 0 &&
-            data.product.galleries[0].gallery
-          ) {
-            setSelectedGalleryId(data.product.galleries[0].gallery._id.toString());
-          } else {
-            setSelectedGalleryId('general-placeholder');
-          }
         } else {
           showToast('Error', data.error, 'error');
           setProduct(null);
@@ -265,6 +255,20 @@ const EditProductPage = () => {
     }
   };
 
+    const handleGalleryChange = (selectedIds) => {
+    const newGalleries = selectedIds.map(id => ({
+        gallery: { _id: id },
+        order: 0
+    }));
+    setProduct({ ...product, galleries: newGalleries });
+  };
+  
+  if (currentUser && product && product.user && currentUser._id !== product.user._id) {
+    showToast('Error', 'You are not authorized to edit this product.', 'error');
+    navigate(`/`);
+    return null;
+  }
+
   const handleUpdate = async () => {
     if (!product.title) {
       showToast('Error', 'Title is required', 'error');
@@ -293,10 +297,10 @@ const EditProductPage = () => {
       const videosBase64 = await Promise.all(newVideoFiles.map(fileToBase64));
       const audiosBase64 = await Promise.all(newAudioFiles.map(fileToBase64));
 
-      const galleriesToSend =
-        selectedGalleryId && selectedGalleryId !== 'general-placeholder'
-          ? [{ gallery: selectedGalleryId, order: 0 }]
-          : [];
+      const galleriesToSend = product.galleries.map(g => ({
+        gallery: g.gallery._id,
+        order: g.order || 0
+      }));
 
       const updated = {
         ...product,
@@ -445,22 +449,22 @@ const EditProductPage = () => {
                 </CheckboxGroup>
               </FormControl>
 
-              <FormControl>
-                <FormLabel>Gallery</FormLabel>
-                <Select
-                  value={selectedGalleryId}
-                  onChange={(e) => {
-                    const selected = e.target.value;
-                    setSelectedGalleryId(selected);
-                  }}
+        <FormControl>
+                <FormLabel>Galleries</FormLabel>
+                <CheckboxGroup
+                  colorScheme="orange"
+                  // Extragem ID-urile din array-ul de obiecte pentru a le potrivi cu valoarea checkbox-urilor
+                  value={product.galleries?.map(g => g.gallery._id) || []}
+                  onChange={handleGalleryChange}
                 >
-                  <option value="general-placeholder">General</option>
-                  {userGalleries.map((gallery) => (
-                    <option key={gallery._id} value={gallery._id}>
-                      {gallery.name}
-                    </option>
-                  ))}
-                </Select>
+                  <Wrap spacing={4} mt={2}>
+                    {userGalleries.map((gallery) => (
+                      <WrapItem key={gallery._id}>
+                        <Checkbox value={gallery._id}>{gallery.name}</Checkbox>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                </CheckboxGroup>
               </FormControl>
 
               {}
