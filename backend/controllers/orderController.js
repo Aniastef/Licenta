@@ -12,12 +12,6 @@ export const getUserOrders = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    console.log(
-      '🔍 Backend (orderController): Fetched user orders BEFORE display fallbacks for user:',
-      userId,
-      JSON.parse(JSON.stringify(user.orders)),
-    );
-
     for (const order of user.orders) {
       if (Array.isArray(order.products)) {
         for (let i = 0; i < order.products.length; i++) {
@@ -64,11 +58,6 @@ export const getUserOrders = async (req, res) => {
         order.deliveryMethod === 'N/A' ? 'N/A' : order.deliveryMethod || 'courier';
     }
 
-    console.log(
-      '✅ Backend (orderController): Orders prepared for sending to frontend (after fallbacks):',
-      JSON.parse(JSON.stringify(user.orders)),
-    );
-
     res.status(200).json({ orders: user.orders });
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -77,7 +66,6 @@ export const getUserOrders = async (req, res) => {
 };
 
 export const addOrder = async (req, res) => {
-  console.log('📩 Backend (orderController): Received req.body for addOrder:', req.body);
   try {
     const { userId } = req.params;
     const {
@@ -113,13 +101,6 @@ export const addOrder = async (req, res) => {
       phone: phone || '',
     };
 
-    console.log(
-      '📝 Backend (orderController): Preparing new order to save for user:',
-      userId,
-      'with data:',
-      newOrder,
-    );
-
     user.orders.push(newOrder);
     await user.save();
 
@@ -130,9 +111,6 @@ export const addOrder = async (req, res) => {
   }
 };
 
-/**
- * Delete a specific order
- */
 export const deleteOrder = async (req, res) => {
   try {
     const { userId, orderId } = req.params;
@@ -152,9 +130,6 @@ export const deleteOrder = async (req, res) => {
   }
 };
 
-/**
- * Cancel an order (changes status, does not delete)
- */
 export const cancelOrder = async (req, res) => {
   try {
     const { userId, orderId } = req.params;
@@ -175,29 +150,37 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
+
 export const getAllOrders = async (req, res) => {
   try {
-    console.log('✅ getAllOrders triggered');
 
-    if (!req.user || req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    const users = await User.find({ 'orders.0': { $exists: true } })
+    const usersWithOrders = await User.find({ 'orders.0': { $exists: true } })
       .select('firstName lastName email orders')
       .populate('orders.products.product');
 
-    const allOrders = users.flatMap((user) =>
-      user.orders.map((order) => ({
-        ...order.toObject(),
-        user: {
-          _id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-        },
-      })),
+    const allOrders = usersWithOrders.flatMap((user) =>
+      user.orders.map((order) => {
+        
+        const calculatedTotalPrice = order.products.reduce((sum, item) => {
+          const price = item.price || 0;
+          const quantity = item.quantity || 0;
+          return sum + (price * quantity);
+        }, 0);
+
+        return {
+          ...order.toObject(),
+          totalPrice: calculatedTotalPrice, 
+          user: {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+          },
+        };
+      })
     );
+    
+    allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     res.status(200).json({ orders: allOrders });
   } catch (err) {
