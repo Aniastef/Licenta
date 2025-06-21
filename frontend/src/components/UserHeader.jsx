@@ -12,6 +12,18 @@ import {
   Tab,
   TabPanel,
   Button,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  VStack,
+  FormControl,
+  FormLabel,
+  Select,
+  ModalFooter,
 } from '@chakra-ui/react';
 import { useRecoilValue } from 'recoil';
 import { useRef, useState } from 'react';
@@ -67,6 +79,10 @@ const UserHeader = ({ user }) => {
   const navigate = useNavigate();
 
   const [activeGalleryFilter, setActiveGalleryFilter] = useState('owning');
+  const { isOpen: isReportOpen, onOpen: onReportOpen, onClose: onReportClose } = useDisclosure();
+  const [reportReason, setReportReason] = useState('');
+  const [reportDetails, setReportDetails] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
 
   const ownedGalleries = user.galleries?.filter((g) => g.owner === user._id);
   const collaboratedGalleries = user.galleries?.filter((g) => g.owner !== user._id);
@@ -87,6 +103,42 @@ const UserHeader = ({ user }) => {
         ? collaboratedGalleries
         : favoriteGalleries;
 
+  const handleSubmitReport = async () => {
+    if (!reportReason) {
+      toast({ title: 'Please select a reason for the report.', status: 'error', duration: 3000 });
+      return;
+    }
+    setIsReporting(true);
+    try {
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', 
+        body: JSON.stringify({
+          reportedUserId: user._id,
+          reason: reportReason,
+          details: reportDetails,
+        }),
+      });
+
+      if (res.ok) {
+        toast({ title: 'Report submitted successfully.', description: 'Thank you for your feedback.', status: 'success', duration: 3000 });
+        onReportClose(); 
+        setReportReason('');
+        setReportDetails('');
+      } else {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to submit report');
+      }
+    } catch (error) {
+      toast({ title: 'Error', description: error.message, status: 'error', duration: 3000 });
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
   const handleSave = () => {
     setIsEditing(false);
     toast({
@@ -96,7 +148,6 @@ const UserHeader = ({ user }) => {
       isClosable: true,
     });
   };
-  console.log('Date COMPLETE primite pentru utilizator:', user);
 
   const saveQuote = async () => {
     try {
@@ -363,6 +414,16 @@ const UserHeader = ({ user }) => {
               </Flex>
             ) : null;
           })}
+          {currentUser?._id !== user._id && (
+              <Button
+                size="sm"
+                colorScheme="red"
+                variant="outline"
+                onClick={onReportOpen}
+              >
+                Report User
+              </Button>
+            )}
         </Flex>
 
         {}
@@ -789,7 +850,56 @@ const UserHeader = ({ user }) => {
           </Flex>
         </Flex>
       </Flex>
+      <Modal isOpen={isReportOpen} onClose={onReportClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Report {user.firstName} {user.lastName}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Reason</FormLabel>
+                <Select
+                  placeholder="Select a reason"
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                >
+                  <option value="Spam">Spam</option>
+                  <option value="Harassment">Harassment or Hateful Speech</option>
+                  <option value="Inappropriate Content">Inappropriate Content</option>
+                  <option value="Impersonation">Impersonation</option>
+                  <option value="Other">Other (please specify in details)</option>
+                </Select>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Details (optional)</FormLabel>
+                <Textarea
+                  placeholder="Provide any additional details here."
+                  value={reportDetails}
+                  onChange={(e) => setReportDetails(e.target.value)}
+                />
+              </FormControl>
+            </VStack>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onReportClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="red"
+              onClick={handleSubmitReport}
+              isLoading={isReporting}
+            >
+              Submit Report
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    
     </Flex>
+    
+    
   );
 };
 

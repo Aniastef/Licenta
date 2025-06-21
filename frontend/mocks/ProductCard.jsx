@@ -110,15 +110,12 @@ const ProductCard = ({ product }) => {
   useEffect(() => {
     if (!product) return;
 
-    // Prioritize images
     if (product.images?.length > 0) {
       setViewMode('image');
     }
-    // Then videos
     else if (product.videos?.length > 0) {
       setViewMode('video');
     }
-    // Then check for meaningful writing content
     else if (
       (Array.isArray(product.writing) &&
         product.writing.length > 0 &&
@@ -127,7 +124,6 @@ const ProductCard = ({ product }) => {
     ) {
       setViewMode('writing');
     }
-    // Finally, audios
     else if (product.audios?.length > 0) {
       setViewMode('audio');
     }

@@ -11,6 +11,8 @@ export const createReport = async (req, res) => {
       date: new Date(),
     });
 
+    console.log('Report request body received:', req.body);
+
     await newReport.save();
     res.status(201).json({ message: 'Report created' });
   } catch (err) {
@@ -23,7 +25,8 @@ export const getReports = async (req, res) => {
   try {
     const reports = await Report.find()
       .populate('reporter', 'firstName lastName email')
-      .populate('reportedUser', 'firstName lastName email');
+      .populate('reportedUser', 'firstName lastName email')
+      .sort({ date: -1 });
     res.status(200).json(reports);
   } catch (err) {
     res.status(500).json({ error: 'Could not fetch reports' });

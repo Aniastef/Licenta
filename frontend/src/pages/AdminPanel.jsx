@@ -1989,13 +1989,18 @@ const AdminPanel = () => {
                       <Th>Reason</Th>
                       <Th>Details</Th>
                       <Th>Date</Th>
+                      <Th>Status</Th>
                       <Th>Actions</Th>
                     </Tr>
                   </Thead>
                   <Tbody>
                     {reports.length > 0 ? (
                       reports.map((report) => (
-                        <Tr key={report._id}>
+                        <Tr 
+                        key={report._id}
+                        opacity={report.resolved ? 0.6 : 1}
+                        bg={report.resolved ? 'gray.50' : 'transparent'}
+                        >
                           <Td>
                             {report.reporter?.firstName} {report.reporter?.lastName}
                           </Td>
@@ -2021,8 +2026,9 @@ const AdminPanel = () => {
                               size="sm"
                               colorScheme="green"
                               onClick={() => handleResolveReport(report._id)}
+                              isDisabled={report.resolved} 
                             >
-                              Mark Resolved
+                              {report.resolved ? 'Resolved' : 'Mark Resolved'}
                             </Button>
                             <Button
                               size="sm"

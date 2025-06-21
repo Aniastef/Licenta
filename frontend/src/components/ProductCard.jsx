@@ -393,7 +393,7 @@ const ProductCard = ({ product }) => {
                     </Box>
                   ) : viewMode === 'image' ? (
                     <Box
-                      w="800px"
+                      w="600px"
                       h="600px"
                       display="flex"
                       justifyContent="center"
