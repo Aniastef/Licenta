@@ -79,8 +79,8 @@ export const createProduct = async (req, res) => {
         user: req.user._id,
 
         galleries: Array.isArray(galleries) && galleries.length > 0
-          ? galleries.map(gId => ({ gallery: gId, order: 0 })) 
-          : [],
+        ? galleries.map(gId => ({ gallery: gId, order: 0 })) 
+        : [],
       });
 
 
@@ -91,6 +91,14 @@ export const createProduct = async (req, res) => {
 
     await newProduct.save();
     console.log('Product saved successfully:', newProduct._id);
+
+     if (galleries && galleries.length > 0) {
+      await Gallery.updateMany(
+        { _id: { $in: galleries } },
+        { $addToSet: { products: { product: newProduct._id, order: 0 } } }
+      );
+      console.log(`Updated ${galleries.length} galleries with the new product.`);
+    }
 
     await User.findByIdAndUpdate(req.user._id, { $push: { products: newProduct._id } });
     console.log('User document updated with new product ID.');
@@ -186,6 +194,15 @@ export const deleteProduct = async (req, res) => {
       req.user.role !== 'admin'
     ) {
       return res.status(403).json({ error: 'Unauthorized action' });
+    }
+
+    const galleryIds = product.galleries.map(g => g.gallery);
+    if (galleryIds.length > 0) {
+      await Gallery.updateMany(
+        { _id: { $in: galleryIds } },
+        { $pull: { products: { product: product._id } } }
+      );
+      console.log(`Removed product reference from ${galleryIds.length} galleries.`);
     }
 
     await User.findByIdAndUpdate(product.user, { $pull: { products: product._id } });
@@ -299,7 +316,7 @@ export const updateProduct = async (req, res) => {
     product.category = category || product.category;
 
     await product.save();
-    
+
     await addAuditLog({
       action: 'update_product',
       performedBy: req.user._id,
@@ -350,7 +367,8 @@ export const getProductsNotInGallery = async (req, res) => {
       return res.status(404).json({ error: 'Gallery not found' });
     }
 
-    const products = await Product.find({ _id: { $nin: gallery.products } });
+    const productIdsInGallery = gallery.products.map(p => p.product);
+    const products = await Product.find({ _id: { $nin: productIdsInGallery } });
 
     res.status(200).json({ products });
   } catch (err) {
