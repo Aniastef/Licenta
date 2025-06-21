@@ -236,6 +236,26 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized action' });
     }
 
+    const oldGalleryIds = product.galleries.map(g => g.gallery.toString());
+    const newGalleryIds = (galleries || []).map(g => g.gallery.toString());
+
+    const galleriesToAdd = newGalleryIds.filter(id => !oldGalleryIds.includes(id));
+    const galleriesToRemove = oldGalleryIds.filter(id => !newGalleryIds.includes(id));
+
+    if (galleriesToAdd.length > 0) {
+      await Gallery.updateMany(
+        { _id: { $in: galleriesToAdd } },
+        { $addToSet: { products: { product: product._id, order: 0 } } }
+      );
+    }
+
+    if (galleriesToRemove.length > 0) {
+      await Gallery.updateMany(
+        { _id: { $in: galleriesToRemove } },
+        { $pull: { products: { product: product._id } } }
+      );
+    }
+
     const uploadedImages = [];
     for (const img of images) {
       if (img.startsWith('data:')) {
@@ -279,6 +299,7 @@ export const updateProduct = async (req, res) => {
     product.category = category || product.category;
 
     await product.save();
+    
     await addAuditLog({
       action: 'update_product',
       performedBy: req.user._id,

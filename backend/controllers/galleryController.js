@@ -500,7 +500,7 @@ export const removeProductFromGallery = async (req, res) => {
     gallery.products = gallery.products.filter((item) => item.product.toString() !== productId);
     await gallery.save();
 
-    await Product.findByIdAndUpdate(productId, { $pull: { galleries: gallery._id } });
+    await Product.findByIdAndUpdate(productId, { $pull: { galleries: { gallery: gallery._id } } });
 
     res.status(200).json({ message: 'Product removed from gallery' });
   } catch (err) {
