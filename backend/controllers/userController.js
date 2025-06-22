@@ -115,10 +115,10 @@ export const addArticleToFavorites = async (req, res) => {
       user.favoriteArticles.push(articleIdObj);
       await user.save();
 
-      const article = await Article.findById(articleId).populate('author', 'username');
-      if (article && article.author._id.toString() !== req.user._id.toString()) {
+      const article = await Article.findById(articleId).populate('user', 'username');
+      if (article && article.user._id.toString() !== req.user._id.toString()) {
         await Notification.create({
-          user: article.author._id,
+          user: article.user._id,
           fromUser: req.user._id,
           resourceType: 'Article',
           resourceId: article._id,
@@ -615,7 +615,7 @@ export const getUserFavorites = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username })
       .populate('favorites')
-      .populate('favoriteArticles', 'title subtitle createdAt')
+      .populate('favoriteArticles', 'title subtitle content coverImage createdAt')
       .populate({
         path: 'favoriteGalleries',
         populate: {

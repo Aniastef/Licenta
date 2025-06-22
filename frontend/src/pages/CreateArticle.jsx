@@ -19,6 +19,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import GalleryImageCropModal from '../components/GalleryImageCropModal';
 import imageCompression from 'browser-image-compression';
+
 const ARTICLE_CATEGORIES = [
   'Personal',
   'Opinion',
@@ -73,7 +74,7 @@ const CreateOrEditArticlePage = () => {
         })
         .finally(() => setLoadingExisting(false));
     }
-  }, [id]);
+  }, [id, toast]);
 
   const handleSubmit = async (asDraft = false) => {
     if (!title || !content) {
@@ -130,111 +131,104 @@ const CreateOrEditArticlePage = () => {
 
   if (loadingExisting)
     return (
-      <Container maxW="container.md" py={10}>
+      <Container maxW="container.md" py={10} centerContent>
         <Spinner size="xl" />
       </Container>
     );
 
   return (
     <Container maxW="container.md">
-      <VStack spacing={4} align="stretch">
-        <Heading textAlign="center">{id ? 'Edit ARTicle' : 'Create new article'}</Heading>
-        <Input
-          placeholder="Article Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <Input
-          placeholder="Subtitle"
-          value={subtitle}
-          onChange={(e) => setSubtitle(e.target.value)}
-        />
-        <FormControl>
-          <FormLabel htmlFor="article-category-select">Category</FormLabel>
-          <Select
-            id="article-category-select"
-            placeholder="Select category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            {ARTICLE_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Stack w="full">
-          <FormLabel htmlFor="article-cover-image">Cover image</FormLabel>
-          <Input
-            id="article-cover-image"
-            type="file"
-            accept="image/*"
-            mt={-3}
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  setRawCoverImage(reader.result);
-                  setIsCropModalOpen(true);
-                };
-                reader.readAsDataURL(file);
-              }
-            }}
-            data-testid="cover-image-input"
-          />
-        </Stack>
-
-        {croppedCoverImage && (
-          <Box mt={2}>
-            <img
-              src={croppedCoverImage}
-              alt="Cover Preview"
-              style={{ maxHeight: '250px', width: '100%', objectFit: 'cover', borderRadius: '6px' }}
+      <VStack spacing={8} py={4}>
+        <Heading textAlign="center">{id ? 'Edit ARTicle' : 'Create new ARTicle'}</Heading>
+        <Box w="full" p={6} rounded="lg" shadow="md">
+          <VStack spacing={4} align="stretch">
+            <Input
+              placeholder="Article Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
-          </Box>
-        )}
+            <Input
+              placeholder="Subtitle"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+            />
+            <FormControl>
+              <FormLabel htmlFor="article-category-select">Category</FormLabel>
+              <Select
+                id="article-category-select"
+                placeholder="Select category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {ARTICLE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
 
-        <ReactQuill
-          value={content}
-          onChange={setContent}
-          modules={{
-            toolbar: [
-              [{ header: [1, 2, 3, false] }],
-              ['bold', 'italic', 'underline', 'strike'],
-              [{ list: 'ordered' }, { list: 'bullet' }],
-              [{ align: [] }],
-              [{ color: [] }, { background: [] }],
-              ['link', 'image'],
-              ['clean'],
-            ],
-          }}
-          formats={[
-            'header',
-            'bold',
-            'italic',
-            'underline',
-            'strike',
-            'list',
-            'bullet',
-            'align',
-            'color',
-            'background',
-            'link',
-            'image',
-          ]}
-          style={{ height: '200px', marginBottom: '50px' }}
-        />
+            <Stack w="full">
+              <FormLabel htmlFor="article-cover-image">Cover image</FormLabel>
+              <Input
+                id="article-cover-image"
+                type="file"
+                accept="image/*"
+                p={1.5} 
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setRawCoverImage(reader.result);
+                      setIsCropModalOpen(true);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                data-testid="cover-image-input"
+              />
+            </Stack>
 
-        <Box display="flex" justifyContent="flex-end" gap={4}>
-          <Button onClick={() => handleSubmit(true)} variant="outline" isLoading={isLoading}>
-            Save Draft
-          </Button>
-          <Button colorScheme="blue" onClick={() => handleSubmit(false)} isLoading={isLoading}>
-            {id ? 'Update' : 'Publish'}
-          </Button>
+            {croppedCoverImage && (
+              <Box mt={2}>
+                <Text fontSize="sm" mb={2}>Cover Preview:</Text>
+                <img
+                  src={croppedCoverImage}
+                  alt="Cover Preview"
+                  style={{ maxHeight: '250px', width: '100%', objectFit: 'cover', borderRadius: '6px' }}
+                />
+              </Box>
+            )}
+
+            <FormControl>
+                <FormLabel>Content</FormLabel>
+                 <ReactQuill
+                    value={content}
+                    onChange={setContent}
+                    modules={{
+                    toolbar: [
+                        [{ header: [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        [{ align: [] }],
+                        [{ color: [] }, { background: [] }],
+                        ['link', 'image'],
+                        ['clean'],
+                    ],
+                    }}
+                    formats={[
+                        'header', 'bold', 'italic', 'underline', 'strike',
+                        'list', 'bullet', 'align', 'color', 'background', 'link', 'image',
+                    ]}
+                    style={{ height: '200px', marginBottom: '50px' }}
+                />
+            </FormControl>
+
+            <Button colorScheme="pink" onClick={() => handleSubmit(false)} isLoading={isLoading} w="full">
+              {id ? 'Update Article' : 'Publish Article'}
+            </Button>
+          </VStack>
         </Box>
       </VStack>
       <GalleryImageCropModal

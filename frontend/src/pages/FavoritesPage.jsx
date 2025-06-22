@@ -13,6 +13,7 @@ import {
   Tab,
   TabPanel,
   Button,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { useParams, Link } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
@@ -51,7 +52,7 @@ const FavoritesPage = () => {
   if (loading) return <Spinner size="xl" />;
 
   return (
-    <Box p={4} maxW="1900px" mx="auto">
+    <Box p={4} maxW="1300px" mx="auto">
       {}
       <Flex justifyContent="center" alignItems="center" mb={6} position="relative">
         <Heading size="lg">User favorites</Heading>
@@ -65,8 +66,8 @@ const FavoritesPage = () => {
       <Tabs isFitted variant="enclosed">
         <TabList mb={4}>
           <Tab>Favorite Galleries</Tab>
-          <Tab>Favorite Products</Tab>
-          <Tab>Favorite Articles</Tab>
+          <Tab>Favorite Artworks</Tab>
+          <Tab>Favorite ARTicles</Tab>
         </TabList>
 
         <TabPanels>
@@ -75,10 +76,11 @@ const FavoritesPage = () => {
             {favoriteGalleries.length === 0 ? (
               <Text>No favorite galleries.</Text>
             ) : (
-              <Flex wrap="wrap" justify="center" gap={6}>
+              <Flex wrap="wrap" justify="center" gap={8}>
                 {favoriteGalleries.map((gallery) => (
                   <Link key={gallery._id} to={`/galleries/${gallery._id}`}>
                     <Box
+                      w="600px"
                       bg="gray.100"
                       borderRadius="md"
                       boxShadow="md"
@@ -87,8 +89,10 @@ const FavoritesPage = () => {
                       _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
                       transition="all 0.2s"
                       cursor="pointer"
+                      display="flex"
+                      flexDirection="column"
                     >
-                      <Box w="100%" h="250px" bg="gray.300" mb={3} overflow="hidden">
+                      <Box w="100%" h="220px" bg="gray.300" mb={3} overflow="hidden">
                         {gallery.coverPhoto ? (
                           <Image
                             src={gallery.coverPhoto}
@@ -111,7 +115,15 @@ const FavoritesPage = () => {
                           </Flex>
                         )}
                       </Box>
-                      <Box textAlign="center" py={2} px={2}>
+                      <Box
+                        textAlign="center"
+                        py={2}
+                        px={2}
+                        display="flex"
+                        flexDir="column"
+                        justifyContent="space-between"
+                        flex="1"
+                      >
                         <Text fontWeight="bold" mb={1}>
                           {gallery.name}
                         </Text>
@@ -131,31 +143,29 @@ const FavoritesPage = () => {
           </TabPanel>
 
           {}
-          <TabPanel>
+     <TabPanel>
             {favoriteProducts.length === 0 ? (
               <Text>No favorite products.</Text>
             ) : (
-              <Flex wrap="wrap" justify="center" gap={6}>
+              <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }}>
                 {favoriteProducts.map((product) => (
                   <Link to={`/products/${product._id}`} key={product._id}>
                     <Box
-                      w="220px"
-                      bg="white"
+                      bg="gray.100"
                       borderRadius="md"
                       boxShadow="md"
                       overflow="hidden"
-                      border="1px solid #e2e8f0"
-                      _hover={{ boxShadow: 'lg', transform: 'scale(1.03)' }}
+                      w="270px"
+                      border="1px solid #ccc"
+                      _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
                       transition="all 0.2s"
                       cursor="pointer"
-                      display="flex"
-                      flexDirection="column"
                     >
-                      <Box h="270px" bg="gray.100">
+                      <Box h="270px" w="270px" bg="gray.200">
                         {product.images?.[0] ? (
                           <Image
                             src={product.images[0]}
-                            alt={product.name}
+                            alt={product.title}
                             w="100%"
                             h="100%"
                             objectFit="cover"
@@ -169,7 +179,7 @@ const FavoritesPage = () => {
 
                       <Box textAlign="center" py={3} px={2}>
                         <Text fontWeight="bold" noOfLines={1}>
-                          {product.name}
+                          {product.title}
                         </Text>
                         {product.forSale && product.price > 0 && (
                           <Text fontSize="sm" color="green.600">
@@ -185,103 +195,71 @@ const FavoritesPage = () => {
                     </Box>
                   </Link>
                 ))}
-              </Flex>
+              </SimpleGrid>
             )}
           </TabPanel>
 
           {}
-          <TabPanel>
+         <TabPanel>
             {favoriteArticles.length === 0 ? (
               <Text>No favorite articles.</Text>
             ) : (
-              <Flex wrap="wrap" justify="center" gap={6}>
+              <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={5} mt={6}>
                 {favoriteArticles.map((article) => (
-                  <Box
-                    key={article._id}
-                    w="320px"
-                    bg="white"
-                    borderRadius="md"
-                    shadow="md"
-                    border="1px solid #e2e8f0"
-                    overflow="hidden"
-                    transition="all 0.2s"
-                    _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
-                    cursor="pointer"
-                    onClick={() => (window.location.href = `/articles/${article._id}`)}
-                  >
-                    {}
-                    {article.coverImage && (
-                      <Image
-                        src={article.coverImage}
-                        alt="Cover"
-                        w="100%"
-                        h="200px"
-                        objectFit="cover"
-                        borderTopRadius="md"
-                      />
-                    )}
-
-                    {}
+                  <Link to={`/articles/${article._id}`} key={article._id}>
                     <Box
-                      px={4}
-                      py={4}
+                      borderWidth="1px"
+                      borderRadius="md"
+                      p={4}
+                      bg="white"
+                      shadow="sm"
+                      _hover={{ boxShadow: 'md', transform: 'scale(1.01)' }}
+                      transition="all 0.2s"
+                      h="100%"
                       sx={{
                         backgroundImage: `
-                repeating-linear-gradient(to bottom, transparent, transparent 29px, #cbd5e0 30px),
-                linear-gradient(to right, #dc2626 1px, transparent 2px)
-              `,
+                          repeating-linear-gradient(to bottom, transparent, transparent 29px, #cbd5e0 30px),
+                          linear-gradient(to right, #dc2626 1px, transparent 2px)
+                        `,
                         backgroundSize: '100% 30px, 1px 100%',
                         backgroundPosition: 'left 40px top, left 40px top',
                         backgroundRepeat: 'repeat-y, no-repeat',
                       }}
                     >
+                      {article.coverImage && (
+                        <Image
+                          src={article.coverImage}
+                          alt="Cover"
+                          w="100%"
+                          h="150px"
+                          objectFit="cover"
+                          borderRadius="md"
+                          mb={3}
+                        />
+                      )}
                       {article.category && (
-                        <Text fontSize="xs" color="teal.600" mb={1}>
-                          {article.category}
+                        <Text fontSize="sm" color="teal.600">
+                          Category: {article.category}
                         </Text>
                       )}
-
-                      <Text
-                        fontWeight="bold"
-                        fontSize="lg"
-                        noOfLines={2}
-                        _hover={{ textDecoration: 'underline', color: 'blue.500' }}
-                      >
+                      <Text fontWeight="bold" fontSize="xl">
                         {article.title}
                       </Text>
-
                       {article.subtitle && (
-                        <Text fontSize="sm" color="gray.600" noOfLines={2} mt={1}>
+                        <Text fontSize="md" color="gray.600">
                           {article.subtitle}
                         </Text>
                       )}
-
-                      <Text fontSize="sm" color="gray.500" mt={2}>
-                        {article.content?.replace(/<[^>]+>/g, '').slice(0, 60)}...
+                      <Text fontSize="sm" mt={2} color="gray.500" noOfLines={2}>
+                        {article.content?.replace(/<[^>]+>/g, '').slice(0, 50)}...
                       </Text>
-
                       <Text fontSize="xs" color="gray.400" mt={2}>
-                        {new Date(article.createdAt).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
+                        {new Date(article.createdAt).toLocaleString()}
                       </Text>
-
-                      <Button
-                        as={RouterLink}
-                        to={`/articles/${article._id}`}
-                        size="sm"
-                        variant="link"
-                        colorScheme="blue"
-                        mt={2}
-                      >
-                        View Details →
-                      </Button>
                     </Box>
-                  </Box>
+                  </Link>
                 ))}
-              </Flex>
+              </SimpleGrid>
             )}
           </TabPanel>
         </TabPanels>

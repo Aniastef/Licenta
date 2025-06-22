@@ -82,7 +82,7 @@ const SearchBar = () => {
           <option value="products">Products</option>
           <option value="galleries">Galleries</option>
           <option value="events">Events</option>
-          <option value="articles">Articles</option>
+          <option value="articles">ARTticles</option>
           <option value="users">Users</option>
         </Select>
 

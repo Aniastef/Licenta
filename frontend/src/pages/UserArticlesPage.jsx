@@ -122,7 +122,7 @@ const UserArticlesPage = () => {
     <Box maxW="1800px" mx="auto" py={6}>
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
         <Text fontWeight="bold" fontSize="2xl" textAlign="center">
-          @{username}'s Articles
+          @{username}'s ARTicles
         </Text>
         <Flex position="absolute" right={4} gap={2}>
           <Circle size="30px" bg="yellow.400" />

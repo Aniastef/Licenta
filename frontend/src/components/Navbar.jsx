@@ -98,7 +98,7 @@ const Navbar = () => {
                   ➕ Event
                 </MenuItem>
                 <MenuItem as={Link} to="/create/article">
-                  ➕ Article
+                  ➕ ARTicle
                 </MenuItem>
               </MenuList>
             </Menu>
@@ -132,7 +132,7 @@ const Navbar = () => {
                   My events
                 </MenuItem>
                 <MenuItem as={Link} to={`${user.username}/articles`}>
-                  My articles
+                  My ARTicles
                 </MenuItem>
                 <MenuItem as={Link} to="/orders">
                   My orders

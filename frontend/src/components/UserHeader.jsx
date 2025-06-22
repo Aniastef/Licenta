@@ -468,7 +468,7 @@ const UserHeader = ({ user }) => {
                 <Tab _selected={{ bg: 'orange.400', color: 'white' }}>Artworks</Tab>
                 <Tab _selected={{ bg: 'green.400', color: 'white' }}>Galleries</Tab>
                 <Tab _selected={{ bg: 'purple.400', color: 'white' }}>Events</Tab>
-                <Tab _selected={{ bg: 'blue.400', color: 'white' }}>Articles</Tab>
+                <Tab _selected={{ bg: 'blue.400', color: 'white' }}>ARTicles</Tab>
               </TabList>
 
               <TabPanels>
@@ -828,7 +828,7 @@ const UserHeader = ({ user }) => {
                           </Box>
                         ))
                       ) : (
-                        <Text>No articles yet.</Text>
+                        <Text>No ARTicles yet.</Text>
                       )}
                     </Flex>
 
@@ -839,7 +839,7 @@ const UserHeader = ({ user }) => {
                           color="blue.500"
                           _hover={{ textDecoration: 'underline' }}
                         >
-                          See all articles →
+                          See all ARTicles →
                         </Text>
                       </Link>
                     </Box>

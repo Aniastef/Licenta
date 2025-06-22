@@ -670,7 +670,7 @@ const MessagesPage = () => {
                     mb={3}
                   >
                     <Text fontSize="sm" fontWeight="bold" color="gray.600">
-                      Atașamente:
+                      Attached Files:
                     </Text>
                     {selectedFiles.map((file, index) => (
                       <HStack key={index} justify="space-between" width="100%">

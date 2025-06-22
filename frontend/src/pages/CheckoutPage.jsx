@@ -90,7 +90,7 @@ const CheckoutPage = () => {
         const errorMessage = data?.error || 'Failed to process order';
         console.error('Payment processing failed', errorMessage);
         toast({
-          title: 'Plata a eșuat',
+          title: 'Payment error',
           description: errorMessage,
           status: 'error',
           duration: 4000,
