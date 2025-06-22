@@ -557,7 +557,7 @@ const UserHeader = ({ user }) => {
                         _hover={{ textDecoration: 'underline' }}
                         cursor="pointer"
                       >
-                        See all user's artworks →
+                         See user's all artworks →
                       </Text>
                     </Link>
                   </Box>
@@ -651,7 +651,7 @@ const UserHeader = ({ user }) => {
                           color="blue.500"
                           _hover={{ textDecoration: 'underline' }}
                         >
-                          See all user's galleries →
+                          See user's all galleries →
                         </Text>
                       </Link>
                     </Box>
@@ -772,7 +772,7 @@ const UserHeader = ({ user }) => {
                         _hover={{ textDecoration: 'underline' }}
                         cursor="pointer"
                       >
-                        See all user's events →
+                        See user's all events →
                       </Text>
                     </Link>
                   </Box>
@@ -839,7 +839,7 @@ const UserHeader = ({ user }) => {
                           color="blue.500"
                           _hover={{ textDecoration: 'underline' }}
                         >
-                          See all ARTicles →
+                          See user's all ARTicles →
                         </Text>
                       </Link>
                     </Box>
