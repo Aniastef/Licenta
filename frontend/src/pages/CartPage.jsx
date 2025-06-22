@@ -136,7 +136,7 @@ const CartPage = () => {
                     color={isEvent ? 'blue.600' : 'gray.500'}
                     fontWeight="semibold"
                   >
-                    {isEvent ? '🎟️ Event Ticket' : '🛍️ Product'}
+                    {isEvent ? 'Event Ticket' : 'Product'}
                   </Text>
                 </Link>
 

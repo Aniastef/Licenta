@@ -62,7 +62,7 @@ export const getCart = async (req, res) => {
 
     res.json(user.cart);
   } catch (error) {
-    console.error('❌ Error in getCart:', error);
+    console.error(' Error in getCart:', error);
     res.status(500).json({ error: 'Something went wrong' });
   }
 };

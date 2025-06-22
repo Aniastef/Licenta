@@ -56,7 +56,7 @@ const LANGUAGES = [
   { label: '🇳🇱 Dutch', value: 'nl' },
   { label: '🇯🇵 Japanese', value: 'ja' },
   { label: '🇨🇳 Chinese', value: 'zh' },
-  { label: '🌐 Other', value: 'other' },
+  { label: 'Other', value: 'other' },
 ];
 
 export default function EditEventPage() {

@@ -200,16 +200,16 @@ const UserAllEventsPage = () => {
   };
   return (
     <Box p={4} maxW="1200px" mx="auto">
-           {' '}
+      {' '}
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
-               {' '}
+        {' '}
         <Text fontWeight="bold" fontSize="2xl" textAlign="center">
-                    {user ? `${user.firstName} ${user.lastName}'s Events` : `${username}'s Events`} 
-               {' '}
+         {user ? `${user.firstName} ${user.lastName}'s Events` : `${username}'s Events`} 
+          {' '}
         </Text>
-               {' '}
+        {' '}
         <Flex position="absolute" right={4} gap={2}>
-                   {' '}
+          {' '}
           {currentUser?.username?.toLowerCase() === username?.toLowerCase() && (
             <Button
               colorScheme="purple"
@@ -217,104 +217,104 @@ const UserAllEventsPage = () => {
               mb={4}
               onClick={() => (window.location.href = '/create/event')}
             >
-                            Create new event            {' '}
+               Create new event {' '}
             </Button>
           )}
-                    <Circle size="30px" bg="yellow.400" />
-                    <Circle size="30px" bg="green.400" />       {' '}
+         <Circle size="30px" bg="yellow.400" />
+           <Circle size="30px" bg="green.400" />{' '}
         </Flex>
-             {' '}
+        {' '}
       </Flex>
-           {' '}
+     {' '}
       <Flex gap={4} wrap="wrap" justify="center">
-                {}
-               {' '}
+         {}
+        {' '}
         <Input
           placeholder="Search by name, tags, or co-hosts..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           maxW="310px"
         />
-                {}
-               {' '}
+         {}
+       {' '}
         <Input
           placeholder="Search by location..."
           value={locationSearch}
           onChange={(e) => setLocationSearch(e.target.value)}
           maxW="250px"
         />
-                {}       {' '}
+        {}{' '}
         <Select
           placeholder="Filter by role"
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
           maxW="200px"
         >
-                    <option value="organizer">Organizer</option>         {' '}
-          <option value="cohost">Co-Host</option>       {' '}
+           <option value="organizer">Organizer</option> {' '}
+          <option value="cohost">Co-Host</option>{' '}
         </Select>
-             {' '}
+        {' '}
       </Flex>
-           {' '}
+      {' '}
       <Flex wrap="wrap" justify="space-between" align="flex-start" mt={4}>
-                {}       {' '}
+         {}{' '}
         <Box>
-                    {}         {' '}
+          {}{' '}
           <Flex align="center" gap={3} mb={2}>
-                       {' '}
+            {' '}
             <Text fontWeight="bold" minW="70px">
-                            Status            {' '}
+              Status {' '}
             </Text>
-                       {' '}
+            {' '}
             <CheckboxGroup value={statusFilters} onChange={setStatusFilters}>
-                           {' '}
+              {' '}
               <Flex gap={3}>
-                                <Checkbox value="upcoming">Upcoming</Checkbox>               {' '}
-                <Checkbox value="ongoing">Ongoing</Checkbox>               {' '}
-                <Checkbox value="completed">Completed</Checkbox>             {' '}
+                 <Checkbox value="upcoming">Upcoming</Checkbox>{' '}
+                <Checkbox value="ongoing">Ongoing</Checkbox>{' '}
+                <Checkbox value="completed">Completed</Checkbox>{' '}
               </Flex>
-                         {' '}
+               {' '}
             </CheckboxGroup>
-                     {' '}
+           {' '}
           </Flex>
-                    {}         {' '}
+          {}{' '}
           <Flex align="center" gap={3}>
-                       {' '}
+           {' '}
             <Text fontWeight="bold" minW="70px">
-                            Ticket Type            {' '}
+               Ticket Type {' '}
             </Text>
-                       {' '}
+           {' '}
             <CheckboxGroup value={ticketTypeFilters} onChange={setTicketTypeFilters}>
-                           {' '}
+              {' '}
               <Flex gap={3}>
-                                <Checkbox value="free">Free</Checkbox>               {' '}
-                <Checkbox value="paid">Paid</Checkbox>               {' '}
-                <Checkbox value="donation">Donation</Checkbox>             {' '}
+                 <Checkbox value="free">Free</Checkbox> {' '}
+                <Checkbox value="paid">Paid</Checkbox>{' '}
+                <Checkbox value="donation">Donation</Checkbox> {' '}
               </Flex>
-                         {' '}
+              {' '}
             </CheckboxGroup>
-                     {' '}
+            {' '}
           </Flex>
-                 {' '}
+          {' '}
         </Box>
-                {}       {' '}
+         {}{' '}
         <Box maxW="500px" ml={[0, 4]} flex="1">
-                   {' '}
+          {' '}
           <Flex align="center" mb={2}>
-                       {' '}
+           {' '}
             <Checkbox
               isChecked={enablePriceFilter}
               onChange={(e) => setEnablePriceFilter(e.target.checked)}
             >
-                            Interval preț            {' '}
+            Price interval {' '}
             </Checkbox>
-                     {' '}
+            {' '}
           </Flex>
-                   {' '}
+        {' '}
           <Flex direction="row" align="center" gap={4}>
-                        {}           {' '}
+             {}{' '}
             <Box flex="1" w="100%">
-                           {' '}
+              {' '}
               <RangeSlider
                 isDisabled={!enablePriceFilter}
                 min={0}
@@ -328,18 +328,18 @@ const UserAllEventsPage = () => {
                 }}
                 w="100%"
               >
-                               {' '}
+               {' '}
                 <RangeSliderTrack>
-                                    <RangeSliderFilledTrack />               {' '}
+                  <RangeSliderFilledTrack />{' '}
                 </RangeSliderTrack>
-                                <RangeSliderThumb index={0} />
-                                <RangeSliderThumb index={1} />             {' '}
+                <RangeSliderThumb index={0} />
+                 <RangeSliderThumb index={1} />{' '}
               </RangeSlider>
-                         {' '}
+            {' '}
             </Box>
-                        {}           {' '}
+          {}{' '}
             <Flex gap={2} align="center">
-                           {' '}
+            {' '}
               <Input
                 size="sm"
                 type="text"
@@ -354,8 +354,8 @@ const UserAllEventsPage = () => {
                   }
                 }}
               />
-                          <Text>-</Text>
-                         {' '}
+              <Text>-</Text>
+              {' '}
               <Input
                 size="sm"
                 type="text"
@@ -370,21 +370,21 @@ const UserAllEventsPage = () => {
                   }
                 }}
               />
-                       {' '}
+              {' '}
             </Flex>
-                   {' '}
+            {' '}
           </Flex>
-               {' '}
+         {' '}
         </Box>
-           {' '}
+       {' '}
       </Flex>
-         {' '}
+     {' '}
       {tagOptions.length > 0 && (
         <Wrap spacing={2} mb={4} justify="center">
-                 {' '}
+         {' '}
           {tagOptions.map((tag) => (
             <WrapItem key={tag}>
-                         {' '}
+              {' '}
               <Button
                 size="sm"
                 borderRadius="full"
@@ -396,29 +396,29 @@ const UserAllEventsPage = () => {
                   )
                 }
               >
-                              {`#${tag}`}           {' '}
+                {`#${tag}`}{' '}
               </Button>
-                       {' '}
+            {' '}
             </WrapItem>
           ))}
-               {' '}
+          {' '}
         </Wrap>
       )}
-         {' '}
+      {' '}
       {loading ? (
         <Flex justify="center">
-                  <Spinner size="xl" />     {' '}
+          <Spinner size="xl" />{' '}
         </Flex>
       ) : filteredEvents.length === 0 ? (
         <Text>No events found.</Text>
       ) : (
         <>
-                 {' '}
+        {' '}
           <Flex mt={4} wrap="wrap" justify="center" gap={5}>
-                     {' '}
+           {' '}
             {filteredEvents.map((event) => (
               <Link to={`/events/${event._id}`} key={event._id}>
-                             {' '}
+               {' '}
                 <Box
                   w="350px"
                   borderWidth="1px"
@@ -427,9 +427,9 @@ const UserAllEventsPage = () => {
                   _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
                   transition="all 0.2s"
                 >
-                                 {' '}
+                 {' '}
                   <Box h="150px" overflow="hidden">
-                                     {' '}
+                     {' '}
                     {event.coverImage ? (
                       <Image
                         src={event.coverImage}
@@ -447,7 +447,7 @@ const UserAllEventsPage = () => {
                         alignItems="center"
                         justifyContent="center"
                       >
-                                             {' '}
+                        {' '}
                         <Text
                           fontWeight="bold"
                           color="white"
@@ -455,69 +455,69 @@ const UserAllEventsPage = () => {
                           textAlign="center"
                           px={2}
                         >
-                                                  {event.name}                     {' '}
+                          {event.name}{' '}
                         </Text>
-                                           {' '}
+                        {' '}
                       </Box>
                     )}
-                                   {' '}
+                    {' '}
                   </Box>
-                                 {' '}
+                 {' '}
                   <Flex p={4} gap={3} align="center">
-                                      {}                 {' '}
+                  {}{' '}
                     <Flex direction="column" align="center" minW="50px">
-                                         {' '}
+                      {' '}
                       {(() => {
                         const { day, month, year } = formatDate(event.date);
                         return (
                           <>
-                                                     {' '}
+                       {' '}
                             <Text fontWeight="bold" fontSize="lg">
                               {day}
                             </Text>
-                                                     {' '}
+                           {' '}
                             <Text fontWeight="bold" fontSize="sm">
                               {month}
                             </Text>
-                                                     {' '}
+                           {' '}
                             <Text fontWeight="bold" fontSize="sm">
                               {year}
                             </Text>
-                                                   {' '}
+                           {' '}
                           </>
                         );
                       })()}
-                                       {' '}
+                     {' '}
                     </Flex>
-                                      {}                 {' '}
+                    {}{' '}
                     <Box textAlign="left" flex="1" overflow="hidden">
-                      {}                   {' '}
+                      {}{' '}
                       <Text fontSize="md" fontWeight="bold" isTruncated>
-                                              {event.name || 'Nume eveniment'}                 
-                         {' '}
+                       {event.name || 'Nume eveniment'}
+                        {' '}
                       </Text>
-                                         {' '}
+                     {' '}
                       {event.category && <Text fontSize="sm">Category: {event.category}</Text>}
-                      {}                   {' '}
+                      {}{' '}
                       <Text fontSize="sm" isTruncated>
-                                              {event.location || 'TBA'}                   {' '}
+                        {event.location || 'TBA'}{' '}
                       </Text>
-                                          <Text fontSize="xs">{event.time || 'TBA'}</Text>         
-                             {' '}
+                      <Text fontSize="xs">{event.time || 'TBA'}</Text>
+                      {' '}
                     </Box>
-                                   {' '}
+                    {' '}
                   </Flex>
-                               {' '}
+                 {' '}
                 </Box>
-                           {' '}
+                {' '}
               </Link>
             ))}
-                   {' '}
+            {' '}
           </Flex>
-               {' '}
+          {' '}
         </>
       )}
-       {' '}
+      {' '}
     </Box>
   );
 };

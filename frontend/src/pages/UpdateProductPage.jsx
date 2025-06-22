@@ -453,7 +453,6 @@ const EditProductPage = () => {
                 <FormLabel>Galleries</FormLabel>
                 <CheckboxGroup
                   colorScheme="orange"
-                  // Extragem ID-urile din array-ul de obiecte pentru a le potrivi cu valoarea checkbox-urilor
                   value={product.galleries?.map(g => g.gallery._id) || []}
                   onChange={handleGalleryChange}
                 >

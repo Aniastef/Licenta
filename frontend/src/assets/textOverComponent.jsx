@@ -6,7 +6,7 @@ const TextOverImage = () => {
     <Box position="relative" w="full" h="300px">
       {}
       <Image
-        src={img} // Înlocuiește cu imaginea ta
+        src={img}
         alt="Background"
         w="full"
         h="full"
@@ -16,8 +16,8 @@ const TextOverImage = () => {
       {}
       <Text
         position="absolute"
-        top="5%" // Ajustează pentru poziționarea verticală
-        left="6%" // Ajustează pentru poziționarea orizontală
+        top="5%"
+        left="6%" 
         fontSize="lg"
         color="black"
         textAlign="left"

@@ -15,20 +15,20 @@ const RectangleShape = ({
 }) => {
   return (
     <Box
-      bg={bgColor} // Fundalul dreptunghiului
-      borderRadius="sm" // Colțuri rotunjite
-      minW={minW} // Lățime minimă
-      maxW={maxW} // Lățime maximă
-      minH={minH} // Înălțime minimă
-      px={3} // Padding pe orizontală
+      bg={bgColor}
+      borderRadius="sm" 
+      minW={minW} 
+      maxW={maxW} 
+      minH={minH} 
+      px={3} 
       py={4}
-      sx={{ transform: `rotate(${rotation})` }} // Rotire
-      textAlign={textAlign} // Text centrat
+      sx={{ transform: `rotate(${rotation})` }}
+      textAlign={textAlign} 
       position={position}
       left={left}
       right={right}
-      display="flex" // Activează layout-ul Flexbox
-      alignItems="center" // Aliniere pe verticală
+      display="flex" 
+      alignItems="center" 
     >
       {title && <Text fontSize="lg">{title}</Text>}
     </Box>

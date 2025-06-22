@@ -70,7 +70,7 @@ const OrdersPage = () => {
       const doc = new jsPDF();
 
       doc.setFontSize(20);
-      doc.text('🎫 Digital Ticket', 70, 25);
+      doc.text('Digital Ticket', 70, 25);
       doc.setFontSize(12);
       doc.text(`Order #${order._id}`, 14, 40);
       doc.text(`Date: ${new Date(order.date).toLocaleString()}`, 14, 48);

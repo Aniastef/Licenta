@@ -156,7 +156,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
       });
 
       console.log(
-        `✅ Gallery ${isGalleryFavorite ? 'removed from' : 'added to'} favorites:`,
+        `Gallery ${isGalleryFavorite ? 'removed from' : 'added to'} favorites:`,
         gallery._id,
       );
     } catch (err) {
@@ -219,7 +219,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
 
       if (!res.ok) throw new Error('Failed to add to favorites');
 
-      console.log('✅ Added to favorites:', productId);
+      console.log('Added to favorites:', productId);
     } catch (err) {
       console.error('Error adding to favorites:', err);
     }
@@ -386,31 +386,31 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
               ))}
             </Flex>
           )}
-             {' '}
+          {' '}
           {gallery.description && (
             <>
-                           {' '}
+             {' '}
               {gallery.description.length > 300 ? (
                 <>
-                                   {' '}
+                  {' '}
                   <Collapse startingHeight={100} in={isDescriptionExpanded}>
-                                       {' '}
+                    {' '}
                     <Text
                       whiteSpace="pre-wrap"
                       dangerouslySetInnerHTML={{ __html: gallery.description }}
                     />{' '}
-                    {}                 {' '}
+                    {}{' '}
                   </Collapse>
-                                   {' '}
+                  {' '}
                   <Button
                     variant="link"
                     colorScheme="blue"
                     onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                   >
-                                        {isDescriptionExpanded ? 'see less' : 'see more'}           
-                         {' '}
+                     {isDescriptionExpanded ? 'see less' : 'see more'}
+                    {' '}
                   </Button>
-                                 {' '}
+                {' '}
                 </>
               ) : (
                 <Box
@@ -418,7 +418,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                   dangerouslySetInnerHTML={{ __html: gallery.description }}
                 />
               )}
-                         {' '}
+              {' '}
             </>
           )}
           <Flex direction={'row'} gap={2} mt={gallery.description?.length > 900 ? 4 : 2}></Flex>

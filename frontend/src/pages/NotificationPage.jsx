@@ -63,7 +63,7 @@ const NotificationsPage = () => {
       });
       return;
     }
-    console.log('✅ Accepting invite to:', galleryId);
+    console.log('Accepting invite to:', galleryId);
     try {
       const res = await fetch(`/api/galleries/${galleryId}/accept-invite`, {
         method: 'POST',
@@ -102,7 +102,7 @@ const NotificationsPage = () => {
       });
       return;
     }
-    console.log('❌ Declining invite to:', galleryId);
+    console.log(' Declining invite to:', galleryId);
     try {
       const res = await fetch(`/api/galleries/${galleryId}/decline-invite`, {
         method: 'POST',
@@ -235,7 +235,7 @@ const GalleryInviteActions = ({ galleryId, onAccept, onDecline }) => {
   if (alreadyCollaborator)
     return (
       <Text fontSize="sm" color="green.600">
-        ✅ You're already a collaborator
+        You're already a collaborator
       </Text>
     );
 

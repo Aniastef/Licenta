@@ -5,7 +5,7 @@ import Message from '../models/messageModel.js';
 export const getConversations = async (req, res) => {
   try {
     if (!req.user || !req.user._id) {
-      console.error('❌ User ID not found in request.');
+      console.error('User ID not found in request.');
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -68,7 +68,7 @@ export const getConversations = async (req, res) => {
 
     res.status(200).json({ conversations });
   } catch (err) {
-    console.error('❌ Error fetching conversations:', err.message);
+    console.error('Error fetching conversations:', err.message);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -78,7 +78,7 @@ export const getMessages = async (req, res) => {
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      console.error('❌ Invalid user ID:', userId);
+      console.error(' Invalid user ID:', userId);
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
@@ -94,7 +94,7 @@ export const getMessages = async (req, res) => {
 
     res.status(200).json({ messages });
   } catch (err) {
-    console.error('❌ Error fetching messages:', err);
+    console.error(' Error fetching messages:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -180,7 +180,7 @@ export const markMessagesAsRead = async (req, res) => {
 
     res.status(200).json({ message: 'Messages marked as read' });
   } catch (err) {
-    console.error('❌ Error marking messages as read:', err);
+    console.error(' Error marking messages as read:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };

@@ -87,7 +87,6 @@ export default function UpdateProfilePage() {
     return age;
   };
 
-  // In UpdateProfilePage.jsx, inside the useEffect
   useEffect(() => {
     if (user) {
       setInputs({
@@ -108,7 +107,7 @@ export default function UpdateProfilePage() {
         phone: user.phone || '',
         webpage: user.webpage || '',
         gender: user.gender || '',
-        customGender: user.customGender || '', // Ensure this is handled if you store it directly or map it.
+        customGender: user.customGender || '',
         pronouns: user.pronouns || '',
         postalCode: user.postalCode || '',
         hobbies: user.hobbies || '',
@@ -120,7 +119,7 @@ export default function UpdateProfilePage() {
       });
       setImgUrl(user.profilePicture || null);
     }
-  }, [user, setImgUrl]); // Added setImgUrl to dependency array
+  }, [user, setImgUrl]); 
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];

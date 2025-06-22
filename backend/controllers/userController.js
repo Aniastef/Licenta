@@ -700,7 +700,7 @@ export const moveToFavorites = async (req, res) => {
     await user.save();
     res.status(200).json({ favorites: user.favorites, cart: user.cart });
   } catch (err) {
-    console.error('❌ Error in moveToFavorites:', err.message);
+    console.error(' Error in moveToFavorites:', err.message);
     res.status(500).json({ error: 'Failed to move to favorites' });
   }
 };

@@ -144,7 +144,7 @@ export const getGallery = async (req, res) => {
     gallery.products.sort((a, b) => a.order - b.order);
     return res.status(200).json(gallery);
   } catch (err) {
-    console.error('💥 Error in getGallery:', err.message);
+    console.error(' Error in getGallery:', err.message);
     res.status(500).json({ error: 'Failed to fetch gallery' });
   }
 };
@@ -573,7 +573,7 @@ export const updateProductOrder = async (req, res) => {
     await gallery.save();
     return res.status(200).json({ message: 'Product order updated' });
   } catch (err) {
-    console.error('❌ Error updating product order:', err.message);
+    console.error(' Error updating product order:', err.message);
     return res.status(500).json({ error: 'Failed to update product order' });
   }
 };

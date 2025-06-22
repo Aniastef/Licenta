@@ -25,7 +25,7 @@ import reportRoutes from './routes/reportRoutes.js';
 EventEmitter.defaultMaxListeners = 20;
 
 dotenv.config();
-console.log('📦 MONGO_URI:', process.env.MONGO_URI);
+console.log('MONGO_URI:', process.env.MONGO_URI);
 connectDB();
 
 const app = express();
@@ -64,6 +64,6 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-app.listen(PORT, () => console.log(`✅ Server started at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server started at http://localhost:${PORT}`));
 
 export default app;

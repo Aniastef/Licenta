@@ -221,7 +221,7 @@ const GalleryInviteActions = ({ galleryId, onAccept, onDecline }) => {
   if (alreadyCollaborator)
     return (
       <Text fontSize="sm" color="green.600">
-        ✅ You're already a collaborator
+        You're already a collaborator
       </Text>
     );
 

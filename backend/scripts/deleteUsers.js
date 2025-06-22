@@ -12,10 +12,10 @@ mongoose.connect(process.env.MONGO_URI, {
 const deleteAllUsers = async () => {
   try {
     await User.deleteMany({});
-    console.log('✅ All users have been deleted.');
+    console.log('All users have been deleted.');
     mongoose.connection.close();
   } catch (err) {
-    console.error('❌ Error deleting users:', err);
+    console.error(' Error deleting users:', err);
   }
 };
 

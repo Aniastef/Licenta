@@ -75,7 +75,7 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
 
   const handleDownload = (fileName, fileUrl) => {
     if (!fileUrl || typeof fileUrl !== 'string') {
-      alert('URL-ul fișierului este invalid sau lipsește.');
+      alert('URL-ul is invalid or missing.');
       return;
     }
     try {
@@ -86,8 +86,8 @@ const EventCard = ({ event, currentUserId, fetchEvent }) => {
       a.click();
       a.remove();
     } catch (err) {
-      console.error('Descărcarea a eșuat:', err);
-      alert(`A apărut o eroare la descărcarea fișierului: ${err.message}`);
+      console.error('Download failed:', err);
+      alert(`Error downloading the file: ${err.message}`);
     }
   };
 

@@ -152,7 +152,7 @@ export const updateUserAdmin = async (req, res) => {
     user.address = address || user.address;
     user.city = city || user.city;
     user.country = country || user.country;
-    user.quote = quote; // Asignăm valoarea citatului
+    user.quote = quote; 
     user.profilePicture = profilePicture || user.profilePicture;
 
     if (password) {
@@ -171,7 +171,7 @@ export const updateUserAdmin = async (req, res) => {
 
     res.status(200).json({ message: 'User updated successfully' });
   } catch (err) {
-    console.error('❌ Error in updateUserAdmin:', err);
+    console.error(' Error in updateUserAdmin:', err);
 
     res.status(500).json({ error: err.message });
   }

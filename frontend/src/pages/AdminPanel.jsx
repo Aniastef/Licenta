@@ -1117,7 +1117,7 @@ const AdminPanel = () => {
               </Select>
 
               <Button size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-                {sortOrder === 'asc' ? '⬆️ Ascending' : '⬇️ Descending'}
+                {sortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
               </Button>
               <Button colorScheme="blue" size={'sm'} onClick={exportUsersToCSV}>
                 Export Users (CSV)
@@ -1412,7 +1412,7 @@ const AdminPanel = () => {
                 size="sm"
                 onClick={() => setEventSortOrder(eventSortOrder === 'asc' ? 'desc' : 'asc')}
               >
-                {eventSortOrder === 'asc' ? '⬆️ Ascending' : '⬇️ Descending'}
+                {eventSortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
               </Button>
 
               <Button
@@ -1513,7 +1513,7 @@ const AdminPanel = () => {
                 size="sm"
                 onClick={() => setGallerySortOrder(gallerySortOrder === 'asc' ? 'desc' : 'asc')}
               >
-                {gallerySortOrder === 'asc' ? '⬆️ Ascending' : '⬇️ Descending'}
+                {gallerySortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
               </Button>
               <Button
                 size="sm"
@@ -1623,7 +1623,7 @@ const AdminPanel = () => {
                 size="sm"
                 onClick={() => setArticleSortOrder(articleSortOrder === 'asc' ? 'desc' : 'asc')}
               >
-                {articleSortOrder === 'asc' ? '⬆️ Ascending' : '⬇️ Descending'}
+                {articleSortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
               </Button>
 
               <Button
@@ -1805,7 +1805,7 @@ const AdminPanel = () => {
                 size="sm"
                 onClick={() => setProductSortOrder(productSortOrder === 'asc' ? 'desc' : 'asc')}
               >
-                {productSortOrder === 'asc' ? '⬆️ Ascending' : '⬇️ Descending'}
+                {productSortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
               </Button>
               <Button size={'sm'} colorScheme="blue" onClick={exportProductsToCSV}>
                 Export artworks (CSV)

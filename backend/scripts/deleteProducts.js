@@ -11,10 +11,10 @@ mongoose.connect(process.env.MONGO_URI, {
 const deleteAllProducts = async () => {
   try {
     await Product.deleteMany({});
-    console.log('✅ All products have been deleted.');
+    console.log('All products have been deleted.');
     mongoose.connection.close();
   } catch (err) {
-    console.error('❌ Error deleting products:', err);
+    console.error(' Error deleting products:', err);
   }
 };
 

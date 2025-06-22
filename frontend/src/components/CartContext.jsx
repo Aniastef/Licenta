@@ -23,13 +23,13 @@ export const CartProvider = ({ children }) => {
 
       if (Array.isArray(data)) {
         setCart(data);
-        console.log('✅ Cart fetched successfully:', data);
+        console.log('Cart fetched successfully:', data);
       } else {
-        console.warn('⚠️ Cart response is not an array:', data);
+        console.warn('Cart response is not an array:', data);
         setCart([]);
       }
     } catch (err) {
-      console.error('❌ Error fetching cart:', err);
+      console.error(' Error fetching cart:', err);
       setCart([]);
     }
   };
@@ -45,7 +45,7 @@ export const CartProvider = ({ children }) => {
       const data = await res.json();
       setCart(data);
     } catch (err) {
-      console.error('❌ Error updating quantity:', err);
+      console.error(' Error updating quantity:', err);
     }
   };
 
@@ -60,18 +60,18 @@ export const CartProvider = ({ children }) => {
       const data = await res.json();
       setCart(data);
     } catch (err) {
-      console.error('❌ Error removing from cart:', err);
+      console.error(' Error removing from cart:', err);
     }
   };
 
   const addToCart = async (newItem) => {
     if (!newItem || !newItem.product || !newItem.product._id) {
-      console.error('❌ Invalid item passed to addToCart:', newItem);
+      console.error(' Invalid item passed to addToCart:', newItem);
       return;
     }
 
     if (!Array.isArray(cart)) {
-      console.error('❌ cart is not an array:', cart);
+      console.error('Cart is not an array:', cart);
       return;
     }
 
@@ -80,14 +80,14 @@ export const CartProvider = ({ children }) => {
     if (existingItem) {
       const totalQty = existingItem.quantity + (newItem.quantity || 1);
       if (totalQty > newItem.product.quantity) {
-        console.warn('❌ Nu există stoc suficient pentru', newItem.product.name);
+        console.warn(' Not enough stock for ', newItem.product.name);
         return;
       }
       updateCartQuantity(newItem.product._id, totalQty, newItem.product.itemType || 'Product');
       return;
     }
     if (newItem.quantity > newItem.product.quantity) {
-      console.warn('❌ Cerere depășește stocul pentru', newItem.product.name);
+      console.warn('Not enough stock for', newItem.product.name);
       return;
     }
 
@@ -107,18 +107,18 @@ export const CartProvider = ({ children }) => {
       const data = await res.json();
 
       if (!Array.isArray(data)) {
-        console.error('❌ Server a returnat o eroare:', data);
+        console.error('Server error:', data);
         return;
       }
 
       if (Array.isArray(data)) {
         setCart(data);
       } else {
-        console.warn('❌ Cart response is not an array:', data);
+        console.warn(' Cart response is not an array:', data);
         setCart([]);
       }
     } catch (err) {
-      console.error('❌ Error adding to cart:', err);
+      console.error(' Error adding to cart:', err);
     }
   };
 

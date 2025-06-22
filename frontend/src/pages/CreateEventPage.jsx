@@ -73,7 +73,7 @@ const LANGUAGES = [
   { label: '🇸🇪 Swedish', value: 'sv' },
   { label: '🇯🇵 Japanese', value: 'ja' },
   { label: '🇨🇳 Chinese', value: 'zh' },
-  { label: '🌐 Other', value: 'other' },
+  { label: 'Other', value: 'other' },
 ];
 
 const CreateEventPage = () => {

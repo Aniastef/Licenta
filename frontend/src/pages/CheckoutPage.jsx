@@ -106,7 +106,7 @@ const CheckoutPage = () => {
       localStorage.removeItem('pendingStripeOrder');
       navigate('/orders');
     } catch (err) {
-      console.error('❌ Payment processing failed', err);
+      console.error(' Payment processing failed', err);
       toast({
         title: 'Payment failed',
         description: err.message,
@@ -246,7 +246,7 @@ const CheckoutPage = () => {
     const data = await response.json();
 
     if (!response.ok || !data.sessionId) {
-      console.error('❌ No sessionId received or backend error!', data);
+      console.error(' No sessionId received or backend error!', data);
       toast({
         title: 'Payment error',
         description: data.error || 'Could not initiate Stripe session. Check console.',
@@ -295,7 +295,7 @@ const CheckoutPage = () => {
       phone: isOnlyTickets ? '' : phone,
     };
     console.log(
-      '🚀 Frontend (CheckoutPage): Sending to /api/orders/:userId:',
+      'Frontend (CheckoutPage): Sending to /api/orders/:userId:',
       payloadForDirectOrder,
     );
 
@@ -325,7 +325,7 @@ const CheckoutPage = () => {
         });
       }
     } catch (err) {
-      console.error('❌ Error placing order:', err);
+      console.error(' Error placing order:', err);
     }
   };
 
