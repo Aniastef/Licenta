@@ -1,5 +1,5 @@
 **Titlul proiectului**
-Art Corner - PLICAȚIE DE GESTIONARE A PORTOFOLIILOR ARTISTICE
+Art Corner - APLICAȚIE DE GESTIONARE A PORTOFOLIILOR ARTISTICE
 
 **Autor**
 Ștefania-Georgiana ISTVAN
