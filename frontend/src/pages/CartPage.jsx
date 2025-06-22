@@ -171,7 +171,7 @@ const CartPage = () => {
                 </HStack>
                 {stockLimitItemId === item.product._id && (
                   <Text color="red.500" fontSize="sm" mt={1}>
-                    Ai atins limita de stoc disponibil
+                    No more stock available
                   </Text>
                 )}
               </Flex>
