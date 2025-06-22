@@ -24,7 +24,6 @@ import { useRecoilState } from 'recoil';
 import userAtom from '../atoms/userAtom';
 import usePreviewImg from '../hooks/usePreviewImg';
 import useShowToast from '../hooks/useShowToast';
-import RectangleShape from '../assets/rectangleShape';
 import ImageCropModal from '../components/ImageCropModal';
 
 import soundcloudIcon from '../assets/soundcloud.svg';

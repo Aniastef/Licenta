@@ -13,12 +13,6 @@ import {
   WrapItem,
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
-import homeCover from '../assets/homeCover.jpg';
-import eventHome from '../assets/eventHome.jpg';
-import RectangleShape from '../assets/rectangleShape';
-import Carousel from '../components/PhotoCarousel';
-import TextOverImage from '../assets/textOverComponent';
-import ContactBar from '../components/ContactBar';
 import video1 from '../assets/1.mp4';
 import video2 from '../assets/2.mp4';
 import video3 from '../assets/3.mp4';
