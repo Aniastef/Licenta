@@ -93,7 +93,7 @@ const CartPage = () => {
               {isEvent ? (
                 <Image
                   src={item.product.coverImage}
-                  alt={item.product.name}
+                  alt={item.product.title}
                   borderRadius="md"
                   objectFit="cover"
                   width="40%"
@@ -102,7 +102,7 @@ const CartPage = () => {
               ) : item.product.images?.[0] ? (
                 <Image
                   src={item.product.images[0]}
-                  alt={item.product.name}
+                  alt={item.product.title}
                   boxSize="150px"
                   borderRadius="md"
                   objectFit="cover"
@@ -127,13 +127,13 @@ const CartPage = () => {
               <Flex direction="column" flex="1" px={2}>
                 <Link
                   to={isEvent ? `/events/${item.product._id}` : `/products/${item.product._id}`}
-                >
-                  <Text fontWeight="bold" fontSize="lg">
-                    {item.product.name}
-                  </Text>
+                >       
+                <Text fontWeight="bold" fontSize="lg">
+                  {isEvent ? item.product.name : item.product.title}
+                </Text>
                   <Text
                     fontSize="sm"
-                    color={isEvent ? 'blue.600' : 'gray.500'}
+                    color={isEvent ? 'blue.600' : 'purple.500'}
                     fontWeight="semibold"
                   >
                     {isEvent ? 'Event Ticket' : 'Product'}

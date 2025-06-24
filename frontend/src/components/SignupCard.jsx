@@ -196,7 +196,7 @@ const SignupCard = () => {
                   </Text>
                 </FormLabel>
                 <Input
-                  placeholder="John"
+                  placeholder="Ștefania"
                   value={inputs.firstName}
                   onChange={(e) => setInputs({ ...inputs, firstName: e.target.value })}
                 />
@@ -210,7 +210,7 @@ const SignupCard = () => {
                   </Text>
                 </FormLabel>
                 <Input
-                  placeholder="Doe"
+                  placeholder="Istvan"
                   value={inputs.lastName}
                   onChange={(e) => setInputs({ ...inputs, lastName: e.target.value })}
                 />
