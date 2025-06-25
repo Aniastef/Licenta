@@ -25,18 +25,30 @@ Set-ExecutionPolicy RemoteSigned
 ``` 
  iar mai apoi **tastăm "y" ca răspuns la Execution PolicyChange**. După asta, ar trebui să meargă și să putem verifica și versiunea de npm cu **npm -v**;
 
-7. Deschidem terminalul pentru proiectul clonat (eu am deschis proiectul cu Visual Studio Code, iar mai apoi m-am folosit de terminalul de acolo) și rulăm comenzile următoare atât în folder-ul "frontend", cât și în folder-ul "backend":
+6. Deschidem terminalul pentru proiectul clonat (eu am deschis proiectul cu Visual Studio Code, iar mai apoi m-am folosit de terminalul de acolo) și rulăm comenzile următoare atât în folder-ul "frontend", cât și în folder-ul "backend":
 
 ```bash
 npm install
 ``` 
+7. Un fișier care trebuie creat de fiecare utilizator pentru a rula aplicația este .env, cel care conține variabilele de mediu. Arată în următorul fel:
 
+```bash
+PORT=
+MONGO_URI=
+JWT_SECRET=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+STRIPE_SECRET_KEY=
+NODE_ENV=
+ADMIN_SECRET=
+``` 
 8. Rulăm și următoarea comandă atât în folder-ul "frontend", cât și în folder-ul "backend", pentru a porni cele 2 părți ale aplicației:
 ```bash
 npm run dev
 ``` 
-10. În cazul în care avem eroare de dependency în frontend din cauza react-quill rulăm în terminal, în folder-ul "frontend", comanda:
+9. În cazul în care avem eroare de dependency în frontend din cauza react-quill rulăm în terminal, în folder-ul "frontend", comanda:
 ```bash
 npm install react-quill
 ``` 
-11. Acum, dacă deschidem http://localhost:5173/ în browser, aplicația ar trebui să fie pornită și să funcționeze conform.
+10. Acum, dacă deschidem http://localhost:5173/ în browser, aplicația ar trebui să fie pornită și să funcționeze conform.
