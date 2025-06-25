@@ -25,7 +25,7 @@ Set-ExecutionPolicy RemoteSigned
 ``` 
  iar mai apoi **tastăm "y" ca răspuns la Execution PolicyChange**. După asta, ar trebui să meargă și să putem verifica și versiunea de npm cu **npm -v**;
 
-6. Deschidem terminalul pentru proiectul clonat (eu am deschis proiectul cu Visual Studio Code, iar mai apoi m-am folosit de terminalul de acolo) și rulăm comenzile următoare atât în folder-ul "frontend", cât și în folder-ul "backend":
+6. Deschidem terminalul pentru proiectul clonat (eu am deschis proiectul cu Visual Studio Code, iar mai apoi m-am folosit de terminalul de acolo) și rulăm comanda următoare atât în folder-ul "frontend", cât și în folder-ul "backend":
 
 ```bash
 npm install
