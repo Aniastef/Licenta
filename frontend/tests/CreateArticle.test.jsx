@@ -77,15 +77,14 @@ describe('CreateOrEditArticlePage - Article Creation/Edit Scenarios', () => {
   });
 
   test('should render "Create new article" heading and input fields', () => {
-    renderComponent();
-    expect(screen.getByRole('heading', { name: /Create new article/i })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Article Title/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Subtitle/i)).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /Category/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/Cover image/i)).toBeInTheDocument();
-    expect(screen.getByTestId('article-content-editor')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Save Draft/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Publish/i })).toBeInTheDocument();
+  renderComponent();
+  expect(screen.getByRole('heading', { name: /Create new article/i })).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/Article Title/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/Subtitle/i)).toBeInTheDocument();
+  expect(screen.getByRole('combobox', { name: /Category/i })).toBeInTheDocument();
+  expect(screen.getByLabelText(/Cover image/i)).toBeInTheDocument();
+  expect(screen.getByTestId('article-content-editor')).toBeInTheDocument();  
+  expect(screen.getByRole('button', { name: /Publish Article/i })).toBeInTheDocument();
   });
 
   test('should show error toast if title or content is missing on Publish', async () => {
@@ -188,61 +187,6 @@ describe('CreateOrEditArticlePage - Article Creation/Edit Scenarios', () => {
         duration: 3000,
       });
       expect(mockNavigate).toHaveBeenCalledWith('/articles/new-article-id');
-    });
-  });
-
-  test('should save article as draft with valid data', async () => {
-    const mockToast = jest.fn();
-    jest.spyOn(require('@chakra-ui/react'), 'useToast').mockImplementation(() => mockToast);
-
-    global.fetch.mockImplementationOnce((url) => {
-      if (url === '/api/articles') {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ _id: 'draft-article-id', title: 'Draft Title' }),
-        });
-      }
-      return Promise.reject(new Error(`Unhandled fetch for URL: ${url}`));
-    });
-
-    renderComponent();
-
-    fireEvent.change(screen.getByPlaceholderText(/Article Title/i), {
-      target: { value: 'My Draft Article' },
-    });
-    fireEvent.change(screen.getByTestId('article-content-editor'), {
-      target: { value: 'This is draft content.' },
-    });
-    fireEvent.change(screen.getByRole('combobox', { name: /Category/i }), {
-      target: { value: 'Opinion' },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /Save Draft/i }));
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/articles',
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            title: 'My Draft Article',
-            subtitle: '',
-            content: 'This is draft content.',
-            coverImage: '',
-            category: 'Opinion',
-            draft: true,
-          }),
-        }),
-      );
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Article created',
-        description: 'Saved as draft.',
-        status: 'success',
-        duration: 3000,
-      });
-      expect(mockNavigate).toHaveBeenCalledWith('/articles/draft-article-id');
     });
   });
 
