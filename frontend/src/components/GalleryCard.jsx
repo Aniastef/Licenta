@@ -550,7 +550,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                         bg="gray.200"
                         p={4}
                         borderRadius="md"
-                        width="calc(25% - 1rem)" // 4 pe rand
+                        width="calc(25% - 1rem)"
                         minW="200px"
                         maxW="250px"
                         display="flex"
@@ -558,7 +558,7 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                         justifyContent="space-between"
                       >
                         <Image
-                          src={product.images[0] || 'https://i.pravatar.cc/150'}
+                          src={product.images[0]}
                           alt={product.title}
                           w="100%"
                           h="150px"

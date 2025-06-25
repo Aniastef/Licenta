@@ -27,7 +27,7 @@ const UserAllProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('latest');
   const [selectedMediaTypes, setSelectedMediaTypes] = useState([]);
-  const [saleStatuses, setSaleStatuses] = useState([]); // ["forSale", "notForSale"]
+  const [saleStatuses, setSaleStatuses] = useState([]); 
   const [user, setUser] = useState(null);
   const currentUser = useRecoilValue(userAtom);
   const navigate = useNavigate();

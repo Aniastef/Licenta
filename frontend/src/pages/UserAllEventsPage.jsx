@@ -46,9 +46,9 @@ const UserAllEventsPage = () => {
   const [locationSearch, setLocationSearch] = useState('');
   const [statusFilters, setStatusFilters] = useState([]);
   const [ticketTypeFilters, setTicketTypeFilters] = useState([]);
-  const [maxPrice, setMaxPrice] = useState(100); // maximum allowed price
+  const [maxPrice, setMaxPrice] = useState(100); 
   const [selectedPrice, setSelectedPrice] = useState(100);
-  const [priceRange, setPriceRange] = useState([0, 1000]); // [min, max]
+  const [priceRange, setPriceRange] = useState([0, 1000]); 
   const [customMin, setCustomMin] = useState(0);
   const [customMax, setCustomMax] = useState(1000);
   const [enablePriceFilter, setEnablePriceFilter] = useState(false);

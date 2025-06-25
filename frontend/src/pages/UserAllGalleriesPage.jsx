@@ -52,7 +52,7 @@ const UserAllGalleriesPage = () => {
   useEffect(() => {
     const allTags = [...new Set(galleries.flatMap((g) => g.tags || []))];
     const shuffled = allTags.sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 10); // max 10 random tags
+    const selected = shuffled.slice(0, 10);
     setTagOptions(selected);
   }, [galleries]);
 
