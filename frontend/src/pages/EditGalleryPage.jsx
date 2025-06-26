@@ -330,13 +330,6 @@ const EditGalleryPage = () => {
               onChange={(e) => setGalleryData({ ...galleryData, tags: e.target.value })}
             />
 
-            <Checkbox
-              isChecked={galleryData.isPublic === false}
-              onChange={(e) => setGalleryData({ ...galleryData, isPublic: !e.target.checked })}
-            >
-              Make gallery private
-            </Checkbox>
-
             <Input
               placeholder="Search collaborators by username"
               value={searchText}

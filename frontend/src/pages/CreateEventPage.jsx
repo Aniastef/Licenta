@@ -32,8 +32,8 @@ import 'react-quill-new/dist/quill.snow.css';
 const compressImage = async (file) => {
   try {
     const options = {
-      maxSizeMB: 0.5,
-      maxWidthOrHeight: 1080,
+      maxSizeMB: 5,
+      maxWidthOrHeight: 1920,
       useWebWorker: true,
     };
     const compressed = await imageCompression(file, options);

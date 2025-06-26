@@ -5,6 +5,7 @@ import {
   Flex,
   Heading,
   Image,
+  Spinner,
   Text,
   VStack,
   useToast,
@@ -23,7 +24,7 @@ const UserArticlesPage = () => {
   const toast = useToast();
   const [articles, setArticles] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
-
+  const [isLoading, setIsLoading] = useState(true);
   const formatDateKey = (date) => new Date(date).toISOString().split('T')[0];
 
   const articlesByDate = {};
@@ -48,6 +49,7 @@ const UserArticlesPage = () => {
 
   useEffect(() => {
     const fetchArticles = async () => {
+      setIsLoading(true); 
       try {
         const res = await fetch(`/api/articles/user/${username}`, {
           credentials: 'include',
@@ -70,6 +72,8 @@ const UserArticlesPage = () => {
           status: 'error',
           duration: 3000,
         });
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchArticles();
@@ -148,7 +152,12 @@ const UserArticlesPage = () => {
 
         {}
         <VStack spacing={6} align="stretch" flex={1}>
-          {filteredArticles.length === 0 ? (
+          {isLoading ? (
+            <Flex justifyContent="center" alignItems="center" height="200px">
+              <Spinner size="xl" />
+              <Text ml={4}>Loading articles...</Text>
+            </Flex>
+          ) : filteredArticles.length === 0 ? (
             <Text>No articles for this day.</Text>
           ) : (
             filteredArticles.map((article) => {
