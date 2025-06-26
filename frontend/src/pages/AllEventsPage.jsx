@@ -21,6 +21,7 @@ import {
   RangeSliderThumb,
   CheckboxGroup,
   Circle,
+  Spinner,
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 
@@ -103,6 +104,7 @@ const EventsPage = () => {
   };
 
   const fetchEvents = async () => {
+    setLoading(true);
     try {
       const response = await fetch('/api/events', { credentials: 'include' });
       const data = await response.json();
@@ -437,8 +439,13 @@ const EventsPage = () => {
 
         {}
         <Box flex={1}>
-          {loading ? (
-            <Text>Loading...</Text>
+           {loading ? (
+            <Flex justifyContent="center" alignItems="center" height="300px">
+              <Spinner size="xl" color="blue.500" />
+              <Text ml={4} fontSize="xl">
+                Loading events...
+              </Text>
+            </Flex>
           ) : paginatedEvents.length === 0 ? (
             <Text>No events found.</Text>
           ) : (

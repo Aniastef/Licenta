@@ -41,15 +41,19 @@ const AllArticlesPage = () => {
   const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchArticles = async () => {
+      setLoading(true);
       try {
         const res = await fetch('/api/articles', { credentials: 'include' });
         const data = await res.json();
         setArticles(data);
       } catch (err) {
         console.error('Error fetching articles:', err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchArticles();

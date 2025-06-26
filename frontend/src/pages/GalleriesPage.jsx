@@ -14,6 +14,7 @@ import {
   Circle,
   Image,
   Tag,
+  Spinner,
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import { FaArrowUp } from 'react-icons/fa';
@@ -186,6 +187,7 @@ const ExploreGalleries = () => {
   }, []);
 
   const fetchGalleries = async () => {
+    setLoading(true);
     try {
       const res = await fetch('/api/galleries', { credentials: 'include' });
       const data = await res.json();
@@ -340,7 +342,12 @@ const ExploreGalleries = () => {
         {}
         <Box flex={1}>
           {loading ? (
-            <Text>Loading...</Text>
+            <Flex justifyContent="center" alignItems="center" height="300px" direction="column">
+              <Spinner size="xl" color="blue.500" thickness="4px" />
+              <Text mt={4} fontSize="xl">
+                Loading galleries...
+              </Text>
+            </Flex>
           ) : paginated.length === 0 ? (
             <Text>No galleries found.</Text>
           ) : (

@@ -25,6 +25,7 @@ import {
   Circle,
   Wrap,
   WrapItem,
+  Spinner,
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import { StarIcon } from '@chakra-ui/icons';
@@ -222,6 +223,7 @@ const ProductsPage = () => {
   }, []);
 
   const fetchProducts = async () => {
+    setLoading(true);
     try {
       const response = await fetch('/api/products', {
         credentials: 'include',
@@ -553,10 +555,13 @@ const ProductsPage = () => {
         </Box>
 
         <Box flex={1}>
-          {loading ? (
-            <Text>Loading...</Text>
-          ) : paginatedProducts.length === 0 ? (
-            <Text>No artworks found.</Text>
+           {loading ? (
+            <Flex justifyContent="center" alignItems="center" height="300px">
+              <Spinner size="xl" color="blue.500" />
+              <Text ml={4} fontSize="xl">
+                Loading artworks...
+              </Text>
+            </Flex>
           ) : (
             <>
               <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={5}>
