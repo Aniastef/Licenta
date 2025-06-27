@@ -68,7 +68,7 @@ export const handlePaymentSuccess = async (req, res) => {
 
       validProductsForOrder.push({
         product: product._id,
-        price: item.price,
+        price: product.price,
         quantity: item.quantity,
         itemType: item.itemType || 'Product',
       });

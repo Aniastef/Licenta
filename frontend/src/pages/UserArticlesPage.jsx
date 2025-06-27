@@ -25,7 +25,14 @@ const UserArticlesPage = () => {
   const [articles, setArticles] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const formatDateKey = (date) => new Date(date).toISOString().split('T')[0];
+
+  const formatDateKey = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const articlesByDate = {};
   articles.forEach((article) => {

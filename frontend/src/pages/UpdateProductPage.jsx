@@ -146,6 +146,7 @@ const EditProductPage = () => {
           setProduct({
             ...data.product,
             category: initialCategories.length > 0 ? initialCategories : ['General'],
+            writing: data.product.writing || '',
           });
 
         } else {
@@ -309,6 +310,7 @@ const EditProductPage = () => {
         audios: [...(product.audios || []), ...audiosBase64],
         galleries: galleriesToSend,
         category: product.category.length > 0 ? product.category : ['General'],
+        writing: product.writing || '', 
       };
 
       const res = await fetch(`/api/products/update/${product._id}`, {
@@ -606,39 +608,40 @@ const EditProductPage = () => {
                 </Flex>
               </FormControl>
 
-              <FormControl>
-                <FormLabel>Writing / poem</FormLabel>
-                <ReactQuill
-                  theme="snow"
-                  value={product.writing ?? ''}
-                  onChange={(value) => setProduct({ ...product, writing: value })}
-                  modules={{
-                    toolbar: [
-                      [{ header: [1, 2, 3, false] }],
-                      ['bold', 'italic', 'underline', 'strike'],
-                      [{ list: 'ordered' }, { list: 'bullet' }],
-                      [{ align: [] }],
-                      [{ color: [] }, { background: [] }],
-                      ['link'],
-                      ['clean'],
-                    ],
-                  }}
-                  formats={[
-                    'header',
-                    'bold',
-                    'italic',
-                    'underline',
-                    'strike',
-                    'list',
-                    'bullet',
-                    'align',
-                    'color',
-                    'background',
-                    'link',
-                  ]}
-                  style={{ height: '200px', width: '100%', marginBottom: '50px' }}
-                />
-              </FormControl>
+             <FormControl> 
+              <FormLabel>Writing</FormLabel>
+              <ReactQuill
+                theme="snow"
+                value={product.writing ?? ''}
+                onChange={(value) => setProduct({ ...product, writing: value })}
+                modules={{
+                  toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ align: [] }],
+                    [{ color: [] }, { background: [] }],
+                    ['link', 'image'],
+                    ['clean'],
+                  ],
+                }}
+                formats={[
+                  'header',
+                  'bold',
+                  'italic',
+                  'underline',
+                  'strike',
+                  'list',
+                  'bullet',
+                  'align',
+                  'color',
+                  'background',
+                  'link',
+                  'image',
+                ]}
+                style={{ height: '200px', width: '100%', marginBottom: '50px' }}
+              />
+            </FormControl>
 
               <Button colorScheme="orange" onClick={handleUpdate} isLoading={updating} w="full">
                 Save Changes

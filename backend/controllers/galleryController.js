@@ -598,6 +598,11 @@ export const acceptGalleryInvite = async (req, res) => {
 
     await gallery.save();
 
+    await Notification.updateMany(
+      { 'meta.galleryId': galleryId, type: 'invite', user: userId },
+      { seen: true }
+    );
+
     res.status(200).json({ message: 'You are now a collaborator' });
   } catch (err) {
     console.error('Error accepting invite:', err.message);

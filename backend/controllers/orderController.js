@@ -12,53 +12,58 @@ export const getUserOrders = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    for (const order of user.orders) {
+    const ordersWithTotalPrice = user.orders.map(order => {
       if (Array.isArray(order.products)) {
         for (let i = 0; i < order.products.length; i++) {
           const item = order.products[i];
           if (item.product && item.product._id) {
             if (item.itemType === 'Event') {
               if (!item.product.coverImage) {
-                const eventDetails = await Event.findById(item.product._id);
-                if (eventDetails) {
-                  order.products[i].product = eventDetails;
-                }
               }
             } else {
               if (!item.product.images || item.product.images.length === 0) {
-                const productDetails = await Product.findById(item.product._id);
-                if (productDetails) {
-                  order.products[i].product = productDetails;
-                }
               }
             }
           }
         }
       }
 
+      const calculatedTotalPrice = order.products.reduce((sum, item) => {
+        const price = parseFloat(item.price) || 0; 
+        const quantity = parseFloat(item.quantity) || 0; 
+        return sum + (price * quantity);
+      }, 0);
+
       const isOrderOnlyTickets =
         Array.isArray(order.products) && order.products.every((p) => p.itemType === 'Event');
-      order.firstName = order.firstName || 'N/A';
-      order.lastName = order.lastName || 'N/A';
+      
+      const newOrder = {
+        ...order.toObject(), 
+        firstName: order.firstName || 'N/A',
+        lastName: order.lastName || 'N/A',
+        totalPrice: calculatedTotalPrice, 
+      };
 
       if (isOrderOnlyTickets) {
-        order.address = 'N/A';
-        order.city = 'N/A';
-        order.postalCode = 'N/A';
-        order.phone = 'N/A';
+        newOrder.address = 'N/A';
+        newOrder.city = 'N/A';
+        newOrder.postalCode = 'N/A';
+        newOrder.phone = 'N/A';
       } else {
-        order.address = order.address || 'Unknown address';
-        order.city = order.city || 'Unknown city';
-        order.postalCode = order.postalCode || 'Postal code not available';
-        order.phone = order.phone || 'Phone not available';
+        newOrder.address = order.address || 'Unknown address';
+        newOrder.city = order.city || 'Unknown city';
+        newOrder.postalCode = order.postalCode || 'Postal code not available';
+        newOrder.phone = order.phone || 'Phone not available';
       }
 
-      order.paymentMethod = order.paymentMethod || 'N/A';
-      order.deliveryMethod =
+      newOrder.paymentMethod = order.paymentMethod || 'N/A';
+      newOrder.deliveryMethod =
         order.deliveryMethod === 'N/A' ? 'N/A' : order.deliveryMethod || 'courier';
-    }
 
-    res.status(200).json({ orders: user.orders });
+      return newOrder;
+    });
+
+    res.status(200).json({ orders: ordersWithTotalPrice });
   } catch (error) {
     console.error('Error fetching orders:', error);
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -85,9 +90,10 @@ export const addOrder = async (req, res) => {
 
     const newOrder = {
       products: products.map((p) => ({
-        product: p._id,
-        price: p.price,
+        product: p.product._id,         
+        price: p.product.price,         
         quantity: p.quantity || 1,
+        itemType: p.itemType,          
       })),
       status: 'Pending',
       date: new Date(),
@@ -153,14 +159,12 @@ export const cancelOrder = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
   try {
-
     const usersWithOrders = await User.find({ 'orders.0': { $exists: true } })
       .select('firstName lastName email orders')
       .populate('orders.products.product');
 
     const allOrders = usersWithOrders.flatMap((user) =>
       user.orders.map((order) => {
-        
         const calculatedTotalPrice = order.products.reduce((sum, item) => {
           const price = item.price || 0;
           const quantity = item.quantity || 0;
@@ -169,7 +173,7 @@ export const getAllOrders = async (req, res) => {
 
         return {
           ...order.toObject(),
-          totalPrice: calculatedTotalPrice, 
+          totalPrice: calculatedTotalPrice,
           user: {
             _id: user._id,
             firstName: user.firstName,
@@ -177,9 +181,9 @@ export const getAllOrders = async (req, res) => {
             email: user.email,
           },
         };
-      })
+      }),
     );
-    
+
     allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     res.status(200).json({ orders: allOrders });

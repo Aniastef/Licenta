@@ -26,7 +26,12 @@ const NotificationsPage = () => {
       });
       const data = await res.json();
       console.log('📬 Notifications:', JSON.stringify(data, null, 2));
-      setNotifications(data);
+      if (Array.isArray(data)) {
+        setNotifications(data);
+      } else {
+        console.error('Expected an array of notifications, got:', data);
+        setNotifications([]);
+      }
     } catch (err) {
       console.error('Error fetching notifications', err);
     } finally {
@@ -46,13 +51,20 @@ const NotificationsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-      fetchNotifications();
+      fetchNotifications(); 
     } catch (err) {
       console.error('Failed to mark all as seen', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to mark all notifications as seen.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
-  const acceptInvite = async (galleryId) => {
+  const acceptInvite = async (notificationId, galleryId) => {
     if (!galleryId) {
       toast({
         title: 'Missing gallery ID',
@@ -78,7 +90,7 @@ const NotificationsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-      fetchNotifications();
+      fetchNotifications(); 
     } catch (err) {
       console.error('Failed to accept invite', err);
       toast({
@@ -91,7 +103,7 @@ const NotificationsPage = () => {
     }
   };
 
-  const declineInvite = async (galleryId) => {
+  const declineInvite = async (notificationId, galleryId) => {
     if (!galleryId) {
       toast({
         title: 'Missing gallery ID',
@@ -136,6 +148,11 @@ const NotificationsPage = () => {
         method: 'POST',
         credentials: 'include',
       });
+      setNotifications((prevNotifications) =>
+        prevNotifications.map((notif) =>
+          notif._id === n._id ? { ...notif, seen: true } : notif
+        )
+      );
     } catch (err) {
       console.error('Failed to mark as seen', err);
     } finally {
@@ -181,19 +198,22 @@ const NotificationsPage = () => {
 
               {n.type === 'invite' && n.meta?.galleryId ? (
                 <GalleryInviteActions
+                  notification={n} 
                   galleryId={n.meta.galleryId}
-                  onAccept={() => acceptInvite(n.meta.galleryId)}
-                  onDecline={() => declineInvite(n.meta.galleryId)}
+                  onAccept={() => acceptInvite(n._id, n.meta.galleryId)} 
+                  onDecline={() => declineInvite(n._id, n.meta.galleryId)}
                 />
               ) : (
-                <Button
-                  size="sm"
-                  variant="link"
-                  colorScheme="blue"
-                  onClick={() => handleNavigate(n)}
-                >
-                  View
-                </Button>
+                n.link && ( 
+                  <Button
+                    size="sm"
+                    variant="link"
+                    colorScheme="blue"
+                    onClick={() => handleNavigate(n)}
+                  >
+                    View
+                  </Button>
+                )
               )}
             </Box>
           ))
@@ -205,46 +225,123 @@ const NotificationsPage = () => {
 
 export default NotificationsPage;
 
-const GalleryInviteActions = ({ galleryId, onAccept, onDecline }) => {
-  const [alreadyCollaborator, setAlreadyCollaborator] = useState(false);
+const GalleryInviteActions = ({ notification, galleryId, onAccept, onDecline }) => {
   const [loading, setLoading] = useState(true);
+  const [inviteStatus, setInviteStatus] = useState('pending'); 
 
   useEffect(() => {
-    const check = async () => {
+    const checkStatus = async () => {
+      setLoading(true);
       try {
         const res = await fetch(`/api/galleries/${galleryId}`, {
           credentials: 'include',
         });
         const data = await res.json();
-        const currentUserId = data?.currentUserId || null;
+        const currentUserId = notification.user; 
 
-        if (Array.isArray(data.collaborators)) {
-          const isCollab = data.collaborators.some((c) => c._id === currentUserId);
-          setAlreadyCollaborator(isCollab);
+        if (!data) {
+          setInviteStatus('not_found'); 
+          return;
+        }
+
+        const isCollab = data.collaborators.some((c) => c._id === currentUserId);
+        const isPending = data.pendingCollaborators.some((p) => p._id === currentUserId);
+
+        if (isCollab) {
+          setInviteStatus('already_collaborator');
+        } else if (!isPending) {
+          setInviteStatus('withdrawn'); 
+        } else {
+          setInviteStatus('pending'); 
         }
       } catch (e) {
-        console.warn('Error checking collaborator status', e.message);
+        console.warn('Error checking collaborator status:', e.message);
+        setInviteStatus('error'); 
       } finally {
         setLoading(false);
       }
     };
-    check();
-  }, [galleryId]);
 
-  if (loading) return <Text fontSize="xs">Checking access...</Text>;
-  if (alreadyCollaborator)
+    if (notification.type === 'invite') {
+      if (notification.seen) {
+        setInviteStatus('handled');
+        setLoading(false);
+      } else {
+        checkStatus();
+      }
+    } else {
+      setLoading(false); 
+    }
+  }, [galleryId, notification]); 
+
+  const handleAccept = async () => {
+    await onAccept(); 
+    setInviteStatus('accepted'); 
+  };
+
+  const handleDecline = async () => {
+    await onDecline(); 
+    setInviteStatus('declined'); 
+  };
+
+  if (loading) {
+    return <Text fontSize="xs">Checking invitation status...</Text>;
+  }
+
+  if (inviteStatus === 'accepted') {
     return (
       <Text fontSize="sm" color="green.600">
-        You're already a collaborator
+        You accepted this invitation.
       </Text>
     );
+  }
+
+  if (inviteStatus === 'declined') {
+    return (
+      <Text fontSize="sm" color="red.600">
+        You declined this invitation.
+      </Text>
+    );
+  }
+
+  if (inviteStatus === 'already_collaborator') {
+    return (
+      <Text fontSize="sm" color="blue.600">
+        You're already a collaborator.
+      </Text>
+    );
+  }
+
+  if (inviteStatus === 'withdrawn' || inviteStatus === 'not_found') {
+    return (
+      <Text fontSize="sm" color="gray.600">
+        Invitation no longer valid.
+      </Text>
+    );
+  }
+
+  if (inviteStatus === 'handled') {
+    return (
+      <Text fontSize="sm" color="gray.600">
+        Invitation handled.
+      </Text>
+    );
+  }
+
+  if (inviteStatus === 'error') {
+    return (
+      <Text fontSize="sm" color="red.500">
+        Error checking invitation status.
+      </Text>
+    );
+  }
 
   return (
-    <HStack>
-      <Button colorScheme="green" size="sm" onClick={onAccept}>
+    <HStack spacing={3}>
+      <Button size="sm" colorScheme="green" onClick={handleAccept}>
         Accept
       </Button>
-      <Button colorScheme="red" size="sm" onClick={onDecline}>
+      <Button size="sm" colorScheme="red" onClick={handleDecline}>
         Decline
       </Button>
     </HStack>
