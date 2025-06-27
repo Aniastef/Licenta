@@ -145,7 +145,7 @@ const AdminPanel = () => {
     if (!key) return acc;
     if (!acc[key]) {
       acc[key] = {
-        name: `${product.user.firstName} ${product.user.lastName}`,
+        name: `${product.user?.firstName || ''} ${product.user?.lastName || ''}`,
         artworks: 0,
       };
     }
@@ -818,7 +818,7 @@ const AdminPanel = () => {
     .filter(
       (gallery) =>
         gallery.name.toLowerCase().includes(gallerySearch.toLowerCase()) ||
-        `${gallery.user?.firstName || ''} ${gallery.user?.lastName || ''}`
+        `${gallery.owner?.firstName || ''} ${gallery.owner?.lastName || ''}`
           .toLowerCase()
           .includes(gallerySearch.toLowerCase()),
     )
@@ -846,12 +846,14 @@ const AdminPanel = () => {
   }));
 
   const filteredLogs = logs.filter(
-    (log) =>
-      (actionFilter === 'all' || log.action === actionFilter) &&
-      (log.performedBy.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.performedBy.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.details.toLowerCase().includes(searchQuery.toLowerCase())),
-  );
+  (log) =>
+    (actionFilter === 'all' || log.action === actionFilter) &&
+    (
+      (log.performedBy?.firstName?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (log.performedBy?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (log.details?.toLowerCase().includes(searchQuery.toLowerCase())) 
+    )
+);
 
   const exportLogsToCSV = () => {
     if (logs.length === 0) {
@@ -861,7 +863,7 @@ const AdminPanel = () => {
     const csvData = Papa.unparse(
       logs.map((log) => ({
         Action: log.action,
-        PerformedBy: `${log.performedBy.firstName} ${log.performedBy.lastName}`,
+        PerformedBy: `${log.performedBy?.firstName || ''} ${log.performedBy?.lastName || ''}`,
         Details: log.details,
         Timestamp: new Date(log.timestamp).toLocaleString(),
       })),
@@ -1725,7 +1727,7 @@ const AdminPanel = () => {
                       <Tr key={log._id}>
                         <Td>{log.action}</Td>
                         <Td>
-                          {log.performedBy.firstName} {log.performedBy.lastName}
+                            {log.performedBy?.firstName} {log.performedBy?.lastName}
                         </Td>
                         <Td>{getTargetInfo(log)}</Td> {}
                         <Td
@@ -1900,11 +1902,11 @@ const AdminPanel = () => {
                         bg={report.resolved ? 'gray.50' : 'transparent'}
                         >
                           <Td>
-                            {report.reporter?.firstName} {report.reporter?.lastName}
-                          </Td>
+                          {report.reporter?.firstName} {report.reporter?.lastName}
+                        </Td>
                           <Td>
-                            {report.reportedUser?.firstName} {report.reportedUser?.lastName}
-                          </Td>
+                          {report.reportedUser?.firstName} {report.reportedUser?.lastName}
+                        </Td>
                           <Td>{report.reason}</Td>
                           <Td
                             whiteSpace="pre-wrap"

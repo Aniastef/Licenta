@@ -32,7 +32,12 @@ export const deleteUser = async (req, res) => {
 
     await User.findByIdAndDelete(req.params.id);
 
-    await addAuditLog('User deleted', req.user._id, user._id, `Deleted user: ${user.email}`);
+    await addAuditLog({
+      action: 'User deleted',
+      performedBy: req.user._id,
+      targetUser: user._id,
+      details: `Deleted user: ${user.email}`
+    });
 
     res.json({ message: 'User deleted successfully' });
   } catch (err) {
@@ -56,12 +61,12 @@ export const updateAdminRole = async (req, res) => {
     user.role = req.body.role;
     await user.save();
 
-    await addAuditLog(
-      'Admin role updated',
-      req.user._id,
-      user._id,
-      `Changed role to: ${user.role}`,
-    );
+    await addAuditLog({
+    action: 'Admin role updated',
+    performedBy: req.user._id,
+    targetUser: user._id,
+    details: `Changed role to: ${user.role}`
+  });
 
     res.json({ message: 'User role updated', user });
   } catch (err) {
@@ -83,12 +88,12 @@ export const toggleBlockUser = async (req, res) => {
     user.isBlocked = !user.isBlocked;
     await user.save();
 
-    await addAuditLog(
-      'User blocked/unblocked',
-      req.user._id,
-      user._id,
-      `User ${user.isBlocked ? 'blocked' : 'unblocked'}`,
-    );
+    await addAuditLog({
+    action: 'User blocked/unblocked',
+    performedBy: req.user._id,
+    targetUser: user._id,
+    details: `User ${user.isBlocked ? 'blocked' : 'unblocked'}`
+  });
 
     res.json({ message: `User ${user.isBlocked ? 'blocked' : 'unblocked'} successfully` });
   } catch (err) {
@@ -162,12 +167,12 @@ export const updateUserAdmin = async (req, res) => {
 
     await user.save();
 
-    await addAuditLog(
-      'User updated',
-      req.user._id,
-      user._id,
-      `Updated fields: ${JSON.stringify(req.body)}`,
-    );
+    await addAuditLog({
+    action: 'User updated',
+    performedBy: req.user._id,
+    targetUser: user._id,
+    details: `Updated fields: ${JSON.stringify(req.body)}`
+  });
 
     res.status(200).json({ message: 'User updated successfully' });
   } catch (err) {
@@ -191,12 +196,12 @@ export const uploadProfilePicture = async (req, res) => {
     user.profilePicture = imageUrl;
     await user.save();
 
-    await addAuditLog(
-      'Profile picture updated',
-      req.user._id,
-      user._id,
-      `Updated profile picture for user: ${user.email}`,
-    );
+    await addAuditLog({
+      action: 'Profile picture updated',
+      performedBy: req.user._id,
+      targetUser: user._id,
+      details: `Updated profile picture for user: ${user.email}`
+    });
 
     res.status(200).json({ message: 'Profile picture updated', url: imageUrl });
   } catch (err) {
@@ -228,7 +233,12 @@ export const handleRoleChange = async (req, res) => {
     user.role = role;
     await user.save();
 
-    await addAuditLog('Role changed', req.user._id, user._id, `Changed role to: ${role}`);
+   await addAuditLog({
+    action: 'Role changed',
+      performedBy: req.user._id,
+      targetUser: user._id,
+      details: `Changed role to: ${role}`
+    });
 
     res.json({ message: 'User role updated successfully', user });
   } catch (err) {
