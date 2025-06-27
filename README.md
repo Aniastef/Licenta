@@ -1,7 +1,7 @@
 
 # Art Corner - APLICAȚIE DE GESTIONARE A PORTOFOLIILOR ARTISTICE
 
-## Ștefania-Georgiana ISTVAN
+## Autor: Ștefania-Georgiana ISTVAN
 
 #### [**GitHub repository link**](https://github.com/Aniastef/Licenta)
 
