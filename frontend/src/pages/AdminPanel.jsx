@@ -477,6 +477,16 @@ const AdminPanel = () => {
   };
 
   useEffect(() => {
+    fetchCurrentUser();
+    fetchUsers();
+    fetchProducts();   
+    fetchArticles();   
+    fetchEvents();     
+    fetchGalleries();  
+    fetchLogs();
+  }, []);
+
+  useEffect(() => {
     if (activeTab === 'products') {
       fetchProducts();
     }
