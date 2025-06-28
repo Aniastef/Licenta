@@ -143,7 +143,7 @@ const FavoritesPage = () => {
           </TabPanel>
 
           {}
-     <TabPanel>
+          <TabPanel>
             {favoriteProducts.length === 0 ? (
               <Text>No favorite products.</Text>
             ) : (
@@ -200,7 +200,7 @@ const FavoritesPage = () => {
           </TabPanel>
 
           {}
-         <TabPanel>
+          <TabPanel>
             {favoriteArticles.length === 0 ? (
               <Text>No favorite articles.</Text>
             ) : (

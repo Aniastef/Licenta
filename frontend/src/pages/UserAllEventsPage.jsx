@@ -46,9 +46,9 @@ const UserAllEventsPage = () => {
   const [locationSearch, setLocationSearch] = useState('');
   const [statusFilters, setStatusFilters] = useState([]);
   const [ticketTypeFilters, setTicketTypeFilters] = useState([]);
-  const [maxPrice, setMaxPrice] = useState(100); 
+  const [maxPrice, setMaxPrice] = useState(100);
   const [selectedPrice, setSelectedPrice] = useState(100);
-  const [priceRange, setPriceRange] = useState([0, 1000]); 
+  const [priceRange, setPriceRange] = useState([0, 1000]);
   const [customMin, setCustomMin] = useState(0);
   const [customMax, setCustomMax] = useState(1000);
   const [enablePriceFilter, setEnablePriceFilter] = useState(false);
@@ -204,10 +204,8 @@ const UserAllEventsPage = () => {
       <Flex justifyContent="center" alignItems="center" px={4} pt={4} position="relative">
         {' '}
         <Text fontWeight="bold" fontSize="2xl" textAlign="center">
-         {user ? `${user.firstName} ${user.lastName}'s Events` : `${username}'s Events`} 
-          {' '}
-        </Text>
-        {' '}
+          {user ? `${user.firstName} ${user.lastName}'s Events` : `${username}'s Events`} {' '}
+        </Text>{' '}
         <Flex position="absolute" right={4} gap={2}>
           {' '}
           {currentUser?.username?.toLowerCase() === username?.toLowerCase() && (
@@ -217,26 +215,22 @@ const UserAllEventsPage = () => {
               mb={4}
               onClick={() => (window.location.href = '/create/event')}
             >
-               Create new event {' '}
+              Create new event{' '}
             </Button>
           )}
-         <Circle size="30px" bg="yellow.400" />
-           <Circle size="30px" bg="green.400" />{' '}
-        </Flex>
-        {' '}
-      </Flex>
-     {' '}
+          <Circle size="30px" bg="yellow.400" />
+          <Circle size="30px" bg="green.400" />{' '}
+        </Flex>{' '}
+      </Flex>{' '}
       <Flex gap={4} wrap="wrap" justify="center">
-         {}
-        {' '}
+        {}{' '}
         <Input
           placeholder="Search by name, tags, or co-hosts..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           maxW="310px"
         />
-         {}
-       {' '}
+        {}{' '}
         <Input
           placeholder="Search by location..."
           value={locationSearch}
@@ -250,69 +244,57 @@ const UserAllEventsPage = () => {
           onChange={(e) => setRoleFilter(e.target.value)}
           maxW="200px"
         >
-           <option value="organizer">Organizer</option> {' '}
-          <option value="cohost">Co-Host</option>{' '}
-        </Select>
-        {' '}
-      </Flex>
-      {' '}
+          <option value="organizer">Organizer</option>  <option value="cohost">Co-Host</option>{' '}
+        </Select>{' '}
+      </Flex>{' '}
       <Flex wrap="wrap" justify="space-between" align="flex-start" mt={4}>
-         {}{' '}
+        {}{' '}
         <Box>
           {}{' '}
           <Flex align="center" gap={3} mb={2}>
             {' '}
             <Text fontWeight="bold" minW="70px">
-              Status {' '}
-            </Text>
-            {' '}
+              Status{' '}
+            </Text>{' '}
             <CheckboxGroup value={statusFilters} onChange={setStatusFilters}>
               {' '}
               <Flex gap={3}>
-                 <Checkbox value="upcoming">Upcoming</Checkbox>{' '}
+                <Checkbox value="upcoming">Upcoming</Checkbox>{' '}
                 <Checkbox value="ongoing">Ongoing</Checkbox>{' '}
                 <Checkbox value="completed">Completed</Checkbox>{' '}
               </Flex>
                {' '}
-            </CheckboxGroup>
-           {' '}
+            </CheckboxGroup>{' '}
           </Flex>
           {}{' '}
           <Flex align="center" gap={3}>
-           {' '}
+            {' '}
             <Text fontWeight="bold" minW="70px">
-               Ticket Type {' '}
-            </Text>
-           {' '}
+              Ticket Type{' '}
+            </Text>{' '}
             <CheckboxGroup value={ticketTypeFilters} onChange={setTicketTypeFilters}>
               {' '}
               <Flex gap={3}>
-                 <Checkbox value="free">Free</Checkbox> {' '}
-                <Checkbox value="paid">Paid</Checkbox>{' '}
+                <Checkbox value="free">Free</Checkbox>  <Checkbox value="paid">Paid</Checkbox>{' '}
                 <Checkbox value="donation">Donation</Checkbox> {' '}
-              </Flex>
-              {' '}
-            </CheckboxGroup>
-            {' '}
-          </Flex>
-          {' '}
+              </Flex>{' '}
+            </CheckboxGroup>{' '}
+          </Flex>{' '}
         </Box>
-         {}{' '}
+        {}{' '}
         <Box maxW="500px" ml={[0, 4]} flex="1">
           {' '}
           <Flex align="center" mb={2}>
-           {' '}
+            {' '}
             <Checkbox
               isChecked={enablePriceFilter}
               onChange={(e) => setEnablePriceFilter(e.target.checked)}
             >
-            Price interval {' '}
-            </Checkbox>
-            {' '}
-          </Flex>
-        {' '}
+              Price interval{' '}
+            </Checkbox>{' '}
+          </Flex>{' '}
           <Flex direction="row" align="center" gap={4}>
-             {}{' '}
+            {}{' '}
             <Box flex="1" w="100%">
               {' '}
               <RangeSlider
@@ -328,18 +310,17 @@ const UserAllEventsPage = () => {
                 }}
                 w="100%"
               >
-               {' '}
+                {' '}
                 <RangeSliderTrack>
                   <RangeSliderFilledTrack />{' '}
                 </RangeSliderTrack>
                 <RangeSliderThumb index={0} />
-                 <RangeSliderThumb index={1} />{' '}
-              </RangeSlider>
-            {' '}
+                <RangeSliderThumb index={1} />{' '}
+              </RangeSlider>{' '}
             </Box>
-          {}{' '}
+            {}{' '}
             <Flex gap={2} align="center">
-            {' '}
+              {' '}
               <Input
                 size="sm"
                 type="text"
@@ -354,8 +335,7 @@ const UserAllEventsPage = () => {
                   }
                 }}
               />
-              <Text>-</Text>
-              {' '}
+              <Text>-</Text>{' '}
               <Input
                 size="sm"
                 type="text"
@@ -369,19 +349,14 @@ const UserAllEventsPage = () => {
                     setPriceRange([priceRange[0], parsed]);
                   }
                 }}
-              />
-              {' '}
-            </Flex>
-            {' '}
-          </Flex>
-         {' '}
-        </Box>
-       {' '}
-      </Flex>
-     {' '}
+              />{' '}
+            </Flex>{' '}
+          </Flex>{' '}
+        </Box>{' '}
+      </Flex>{' '}
       {tagOptions.length > 0 && (
         <Wrap spacing={2} mb={4} justify="center">
-         {' '}
+          {' '}
           {tagOptions.map((tag) => (
             <WrapItem key={tag}>
               {' '}
@@ -397,14 +372,11 @@ const UserAllEventsPage = () => {
                 }
               >
                 {`#${tag}`}{' '}
-              </Button>
-            {' '}
+              </Button>{' '}
             </WrapItem>
-          ))}
-          {' '}
+          ))}{' '}
         </Wrap>
-      )}
-      {' '}
+      )}{' '}
       {loading ? (
         <Flex justify="center">
           <Spinner size="xl" />{' '}
@@ -413,12 +385,12 @@ const UserAllEventsPage = () => {
         <Text>No events found.</Text>
       ) : (
         <>
-        {' '}
+          {' '}
           <Flex mt={4} wrap="wrap" justify="center" gap={5}>
-           {' '}
+            {' '}
             {filteredEvents.map((event) => (
               <Link to={`/events/${event._id}`} key={event._id}>
-               {' '}
+                {' '}
                 <Box
                   w="350px"
                   borderWidth="1px"
@@ -427,7 +399,7 @@ const UserAllEventsPage = () => {
                   _hover={{ boxShadow: 'lg', transform: 'scale(1.02)' }}
                   transition="all 0.2s"
                 >
-                 {' '}
+                  {' '}
                   <Box h="150px" overflow="hidden">
                      {' '}
                     {event.coverImage ? (
@@ -457,67 +429,52 @@ const UserAllEventsPage = () => {
                         >
                           {event.name}{' '}
                         </Text>
-                        {' '}
+                         {' '}
                       </Box>
-                    )}
-                    {' '}
-                  </Box>
-                 {' '}
+                    )}{' '}
+                  </Box>{' '}
                   <Flex p={4} gap={3} align="center">
-                  {}{' '}
+                    {}{' '}
                     <Flex direction="column" align="center" minW="50px">
                       {' '}
                       {(() => {
                         const { day, month, year } = formatDate(event.date);
                         return (
                           <>
-                       {' '}
+                            {' '}
                             <Text fontWeight="bold" fontSize="lg">
                               {day}
-                            </Text>
-                           {' '}
+                            </Text>{' '}
                             <Text fontWeight="bold" fontSize="sm">
                               {month}
-                            </Text>
-                           {' '}
+                            </Text>{' '}
                             <Text fontWeight="bold" fontSize="sm">
                               {year}
-                            </Text>
-                           {' '}
+                            </Text>{' '}
                           </>
                         );
-                      })()}
-                     {' '}
+                      })()}{' '}
                     </Flex>
                     {}{' '}
                     <Box textAlign="left" flex="1" overflow="hidden">
                       {}{' '}
                       <Text fontSize="md" fontWeight="bold" isTruncated>
-                       {event.name || 'Nume eveniment'}
-                        {' '}
-                      </Text>
-                     {' '}
+                        {event.name || 'Nume eveniment'}{' '}
+                      </Text>{' '}
                       {event.category && <Text fontSize="sm">Category: {event.category}</Text>}
                       {}{' '}
                       <Text fontSize="sm" isTruncated>
                         {event.location || 'TBA'}{' '}
                       </Text>
-                      <Text fontSize="xs">{event.time || 'TBA'}</Text>
-                      {' '}
-                    </Box>
-                    {' '}
-                  </Flex>
-                 {' '}
-                </Box>
-                {' '}
+                      <Text fontSize="xs">{event.time || 'TBA'}</Text>{' '}
+                    </Box>{' '}
+                  </Flex>{' '}
+                </Box>{' '}
               </Link>
-            ))}
-            {' '}
-          </Flex>
-          {' '}
+            ))}{' '}
+          </Flex>{' '}
         </>
-      )}
-      {' '}
+      )}{' '}
     </Box>
   );
 };

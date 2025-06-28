@@ -12,7 +12,7 @@ export const getUserOrders = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const ordersWithTotalPrice = user.orders.map(order => {
+    const ordersWithTotalPrice = user.orders.map((order) => {
       if (Array.isArray(order.products)) {
         for (let i = 0; i < order.products.length; i++) {
           const item = order.products[i];
@@ -29,19 +29,19 @@ export const getUserOrders = async (req, res) => {
       }
 
       const calculatedTotalPrice = order.products.reduce((sum, item) => {
-        const price = parseFloat(item.price) || 0; 
-        const quantity = parseFloat(item.quantity) || 0; 
-        return sum + (price * quantity);
+        const price = parseFloat(item.price) || 0;
+        const quantity = parseFloat(item.quantity) || 0;
+        return sum + price * quantity;
       }, 0);
 
       const isOrderOnlyTickets =
         Array.isArray(order.products) && order.products.every((p) => p.itemType === 'Event');
-      
+
       const newOrder = {
-        ...order.toObject(), 
+        ...order.toObject(),
         firstName: order.firstName || 'N/A',
         lastName: order.lastName || 'N/A',
-        totalPrice: calculatedTotalPrice, 
+        totalPrice: calculatedTotalPrice,
       };
 
       if (isOrderOnlyTickets) {
@@ -90,10 +90,10 @@ export const addOrder = async (req, res) => {
 
     const newOrder = {
       products: products.map((p) => ({
-        product: p.product._id,         
-        price: p.product.price,         
+        product: p.product._id,
+        price: p.product.price,
         quantity: p.quantity || 1,
-        itemType: p.itemType,          
+        itemType: p.itemType,
       })),
       status: 'Pending',
       date: new Date(),
@@ -156,7 +156,6 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
-
 export const getAllOrders = async (req, res) => {
   try {
     const usersWithOrders = await User.find({ 'orders.0': { $exists: true } })
@@ -168,7 +167,7 @@ export const getAllOrders = async (req, res) => {
         const calculatedTotalPrice = order.products.reduce((sum, item) => {
           const price = item.price || 0;
           const quantity = item.quantity || 0;
-          return sum + (price * quantity);
+          return sum + price * quantity;
         }, 0);
 
         return {

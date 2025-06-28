@@ -112,19 +112,16 @@ const ProductCard = ({ product }) => {
 
     if (product.images?.length > 0) {
       setViewMode('image');
-    }
-    else if (product.videos?.length > 0) {
+    } else if (product.videos?.length > 0) {
       setViewMode('video');
-    }
-    else if (
+    } else if (
       (Array.isArray(product.writing) &&
         product.writing.length > 0 &&
         product.writing[0]?.trim()) ||
       (typeof product.writing === 'string' && product.writing.trim())
     ) {
       setViewMode('writing');
-    }
-    else if (product.audios?.length > 0) {
+    } else if (product.audios?.length > 0) {
       setViewMode('audio');
     }
   }, [product]);

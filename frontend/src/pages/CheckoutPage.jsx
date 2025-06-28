@@ -294,10 +294,7 @@ const CheckoutPage = () => {
       city: isOnlyTickets ? '' : city,
       phone: isOnlyTickets ? '' : phone,
     };
-    console.log(
-      'Frontend (CheckoutPage): Sending to /api/orders/:userId:',
-      payloadForDirectOrder,
-    );
+    console.log('Frontend (CheckoutPage): Sending to /api/orders/:userId:', payloadForDirectOrder);
 
     try {
       const response = await fetch(`/api/orders/${user._id}`, {

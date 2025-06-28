@@ -148,7 +148,6 @@ const EditProductPage = () => {
             category: initialCategories.length > 0 ? initialCategories : ['General'],
             writing: data.product.writing || '',
           });
-
         } else {
           showToast('Error', data.error, 'error');
           setProduct(null);
@@ -256,14 +255,14 @@ const EditProductPage = () => {
     }
   };
 
-    const handleGalleryChange = (selectedIds) => {
-    const newGalleries = selectedIds.map(id => ({
-        gallery: { _id: id },
-        order: 0
+  const handleGalleryChange = (selectedIds) => {
+    const newGalleries = selectedIds.map((id) => ({
+      gallery: { _id: id },
+      order: 0,
     }));
     setProduct({ ...product, galleries: newGalleries });
   };
-  
+
   if (currentUser && product && product.user && currentUser._id !== product.user._id) {
     showToast('Error', 'You are not authorized to edit this product.', 'error');
     navigate(`/`);
@@ -298,9 +297,9 @@ const EditProductPage = () => {
       const videosBase64 = await Promise.all(newVideoFiles.map(fileToBase64));
       const audiosBase64 = await Promise.all(newAudioFiles.map(fileToBase64));
 
-      const galleriesToSend = product.galleries.map(g => ({
+      const galleriesToSend = product.galleries.map((g) => ({
         gallery: g.gallery._id,
-        order: g.order || 0
+        order: g.order || 0,
       }));
 
       const updated = {
@@ -310,7 +309,7 @@ const EditProductPage = () => {
         audios: [...(product.audios || []), ...audiosBase64],
         galleries: galleriesToSend,
         category: product.category.length > 0 ? product.category : ['General'],
-        writing: product.writing || '', 
+        writing: product.writing || '',
       };
 
       const res = await fetch(`/api/products/update/${product._id}`, {
@@ -451,11 +450,11 @@ const EditProductPage = () => {
                 </CheckboxGroup>
               </FormControl>
 
-        <FormControl>
+              <FormControl>
                 <FormLabel>Galleries</FormLabel>
                 <CheckboxGroup
                   colorScheme="orange"
-                  value={product.galleries?.map(g => g.gallery._id) || []}
+                  value={product.galleries?.map((g) => g.gallery._id) || []}
                   onChange={handleGalleryChange}
                 >
                   <Wrap spacing={4} mt={2}>
@@ -608,40 +607,40 @@ const EditProductPage = () => {
                 </Flex>
               </FormControl>
 
-             <FormControl> 
-              <FormLabel>Writing</FormLabel>
-              <ReactQuill
-                theme="snow"
-                value={product.writing ?? ''}
-                onChange={(value) => setProduct({ ...product, writing: value })}
-                modules={{
-                  toolbar: [
-                    [{ header: [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ list: 'ordered' }, { list: 'bullet' }],
-                    [{ align: [] }],
-                    [{ color: [] }, { background: [] }],
-                    ['link', 'image'],
-                    ['clean'],
-                  ],
-                }}
-                formats={[
-                  'header',
-                  'bold',
-                  'italic',
-                  'underline',
-                  'strike',
-                  'list',
-                  'bullet',
-                  'align',
-                  'color',
-                  'background',
-                  'link',
-                  'image',
-                ]}
-                style={{ height: '200px', width: '100%', marginBottom: '50px' }}
-              />
-            </FormControl>
+              <FormControl>
+                <FormLabel>Writing</FormLabel>
+                <ReactQuill
+                  theme="snow"
+                  value={product.writing ?? ''}
+                  onChange={(value) => setProduct({ ...product, writing: value })}
+                  modules={{
+                    toolbar: [
+                      [{ header: [1, 2, 3, false] }],
+                      ['bold', 'italic', 'underline', 'strike'],
+                      [{ list: 'ordered' }, { list: 'bullet' }],
+                      [{ align: [] }],
+                      [{ color: [] }, { background: [] }],
+                      ['link', 'image'],
+                      ['clean'],
+                    ],
+                  }}
+                  formats={[
+                    'header',
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strike',
+                    'list',
+                    'bullet',
+                    'align',
+                    'color',
+                    'background',
+                    'link',
+                    'image',
+                  ]}
+                  style={{ height: '200px', width: '100%', marginBottom: '50px' }}
+                />
+              </FormControl>
 
               <Button colorScheme="orange" onClick={handleUpdate} isLoading={updating} w="full">
                 Save Changes

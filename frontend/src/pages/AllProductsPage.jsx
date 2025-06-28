@@ -555,7 +555,7 @@ const ProductsPage = () => {
         </Box>
 
         <Box flex={1}>
-           {loading ? (
+          {loading ? (
             <Flex justifyContent="center" alignItems="center" height="300px">
               <Spinner size="xl" color="blue.500" />
               <Text ml={4} fontSize="xl">

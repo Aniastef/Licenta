@@ -77,14 +77,14 @@ describe('CreateOrEditArticlePage - Article Creation/Edit Scenarios', () => {
   });
 
   test('should render "Create new article" heading and input fields', () => {
-  renderComponent();
-  expect(screen.getByRole('heading', { name: /Create new article/i })).toBeInTheDocument();
-  expect(screen.getByPlaceholderText(/Article Title/i)).toBeInTheDocument();
-  expect(screen.getByPlaceholderText(/Subtitle/i)).toBeInTheDocument();
-  expect(screen.getByRole('combobox', { name: /Category/i })).toBeInTheDocument();
-  expect(screen.getByLabelText(/Cover image/i)).toBeInTheDocument();
-  expect(screen.getByTestId('article-content-editor')).toBeInTheDocument();  
-  expect(screen.getByRole('button', { name: /Publish Article/i })).toBeInTheDocument();
+    renderComponent();
+    expect(screen.getByRole('heading', { name: /Create new article/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Article Title/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Subtitle/i)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Category/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Cover image/i)).toBeInTheDocument();
+    expect(screen.getByTestId('article-content-editor')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Publish Article/i })).toBeInTheDocument();
   });
 
   test('should show error toast if title or content is missing on Publish', async () => {

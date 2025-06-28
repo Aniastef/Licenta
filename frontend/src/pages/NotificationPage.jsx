@@ -51,7 +51,7 @@ const NotificationsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-      fetchNotifications(); 
+      fetchNotifications();
     } catch (err) {
       console.error('Failed to mark all as seen', err);
       toast({
@@ -90,7 +90,7 @@ const NotificationsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-      fetchNotifications(); 
+      fetchNotifications();
     } catch (err) {
       console.error('Failed to accept invite', err);
       toast({
@@ -149,9 +149,7 @@ const NotificationsPage = () => {
         credentials: 'include',
       });
       setNotifications((prevNotifications) =>
-        prevNotifications.map((notif) =>
-          notif._id === n._id ? { ...notif, seen: true } : notif
-        )
+        prevNotifications.map((notif) => (notif._id === n._id ? { ...notif, seen: true } : notif)),
       );
     } catch (err) {
       console.error('Failed to mark as seen', err);
@@ -198,13 +196,13 @@ const NotificationsPage = () => {
 
               {n.type === 'invite' && n.meta?.galleryId ? (
                 <GalleryInviteActions
-                  notification={n} 
+                  notification={n}
                   galleryId={n.meta.galleryId}
-                  onAccept={() => acceptInvite(n._id, n.meta.galleryId)} 
+                  onAccept={() => acceptInvite(n._id, n.meta.galleryId)}
                   onDecline={() => declineInvite(n._id, n.meta.galleryId)}
                 />
               ) : (
-                n.link && ( 
+                n.link && (
                   <Button
                     size="sm"
                     variant="link"
@@ -227,7 +225,7 @@ export default NotificationsPage;
 
 const GalleryInviteActions = ({ notification, galleryId, onAccept, onDecline }) => {
   const [loading, setLoading] = useState(true);
-  const [inviteStatus, setInviteStatus] = useState('pending'); 
+  const [inviteStatus, setInviteStatus] = useState('pending');
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -237,10 +235,10 @@ const GalleryInviteActions = ({ notification, galleryId, onAccept, onDecline }) 
           credentials: 'include',
         });
         const data = await res.json();
-        const currentUserId = notification.user; 
+        const currentUserId = notification.user;
 
         if (!data) {
-          setInviteStatus('not_found'); 
+          setInviteStatus('not_found');
           return;
         }
 
@@ -250,13 +248,13 @@ const GalleryInviteActions = ({ notification, galleryId, onAccept, onDecline }) 
         if (isCollab) {
           setInviteStatus('already_collaborator');
         } else if (!isPending) {
-          setInviteStatus('withdrawn'); 
+          setInviteStatus('withdrawn');
         } else {
-          setInviteStatus('pending'); 
+          setInviteStatus('pending');
         }
       } catch (e) {
         console.warn('Error checking collaborator status:', e.message);
-        setInviteStatus('error'); 
+        setInviteStatus('error');
       } finally {
         setLoading(false);
       }
@@ -270,18 +268,18 @@ const GalleryInviteActions = ({ notification, galleryId, onAccept, onDecline }) 
         checkStatus();
       }
     } else {
-      setLoading(false); 
+      setLoading(false);
     }
-  }, [galleryId, notification]); 
+  }, [galleryId, notification]);
 
   const handleAccept = async () => {
-    await onAccept(); 
-    setInviteStatus('accepted'); 
+    await onAccept();
+    setInviteStatus('accepted');
   };
 
   const handleDecline = async () => {
-    await onDecline(); 
-    setInviteStatus('declined'); 
+    await onDecline();
+    setInviteStatus('declined');
   };
 
   if (loading) {

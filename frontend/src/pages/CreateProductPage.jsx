@@ -112,7 +112,7 @@ const compressImage = async (file) => {
 
 const CreateProductPage = () => {
   const setProduct = useSetRecoilState(productAtom);
-  const currentUser = useRecoilValue(userAtom); 
+  const currentUser = useRecoilValue(userAtom);
   const [newProduct, setNewProduct] = useState({
     title: '',
     description: '',
@@ -330,7 +330,7 @@ const CreateProductPage = () => {
               </CheckboxGroup>
             </FormControl>
 
-           <FormControl>
+            <FormControl>
               <FormLabel>Galleries</FormLabel>
               <CheckboxGroup
                 colorScheme="orange"

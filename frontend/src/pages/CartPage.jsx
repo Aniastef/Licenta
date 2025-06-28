@@ -59,15 +59,14 @@ const CartPage = () => {
 
   return (
     <Box p={8}>
-        <Heading mb={2} textAlign="center">
-          My Cart
-        </Heading>
+      <Heading mb={2} textAlign="center">
+        My Cart
+      </Heading>
 
-        <Flex justify="flex-end" mb={4} gap={2}>
+      <Flex justify="flex-end" mb={4} gap={2}>
         <Circle size="30px" bg="yellow.400" />
         <Circle size="30px" bg="green.400" />
       </Flex>
-
 
       <VStack spacing={6} align="center">
         {cart.map((item) => {
@@ -127,10 +126,10 @@ const CartPage = () => {
               <Flex direction="column" flex="1" px={2}>
                 <Link
                   to={isEvent ? `/events/${item.product._id}` : `/products/${item.product._id}`}
-                >       
-                <Text fontWeight="bold" fontSize="lg">
-                  {isEvent ? item.product.name : item.product.title}
-                </Text>
+                >
+                  <Text fontWeight="bold" fontSize="lg">
+                    {isEvent ? item.product.name : item.product.title}
+                  </Text>
                   <Text
                     fontSize="sm"
                     color={isEvent ? 'blue.600' : 'purple.500'}

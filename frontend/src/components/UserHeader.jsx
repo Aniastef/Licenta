@@ -115,7 +115,7 @@ const UserHeader = ({ user }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', 
+        credentials: 'include',
         body: JSON.stringify({
           reportedUserId: user._id,
           reason: reportReason,
@@ -124,8 +124,13 @@ const UserHeader = ({ user }) => {
       });
 
       if (res.ok) {
-        toast({ title: 'Report submitted successfully.', description: 'Thank you for your feedback.', status: 'success', duration: 3000 });
-        onReportClose(); 
+        toast({
+          title: 'Report submitted successfully.',
+          description: 'Thank you for your feedback.',
+          status: 'success',
+          duration: 3000,
+        });
+        onReportClose();
         setReportReason('');
         setReportDetails('');
       } else {
@@ -415,15 +420,10 @@ const UserHeader = ({ user }) => {
             ) : null;
           })}
           {currentUser?._id !== user._id && (
-              <Button
-                size="sm"
-                colorScheme="red"
-                variant="outline"
-                onClick={onReportOpen}
-              >
-                Report User
-              </Button>
-            )}
+            <Button size="sm" colorScheme="red" variant="outline" onClick={onReportOpen}>
+              Report User
+            </Button>
+          )}
         </Flex>
 
         {}
@@ -557,7 +557,7 @@ const UserHeader = ({ user }) => {
                         _hover={{ textDecoration: 'underline' }}
                         cursor="pointer"
                       >
-                         See user's all artworks →
+                        See user's all artworks →
                       </Text>
                     </Link>
                   </Box>
@@ -853,7 +853,9 @@ const UserHeader = ({ user }) => {
       <Modal isOpen={isReportOpen} onClose={onReportClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Report {user.firstName} {user.lastName}</ModalHeader>
+          <ModalHeader>
+            Report {user.firstName} {user.lastName}
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4}>
@@ -886,20 +888,13 @@ const UserHeader = ({ user }) => {
             <Button variant="ghost" mr={3} onClick={onReportClose}>
               Cancel
             </Button>
-            <Button
-              colorScheme="red"
-              onClick={handleSubmitReport}
-              isLoading={isReporting}
-            >
+            <Button colorScheme="red" onClick={handleSubmitReport} isLoading={isReporting}>
               Submit Report
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
-    
     </Flex>
-    
-    
   );
 };
 

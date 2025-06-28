@@ -56,7 +56,7 @@ const UserArticlesPage = () => {
 
   useEffect(() => {
     const fetchArticles = async () => {
-      setIsLoading(true); 
+      setIsLoading(true);
       try {
         const res = await fetch(`/api/articles/user/${username}`, {
           credentials: 'include',

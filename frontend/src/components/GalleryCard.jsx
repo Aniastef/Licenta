@@ -385,11 +385,10 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                 </Tag>
               ))}
             </Flex>
-          )}
-          {' '}
+          )}{' '}
           {gallery.description && (
             <>
-             {' '}
+              {' '}
               {gallery.description.length > 300 ? (
                 <>
                   {' '}
@@ -400,25 +399,21 @@ const GalleryCard = ({ gallery, currentUserId, fetchGallery }) => {
                       dangerouslySetInnerHTML={{ __html: gallery.description }}
                     />{' '}
                     {}{' '}
-                  </Collapse>
-                  {' '}
+                  </Collapse>{' '}
                   <Button
                     variant="link"
                     colorScheme="blue"
                     onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                   >
-                     {isDescriptionExpanded ? 'see less' : 'see more'}
-                    {' '}
-                  </Button>
-                {' '}
+                    {isDescriptionExpanded ? 'see less' : 'see more'}{' '}
+                  </Button>{' '}
                 </>
               ) : (
                 <Box
                   className="quill-content"
                   dangerouslySetInnerHTML={{ __html: gallery.description }}
                 />
-              )}
-              {' '}
+              )}{' '}
             </>
           )}
           <Flex direction={'row'} gap={2} mt={gallery.description?.length > 900 ? 4 : 2}></Flex>

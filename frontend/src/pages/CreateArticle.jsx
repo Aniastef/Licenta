@@ -174,7 +174,7 @@ const CreateOrEditArticlePage = () => {
                 id="article-cover-image"
                 type="file"
                 accept="image/*"
-                p={1.5} 
+                p={1.5}
                 onChange={(e) => {
                   const file = e.target.files[0];
                   if (file) {
@@ -192,40 +192,62 @@ const CreateOrEditArticlePage = () => {
 
             {croppedCoverImage && (
               <Box mt={2}>
-                <Text fontSize="sm" mb={2}>Cover Preview:</Text>
+                <Text fontSize="sm" mb={2}>
+                  Cover Preview:
+                </Text>
                 <img
                   src={croppedCoverImage}
                   alt="Cover Preview"
-                  style={{ maxHeight: '250px', width: '100%', objectFit: 'cover', borderRadius: '6px' }}
+                  style={{
+                    maxHeight: '250px',
+                    width: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '6px',
+                  }}
                 />
               </Box>
             )}
 
             <FormControl>
-                <FormLabel>Content</FormLabel>
-                 <ReactQuill
-                    value={content}
-                    onChange={setContent}
-                    modules={{
-                    toolbar: [
-                        [{ header: [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        [{ align: [] }],
-                        [{ color: [] }, { background: [] }],
-                        ['link', 'image'],
-                        ['clean'],
-                    ],
-                    }}
-                    formats={[
-                        'header', 'bold', 'italic', 'underline', 'strike',
-                        'list', 'bullet', 'align', 'color', 'background', 'link', 'image',
-                    ]}
-                    style={{ height: '200px', marginBottom: '50px' }}
-                />
+              <FormLabel>Content</FormLabel>
+              <ReactQuill
+                value={content}
+                onChange={setContent}
+                modules={{
+                  toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ align: [] }],
+                    [{ color: [] }, { background: [] }],
+                    ['link', 'image'],
+                    ['clean'],
+                  ],
+                }}
+                formats={[
+                  'header',
+                  'bold',
+                  'italic',
+                  'underline',
+                  'strike',
+                  'list',
+                  'bullet',
+                  'align',
+                  'color',
+                  'background',
+                  'link',
+                  'image',
+                ]}
+                style={{ height: '200px', marginBottom: '50px' }}
+              />
             </FormControl>
 
-            <Button colorScheme="pink" onClick={() => handleSubmit(false)} isLoading={isLoading} w="full">
+            <Button
+              colorScheme="pink"
+              onClick={() => handleSubmit(false)}
+              isLoading={isLoading}
+              w="full"
+            >
               {id ? 'Update Article' : 'Publish Article'}
             </Button>
           </VStack>

@@ -185,11 +185,11 @@ export const deleteGallery = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized action' });
     }
 
-    const productIdsInGallery = gallery.products.map(p => p.product);
+    const productIdsInGallery = gallery.products.map((p) => p.product);
     if (productIdsInGallery.length > 0) {
       await Product.updateMany(
         { _id: { $in: productIdsInGallery } },
-        { $pull: { galleries: { gallery: galleryId } } }
+        { $pull: { galleries: { gallery: galleryId } } },
       );
     }
 
@@ -439,19 +439,19 @@ export const addProductToGallery = async (req, res) => {
     }
 
     const productInThisGallery = product.galleries.some(
-      g => g.gallery.toString() === gallery._id.toString()
+      (g) => g.gallery.toString() === gallery._id.toString(),
     );
 
     if (!productInThisGallery) {
-        product.galleries.push({ gallery: gallery._id, order: 0 });
-        await product.save();
+      product.galleries.push({ gallery: gallery._id, order: 0 });
+      await product.save();
     }
 
     res.status(200).json({ message: 'Product added to gallery', gallery });
-    } catch (err) {
+  } catch (err) {
     console.error('Error adding product to gallery:', err.message);
     res.status(500).json({ message: err.message });
-    }
+  }
 };
 
 export const addMultipleProductsToGallery = async (req, res) => {
@@ -486,10 +486,10 @@ export const addMultipleProductsToGallery = async (req, res) => {
     await gallery.save();
 
     if (newProducts.length > 0) {
-        await Product.updateMany(
-            { _id: { $in: newProducts } }, 
-            { $addToSet: { galleries: { gallery: gallery._id, order: 0 } } }
-        );
+      await Product.updateMany(
+        { _id: { $in: newProducts } },
+        { $addToSet: { galleries: { gallery: gallery._id, order: 0 } } },
+      );
     }
 
     res.status(200).json({ message: 'Products added successfully' });
@@ -600,7 +600,7 @@ export const acceptGalleryInvite = async (req, res) => {
 
     await Notification.updateMany(
       { 'meta.galleryId': galleryId, type: 'invite', user: userId },
-      { seen: true }
+      { seen: true },
     );
 
     res.status(200).json({ message: 'You are now a collaborator' });

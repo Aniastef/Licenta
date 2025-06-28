@@ -6,7 +6,7 @@ import Comment from '../models/commentModel.js';
 import Gallery from '../models/galleryModel.js';
 import User from '../models/userModel.js';
 import Notification from '../models/notificationModel.js';
-import { addAuditLog } from './auditLogController.js'; 
+import { addAuditLog } from './auditLogController.js';
 
 export const createProduct = async (req, res) => {
   try {
@@ -47,7 +47,10 @@ export const createProduct = async (req, res) => {
     for (const video of videos) {
       if (video && video.startsWith('data:')) {
         try {
-          const uploadRes = await cloudinary.uploader.upload(video, { resource_type: 'video', folder: 'products_videos' });
+          const uploadRes = await cloudinary.uploader.upload(video, {
+            resource_type: 'video',
+            folder: 'products_videos',
+          });
           uploadedVideos.push(uploadRes.secure_url);
         } catch (uploadError) {
           console.error('Cloudinary Video Upload Error:', uploadError);
@@ -58,44 +61,48 @@ export const createProduct = async (req, res) => {
     for (const audio of audios) {
       if (audio && audio.startsWith('data:')) {
         try {
-          const uploadRes = await cloudinary.uploader.upload(audio, { resource_type: 'raw', folder: 'products_audios' }); 
+          const uploadRes = await cloudinary.uploader.upload(audio, {
+            resource_type: 'raw',
+            folder: 'products_audios',
+          });
         } catch (uploadError) {
           console.error('Cloudinary Audio Upload Error:', uploadError);
         }
       }
     }
 
-      const newProduct = new Product({
-        title,
-        description: description?.trim() || 'No description',
-        price: forSale ? (price !== undefined && price !== null ? price : 0) : undefined,
-        quantity: quantity || 0,
-        forSale: forSale !== undefined ? forSale : true,
-        images: uploadedImages,
-        videos: uploadedVideos,
-        audios: uploadedAudios,
-        writing,
-        category: Array.isArray(category) && category.length > 0 ? category : ['General'],
-        user: req.user._id,
+    const newProduct = new Product({
+      title,
+      description: description?.trim() || 'No description',
+      price: forSale ? (price !== undefined && price !== null ? price : 0) : undefined,
+      quantity: quantity || 0,
+      forSale: forSale !== undefined ? forSale : true,
+      images: uploadedImages,
+      videos: uploadedVideos,
+      audios: uploadedAudios,
+      writing,
+      category: Array.isArray(category) && category.length > 0 ? category : ['General'],
+      user: req.user._id,
 
-        galleries: Array.isArray(galleries) && galleries.length > 0
-        ? galleries.map(gId => ({ gallery: gId, order: 0 })) 
-        : [],
-      });
-
+      galleries:
+        Array.isArray(galleries) && galleries.length > 0
+          ? galleries.map((gId) => ({ gallery: gId, order: 0 }))
+          : [],
+    });
 
     if (newProduct.forSale && newProduct.price <= 0) {
-        return res.status(400).json({ error: 'Price must be greater than 0 if artwork is for sale.' });
+      return res
+        .status(400)
+        .json({ error: 'Price must be greater than 0 if artwork is for sale.' });
     }
-
 
     await newProduct.save();
     console.log('Product saved successfully:', newProduct._id);
 
-     if (galleries && galleries.length > 0) {
+    if (galleries && galleries.length > 0) {
       await Gallery.updateMany(
         { _id: { $in: galleries } },
-        { $addToSet: { products: { product: newProduct._id, order: 0 } } }
+        { $addToSet: { products: { product: newProduct._id, order: 0 } } },
       );
       console.log(`Updated ${galleries.length} galleries with the new product.`);
     }
@@ -119,31 +126,39 @@ export const createProduct = async (req, res) => {
 
           if (gallery) {
             if (!Array.isArray(gallery.products)) {
-                gallery.products = [];
-                console.warn(`Gallery ${gallery._id} products array was not an array. Initialized.`);
+              gallery.products = [];
+              console.warn(`Gallery ${gallery._id} products array was not an array. Initialized.`);
             }
 
-            if (!gallery.products.some(p => p.product && p.product.toString() === newProduct._id.toString())) {
-              const currentOrders = gallery.products.map(p => p.order || 0);
-              const nextOrder = currentOrders.length > 0
-                ? Math.max(...currentOrders) + 1
-                : 0;
+            if (
+              !gallery.products.some(
+                (p) => p.product && p.product.toString() === newProduct._id.toString(),
+              )
+            ) {
+              const currentOrders = gallery.products.map((p) => p.order || 0);
+              const nextOrder = currentOrders.length > 0 ? Math.max(...currentOrders) + 1 : 0;
 
               gallery.products.push({ product: newProduct._id, order: nextOrder });
               await gallery.save();
-              console.log(`Product ${newProduct._id} successfully added to gallery ${galleryId} with order ${nextOrder}.`);
+              console.log(
+                `Product ${newProduct._id} successfully added to gallery ${galleryId} with order ${nextOrder}.`,
+              );
             }
           } else {
-            console.warn(`Gallery with ID ${galleryId} not found when attempting to add product ${newProduct._id}.`);
+            console.warn(
+              `Gallery with ID ${galleryId} not found when attempting to add product ${newProduct._id}.`,
+            );
           }
         } catch (galleryUpdateError) {
-          console.error(`ERROR PROCESSING GALLERY ${galleryId} FOR PRODUCT ${newProduct._id}:`, galleryUpdateError.message);
+          console.error(
+            `ERROR PROCESSING GALLERY ${galleryId} FOR PRODUCT ${newProduct._id}:`,
+            galleryUpdateError.message,
+          );
         }
       }
     }
 
     res.status(201).json(newProduct);
-
   } catch (err) {
     console.error('FATAL SERVER ERROR IN createProduct FUNCTION:', err.stack || err.message || err);
     res.status(500).json({ error: 'Server error during product creation', details: err.message });
@@ -161,8 +176,8 @@ export const getProduct = async (req, res) => {
     const product = await Product.findById(id)
       .populate('user', 'username firstName lastName')
       .populate({
-        path: 'galleries.gallery', 
-        select: '_id name', 
+        path: 'galleries.gallery',
+        select: '_id name',
       });
 
     if (!product) {
@@ -189,18 +204,15 @@ export const deleteProduct = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    if (
-      product.user.toString() !== req.user._id.toString() &&
-      req.user.role !== 'admin'
-    ) {
+    if (product.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Unauthorized action' });
     }
 
-    const galleryIds = product.galleries.map(g => g.gallery);
+    const galleryIds = product.galleries.map((g) => g.gallery);
     if (galleryIds.length > 0) {
       await Gallery.updateMany(
         { _id: { $in: galleryIds } },
-        { $pull: { products: { product: product._id } } }
+        { $pull: { products: { product: product._id } } },
       );
       console.log(`Removed product reference from ${galleryIds.length} galleries.`);
     }
@@ -253,23 +265,23 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized action' });
     }
 
-    const oldGalleryIds = product.galleries.map(g => g.gallery.toString());
-    const newGalleryIds = (galleries || []).map(g => g.gallery.toString());
+    const oldGalleryIds = product.galleries.map((g) => g.gallery.toString());
+    const newGalleryIds = (galleries || []).map((g) => g.gallery.toString());
 
-    const galleriesToAdd = newGalleryIds.filter(id => !oldGalleryIds.includes(id));
-    const galleriesToRemove = oldGalleryIds.filter(id => !newGalleryIds.includes(id));
+    const galleriesToAdd = newGalleryIds.filter((id) => !oldGalleryIds.includes(id));
+    const galleriesToRemove = oldGalleryIds.filter((id) => !newGalleryIds.includes(id));
 
     if (galleriesToAdd.length > 0) {
       await Gallery.updateMany(
         { _id: { $in: galleriesToAdd } },
-        { $addToSet: { products: { product: product._id, order: 0 } } }
+        { $addToSet: { products: { product: product._id, order: 0 } } },
       );
     }
 
     if (galleriesToRemove.length > 0) {
       await Gallery.updateMany(
         { _id: { $in: galleriesToRemove } },
-        { $pull: { products: { product: product._id } } }
+        { $pull: { products: { product: product._id } } },
       );
     }
 
@@ -334,8 +346,8 @@ export const updateProduct = async (req, res) => {
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find()
-      .populate('user', 'firstName lastName') 
-      .sort({ createdAt: -1 }); 
+      .populate('user', 'firstName lastName')
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ products });
   } catch (err) {
@@ -367,7 +379,7 @@ export const getProductsNotInGallery = async (req, res) => {
       return res.status(404).json({ error: 'Gallery not found' });
     }
 
-    const productIdsInGallery = gallery.products.map(p => p.product);
+    const productIdsInGallery = gallery.products.map((p) => p.product);
     const products = await Product.find({ _id: { $nin: productIdsInGallery } });
 
     res.status(200).json({ products });
@@ -466,14 +478,14 @@ export const addToFavorites = async (req, res) => {
 
 export const removeFromFavorites = async (req, res) => {
   try {
-    const { id: productId } = req.params; 
-    const userId = req.user.id; 
+    const { id: productId } = req.params;
+    const userId = req.user.id;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     user.favorites = user.favorites.filter((fav) => fav.toString() !== productId);
-    await user.save(); 
+    await user.save();
 
     return res.json({ message: 'Product removed from favorites' });
   } catch (error) {

@@ -118,7 +118,7 @@ export default function UpdateProfilePage() {
       });
       setImgUrl(user.profilePicture || null);
     }
-  }, [user, setImgUrl]); 
+  }, [user, setImgUrl]);
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];

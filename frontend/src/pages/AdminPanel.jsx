@@ -479,10 +479,10 @@ const AdminPanel = () => {
   useEffect(() => {
     fetchCurrentUser();
     fetchUsers();
-    fetchProducts();   
-    fetchArticles();   
-    fetchEvents();     
-    fetchGalleries();  
+    fetchProducts();
+    fetchArticles();
+    fetchEvents();
+    fetchGalleries();
     fetchLogs();
   }, []);
 
@@ -856,14 +856,12 @@ const AdminPanel = () => {
   }));
 
   const filteredLogs = logs.filter(
-  (log) =>
-    (actionFilter === 'all' || log.action === actionFilter) &&
-    (
-      (log.performedBy?.firstName?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (log.performedBy?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (log.details?.toLowerCase().includes(searchQuery.toLowerCase())) 
-    )
-);
+    (log) =>
+      (actionFilter === 'all' || log.action === actionFilter) &&
+      (log.performedBy?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.performedBy?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.details?.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
 
   const exportLogsToCSV = () => {
     if (logs.length === 0) {
@@ -1737,7 +1735,7 @@ const AdminPanel = () => {
                       <Tr key={log._id}>
                         <Td>{log.action}</Td>
                         <Td>
-                            {log.performedBy?.firstName} {log.performedBy?.lastName}
+                          {log.performedBy?.firstName} {log.performedBy?.lastName}
                         </Td>
                         <Td>{getTargetInfo(log)}</Td> {}
                         <Td
@@ -1906,17 +1904,17 @@ const AdminPanel = () => {
                   <Tbody>
                     {reports.length > 0 ? (
                       reports.map((report) => (
-                        <Tr 
-                        key={report._id}
-                        opacity={report.resolved ? 0.6 : 1}
-                        bg={report.resolved ? 'gray.50' : 'transparent'}
+                        <Tr
+                          key={report._id}
+                          opacity={report.resolved ? 0.6 : 1}
+                          bg={report.resolved ? 'gray.50' : 'transparent'}
                         >
                           <Td>
-                          {report.reporter?.firstName} {report.reporter?.lastName}
-                        </Td>
+                            {report.reporter?.firstName} {report.reporter?.lastName}
+                          </Td>
                           <Td>
-                          {report.reportedUser?.firstName} {report.reportedUser?.lastName}
-                        </Td>
+                            {report.reportedUser?.firstName} {report.reportedUser?.lastName}
+                          </Td>
                           <Td>{report.reason}</Td>
                           <Td
                             whiteSpace="pre-wrap"
@@ -1936,7 +1934,7 @@ const AdminPanel = () => {
                               size="sm"
                               colorScheme="green"
                               onClick={() => handleResolveReport(report._id)}
-                              isDisabled={report.resolved} 
+                              isDisabled={report.resolved}
                             >
                               {report.resolved ? 'Resolved' : 'Mark Resolved'}
                             </Button>

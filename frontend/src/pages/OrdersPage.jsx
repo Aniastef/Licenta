@@ -65,28 +65,27 @@ const OrdersPage = () => {
     });
   };
 
- const generateTicket = async (order) => {
- try {
-const doc = new jsPDF();
+  const generateTicket = async (order) => {
+    try {
+      const doc = new jsPDF();
 
-doc.setFontSize(20);
-doc.text('Digital Ticket', 70, 25);
-doc.setFontSize(12);
-doc.text(`Order #${order._id}`, 14, 40);
-doc.text(`Date: ${new Date(order.date).toLocaleString()}`, 14, 48);
+      doc.setFontSize(20);
+      doc.text('Digital Ticket', 70, 25);
+      doc.setFontSize(12);
+      doc.text(`Order #${order._id}`, 14, 40);
+      doc.text(`Date: ${new Date(order.date).toLocaleString()}`, 14, 48);
 
+      const eventProducts = order.products.filter((item) => item.itemType === 'Event');
 
-const eventProducts = order.products.filter(item => item.itemType === 'Event');
-
-eventProducts.forEach((item, idx) => {
- const yOffset = 60 + idx * 30;
- doc.setFontSize(14);
-const itemNameForPdf = item.product?.name;
- doc.text(`${idx + 1}. ${itemNameForPdf || 'Event Ticket'}`, 14, yOffset);
-doc.setFontSize(12);
-doc.text(`Quantity: ${item.quantity}`, 14, yOffset + 6);
-doc.text(`Price: ${item.price} EUR`, 14, yOffset + 12);
- });
+      eventProducts.forEach((item, idx) => {
+        const yOffset = 60 + idx * 30;
+        doc.setFontSize(14);
+        const itemNameForPdf = item.product?.name;
+        doc.text(`${idx + 1}. ${itemNameForPdf || 'Event Ticket'}`, 14, yOffset);
+        doc.setFontSize(12);
+        doc.text(`Quantity: ${item.quantity}`, 14, yOffset + 6);
+        doc.text(`Price: ${item.price} EUR`, 14, yOffset + 12);
+      });
 
       if (eventProducts.length > 0) {
         const qrData = `ticket:${order._id}`;
@@ -94,20 +93,19 @@ doc.text(`Price: ${item.price} EUR`, 14, yOffset + 12);
         doc.addImage(qrImage, 'PNG', 150, 30, 40, 40);
       }
 
+      doc.setFontSize(10);
+      doc.text(
+        'Presentation of this Ticket at the entrance may be required.',
+        14,
+        doc.internal.pageSize.height - 20,
+      );
 
-      doc.setFontSize(10);
-      doc.text(
-        'Presentation of this Ticket at the entrance may be required.',
-        14,
-        doc.internal.pageSize.height - 20,
-      );
-
-      doc.save(`Ticket_${order._id.slice(-6)}.pdf`);
-    } catch (error) {
-      console.error('Error generating ticket:', error);
-      alert('Failed to generate ticket. Please try again later.');
-    }
-  };
+      doc.save(`Ticket_${order._id.slice(-6)}.pdf`);
+    } catch (error) {
+      console.error('Error generating ticket:', error);
+      alert('Failed to generate ticket. Please try again later.');
+    }
+  };
 
   const toggleSortDirection = (column) => {
     setSortDirection((prevDirection) => ({
@@ -320,10 +318,16 @@ doc.text(`Price: ${item.price} EUR`, 14, yOffset + 12);
                         <VStack align="start" spacing={1} flex="1">
                           <Text fontWeight="bold">{itemName || 'Unnamed Item'}</Text>
                           <Text fontSize="sm">Quantity: {item.quantity}</Text>
-                        <Text fontSize="sm">Price per unit: {parseFloat(item.price || 0).toFixed(2)} EUR</Text>
-                      <Text fontWeight="semibold">
-                          Total: {(parseFloat(item.price || 0) * parseFloat(item.quantity || 0)).toFixed(2)} EUR
-                      </Text>
+                          <Text fontSize="sm">
+                            Price per unit: {parseFloat(item.price || 0).toFixed(2)} EUR
+                          </Text>
+                          <Text fontWeight="semibold">
+                            Total:{' '}
+                            {(parseFloat(item.price || 0) * parseFloat(item.quantity || 0)).toFixed(
+                              2,
+                            )}{' '}
+                            EUR
+                          </Text>
                         </VStack>
                       </HStack>
                     );
@@ -357,10 +361,16 @@ doc.text(`Price: ${item.price} EUR`, 14, yOffset + 12);
                       <Text fontWeight="bold">{order.product?.title || 'Unnamed Product'}</Text>
                       <Text fontSize="sm">Quantity: {order.quantity}</Text>
                       <Text fontSize="sm">
-                        Price per unit: {parseFloat(item.price || item.product?.price || 0).toFixed(2)} EUR
+                        Price per unit:{' '}
+                        {parseFloat(item.price || item.product?.price || 0).toFixed(2)} EUR
                       </Text>
                       <Text fontWeight="semibold">
-                          Total: {(parseFloat(item.price || item.product?.price || 0) * parseFloat(item.quantity || 0)).toFixed(2)} EUR
+                        Total:{' '}
+                        {(
+                          parseFloat(item.price || item.product?.price || 0) *
+                          parseFloat(item.quantity || 0)
+                        ).toFixed(2)}{' '}
+                        EUR
                       </Text>
                     </VStack>
                   </HStack>
@@ -368,90 +378,88 @@ doc.text(`Price: ${item.price} EUR`, 14, yOffset + 12);
                 <Divider />
                 <Text fontWeight="semibold">Delivery:</Text>
 
-{order.products.some((p) => p.itemType === 'Event') ? ( 
-  <>
-    <Text fontStyle="italic" color="gray.600">
-      {' '}
-      Digital ticket – to be checked at the entrance for payment
-    </Text>
-    <Button
-      colorScheme="purple"
-      variant="outline"
-      size="sm"
-      mt={2}
-      onClick={() => generateTicket(order)}
-    >
-      Download ticket
-    </Button>
-  </>
-) : null} 
+                {order.products.some((p) => p.itemType === 'Event') ? (
+                  <>
+                    <Text fontStyle="italic" color="gray.600">
+                      {' '}
+                      Digital ticket – to be checked at the entrance for payment
+                    </Text>
+                    <Button
+                      colorScheme="purple"
+                      variant="outline"
+                      size="sm"
+                      mt={2}
+                      onClick={() => generateTicket(order)}
+                    >
+                      Download ticket
+                    </Button>
+                  </>
+                ) : null}
 
+                {!order.products.every((p) => p.itemType === 'Event') && (
+                  <>
+                    {(order.firstName && order.firstName !== 'N/A') ||
+                    (order.lastName && order.lastName !== 'N/A') ? (
+                      <Text fontSize="sm">
+                        👤 {order.firstName || ''} {order.lastName || ''}
+                      </Text>
+                    ) : null}
 
+                    <Text fontSize="sm">
+                      🏠{' '}
+                      {order.address && order.address !== 'N/A' ? order.address : 'Unknown address'}
+                      ,{order.city && order.city !== 'N/A' ? ` ${order.city}` : 'Unknown city'}
+                    </Text>
 
-{!order.products.every((p) => p.itemType === 'Event') && (
-  <>
-    {(order.firstName && order.firstName !== 'N/A') ||
-    (order.lastName && order.lastName !== 'N/A') ? (
-      <Text fontSize="sm">
-        👤 {order.firstName || ''} {order.lastName || ''}
-      </Text>
-    ) : null}
+                    <Text fontSize="sm">
+                      📮{' '}
+                      {order.postalCode && order.postalCode !== 'N/A'
+                        ? `Postal code: ${order.postalCode}`
+                        : 'N/A'}
+                    </Text>
 
-    <Text fontSize="sm">
-      🏠{' '}
-      {order.address && order.address !== 'N/A' ? order.address : 'Unknown address'}
-      ,{order.city && order.city !== 'N/A' ? ` ${order.city}` : 'Unknown city'}
-    </Text>
+                    <Text fontSize="sm">
+                      📞{' '}
+                      {order.phone && order.phone !== 'N/A' ? order.phone : 'Phone not available'}
+                    </Text>
 
-    <Text fontSize="sm">
-      📮{' '}
-      {order.postalCode && order.postalCode !== 'N/A'
-        ? `Postal code: ${order.postalCode}`
-        : 'N/A'}
-    </Text>
+                    {order.paymentMethod && order.paymentMethod !== 'N/A' && (
+                      <Text fontSize="sm">
+                        💳{' '}
+                        {order.paymentMethod === 'cash'
+                          ? 'Cash'
+                          : order.paymentMethod === 'online'
+                            ? 'Online card'
+                            : 'Card at delivery'}
+                      </Text>
+                    )}
+                    {order.deliveryMethod && order.deliveryMethod !== 'N/A' && (
+                      <Text fontSize="sm">
+                        🚚 {order.deliveryMethod === 'easybox' ? 'EasyBox' : 'Courier'}
+                      </Text>
+                    )}
 
-    <Text fontSize="sm">
-      📞{' '}
-      {order.phone && order.phone !== 'N/A' ? order.phone : 'Phone not available'}
-    </Text>
-
-    {order.paymentMethod && order.paymentMethod !== 'N/A' && (
-      <Text fontSize="sm">
-        💳{' '}
-        {order.paymentMethod === 'cash'
-          ? 'Cash'
-          : order.paymentMethod === 'online'
-            ? 'Online card'
-            : 'Card at delivery'}
-      </Text>
-    )}
-    {order.deliveryMethod && order.deliveryMethod !== 'N/A' && (
-      <Text fontSize="sm">
-        🚚 {order.deliveryMethod === 'easybox' ? 'EasyBox' : 'Courier'}
-      </Text>
-    )}
-
-    {order.status === 'Pending' && (
-      <Button
-        colorScheme="red"
-        size="sm"
-        mt={2}
-        onClick={() => handleCancelOrder(order._id)}
-      >
-        Cancel order
-      </Button>
-    )}
-    <Button
-      colorScheme="teal"
-      variant="outline"
-      size="sm"
-      mt={2}
-      onClick={() => generateInvoice(order)}
-    >
-      Download invoice
-    </Button>
-  </>
-)}
+                    {order.status === 'Pending' && (
+                      <Button
+                        colorScheme="red"
+                        size="sm"
+                        mt={2}
+                        onClick={() => handleCancelOrder(order._id)}
+                      >
+                        Cancel order
+                      </Button>
+                    )}
+                    <Button
+                      colorScheme="teal"
+                      variant="outline"
+                      size="sm"
+                      mt={2}
+                      onClick={() => generateInvoice(order)}
+                    >
+                      Download invoice
+                    </Button>
+                  </>
+                )}
               </VStack>
             </AccordionPanel>
           </AccordionItem>

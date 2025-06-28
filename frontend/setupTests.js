@@ -1,4 +1,3 @@
-
 const localStorageMock = (function () {
   let store = {};
   return {
@@ -22,16 +21,14 @@ Object.defineProperty(window, 'localStorage', {
   writable: true,
 });
 
-
 if (typeof window.google === 'undefined') {
   window.google = {
     maps: {
       places: {
         Autocomplete: jest.fn(function () {
           this.addListener = jest.fn((event, callback) => {
-
             if (event === 'place_changed') {
-              this.mockPlaceChanged = callback; 
+              this.mockPlaceChanged = callback;
             }
           });
           this.triggerPlaceChanged = (place) => {

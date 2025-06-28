@@ -61,9 +61,7 @@ const NotificationDrawer = () => {
         credentials: 'include',
       });
       setNotifications((prevNotifications) =>
-        prevNotifications.map((n) =>
-          n._id === notification._id ? { ...n, seen: true } : n
-        )
+        prevNotifications.map((n) => (n._id === notification._id ? { ...n, seen: true } : n)),
       );
       setUnseenCount((prevCount) => Math.max(0, prevCount - 1));
     } catch (err) {
@@ -82,9 +80,7 @@ const NotificationDrawer = () => {
         method: 'POST',
         credentials: 'include',
       });
-      setNotifications((prevNotifications) =>
-        prevNotifications.map((n) => ({ ...n, seen: true }))
-      );
+      setNotifications((prevNotifications) => prevNotifications.map((n) => ({ ...n, seen: true })));
       setUnseenCount(0);
     } catch (err) {
       console.error('Failed to mark all as seen', err);
@@ -106,8 +102,8 @@ const NotificationDrawer = () => {
                   ...n,
                   seen: true,
                 }
-              : n
-          )
+              : n,
+          ),
         );
         setUnseenCount((prevCount) => Math.max(0, prevCount - 1));
       } else {
@@ -127,7 +123,7 @@ const NotificationDrawer = () => {
 
       if (res.ok) {
         setNotifications((prevNotifications) =>
-          prevNotifications.filter((n) => n._id !== notificationId)
+          prevNotifications.filter((n) => n._id !== notificationId),
         );
         setUnseenCount((prevCount) => Math.max(0, prevCount - 1));
       } else {
@@ -196,7 +192,7 @@ const NotificationDrawer = () => {
 
                     {n.type === 'invite' && n.meta?.galleryId ? (
                       <GalleryInviteActions
-                        notification={n} 
+                        notification={n}
                         galleryId={n.meta.galleryId}
                         onAccept={() => acceptInvite(n._id, n.meta.galleryId)}
                         onDecline={() => declineInvite(n._id, n.meta.galleryId)}
@@ -263,25 +259,25 @@ const GalleryInviteActions = ({ notification, galleryId, onAccept, onDecline }) 
         }
       } catch (e) {
         console.warn('Error checking collaborator status:', e.message);
-        setInviteStatus('error'); 
+        setInviteStatus('error');
       } finally {
         setLoading(false);
       }
     };
-   
+
     if (notification.type === 'invite' && !notification.seen) {
       checkStatus();
     } else if (notification.type === 'invite' && notification.seen) {
-      setInviteStatus('handled'); 
+      setInviteStatus('handled');
       setLoading(false);
     } else {
-      setLoading(false); 
+      setLoading(false);
     }
-  }, [galleryId, notification]); 
+  }, [galleryId, notification]);
 
   const handleAccept = async () => {
     await onAccept(galleryId);
-    setInviteStatus('accepted'); 
+    setInviteStatus('accepted');
   };
 
   const handleDecline = async () => {
