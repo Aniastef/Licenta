@@ -97,18 +97,18 @@ export const createProduct = async (req, res) => {
     }
 
     await newProduct.save();
-    console.log('Product saved successfully:', newProduct._id);
+    console.log('Artwork saved successfully:', newProduct._id);
 
     if (galleries && galleries.length > 0) {
       await Gallery.updateMany(
         { _id: { $in: galleries } },
         { $addToSet: { products: { product: newProduct._id, order: 0 } } },
       );
-      console.log(`Updated ${galleries.length} galleries with the new product.`);
+      console.log(`Updated ${galleries.length} galleries with the new artwork.`);
     }
 
     await User.findByIdAndUpdate(req.user._id, { $push: { products: newProduct._id } });
-    console.log('User document updated with new product ID.');
+    console.log('User document updated with new artwork ID.');
 
     await addAuditLog({
       action: 'create_product',
@@ -119,7 +119,7 @@ export const createProduct = async (req, res) => {
     console.log('Audit log added.');
 
     if (galleries && galleries.length > 0) {
-      console.log(`Processing ${galleries.length} galleries for new product ${newProduct._id}.`);
+      console.log(`Processing ${galleries.length} galleries for new artwork ${newProduct._id}.`);
       for (const galleryId of galleries) {
         try {
           const gallery = await Gallery.findById(galleryId);
@@ -141,17 +141,17 @@ export const createProduct = async (req, res) => {
               gallery.products.push({ product: newProduct._id, order: nextOrder });
               await gallery.save();
               console.log(
-                `Product ${newProduct._id} successfully added to gallery ${galleryId} with order ${nextOrder}.`,
+                `Artwork ${newProduct._id} successfully added to gallery ${galleryId} with order ${nextOrder}.`,
               );
             }
           } else {
             console.warn(
-              `Gallery with ID ${galleryId} not found when attempting to add product ${newProduct._id}.`,
+              `Gallery with ID ${galleryId} not found when attempting to add artwork ${newProduct._id}.`,
             );
           }
         } catch (galleryUpdateError) {
           console.error(
-            `ERROR PROCESSING GALLERY ${galleryId} FOR PRODUCT ${newProduct._id}:`,
+            `ERROR PROCESSING GALLERY ${galleryId} FOR Artwork ${newProduct._id}:`,
             galleryUpdateError.message,
           );
         }
@@ -161,7 +161,7 @@ export const createProduct = async (req, res) => {
     res.status(201).json(newProduct);
   } catch (err) {
     console.error('FATAL SERVER ERROR IN createProduct FUNCTION:', err.stack || err.message || err);
-    res.status(500).json({ error: 'Server error during product creation', details: err.message });
+    res.status(500).json({ error: 'Server error during Artwork creation', details: err.message });
   }
 };
 
@@ -170,7 +170,7 @@ export const getProduct = async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: 'Product ID is required' });
+      return res.status(400).json({ error: 'Artwork ID is required' });
     }
 
     const product = await Product.findById(id)
@@ -181,12 +181,12 @@ export const getProduct = async (req, res) => {
       });
 
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(404).json({ error: 'Artwork not found' });
     }
 
     res.status(200).json({ product });
   } catch (err) {
-    console.error('Error while fetching product:', err.message);
+    console.error('Error while fetching Artwork:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -196,12 +196,12 @@ export const deleteProduct = async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: 'Product ID is required' });
+      return res.status(400).json({ error: 'Artwork ID is required' });
     }
 
     const product = await Product.findById(id);
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(404).json({ error: 'Artwork not found' });
     }
 
     if (product.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
@@ -214,7 +214,7 @@ export const deleteProduct = async (req, res) => {
         { _id: { $in: galleryIds } },
         { $pull: { products: { product: product._id } } },
       );
-      console.log(`Removed product reference from ${galleryIds.length} galleries.`);
+      console.log(`Removed artwork reference from ${galleryIds.length} galleries.`);
     }
 
     await User.findByIdAndUpdate(product.user, { $pull: { products: product._id } });

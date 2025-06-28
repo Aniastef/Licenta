@@ -46,7 +46,7 @@ const UserAllProductsPage = () => {
       setFilteredProducts(data.products || []);
       if (data.user) setUser(data.user);
     } catch (err) {
-      console.error('Error fetching user products:', err);
+      console.error('Error fetching user artworks:', err);
     } finally {
       setLoading(false);
     }
